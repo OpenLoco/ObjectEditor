@@ -1,6 +1,8 @@
+using Common;
 using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels.Objects.Competitor;
+using Definitions.ObjectModels.Objects.LevelCrossing;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
@@ -71,7 +73,7 @@ public static class ImageTableGrouper
 			case ObjectType.TrackSignal:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.LevelCrossing:
-				return [new("<uncategorised>", [.. imageList])];
+				return CreateLevelCrossingGroups2((LevelCrossingObject)obj, imageList);
 			case ObjectType.StreetLight:
 				return CreateGroupsFromConfig(ObjectType.StreetLight, imageList);
 			case ObjectType.Tunnel:
@@ -247,6 +249,28 @@ public static class ImageTableGrouper
 	}
 
 	private static IReadOnlyDictionary<ObjectType, ImageTableGroupConfigurationType> GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfigurationType>();
+
+	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups2(LevelCrossingObject model, List<GraphicsElement> imageList)
+	{
+		for (var i = 0; i < 8; ++i)
+		{
+			yield return new($"{GetDirection(i)} side {i % 2}", [.. imageList.PickEach(8, i)]);
+		}
+
+		static string GetDirection(int i)
+			=> i switch
+			{
+				0 => "SW",
+				1 => "SW",
+				2 => "NE",
+				3 => "NE",
+				4 => "SE",
+				5 => "SE",
+				6 => "NW",
+				7 => "NW",
+				_ => $"direction {i}",
+			};
+	}
 
 	private static IEnumerable<ImageTableGroup> CreateCompetitorGroups(CompetitorObject model, List<GraphicsElement> imageList)
 	{

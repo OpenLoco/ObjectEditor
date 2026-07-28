@@ -731,11 +731,11 @@ public class LoadSaveTests
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-10), nameof(struc.SellCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 
-				Assert.That(struc.AnimationSpeed, Is.EqualTo(3), nameof(struc.AnimationSpeed));
-				Assert.That(struc.ClosingFrames, Is.EqualTo(4), nameof(struc.ClosingFrames));
-				Assert.That(struc.ClosedFrames, Is.EqualTo(11), nameof(struc.ClosedFrames));
+				Assert.That(struc.ClosedAnimationDelay, Is.EqualTo(3), nameof(struc.ClosedAnimationDelay));
+				Assert.That(struc.ClosedAnimationFrameCount, Is.EqualTo(4), nameof(struc.ClosedAnimationFrameCount));
+				Assert.That(struc.TransitionAnimationFrameCount, Is.EqualTo(11), nameof(struc.TransitionAnimationFrameCount));
 
-				Assert.That(struc.var_0A, Is.EqualTo(3), nameof(struc.var_0A));
+				Assert.That(struc.TransitionAnimationDelayBitmask, Is.EqualTo(3), nameof(struc.TransitionAnimationDelayBitmask));
 
 				Assert.That(struc.DesignedYear, Is.EqualTo(1955), nameof(struc.DesignedYear));
 

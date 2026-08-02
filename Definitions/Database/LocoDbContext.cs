@@ -1,3 +1,7 @@
+using Definitions.Database.DataTables;
+using Definitions.Database.DataTables.Objects;
+using Definitions.Database.Identity;
+using Definitions.Database.ReferenceDataTables;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

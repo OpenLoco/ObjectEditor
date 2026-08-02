@@ -1,6 +1,5 @@
-using Common;
-using Common.Json;
-using Common.Logging;
+using Core;
+using Core.Logging;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;

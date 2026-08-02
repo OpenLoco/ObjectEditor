@@ -1,4 +1,4 @@
-namespace Dat.Loaders;
+namespace Dat.Loaders.Vehicle;
 
 public enum DatDrivingSoundType : uint8_t
 {

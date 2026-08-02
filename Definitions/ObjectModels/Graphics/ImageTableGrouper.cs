@@ -1,4 +1,4 @@
-using Common;
+using Core;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.LevelCrossing;
 using Definitions.ObjectModels.Objects.Vehicle;

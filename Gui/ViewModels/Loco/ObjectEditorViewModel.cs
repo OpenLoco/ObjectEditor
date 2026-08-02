@@ -25,7 +25,7 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 {

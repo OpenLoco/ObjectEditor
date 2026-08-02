@@ -1,7 +1,8 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectInterface : DbSubObject, IConvertibleToTable<TblObjectInterface, InterfaceSkinObject>
 {

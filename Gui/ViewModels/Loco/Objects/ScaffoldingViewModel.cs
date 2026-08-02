@@ -2,7 +2,7 @@ using Definitions.ObjectModels.Objects.Scaffolding;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class ScaffoldingViewModel(ScaffoldingObject model) : BaseViewModel<ScaffoldingObject>(model)
 {

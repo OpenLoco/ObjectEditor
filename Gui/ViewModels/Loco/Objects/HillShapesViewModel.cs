@@ -1,6 +1,6 @@
-using Definitions.ObjectModels.Objects.HillShape;
+using Definitions.ObjectModels.Objects.HillShapes;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class HillShapesViewModel(HillShapesObject model)
 	: BaseViewModel<HillShapesObject>(model)

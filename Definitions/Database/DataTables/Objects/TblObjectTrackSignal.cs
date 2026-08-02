@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.TrackSignal;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectTrackSignal : DbSubObject, IConvertibleToTable<TblObjectTrackSignal, TrackSignalObject>
 {

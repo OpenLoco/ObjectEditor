@@ -1,7 +1,7 @@
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.CliffEdge;
 using Definitions.ObjectModels.Objects.Competitor;
-using Definitions.ObjectModels.Objects.HillShape;
+using Definitions.ObjectModels.Objects.HillShapes;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
 using Definitions.ObjectModels.Objects.Land;
 using Definitions.ObjectModels.Objects.Road;

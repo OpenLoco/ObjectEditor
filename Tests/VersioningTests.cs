@@ -1,4 +1,4 @@
-using Common;
+using Core;
 using NuGet.Versioning;
 using NUnit.Framework;
 using System.Runtime.InteropServices;

@@ -1,7 +1,8 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadExtra;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectRoadExtra : DbSubObject, IConvertibleToTable<TblObjectRoadExtra, RoadExtraObject>
 {

@@ -1,4 +1,4 @@
-namespace Definitions.Database;
+namespace Definitions.Database.Base;
 
 public abstract class DbIdObject : IHasId
 {

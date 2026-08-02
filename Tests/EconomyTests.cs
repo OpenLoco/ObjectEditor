@@ -1,6 +1,7 @@
+using Definitions;
 using NUnit.Framework;
 
-namespace Definitions.Tests;
+namespace Tests;
 
 [TestFixture]
 public class EconomyTests

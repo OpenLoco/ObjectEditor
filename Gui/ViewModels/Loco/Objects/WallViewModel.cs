@@ -1,6 +1,6 @@
 using Definitions.ObjectModels.Objects.Wall;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class WallViewModel(WallObject model)
 	: BaseViewModel<WallObject>(model)

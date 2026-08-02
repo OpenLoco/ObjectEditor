@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace ObjectService.Tests.Integration;
+namespace Tests.ObjectServiceIntegrationTests;
 
 public class TestWebApplicationFactory<TProgram>
 	: WebApplicationFactory<TProgram> where TProgram : class

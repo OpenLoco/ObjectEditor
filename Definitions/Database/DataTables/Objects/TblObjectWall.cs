@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Wall;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectWall : DbSubObject, IConvertibleToTable<TblObjectWall, WallObject>
 {

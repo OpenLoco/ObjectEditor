@@ -1,6 +1,8 @@
+using Definitions.Database.Base;
+using Definitions.Database.DataTables;
 using Microsoft.EntityFrameworkCore;
 
-namespace Definitions.Database;
+namespace Definitions.Database.ReferenceDataTables;
 
 [Index(nameof(Name), IsUnique = true)]
 public class TblTag : DbReferenceObject

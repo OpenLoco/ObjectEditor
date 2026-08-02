@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Tunnel;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectTunnel : DbSubObject, IConvertibleToTable<TblObjectTunnel, TunnelObject>
 {

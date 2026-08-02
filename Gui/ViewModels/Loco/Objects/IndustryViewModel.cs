@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class IndustryViewModel(IndustryObject model)
 	: BaseViewModel<IndustryObject>(model)

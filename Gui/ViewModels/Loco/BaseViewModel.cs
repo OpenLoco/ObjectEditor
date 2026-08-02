@@ -10,7 +10,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public abstract class BaseViewModel : ReactiveObject, IViewModel, IViewModelGroupHost, IDisposable
 {

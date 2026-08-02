@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace Definitions.Database;
+namespace Definitions.Database.Identity;
 
 public class AdminPolicy
 {

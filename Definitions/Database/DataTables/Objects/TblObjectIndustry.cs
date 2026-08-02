@@ -1,7 +1,8 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Industry;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectIndustry : DbSubObject, IConvertibleToTable<TblObjectIndustry, IndustryObject>
 {

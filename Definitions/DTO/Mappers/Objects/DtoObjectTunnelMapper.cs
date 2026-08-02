@@ -1,6 +1,8 @@
-using Definitions.Database;
+using Definitions.Database.DataTables;
+using Definitions.Database.DataTables.Objects;
+using Definitions.DTO.Objects;
 
-namespace Definitions.DTO.Mappers;
+namespace Definitions.DTO.Mappers.Objects;
 
 public static class DtoObjectTunnelMapper
 {

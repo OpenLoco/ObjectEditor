@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Microsoft.EntityFrameworkCore;
 
-namespace Definitions.Database;
+namespace Definitions.Database.ReferenceDataTables;
 
 [Index(nameof(Name), IsUnique = true)]
 public class TblLicence : DbReferenceObject

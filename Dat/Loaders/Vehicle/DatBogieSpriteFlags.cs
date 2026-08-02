@@ -1,4 +1,4 @@
-namespace Dat.Loaders;
+namespace Dat.Loaders.Vehicle;
 
 [Flags]
 public enum DatBogieSpriteFlags : uint8_t

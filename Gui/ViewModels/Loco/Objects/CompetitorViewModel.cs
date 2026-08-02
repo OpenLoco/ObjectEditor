@@ -1,6 +1,6 @@
 using Definitions.ObjectModels.Objects.Competitor;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class CompetitorViewModel(CompetitorObject model)
 	: BaseViewModel<CompetitorObject>(model)

@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using ObjectService.RouteHandlers;
 
-namespace ObjectService.Tests;
+namespace Tests;
 
 [TestFixture]
 public class RouteHelpersTests

@@ -1,12 +1,10 @@
-using Common.Json;
-using Definitions.ObjectModels;
-using Definitions.ObjectModels.Graphics;
+using Core;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Core.Graphics;
+namespace Definitions.ObjectModels.Graphics;
 
 public static class ImageTableIo
 {

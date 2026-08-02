@@ -1,4 +1,4 @@
-namespace Dat.Loaders;
+namespace Dat.Loaders.Vehicle;
 
 public enum DatCompanyColourType : uint8_t
 {

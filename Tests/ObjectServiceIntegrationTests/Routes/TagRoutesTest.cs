@@ -1,11 +1,11 @@
 using Definitions.Database;
+using Definitions.Database.ReferenceDataTables;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.Web;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using ObjectService.Tests.Integration;
 
 namespace Tests.ObjectServiceIntegrationTests.Routes;
 

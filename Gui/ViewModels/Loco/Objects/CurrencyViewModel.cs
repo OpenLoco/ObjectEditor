@@ -1,6 +1,6 @@
 using Definitions.ObjectModels.Objects.Currency;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class CurrencyViewModel(CurrencyObject model)
 		: BaseViewModel<CurrencyObject>(model)

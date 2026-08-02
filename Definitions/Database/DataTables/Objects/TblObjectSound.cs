@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Sound;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectSound : DbSubObject, IConvertibleToTable<TblObjectSound, SoundObject>
 {

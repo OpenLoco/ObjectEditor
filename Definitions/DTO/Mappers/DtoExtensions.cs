@@ -1,4 +1,6 @@
-using Definitions.Database;
+using Definitions.Database.DataTables;
+using Definitions.Database.Identity;
+using Definitions.Database.ReferenceDataTables;
 using Definitions.DTO.Identity;
 using Definitions.SourceData;
 

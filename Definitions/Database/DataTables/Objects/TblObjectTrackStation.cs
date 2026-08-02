@@ -1,7 +1,8 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Objects.TrackStation;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectTrackStation : DbSubObject, IConvertibleToTable<TblObjectTrackStation, TrackStationObject>
 {

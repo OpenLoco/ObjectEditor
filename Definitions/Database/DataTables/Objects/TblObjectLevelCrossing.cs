@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.LevelCrossing;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectLevelCrossing : DbSubObject, IConvertibleToTable<TblObjectLevelCrossing, LevelCrossingObject>
 {

@@ -19,7 +19,7 @@ using Definitions.ObjectModels.Objects.Climate;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.Currency;
 using Definitions.ObjectModels.Objects.Dock;
-using Definitions.ObjectModels.Objects.HillShape;
+using Definitions.ObjectModels.Objects.HillShapes;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
 using Definitions.ObjectModels.Objects.Land;
@@ -47,9 +47,9 @@ using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Logger = Common.Logging.Logger;
+using Logger = Core.Logging.Logger;
 
-namespace Dat.Tests;
+namespace Tests;
 
 sealed class SkipObjectSourceChecks : IDisposable
 {

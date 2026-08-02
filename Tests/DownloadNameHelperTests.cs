@@ -1,7 +1,7 @@
-using Common;
+using Core;
 using NUnit.Framework;
 
-namespace ObjectService.Tests;
+namespace Tests;
 
 [TestFixture]
 public class DownloadNameHelperTests

@@ -1,5 +1,6 @@
-using Common;
+using Core;
 using Definitions.Database;
+using Definitions.Database.DataTables;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.SourceData;

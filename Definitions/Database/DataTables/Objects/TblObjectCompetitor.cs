@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Competitor;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectCompetitor : DbSubObject, IConvertibleToTable<TblObjectCompetitor, CompetitorObject>
 {

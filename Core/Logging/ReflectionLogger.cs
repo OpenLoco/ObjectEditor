@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text;
 
-namespace Common.Logging;
+namespace Core.Logging;
 
 public static class ReflectionLogger
 {

@@ -1,4 +1,4 @@
-namespace Dat.Loaders;
+namespace Dat.Loaders.Vehicle;
 
 [Flags]
 public enum DatVehicleObjectFlags : uint16_t

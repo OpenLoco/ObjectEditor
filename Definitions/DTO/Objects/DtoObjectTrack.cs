@@ -1,7 +1,7 @@
-using Definitions.Database;
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Track;
 
-namespace Definitions.DTO;
+namespace Definitions.DTO.Objects;
 
 public class DtoObjectTrack : IDtoSubObject
 {

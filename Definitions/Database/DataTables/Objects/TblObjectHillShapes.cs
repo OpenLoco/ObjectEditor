@@ -1,6 +1,7 @@
-using Definitions.ObjectModels.Objects.HillShape;
+using Definitions.Database.Base;
+using Definitions.ObjectModels.Objects.HillShapes;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectHillShapes : DbSubObject, IConvertibleToTable<TblObjectHillShapes, HillShapesObject>
 {

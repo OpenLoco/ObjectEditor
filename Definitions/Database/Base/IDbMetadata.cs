@@ -1,4 +1,6 @@
-namespace Definitions.Database;
+using Definitions.Database.ReferenceDataTables;
+
+namespace Definitions.Database.Base;
 
 public interface IDbMetadata
 {

@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
-namespace Common;
+namespace Core;
 
 public static class PlatformSpecific
 {

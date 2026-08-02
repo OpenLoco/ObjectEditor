@@ -1,4 +1,5 @@
 using Definitions.Database;
+using Definitions.Database.ReferenceDataTables;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.Web;

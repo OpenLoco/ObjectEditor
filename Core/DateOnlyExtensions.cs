@@ -1,4 +1,4 @@
-namespace Common;
+namespace Core;
 
 public static class DateOnlyExtensions
 {

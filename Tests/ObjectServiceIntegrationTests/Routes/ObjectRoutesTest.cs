@@ -1,7 +1,9 @@
-using Common;
-using Common.Logging;
+using Core;
+using Core.Logging;
 using Definitions;
 using Definitions.Database;
+using Definitions.Database.DataTables;
+using Definitions.Database.ReferenceDataTables;
 using Definitions.DTO;
 using Definitions.DTO.Comparers;
 using Definitions.DTO.Mappers;
@@ -10,7 +12,6 @@ using Definitions.Web;
 using Index;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using ObjectService.Tests.Integration;
 using System.IO.Hashing;
 
 namespace Tests.ObjectServiceIntegrationTests.Routes;

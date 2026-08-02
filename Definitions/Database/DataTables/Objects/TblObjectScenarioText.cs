@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.ScenarioText;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectScenarioText : DbSubObject, IConvertibleToTable<TblObjectScenarioText, ScenarioTextObject>
 {

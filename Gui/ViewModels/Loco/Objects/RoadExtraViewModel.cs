@@ -4,7 +4,7 @@ using Gui.Attributes;
 using ReactiveUI;
 using System.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class RoadExtraViewModel(RoadExtraObject model)
 	: BaseViewModel<RoadExtraObject>(model)

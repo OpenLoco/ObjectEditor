@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public class TreeNode(string title, string offsetText, ObservableCollection<TreeNode> nodes)
 {

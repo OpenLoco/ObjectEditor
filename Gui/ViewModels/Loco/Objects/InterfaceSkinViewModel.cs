@@ -1,7 +1,7 @@
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class InterfaceSkinViewModel(InterfaceSkinObject model) : BaseViewModel<InterfaceSkinObject>(model)
 {

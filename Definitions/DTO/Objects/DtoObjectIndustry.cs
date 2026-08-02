@@ -1,8 +1,8 @@
-using Definitions.Database;
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Industry;
 
-namespace Definitions.DTO;
+namespace Definitions.DTO.Objects;
 
 public class DtoObjectIndustry : IDtoSubObject
 {

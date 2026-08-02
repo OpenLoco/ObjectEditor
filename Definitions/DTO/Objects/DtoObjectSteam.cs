@@ -1,7 +1,7 @@
-using Definitions.Database;
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Steam;
 
-namespace Definitions.DTO;
+namespace Definitions.DTO.Objects;
 
 public class DtoObjectSteam : IDtoSubObject
 {

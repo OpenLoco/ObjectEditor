@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Bridge;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectBridge : DbSubObject, IConvertibleToTable<TblObjectBridge, BridgeObject>
 {

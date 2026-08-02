@@ -1,8 +1,9 @@
+using Definitions.Database.ReferenceDataTables;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Definitions.Database;
+namespace Definitions.Database.Base;
 
 [Index(nameof(Name), IsUnique = true)]
 public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMetadata, IDbDates

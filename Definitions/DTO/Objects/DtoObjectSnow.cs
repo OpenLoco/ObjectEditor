@@ -1,6 +1,6 @@
-using Definitions.Database;
+using Definitions.Database.Base;
 
-namespace Definitions.DTO;
+namespace Definitions.DTO.Objects;
 
 public class DtoObjectSnow : IDtoSubObject
 {

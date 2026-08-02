@@ -1,7 +1,8 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables;
 
 // scenarios and landscapes, but no savegames
 [Index(nameof(Name), IsUnique = true)]

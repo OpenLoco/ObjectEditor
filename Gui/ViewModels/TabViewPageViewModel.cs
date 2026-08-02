@@ -1,4 +1,5 @@
 using Gui.Models;
+using Gui.ViewModels.Loco;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;

@@ -1,4 +1,6 @@
-using Definitions.DTO.Mappers;
+using Definitions.Database.DataTables;
+using Definitions.Database.DataTables.Objects;
+using Definitions.DTO.Mappers.Objects;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Bridge;
@@ -9,7 +11,7 @@ using Definitions.ObjectModels.Objects.Climate;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.Currency;
 using Definitions.ObjectModels.Objects.Dock;
-using Definitions.ObjectModels.Objects.HillShape;
+using Definitions.ObjectModels.Objects.HillShapes;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
 using Definitions.ObjectModels.Objects.Land;
@@ -37,7 +39,7 @@ using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
 
-namespace Definitions.Database;
+namespace Definitions.Database.Base;
 
 public interface IConvertibleToTable<TTable, TDat>
 {

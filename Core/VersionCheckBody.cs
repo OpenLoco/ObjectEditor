@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Common;
+namespace Core;
 
 public class VersionCheckBody
 {

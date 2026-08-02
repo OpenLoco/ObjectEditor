@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
-namespace ObjectService.Tests.Integration;
+namespace Tests.ObjectServiceIntegrationTests;
 
 public abstract class BaseRouteHandlerTestFixture
 {

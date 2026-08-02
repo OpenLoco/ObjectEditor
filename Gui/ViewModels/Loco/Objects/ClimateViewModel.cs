@@ -1,6 +1,6 @@
 using Definitions.ObjectModels.Objects.Climate;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class ClimateViewModel(ClimateObject model)
 	: BaseViewModel<ClimateObject>(model)

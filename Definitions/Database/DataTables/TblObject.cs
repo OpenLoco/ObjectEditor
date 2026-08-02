@@ -1,7 +1,8 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables;
 
 public class TblObject : DbCoreObject //<T> : DbCoreObject where T : DbSubObject
 {

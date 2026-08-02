@@ -1,6 +1,5 @@
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
-using Core.Graphics;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;

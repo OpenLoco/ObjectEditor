@@ -1,4 +1,6 @@
-namespace Definitions.Database;
+using Definitions.Database.Base;
+
+namespace Definitions.Database.DataTables;
 
 public class TblSC5FilePack : DbCoreObject
 {

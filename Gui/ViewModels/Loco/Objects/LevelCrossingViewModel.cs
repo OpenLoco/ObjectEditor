@@ -1,7 +1,7 @@
 using Definitions.ObjectModels.Objects.LevelCrossing;
 using System.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class LevelCrossingViewModel(LevelCrossingObject obj)
 	: BaseViewModel<LevelCrossingObject>(obj)

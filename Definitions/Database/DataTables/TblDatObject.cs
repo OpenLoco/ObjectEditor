@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Microsoft.EntityFrameworkCore;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables;
 
 [Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false], IsUnique = true)]
 [Index(nameof(xxHash3), IsUnique = true)]

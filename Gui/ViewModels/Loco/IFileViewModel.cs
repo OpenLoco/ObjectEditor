@@ -2,7 +2,7 @@ using Gui.Models;
 using ReactiveUI;
 using System.Reactive;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public interface IFileViewModel
 {

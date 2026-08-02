@@ -1,4 +1,4 @@
-using Core.Graphics;
+using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
 using Shared.Files;
 

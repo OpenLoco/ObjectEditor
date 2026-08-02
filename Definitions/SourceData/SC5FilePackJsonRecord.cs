@@ -1,4 +1,4 @@
-using Definitions.Database;
+using Definitions.Database.Base;
 using System.Text.Json.Serialization;
 
 namespace Definitions.SourceData;

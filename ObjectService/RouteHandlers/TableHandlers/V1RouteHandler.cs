@@ -1,9 +1,11 @@
-using Common;
-using Common.Logging;
+using Core;
+using Core.Logging;
 using Dat.Converters;
 using Dat.FileParsing;
 using Definitions;
 using Definitions.Database;
+using Definitions.Database.DataTables;
+using Definitions.Database.ReferenceDataTables;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels.Graphics;

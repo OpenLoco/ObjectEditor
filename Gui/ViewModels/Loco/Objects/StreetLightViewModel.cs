@@ -1,7 +1,7 @@
 using Definitions.ObjectModels.Objects.Streetlight;
 using System.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class StreetLightViewModel(StreetLightObject model)
 	: BaseViewModel<StreetLightObject>(model)

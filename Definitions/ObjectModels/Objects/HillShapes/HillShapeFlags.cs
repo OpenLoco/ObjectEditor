@@ -1,4 +1,4 @@
-namespace Definitions.ObjectModels.Objects.HillShape;
+namespace Definitions.ObjectModels.Objects.HillShapes;
 
 [Flags]
 public enum HillShapeFlags : uint16_t

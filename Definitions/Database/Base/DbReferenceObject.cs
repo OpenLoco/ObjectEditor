@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Definitions.Database;
+namespace Definitions.Database.Base;
 
 [Index(nameof(Name), IsUnique = true)]
 public abstract class DbReferenceObject : DbIdObject, IDbName

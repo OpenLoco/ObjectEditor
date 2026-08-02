@@ -2,6 +2,7 @@ using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels;
 using Gui.Models;
+using Gui.ViewModels.Loco;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;

@@ -4,7 +4,6 @@ using Definitions.Web;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ObjectService;
-using ObjectService.Tests.Integration;
 using System.Net;
 using System.Net.Http.Json;
 

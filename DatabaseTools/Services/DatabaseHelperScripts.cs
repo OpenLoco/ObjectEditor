@@ -8,10 +8,12 @@
 #pragma warning disable CS8605
 #pragma warning disable CS8629
 
-using Common.Logging;
+using Core.Logging;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.Database;
+using Definitions.Database.Base;
+using Definitions.Database.DataTables;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Bridge;
@@ -22,7 +24,7 @@ using Definitions.ObjectModels.Objects.Climate;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.Currency;
 using Definitions.ObjectModels.Objects.Dock;
-using Definitions.ObjectModels.Objects.HillShape;
+using Definitions.ObjectModels.Objects.HillShapes;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
 using Definitions.ObjectModels.Objects.Land;

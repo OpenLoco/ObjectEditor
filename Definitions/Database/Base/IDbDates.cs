@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Definitions.Database;
+namespace Definitions.Database.Base;
 
 public interface IDbDates
 {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public class MusicViewModel : BaseFileViewModel<DummyModel>
 {

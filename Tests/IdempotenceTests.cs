@@ -5,9 +5,9 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using SixLabors.ImageSharp;
 using System.Text.Json;
-using Logger = Common.Logging.Logger;
+using Logger = Core.Logging.Logger;
 
-namespace Dat.Tests;
+namespace Tests;
 
 [TestFixture]
 public class IdempotenceTests

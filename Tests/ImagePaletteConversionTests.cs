@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Logger = Common.Logging.Logger;
+using Logger = Core.Logging.Logger;
 
-namespace Dat.Tests;
+namespace Tests;
 
 [TestFixture]
 public class ImagePaletteConversionTests

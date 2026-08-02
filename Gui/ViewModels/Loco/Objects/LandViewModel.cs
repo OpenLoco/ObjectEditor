@@ -1,7 +1,7 @@
 using Definitions.ObjectModels.Objects.Land;
 using Definitions.ObjectModels.Types;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class LandViewModel(LandObject model)
 	: BaseViewModel<LandObject>(model)

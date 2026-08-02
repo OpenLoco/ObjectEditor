@@ -1,4 +1,4 @@
-namespace Common.Logging;
+namespace Core.Logging;
 
 public class LogAddedEventArgs(LogLine log) : EventArgs
 {

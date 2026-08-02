@@ -1,4 +1,4 @@
-using Definitions.Database;
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 

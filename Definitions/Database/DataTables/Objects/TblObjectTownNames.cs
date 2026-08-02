@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.TownNames;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectTownNames : DbSubObject, IConvertibleToTable<TblObjectTownNames, TownNamesObject>
 {

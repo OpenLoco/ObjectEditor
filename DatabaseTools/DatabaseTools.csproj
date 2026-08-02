@@ -23,7 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Core\Core.csproj" />
 		<ProjectReference Include="..\Dat\Dat.csproj" />
 		<ProjectReference Include="..\Definitions\Definitions.csproj" />
 		<ProjectReference Include="..\Index\Index.csproj" />

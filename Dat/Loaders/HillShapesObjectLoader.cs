@@ -5,7 +5,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
-using Definitions.ObjectModels.Objects.HillShape;
+using Definitions.ObjectModels.Objects.HillShapes;
 using Definitions.ObjectModels.Types;
 
 namespace Dat.Loaders;

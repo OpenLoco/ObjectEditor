@@ -1,7 +1,7 @@
-using Definitions.Database;
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Cargo;
 
-namespace Definitions.DTO;
+namespace Definitions.DTO.Objects;
 
 public class DtoObjectCargo : IDtoSubObject
 {

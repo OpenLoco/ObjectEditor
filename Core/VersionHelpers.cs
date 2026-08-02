@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Common;
+namespace Core;
 
 public static class VersionHelpers
 {
@@ -113,7 +113,7 @@ public static class VersionHelpers
 
 	// A single, process-wide HttpClient avoids socket exhaustion that comes from
 	// creating a new instance on every call. Kept internal-static deliberately:
-	// there's no DI container in `Common`, so we cannot inject IHttpClientFactory here.
+	// there's no DI container in `Core`, so we cannot inject IHttpClientFactory here.
 	static readonly HttpClient sharedHttpClient = new();
 
 	// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861

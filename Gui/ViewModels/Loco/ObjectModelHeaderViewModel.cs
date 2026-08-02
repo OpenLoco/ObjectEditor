@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public class DesignerObjectModelHeaderViewModel : ObjectModelHeaderViewModel
 {

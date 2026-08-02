@@ -9,7 +9,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, IFileViewModel where T : class
 {

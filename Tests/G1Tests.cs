@@ -4,9 +4,9 @@ using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
-using Logger = Common.Logging.Logger;
+using Logger = Core.Logging.Logger;
 
-namespace Dat.Tests;
+namespace Tests;
 
 [TestFixture]
 public class G1Tests

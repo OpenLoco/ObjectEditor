@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Currency;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectCurrency : DbSubObject, IConvertibleToTable<TblObjectCurrency, CurrencyObject>
 {

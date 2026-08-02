@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.CliffEdge;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectCliffEdge : DbSubObject, IConvertibleToTable<TblObjectCliffEdge, CliffEdgeObject>
 {

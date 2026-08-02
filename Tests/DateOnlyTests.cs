@@ -1,6 +1,7 @@
+using Core;
 using NUnit.Framework;
 
-namespace Common.Tests;
+namespace Tests;
 
 [TestFixture]
 public class DateOnlyTests

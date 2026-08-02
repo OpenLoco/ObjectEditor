@@ -2,7 +2,7 @@ using Definitions.ObjectModels.Objects.Cargo;
 using ReactiveUI;
 using System.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class CargoViewModel(CargoObject model)
 		: BaseViewModel<CargoObject>(model)

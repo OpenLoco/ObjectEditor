@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Definitions.ObjectModels.Objects.HillShape;
+namespace Definitions.ObjectModels.Objects.HillShapes;
 
 public class HillShapesObject : ILocoStruct
 {

@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Climate;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectClimate : DbSubObject, IConvertibleToTable<TblObjectClimate, ClimateObject>
 {

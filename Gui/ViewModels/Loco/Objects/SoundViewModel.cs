@@ -1,7 +1,7 @@
 using Definitions.ObjectModels.Objects.Sound;
 using System.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class SoundViewModel(SoundObject model)
 	: BaseViewModel<SoundObject>(model)

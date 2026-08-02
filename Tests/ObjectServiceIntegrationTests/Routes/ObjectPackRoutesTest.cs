@@ -1,6 +1,7 @@
-using Common;
+using Core;
 using Definitions;
 using Definitions.Database;
+using Definitions.Database.DataTables;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels.Types;
@@ -11,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ObjectService;
-using ObjectService.Tests.Integration;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http.Json;

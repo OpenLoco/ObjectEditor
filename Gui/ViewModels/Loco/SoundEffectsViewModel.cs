@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public class SoundEffectsViewModel : BaseFileViewModel<DummyModel>
 {

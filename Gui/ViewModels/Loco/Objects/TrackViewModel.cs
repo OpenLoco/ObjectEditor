@@ -5,7 +5,7 @@ using ReactiveUI;
 using System.ComponentModel;
 using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class TrackViewModel(TrackObject model)
 	: BaseViewModel<TrackObject>(model)

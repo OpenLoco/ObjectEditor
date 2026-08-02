@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
-namespace Common.Logging;
+namespace Core.Logging;
 
 // Simple in-process logger that implements the standard Microsoft.Extensions.Logging.ILogger
 // while preserving the historical event/queue surface that the GUI's LogWindow binds to.

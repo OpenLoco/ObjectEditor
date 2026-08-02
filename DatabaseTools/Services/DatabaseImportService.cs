@@ -1,8 +1,9 @@
-using Common;
-using Common.Json;
-using Common.Logging;
+using Core;
+using Core.Logging;
 using Definitions;
 using Definitions.Database;
+using Definitions.Database.DataTables;
+using Definitions.Database.ReferenceDataTables;
 using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Index;

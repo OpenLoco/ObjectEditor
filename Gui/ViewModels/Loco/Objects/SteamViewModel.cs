@@ -2,7 +2,7 @@ using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco.Objects;
 
 public class SteamViewModel(SteamObject model)
 		: BaseViewModel<SteamObject>(model)

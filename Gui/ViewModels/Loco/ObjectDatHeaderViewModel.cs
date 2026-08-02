@@ -2,7 +2,7 @@ using Dat.Data;
 using ReactiveUI;
 using System.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class ObjectDatHeaderViewModel(SawyerEncoding encoding, uint datDataLength) : ReactiveObject, IViewModel

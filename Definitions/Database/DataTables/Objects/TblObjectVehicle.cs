@@ -1,6 +1,7 @@
+using Definitions.Database.Base;
 using Definitions.ObjectModels.Objects.Vehicle;
 
-namespace Definitions.Database;
+namespace Definitions.Database.DataTables.Objects;
 
 public class TblObjectVehicle : DbSubObject, IConvertibleToTable<TblObjectVehicle, VehicleObject>
 {

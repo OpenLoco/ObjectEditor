@@ -2,7 +2,7 @@ using Gui.Models;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Loco;
 
 public abstract class BaseViewModelWithEditorContext<T>(ObjectEditorContext editorContext, T? model) : BaseViewModel<T>(model) where T : class
 {

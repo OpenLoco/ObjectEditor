@@ -1,10 +1,13 @@
 using Definitions.Database;
+using Definitions.Database.DataTables;
+using Definitions.Database.ReferenceDataTables;
 using Definitions.DTO;
 using Definitions.Web;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ObjectService;
 
-namespace ObjectService.Tests.Integration;
+namespace Tests.ObjectServiceIntegrationTests;
 
 [TestFixture]
 public class OnlineBrowseEndpointGroupTests

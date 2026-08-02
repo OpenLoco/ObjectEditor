@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Common.Logging;
+namespace Core.Logging;
 
 public record LogLine(DateTime Time, LogLevel Level, string Caller, string Message)
 {

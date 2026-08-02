@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Types;
-using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;

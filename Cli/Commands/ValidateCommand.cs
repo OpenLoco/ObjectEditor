@@ -1,5 +1,5 @@
-using Core.Objects;
-using Core.Validation;
+using Shared.Files;
+using Shared.Validation;
 
 namespace Cli.Commands;
 

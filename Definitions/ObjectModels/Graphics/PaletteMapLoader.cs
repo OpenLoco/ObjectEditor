@@ -1,9 +1,8 @@
-using Definitions.ObjectModels;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Reflection;
 
-namespace Core;
+namespace Definitions.ObjectModels.Graphics;
 
 public static class PaletteMapLoader
 {

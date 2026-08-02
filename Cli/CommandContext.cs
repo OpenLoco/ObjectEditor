@@ -1,9 +1,8 @@
-using Core;
-using Core.Objects;
-using Core.Operations;
 using Dat.Data;
-using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
+using Shared.Files;
+using Shared.Operations;
 
 namespace Cli;
 
@@ -13,10 +12,8 @@ public sealed class CommandContext(CommandLine commandLine, ILogger logger)
 
 	public ILogger Logger { get; } = logger;
 
-	PaletteMap? paletteMap;
-
 	public PaletteMap PaletteMap
-		=> paletteMap ??= PaletteMapLoader.Load(Args.GetString("palette"));
+		=> field ??= PaletteMapLoader.Load(Args.GetString("palette"));
 
 	public static IReadOnlySet<string> CommonFlags { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 	{
@@ -107,7 +104,7 @@ public sealed class CommandContext(CommandLine commandLine, ILogger logger)
 		return true;
 	}
 
-	public int Report(BatchResult result)
+	public static int Report(BatchResult result)
 	{
 		ArgumentNullException.ThrowIfNull(result);
 

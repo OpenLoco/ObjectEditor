@@ -3,7 +3,7 @@ namespace Cli;
 public sealed class CommandLine
 {
 	readonly List<string> positionals = [];
-	readonly Dictionary<string, string?> options = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string?> options = [with(StringComparer.OrdinalIgnoreCase)];
 
 	public IReadOnlyList<string> Positionals
 		=> positionals;

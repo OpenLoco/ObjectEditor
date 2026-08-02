@@ -1,7 +1,6 @@
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
 using Gui.Attributes;
-using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using System.ComponentModel;
 using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;

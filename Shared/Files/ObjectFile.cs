@@ -1,12 +1,12 @@
 using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
-using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
-namespace Core.Objects;
+namespace Shared.Files;
 
 public static class ObjectFile
 {

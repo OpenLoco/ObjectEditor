@@ -1,7 +1,5 @@
-using Core;
 using Dat.Converters;
 using Dat.FileParsing;
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using NUnit.Framework;
 using NUnit.Framework.Internal;

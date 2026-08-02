@@ -1,10 +1,10 @@
-using Core.Objects;
 using Dat.Data;
 using Definitions.ObjectModels;
 using Microsoft.Extensions.Logging;
+using Shared.Files;
 using System.ComponentModel.DataAnnotations;
 
-namespace Core.Validation;
+namespace Shared.Validation;
 
 public static class ObjectValidation
 {

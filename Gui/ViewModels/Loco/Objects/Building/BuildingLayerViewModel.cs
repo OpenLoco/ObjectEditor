@@ -1,6 +1,5 @@
 using Avalonia.Media.Imaging;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
 using System.Reactive.Linq;

@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Objects.LevelCrossing;
-using PropertyModels.Collections;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;

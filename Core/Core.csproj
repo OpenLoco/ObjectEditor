@@ -15,19 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\palette.png" />
-    <EmbeddedResource Include="Assets\palette.png">
-      <LogicalName>Core.palette.png</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\Definitions\ObjectModels\Graphics\ImageTableGroups.json">
-      <LogicalName>Core.ImageTableGroups.json</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="4.0.0" />
   </ItemGroup>
 

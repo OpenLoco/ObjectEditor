@@ -1,4 +1,4 @@
-using Core.Operations;
+using Shared.Operations;
 
 namespace Cli.Commands;
 
@@ -45,6 +45,6 @@ public sealed class StripImagesCommand : ICommand
 			options,
 			context.Logger);
 
-		return Task.FromResult(context.Report(result));
+		return Task.FromResult(CommandContext.Report(result));
 	}
 }

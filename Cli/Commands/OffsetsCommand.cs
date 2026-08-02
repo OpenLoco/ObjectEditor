@@ -1,5 +1,5 @@
-using Core.Operations;
 using Microsoft.Extensions.Logging;
+using Shared.Operations;
 
 namespace Cli.Commands;
 
@@ -75,7 +75,7 @@ public sealed class OffsetsCommand : ICommand
 			options,
 			context.Logger);
 
-		return Task.FromResult(context.Report(result));
+		return Task.FromResult(CommandContext.Report(result));
 	}
 
 	static bool TryParseDelta(string value, out short deltaX, out short deltaY)

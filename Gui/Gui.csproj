@@ -68,7 +68,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
     <ProjectReference Include="..\GuiUpdater\GuiUpdater.csproj" />
     <ProjectReference Include="..\Index\Index.csproj" />
@@ -88,8 +87,8 @@
     </Compile>
   </ItemGroup>
 
-	<ItemGroup>
-    <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" />
-  </ItemGroup>
+  <PropertyGroup>
+    <AvaloniaUILicenseKey>$(AvaloniaUILicenseKey)</AvaloniaUILicenseKey>
+  </PropertyGroup>
 
 </Project>

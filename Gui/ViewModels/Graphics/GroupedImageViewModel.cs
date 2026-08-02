@@ -1,6 +1,5 @@
 using Avalonia.Controls.Selection;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 

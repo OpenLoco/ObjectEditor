@@ -1,7 +1,6 @@
 using Gui.Models;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;

@@ -1,5 +1,5 @@
-using Core.Operations;
 using Microsoft.Extensions.Logging;
+using Shared.Operations;
 
 namespace Cli.Commands;
 
@@ -48,6 +48,6 @@ public sealed class ReencodeCommand : ICommand
 			options,
 			context.Logger);
 
-		return Task.FromResult(context.Report(result));
+		return Task.FromResult(CommandContext.Report(result));
 	}
 }

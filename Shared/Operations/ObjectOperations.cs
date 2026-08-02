@@ -1,9 +1,7 @@
-using Core.Graphics;
-using Core.Objects;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 
-namespace Core.Operations;
+namespace Shared.Operations;
 
 public static class ObjectOperations
 {

@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Objects.Cargo;
-using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using System.ComponentModel;
 

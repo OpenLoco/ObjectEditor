@@ -1,11 +1,6 @@
 using Avalonia.Media.Imaging;
-using Core.Graphics;
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
-using PropertyModels.ComponentModel;
-using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;

@@ -1,9 +1,9 @@
-using Core.Objects;
 using Dat.Data;
-using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
+using Shared.Files;
 
-namespace Core.Operations;
+namespace Shared.Operations;
 
 public sealed record BatchItemResult(string FileName, bool Succeeded, string Message);
 

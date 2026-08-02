@@ -39,6 +39,7 @@ public sealed class ConsoleLogger(LogLevel minLevel) : ILogger
 			LogLevel.Warning => "warn:",
 			LogLevel.Error => "fail:",
 			LogLevel.Critical => "crit:",
-			_ => "     ",
+			LogLevel.None => string.Empty,
+			_ => throw new NotImplementedException(),
 		};
 }

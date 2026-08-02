@@ -3,7 +3,6 @@ using Dat.Types;
 using Gui.Models;
 using Gui.ViewModels.Graphics;
 using Microsoft.Extensions.Logging;
-using ReactiveUI.Fody.Helpers;
 using System.IO;
 using System.Threading.Tasks;
 

@@ -1,6 +1,5 @@
 using Gui.Models;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 
 namespace Gui.ViewModels;

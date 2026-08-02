@@ -1,5 +1,4 @@
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System.Windows.Input;
 
 namespace Gui.ViewModels;

@@ -1,10 +1,9 @@
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace Core.Graphics;
+namespace Definitions.ObjectModels.Graphics;
 
 public static class GraphicsElementOperations
 {

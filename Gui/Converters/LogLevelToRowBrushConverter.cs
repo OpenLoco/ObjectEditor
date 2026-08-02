@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using Common.Logging;
+using Core.Logging;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Globalization;

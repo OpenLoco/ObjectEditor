@@ -9,6 +9,7 @@ using Gui.Models;
 using Index;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -151,7 +152,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 				continue;
 			}
 
-			if (gameFolderIndex.Objects.Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum))
+			if (gameFolderIndex.Objects.Any(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum))
 			{
 				continue;
 			}

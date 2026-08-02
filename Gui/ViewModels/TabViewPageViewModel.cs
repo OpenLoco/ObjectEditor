@@ -1,6 +1,7 @@
 using Gui.Models;
 using Gui.ViewModels.Loco;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;

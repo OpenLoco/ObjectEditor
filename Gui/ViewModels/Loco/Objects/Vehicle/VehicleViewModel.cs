@@ -1,10 +1,12 @@
-using Common;
+using Core;
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using DynamicData.Binding;
 using Gui.Attributes;
+using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

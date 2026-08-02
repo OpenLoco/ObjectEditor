@@ -1,6 +1,6 @@
 using Avalonia.Threading;
-using Common;
-using Common.Logging;
+using Core;
+using Core.Logging;
 using Dat.Converters;
 using Dat.FileParsing;
 using Dat.Types;

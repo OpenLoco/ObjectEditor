@@ -1,12 +1,13 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Common.Logging;
+using Core.Logging;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Gui.Models;
 using Gui.Views;
 using Index;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

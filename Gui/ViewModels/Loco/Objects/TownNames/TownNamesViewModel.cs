@@ -1,4 +1,4 @@
-using Common.Json;
+using Core;
 using Definitions.ObjectModels.Objects.TownNames;
 using ReactiveUI;
 using System;

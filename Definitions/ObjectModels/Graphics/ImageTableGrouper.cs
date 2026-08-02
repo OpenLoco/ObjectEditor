@@ -3,6 +3,7 @@ using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.LevelCrossing;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
@@ -14,8 +15,12 @@ namespace Definitions.ObjectModels.Graphics;
 
 public static class ImageTableGrouper
 {
-
 	private static GroupConfigDict GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfigurationType>();
+
+	public static void LoadGroupConfigurationJson(ILogger logger, string json)
+	{
+		GroupConfigurations = ImageTableGroupLoader.LoadGroupConfigurationJson(logger, json);
+	}
 
 	public static ImageTable CreateImageTable(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{

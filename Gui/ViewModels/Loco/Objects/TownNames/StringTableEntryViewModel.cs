@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.TownNames;
+using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
 namespace Gui.ViewModels.Loco.Objects.TownNames;

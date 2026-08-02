@@ -5,6 +5,7 @@ using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;

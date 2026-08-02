@@ -1,14 +1,16 @@
 using Avalonia;
 using Avalonia.Platform.Storage;
-using Common;
+using Core;
 using Dat.Data;
 using Definitions.ObjectModels.Graphics;
 using DynamicData;
 using Gui.Models;
+using Gui.ViewModels.Loco;
 using Gui.ViewModels.Loco.Tutorial;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;

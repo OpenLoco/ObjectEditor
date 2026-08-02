@@ -139,7 +139,7 @@ x:DataType="vm:FolderTreeViewModel">
 				</DockPanel>
 			</DockPanel>
 			<DockPanel Grid.Row="3">
-				<TreeDataGrid Name="ObjectsTreeDataGrid" CanUserResizeColumns="True" CanUserSortColumns="True" IsVisible="{Binding UsesTreeDataGrid}">
+				<TreeDataGrid Source="{Binding TreeDataGridSource}" CanUserResizeColumns="True" CanUserSortColumns="True" IsVisible="{Binding UsesTreeDataGrid}">
 					<TreeDataGrid.Styles>
 						<Style Selector="TreeDataGrid TreeDataGridRow">
 							<Setter Property="Height" Value="32"/>

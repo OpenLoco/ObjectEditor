@@ -1,7 +1,6 @@
 using Avalonia.Threading;
 using Common;
 using Common.Logging;
-using Core;
 using Dat.Converters;
 using Dat.FileParsing;
 using Dat.Types;
@@ -54,7 +53,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	public const string ApplicationName = "OpenLoco Object Editor";
 	public const string SettingsFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
 	public const string LoggingFileName = "objectEditor.log";
-	public const string ImageTableGroupsFileName = ImageTableGroupsConfig.FileName;
+	public const string ImageTableGroupsFileName = ImageTableGroupLoader.FileName;
 
 	public string DefaultConfigFolder { get; set; } = "config";
 	public string DefaultDownloadFolder { get; set; } = "downloads";
@@ -169,7 +168,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	}
 
 	public async Task LoadAsync()
-		=> await ImageTableGroupsConfig.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName);
+		=> await ImageTableGroupLoader.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName);
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)
 	{

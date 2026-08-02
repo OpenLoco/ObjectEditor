@@ -1,6 +1,6 @@
 using Cli;
 using Cli.Commands;
-using Core;
+using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
 
 ICommand[] commands =
@@ -55,7 +55,7 @@ if (!context.ValidateOptions(command.Options))
 	return ExitCodes.UsageError;
 }
 
-await ImageTableGroupsConfig.LoadDefaultAsync(logger);
+await ImageTableGroupLoader.LoadDefaultAsync(logger);
 
 try
 {

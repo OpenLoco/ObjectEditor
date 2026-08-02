@@ -22,6 +22,13 @@ public static class ObjectOperations
 			foreach (var element in group.GraphicsElements)
 			{
 				element.Image?.Dispose();
+				if (element.Image != null
+ 					&& !ReferenceEquals(element.Image, ImageTableHelpers.ErrorImage)
+ 					&& !ReferenceEquals(element.Image, ImageTableHelpers.OnePixelTransparent))
+				{
+					element.Image.Dispose();
+				}
+
 				element.Image = null;
 			}
 		}

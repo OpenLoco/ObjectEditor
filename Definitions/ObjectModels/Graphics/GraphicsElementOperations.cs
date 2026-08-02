@@ -15,7 +15,13 @@ public static class GraphicsElementOperations
 
 		if (!ReferenceEquals(element.Image, image))
 		{
-			element.Image?.Dispose();
+			if (element.Image != null
+ 				&& !ReferenceEquals(element.Image, ImageTableHelpers.ErrorImage)
+ 				&& !ReferenceEquals(element.Image, ImageTableHelpers.OnePixelTransparent))
+			{
+				element.Image.Dispose();
+			}
+
 			element.Image = image;
 		}
 

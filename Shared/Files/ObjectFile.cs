@@ -52,17 +52,30 @@ public static class ObjectFile
 		}
 
 		var header = file.DatInfo.S5Header;
+		var effectiveName = objectName ?? header.Name;
+		var effectiveSource = objectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum);
+		var effectiveEncoding = encoding ?? file.DatInfo.ObjectHeader.Encoding;
 
-		SawyerStreamWriter.Save(
-			fileName,
-			objectName ?? header.Name,
-			objectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
-			encoding ?? file.DatInfo.ObjectHeader.Encoding,
-			file.LocoObject,
-			logger,
-			allowSavingAsVanillaObject);
-
-		return true;
+		try
+		{
+			logger.LogInformation("Writing \"{ObjName}\" to {Filename}", effectiveName, fileName);
+			var bytes = SawyerStreamWriter.WriteLocoObject(
+				effectiveName,
+				file.LocoObject.ObjectType,
+				effectiveSource,
+				effectiveEncoding,
+				logger,
+				file.LocoObject,
+				allowSavingAsVanillaObject).ToArray();
+			File.WriteAllBytes(fileName, bytes);
+			logger.LogInformation("{ObjName} successfully saved to {Filename}", effectiveName, fileName);
+			return true;
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "An error occurred while saving {ObjName}", effectiveName);
+			return false;
+		}
 	}
 
 	public static bool SaveJson(LocoObjectFile file, string fileName, ILogger logger)

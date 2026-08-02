@@ -1,4 +1,5 @@
 using Dat.FileParsing;
+using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;

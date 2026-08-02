@@ -4,6 +4,8 @@ using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models;
 using Gui.Models.Audio;
 using Microsoft.Extensions.Logging;
+using PropertyModels.Extensions;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
 using System.IO;

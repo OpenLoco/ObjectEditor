@@ -3,9 +3,13 @@
 
 using Dat.Data;
 using Dat.FileParsing;
+using Dat.Types;
+using Dat.Types.Audio;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Loaders;
 

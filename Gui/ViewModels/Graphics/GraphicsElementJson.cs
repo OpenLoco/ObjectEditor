@@ -1,6 +1,7 @@
+using Definitions.ObjectModels.Graphics;
 using System.Text.Json.Serialization;
 
-namespace Definitions.ObjectModels.Graphics;
+namespace Gui.ViewModels.Graphics;
 
 public record GraphicsElementJson(
 	[property: JsonPropertyName("path")] string Path,

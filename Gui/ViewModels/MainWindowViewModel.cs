@@ -1,15 +1,19 @@
 using Avalonia;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Common;
 using Dat.Data;
-using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
 using Gui.ViewModels.Loco.Tutorial;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
+using PropertyModels.Extensions;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -64,12 +68,17 @@ public class MainWindowViewModel : ViewModelBase
 	[Reactive]
 	public bool IsUpdateAvailable { get; set; }
 
+	const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
+	Image<Rgba32> DefaultPaletteImage { get; init; }
+
 	public Interaction<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> OpenEditorSettingsWindow { get; }
 
 	public Interaction<LogWindowViewModel, LogWindowViewModel?> OpenLogWindow { get; }
 
 	public MainWindowViewModel()
 	{
+		DefaultPaletteImage = Image.Load<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
+
 		EditorContext = new();
 		Task.Run(EditorContext.LoadAsync);
 		Task.Run(LoadDefaultPalette);
@@ -259,7 +268,7 @@ public class MainWindowViewModel : ViewModelBase
 
 	async Task LoadDefaultPalette()
 	{
-		EditorContext.PaletteMap = await Task.Run(PaletteMapLoader.LoadDefault);
+		EditorContext.PaletteMap = await Task.Run(() => new PaletteMap(DefaultPaletteImage));
 		await CurrentTabModel.ReloadAllAsync();
 	}
 

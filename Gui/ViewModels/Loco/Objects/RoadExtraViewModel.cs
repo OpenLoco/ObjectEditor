@@ -1,7 +1,6 @@
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadExtra;
 using Gui.Attributes;
-using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using System.ComponentModel;
 

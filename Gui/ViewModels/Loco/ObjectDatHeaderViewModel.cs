@@ -1,6 +1,5 @@
 using Dat.Data;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;

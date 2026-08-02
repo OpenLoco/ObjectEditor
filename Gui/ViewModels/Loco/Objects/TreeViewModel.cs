@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Objects.Tree;
 using Gui.Attributes;
-using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using System.ComponentModel;
 

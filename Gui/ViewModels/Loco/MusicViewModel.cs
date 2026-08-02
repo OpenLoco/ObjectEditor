@@ -3,7 +3,6 @@ using Dat.FileParsing;
 using Gui.Models;
 using Gui.Models.Audio;
 using Microsoft.Extensions.Logging;
-using ReactiveUI.Fody.Helpers;
 using System.IO;
 using System.Threading.Tasks;
 

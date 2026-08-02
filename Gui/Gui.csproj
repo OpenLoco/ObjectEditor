@@ -44,12 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Definitions\ObjectModels\Graphics\ImageTableGroups.json">
-      <LogicalName>Gui.ImageTableGroups.json</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.0.5" />
     <PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.0.5" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.1" />
@@ -93,8 +87,8 @@
     </Compile>
   </ItemGroup>
 
-	<ItemGroup>
-    <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" />
-  </ItemGroup>
+  <PropertyGroup>
+    <AvaloniaUILicenseKey>$(AvaloniaUILicenseKey)</AvaloniaUILicenseKey>
+  </PropertyGroup>
 
 </Project>

@@ -2,7 +2,6 @@ using Dat.Loaders;
 using Definitions.ObjectModels.Objects.TrackSignal;
 using Definitions.ObjectModels.Types;
 using Gui.Attributes;
-using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

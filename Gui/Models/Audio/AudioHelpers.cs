@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Objects.Sound;
-using NAudio.Wave;
 using System.Collections.Generic;
 
 namespace Gui.Models.Audio;

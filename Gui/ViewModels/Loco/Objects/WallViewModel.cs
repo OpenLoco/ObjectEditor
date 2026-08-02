@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Objects.Wall;
-using PropertyModels.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 

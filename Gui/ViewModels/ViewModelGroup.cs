@@ -1,6 +1,5 @@
 using DynamicData;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;

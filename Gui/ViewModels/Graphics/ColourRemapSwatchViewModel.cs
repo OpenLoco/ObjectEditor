@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Graphics;
-using ReactiveUI.Fody.Helpers;
 using AvaColour = Avalonia.Media.Color;
 
 namespace Gui.ViewModels.Graphics;

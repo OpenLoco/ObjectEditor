@@ -1,12 +1,14 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Common.Logging;
+using Core.Logging;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Gui.Models;
 using Gui.Views;
 using Index;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using ReactiveUI.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,7 +16,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 		this.editorContext = editorContext;
 
 		_ = sourceList.Connect()
-		   .ObserveOn(RxSchedulers.MainThreadScheduler)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Bind(out itemsCollection)
 			.Subscribe()
 			.DisposeWith(subscriptions);
@@ -57,22 +58,22 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 	public ObjectModelHeader? SelectedItem { get; set; }
 
 	[Browsable(false)]
-	public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> AddItemCommand { get; }
 
 	[Browsable(false)]
-	public ReactiveCommand<Unit, Unit> RemoveSelectedItemCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> RemoveSelectedItemCommand { get; }
 
 	[Browsable(false)]
-	public ReactiveCommand<Unit, Unit> PopulateFromFolderCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> PopulateFromFolderCommand { get; }
 
 	[Browsable(false)]
-	public ReactiveCommand<Unit, Unit> CopyCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> CopyCommand { get; }
 
 	[Browsable(false)]
-	public ReactiveCommand<Unit, Unit> PasteCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> PasteCommand { get; }
 
 	[Browsable(false)]
-	public ReactiveCommand<Unit, Unit> ClearCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> ClearCommand { get; }
 
 	public IObservable<IChangeSet<ObjectModelHeader>> Connect()
 		=> sourceList.Connect();

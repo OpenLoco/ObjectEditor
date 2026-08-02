@@ -3,6 +3,8 @@ using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
 using Gui.Attributes;
+using PropertyModels.ComponentModel.DataAnnotations;
+using PropertyModels.Extensions;
 using ReactiveUI;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

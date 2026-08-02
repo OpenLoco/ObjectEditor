@@ -1,6 +1,6 @@
-using DynamicData;
 using Index;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -23,8 +23,8 @@ public class ObjectSelectionWindowViewModel : ViewModelBase
 	[Reactive]
 	public string? SearchTerm { get; set; }
 
-	public ReactiveCommand<Unit, Unit> ConfirmCommand { get; }
-	public ReactiveCommand<Unit, Unit> CancelCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> ConfirmCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> CancelCommand { get; }
 
 	public ObjectSelectionWindowViewModel() : this([])
 	{ }

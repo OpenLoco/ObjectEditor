@@ -26,12 +26,12 @@ public class MainWindowViewModel : ViewModelBase
 	[Reactive] public bool IsRunning { get; set; }
 	[Reactive] public string? CurrentScript { get; set; }
 
-	public ReactiveCommand<ScriptDescriptor, Unit> RunScriptCommand { get; }
-	public ReactiveCommand<Unit, Unit> ClearLogCommand { get; }
-	public ReactiveCommand<Unit, Unit> SaveSettingsCommand { get; }
-	public ReactiveCommand<Unit, Unit> BrowseDatabaseFileCommand { get; }
-	public ReactiveCommand<Unit, Unit> BrowseObjectDirectoryCommand { get; }
-	public ReactiveCommand<Unit, Unit> BrowseJsonDirectoryCommand { get; }
+	public ReactiveCommand<ScriptDescriptor, RxVoid> RunScriptCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> ClearLogCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> SaveSettingsCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> BrowseDatabaseFileCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> BrowseObjectDirectoryCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> BrowseJsonDirectoryCommand { get; }
 
 	public MainWindowViewModel()
 	{

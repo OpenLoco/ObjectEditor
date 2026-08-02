@@ -1,14 +1,15 @@
 using Avalonia;
 using Avalonia.Platform.Storage;
-using Common;
+using Core;
 using Dat.Data;
 using Definitions.ObjectModels.Graphics;
-using DynamicData;
 using Gui.Models;
+using Gui.ViewModels.Loco;
 using Gui.ViewModels.Loco.Tutorial;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
@@ -33,23 +34,23 @@ public class MainWindowViewModel : ViewModelBase
 
 	public ObservableCollection<MenuItemViewModel> ObjDataItems { get; init; } = [];
 
-	public ReactiveCommand<Unit, Unit> OpenCacheFolder { get; }
-	public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
-	public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
-	public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
-	public ReactiveCommand<Unit, Task> OpenG1 { get; }
-	public ReactiveCommand<Unit, Task> OpenSCV5 { get; }
-	public ReactiveCommand<Unit, Task> OpenMusic { get; }
-	public ReactiveCommand<Unit, Task> OpenSoundEffect { get; }
-	public ReactiveCommand<Unit, Task> OpenTutorial { get; }
-	public ReactiveCommand<Unit, Task> OpenScores { get; }
-	public ReactiveCommand<Unit, Task> OpenLanguage { get; }
-	public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
-	public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
-	public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
-	public ReactiveCommand<Unit, Unit> ShowLogsCommand { get; }
-	public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
-	public ReactiveCommand<Unit, Unit> DownloadLatestUpdate { get; }
+	public ReactiveCommand<RxVoid, RxVoid> OpenCacheFolder { get; }
+	public ReactiveCommand<RxVoid, RxVoid> OpenDownloadFolder { get; }
+	public ReactiveCommand<RxVoid, RxVoid> OpenSettingsFolder { get; }
+	public ReactiveCommand<RxVoid, Task> OpenSingleObject { get; }
+	public ReactiveCommand<RxVoid, Task> OpenG1 { get; }
+	public ReactiveCommand<RxVoid, Task> OpenSCV5 { get; }
+	public ReactiveCommand<RxVoid, Task> OpenMusic { get; }
+	public ReactiveCommand<RxVoid, Task> OpenSoundEffect { get; }
+	public ReactiveCommand<RxVoid, Task> OpenTutorial { get; }
+	public ReactiveCommand<RxVoid, Task> OpenScores { get; }
+	public ReactiveCommand<RxVoid, Task> OpenLanguage { get; }
+	public ReactiveCommand<RxVoid, Task> UseDefaultPalette { get; }
+	public ReactiveCommand<RxVoid, Task> UseCustomPalette { get; }
+	public ReactiveCommand<RxVoid, RxVoid> EditSettingsCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> ShowLogsCommand { get; }
+	public ReactiveCommand<RxVoid, Process?> OpenDownloadLink { get; }
+	public ReactiveCommand<RxVoid, RxVoid> DownloadLatestUpdate { get; }
 
 	public string WindowTitle
 		=> $"{ObjectEditorContext.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";

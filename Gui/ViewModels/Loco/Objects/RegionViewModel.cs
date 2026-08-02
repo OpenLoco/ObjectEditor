@@ -2,10 +2,10 @@ using Definitions.ObjectModels.Objects.Region;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Gui.Models;
+using ReactiveUI.Primitives;
 using System.ComponentModel;
 using System.Reactive;
 using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
 
 namespace Gui.ViewModels.Loco.Objects;
 

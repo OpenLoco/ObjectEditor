@@ -1,6 +1,6 @@
 using Avalonia.Threading;
-using Common;
-using Common.Logging;
+using Core;
+using Core.Logging;
 using Dat.Converters;
 using Dat.FileParsing;
 using Dat.Types;
@@ -8,7 +8,6 @@ using Definitions.DTO;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
-using DynamicData;
 using Index;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;

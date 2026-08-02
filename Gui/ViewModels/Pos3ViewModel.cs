@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel;
 
 namespace Gui.ViewModels;
 

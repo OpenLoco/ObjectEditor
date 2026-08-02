@@ -1,13 +1,17 @@
 using Avalonia.Media.Imaging;
 using Definitions.ObjectModels.Graphics;
+using PropertyModels.ComponentModel;
+using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using ReactiveUI.Primitives;
+using ReactiveUI.Primitives.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.ComponentModel;
 using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 
 namespace Gui.ViewModels.Graphics;

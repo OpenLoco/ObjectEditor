@@ -1,6 +1,7 @@
 using Gui.Models;
 using Gui.ViewModels.Loco;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -22,13 +23,13 @@ public class TabViewPageViewModel : ViewModelBase
 	[Reactive]
 	public IFileViewModel? SelectedDocument { get; set; }
 
-	public ReactiveCommand<IFileViewModel, Unit> RemoveTabCommand { get; }
+	public ReactiveCommand<IFileViewModel, RxVoid> RemoveTabCommand { get; }
 
 	[Reactive]
 	public ICommand CloseAllTabsCommand { get; set; }
 
 	[Reactive]
-	public ReactiveCommand<IFileViewModel, Unit> CloseOtherTabsCommand { get; set; }
+	public ReactiveCommand<IFileViewModel, RxVoid> CloseOtherTabsCommand { get; set; }
 
 	public TabViewPageViewModel()
 	{

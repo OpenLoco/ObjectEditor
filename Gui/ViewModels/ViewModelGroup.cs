@@ -1,12 +1,12 @@
 using DynamicData;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 
 namespace Gui.ViewModels;
@@ -50,11 +50,11 @@ public sealed class ViewModelGroup : ReactiveObject, IViewModel, IDisposable
 	public bool CanRemoveGroup
 		=> !_host.IsDefaultGroup(this);
 
-	public ReactiveCommand<Unit, Unit> AddSelectedViewModelCommand { get; }
-	public ReactiveCommand<IViewModel, Unit> AddViewModelFromParameterCommand { get; }
-	public ReactiveCommand<IViewModel, Unit> RemoveViewModelCommand { get; }
-	public ReactiveCommand<Unit, Unit> RemoveSelectedViewModelCommand { get; }
-	public ReactiveCommand<Unit, Unit> RemoveGroupCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> AddSelectedViewModelCommand { get; }
+	public ReactiveCommand<IViewModel, RxVoid> AddViewModelFromParameterCommand { get; }
+	public ReactiveCommand<IViewModel, RxVoid> RemoveViewModelCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> RemoveSelectedViewModelCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> RemoveGroupCommand { get; }
 
 	private readonly SourceList<IViewModel> _viewModels = new();
 	private readonly ReadOnlyObservableCollection<IViewModel> _viewModelsCollection;

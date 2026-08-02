@@ -9,6 +9,7 @@ using Gui.Models;
 using Index;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -50,7 +51,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 	[Reactive]
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
-	public ReactiveCommand<GameObjDataFolder, Unit> DownloadMissingObjectsToGameObjDataCommand { get; }
+	public ReactiveCommand<GameObjDataFolder, RxVoid> DownloadMissingObjectsToGameObjDataCommand { get; }
 
 	public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)

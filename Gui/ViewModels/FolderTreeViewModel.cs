@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Common;
+using Core;
 using Dat.Data;
 using Definitions.DTO;
 using Definitions.ObjectModels;
@@ -9,12 +9,16 @@ using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using DynamicData;
-using DynamicData.Binding;
 using Gui.Models;
 using Gui.ViewModels.Filters;
 using Index;
 using Microsoft.Extensions.Logging;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using ReactiveUI.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,7 +26,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -192,19 +195,19 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	ReadOnlyObservableCollection<FileSystemItem>? treeDataGridSource;
 	public int TreeDataGridSourceCount => treeDataGridSource?.Count ?? 0;
 
-	readonly Subject<Unit> _expandAllRequests = new();
-	readonly Subject<Unit> _collapseAllRequests = new();
-	public IObservable<Unit> ExpandAllRequests => _expandAllRequests;
-	public IObservable<Unit> CollapseAllRequests => _collapseAllRequests;
+	readonly Subject<RxVoid> _expandAllRequests = new();
+	readonly Subject<RxVoid> _collapseAllRequests = new();
+	public IObservable<RxVoid> ExpandAllRequests => _expandAllRequests;
+	public IObservable<RxVoid> CollapseAllRequests => _collapseAllRequests;
 
 	public void OnSelectionChanged(IReadOnlyList<FileSystemItem> selectedItems)
 		=> CurrentlySelectedObject = selectedItems.Count == 1 ? selectedItems[0] : null;
 	public ObservableCollection<object> CurrentOnlineBrowseResults { get; } = [];
 
 	public ObservableCollection<FilterViewModel> Filters { get; } = [];
-	public ReactiveCommand<Unit, Unit>? AddFilterCommand { get; }
-	public ReactiveCommand<Unit, Unit>? ExpandAllCommand { get; }
-	public ReactiveCommand<Unit, Unit>? CollapseAllCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid>? AddFilterCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid>? ExpandAllCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid>? CollapseAllCommand { get; }
 
 	private readonly BehaviorSubject<Func<FileSystemItem, bool>> _filterSubject = new(t => true);
 
@@ -226,12 +229,12 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 	Progress<float> Progress { get; } = new();
 
-	public ReactiveCommand<Unit, Unit>? RefreshDirectoryItems { get; }
-	public ReactiveCommand<Unit, Unit>? OpenCurrentFolder { get; }
-	public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
-	public ReactiveCommand<FileSystemItem, Unit>? SelectOnlineBrowseFileSystemItem { get; }
-	public ReactiveCommand<FileSystemItem, Unit>? DownloadOnlineItemCommand { get; private set; }
-	public ReactiveCommand<OnlineItemPackBrowseResult, Unit>? DownloadOnlinePackCommand { get; private set; }
+	public ReactiveCommand<RxVoid, RxVoid>? RefreshDirectoryItems { get; }
+	public ReactiveCommand<RxVoid, RxVoid>? OpenCurrentFolder { get; }
+	public ReactiveCommand<FileSystemItem, RxVoid>? OpenFolderFor { get; }
+	public ReactiveCommand<FileSystemItem, RxVoid>? SelectOnlineBrowseFileSystemItem { get; }
+	public ReactiveCommand<FileSystemItem, RxVoid>? DownloadOnlineItemCommand { get; private set; }
+	public ReactiveCommand<OnlineItemPackBrowseResult, RxVoid>? DownloadOnlinePackCommand { get; private set; }
 
 	public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 	static OnlineBrowseTargetOption ObjectOnlineBrowseTarget { get; } = new(OnlineApiEndpointGroup.Objects, "Objects", "Objects", Client.ObjectsEndpointGroup);

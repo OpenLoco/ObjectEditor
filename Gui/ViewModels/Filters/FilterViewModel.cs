@@ -3,7 +3,9 @@ using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
 using Microsoft.Extensions.Logging;
+using PropertyModels.Extensions;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -52,7 +54,7 @@ public class FilterViewModel : ReactiveObject
 		&& SelectedOperator != null
 		&& GetFilterValue() != null;
 
-	public ReactiveCommand<Unit, Unit> RemoveFilterCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> RemoveFilterCommand { get; }
 
 	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; set; } = [];
 

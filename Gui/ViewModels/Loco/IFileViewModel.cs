@@ -1,15 +1,16 @@
 using Gui.Models;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 
 namespace Gui.ViewModels.Loco;
 
 public interface IFileViewModel
 {
-	public ReactiveCommand<Unit, Unit> ReloadCommand { get; init; }
-	public ReactiveCommand<Unit, Unit> SaveCommand { get; init; }
-	public ReactiveCommand<Unit, Unit> SaveAsCommand { get; init; }
-	public ReactiveCommand<Unit, Unit> DeleteLocalFileCommand { get; init; }
+	public ReactiveCommand<RxVoid, RxVoid> ReloadCommand { get; init; }
+	public ReactiveCommand<RxVoid, RxVoid> SaveCommand { get; init; }
+	public ReactiveCommand<RxVoid, RxVoid> SaveAsCommand { get; init; }
+	public ReactiveCommand<RxVoid, RxVoid> DeleteLocalFileCommand { get; init; }
 
 	[Reactive]
 	public bool SaveIsVisible { get; set; }

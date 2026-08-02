@@ -2,7 +2,12 @@ using Avalonia.Controls;
 using Dat.Data;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
@@ -26,10 +31,10 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 	[Reactive]
 	public FileSystemItem CurrentFile { get; init; }
 
-	public ReactiveCommand<Unit, Unit> ReloadCommand { get; init; }
-	public ReactiveCommand<Unit, Unit> SaveCommand { get; init; }
-	public ReactiveCommand<Unit, Unit> SaveAsCommand { get; init; }
-	public ReactiveCommand<Unit, Unit> DeleteLocalFileCommand { get; init; }
+	public ReactiveCommand<RxVoid, RxVoid> ReloadCommand { get; init; }
+	public ReactiveCommand<RxVoid, RxVoid> SaveCommand { get; init; }
+	public ReactiveCommand<RxVoid, RxVoid> SaveAsCommand { get; init; }
+	public ReactiveCommand<RxVoid, RxVoid> DeleteLocalFileCommand { get; init; }
 
 	public abstract void Load();
 	public abstract void Save();

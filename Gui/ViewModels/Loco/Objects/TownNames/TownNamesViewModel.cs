@@ -1,4 +1,4 @@
-using Common.Json;
+using Core;
 using Definitions.ObjectModels.Objects.TownNames;
 using ReactiveUI;
 using System;
@@ -30,10 +30,10 @@ public class TownNamesViewModel : BaseViewModel<TownNamesObject>
 	public MorphemeCategoryViewModel MorphemeCategory6 { get => MorphemeCategories[5]; set => MorphemeCategories[5] = value; }
 
 	[Category("Import / Export")]
-	public ReactiveCommand<Unit, Unit> ImportJsonCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> ImportJsonCommand { get; }
 
 	[Category("Import / Export")]
-	public ReactiveCommand<Unit, Unit> ExportJsonCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> ExportJsonCommand { get; }
 
 	public TownNamesViewModel(TownNamesObject model)
 		: base(model)

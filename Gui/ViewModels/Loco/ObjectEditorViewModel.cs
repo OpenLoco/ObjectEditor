@@ -15,7 +15,13 @@ using Gui.ViewModels.Loco.Objects.Building;
 using Gui.ViewModels.Loco.Objects.TownNames;
 using Gui.Views;
 using Microsoft.Extensions.Logging;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Base;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using Shared.Files;
+using Shared.Validation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,10 +35,10 @@ namespace Gui.ViewModels.Loco;
 
 public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 {
-	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
-	public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
-	public ReactiveCommand<Unit, bool> ValidateObjectCommand { get; }
-	public ReactiveCommand<Unit, bool> ValidateForOGCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> ExportUncompressedCommand { get; }
+	public ReactiveCommand<GameObjDataFolder, RxVoid> CopyToGameObjDataCommand { get; }
+	public ReactiveCommand<RxVoid, bool> ValidateObjectCommand { get; }
+	public ReactiveCommand<RxVoid, bool> ValidateForOGCommand { get; }
 
 	[Reactive]
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;

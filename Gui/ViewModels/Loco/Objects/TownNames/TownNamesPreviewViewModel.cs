@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.TownNames;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,7 +29,7 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel
 	[Reactive, Browsable(false)]
 	public ObservableCollection<GeneratedNameEntry> SmallWaterNames { get; set; } = [];
 
-	public ReactiveCommand<Unit, Unit> GenerateNamesCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> GenerateNamesCommand { get; }
 
 	readonly Random _random = new();
 

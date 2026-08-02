@@ -1,5 +1,6 @@
 using DynamicData;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,7 +8,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 
 namespace Gui.ViewModels.Loco;
@@ -49,7 +49,7 @@ public abstract class BaseViewModel : ReactiveObject, IViewModel, IViewModelGrou
 	public string NewGroupName { get; set; } = "<unnamed>";
 
 	[Browsable(false)]
-	public ReactiveCommand<Unit, Unit> AddGroupCommand { get; }
+	public ReactiveCommand<RxVoid, RxVoid> AddGroupCommand { get; }
 
 	private readonly SourceList<ViewModelGroup> _viewModelGroups = new();
 	private readonly ReadOnlyObservableCollection<ViewModelGroup> _viewModelGroupsCollection;

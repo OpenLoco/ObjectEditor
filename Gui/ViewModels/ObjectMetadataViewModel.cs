@@ -93,12 +93,12 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 	public ObservableCollection<DtoItemPackEntry> ObjectPacks { get; }
 
 	// Commands
-	public ReactiveCommand<DtoAuthorEntry?, Unit> AddAuthorCommand { get; }
-	public ReactiveCommand<DtoAuthorEntry, Unit> RemoveAuthorCommand { get; }
-	public ReactiveCommand<DtoTagEntry?, Unit> AddTagCommand { get; }
-	public ReactiveCommand<DtoTagEntry, Unit> RemoveTagCommand { get; }
-	public ReactiveCommand<DtoItemPackEntry?, Unit> AddObjectPackCommand { get; }
-	public ReactiveCommand<DtoItemPackEntry, Unit> RemoveObjectPackCommand { get; }
+	public ReactiveCommand<DtoAuthorEntry?, RxVoid> AddAuthorCommand { get; }
+	public ReactiveCommand<DtoAuthorEntry, RxVoid> RemoveAuthorCommand { get; }
+	public ReactiveCommand<DtoTagEntry?, RxVoid> AddTagCommand { get; }
+	public ReactiveCommand<DtoTagEntry, RxVoid> RemoveTagCommand { get; }
+	public ReactiveCommand<DtoItemPackEntry?, RxVoid> AddObjectPackCommand { get; }
+	public ReactiveCommand<DtoItemPackEntry, RxVoid> RemoveObjectPackCommand { get; }
 
 	// Available items for selection - sourced from the shared cache on ObjectEditorContext.ObjectServiceModel
 	// so they are only fetched from the server once per editor session.

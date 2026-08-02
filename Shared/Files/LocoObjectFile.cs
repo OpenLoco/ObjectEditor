@@ -1,6 +1,0 @@
-using Dat.Types;
-using Definitions.ObjectModels;
-
-namespace Shared.Files;
-
-public sealed record LocoObjectFile(string FileName, DatHeaderInfo DatInfo, LocoObject LocoObject);

@@ -1,5 +1,5 @@
 using Definitions.Database;
-using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;

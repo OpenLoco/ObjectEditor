@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Land;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 

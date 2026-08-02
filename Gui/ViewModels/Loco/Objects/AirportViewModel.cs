@@ -2,6 +2,8 @@ using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Common;
 using Gui.Attributes;
+using PropertyModels.ComponentModel.DataAnnotations;
+using PropertyModels.Extensions;
 using ReactiveUI;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

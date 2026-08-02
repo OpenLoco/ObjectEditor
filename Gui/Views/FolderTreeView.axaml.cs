@@ -2,6 +2,7 @@ using System;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using Avalonia.Controls;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Gui.Models;
 using Gui.ViewModels;

@@ -92,9 +92,9 @@
     </Compile>
   </ItemGroup>
 
-  <ItemGroup>
-    <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" />
-  </ItemGroup>
+  <PropertyGroup>
+    <AvaloniaUILicenseKey>$(AvaloniaUILicenseKey)</AvaloniaUILicenseKey>
+  </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Avalonia.Controls.TreeDataGrid">

@@ -43,17 +43,17 @@
     <Compile Include="..\Dat\Types\GlobalUsings.cs" Link="GlobalUsings.cs" />
   </ItemGroup>
 
+
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="12.0.5" />
-    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.0.5" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.1" />
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.0" />
     <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
-    <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="12.0.2" />
-    <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.5" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.5" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.18" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
     <PackageReference Include="bodong.Avalonia.PropertyGrid" Version="12.0.4.1" />
     <PackageReference Include="bodong.PropertyModels" Version="12.0.0" />
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
@@ -71,6 +71,7 @@
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
     <ProjectReference Include="..\GuiUpdater\GuiUpdater.csproj" />
     <ProjectReference Include="..\Index\Index.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -90,5 +91,12 @@
   <PropertyGroup>
     <AvaloniaUILicenseKey>$(AvaloniaUILicenseKey)</AvaloniaUILicenseKey>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Avalonia.Controls.TreeDataGrid">
+      <HintPath>dlls\Avalonia.Controls.TreeDataGrid.dll</HintPath>
+    </Reference>
+    <PackageReference Include="System.Reactive" Version="7.0.0" />
+  </ItemGroup>
 
 </Project>

@@ -9,6 +9,7 @@ using Gui.ViewModels.Loco.Tutorial;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;

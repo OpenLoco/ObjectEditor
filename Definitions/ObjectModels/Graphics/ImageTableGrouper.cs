@@ -15,7 +15,7 @@ namespace Definitions.ObjectModels.Graphics;
 public static class ImageTableGrouper
 {
 
-	private static GroupConfigDict GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfigurationType>();
+	public static GroupConfigDict GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfigurationType>();
 
 	public static ImageTable CreateImageTable(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{

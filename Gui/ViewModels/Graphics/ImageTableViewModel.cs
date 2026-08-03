@@ -6,6 +6,7 @@ using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -405,7 +406,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		{
 			Logger.LogInformation("Reloading image table grouping from {ConfigFilePath}", groupingConfigFilePath);
 			var json = File.ReadAllText(groupingConfigFilePath);
-			ImageTableGrouper.LoadGroupConfigurationJson(Logger, json);
+			ImageTableGrouper.GroupConfigurations = ImageTableGroupLoader.LoadGroupConfigurationJson(Logger, json);
 		}
 		else
 		{

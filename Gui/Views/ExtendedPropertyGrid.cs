@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.PropertyGrid.Controls;
+using Avalonia.PropertyGrid.Controls.Factories;
 using Definitions.ObjectModels.Types;
 using Gui.Attributes;
 using Gui.ViewModels;

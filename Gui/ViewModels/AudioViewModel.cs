@@ -1,7 +1,9 @@
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models.Audio;
 using Microsoft.Extensions.Logging;
+using NAudio.Wave;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.IO;
 using System.Reactive.Linq;

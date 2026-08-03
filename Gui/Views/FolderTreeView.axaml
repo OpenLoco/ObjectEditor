@@ -139,7 +139,7 @@ x:DataType="vm:FolderTreeViewModel">
 				</DockPanel>
 			</DockPanel>
 			<DockPanel Grid.Row="3">
-				<TreeDataGrid Name="ObjectsTreeDataGrid" CanUserResizeColumns="True" CanUserSortColumns="True" IsVisible="{Binding UsesTreeDataGrid}">
+				<TreeDataGrid Source="{Binding TreeDataGridSource}" CanUserResizeColumns="True" CanUserSortColumns="True" IsVisible="{Binding UsesTreeDataGrid}">
 					<TreeDataGrid.Styles>
 						<Style Selector="TreeDataGrid TreeDataGridRow">
 							<Setter Property="Height" Value="32"/>
@@ -152,7 +152,7 @@ x:DataType="vm:FolderTreeViewModel">
 					<TreeDataGrid.Resources>
 						<!-- Template for Name column cells -->
 						<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
-							<StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding FileName}">
+							<StackPanel Orientation="Horizontal" >
 								<materialIcons:MaterialIcon Kind="{Binding DisplayIcon, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
 								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 								<StackPanel.ContextMenu>

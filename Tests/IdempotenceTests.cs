@@ -1,6 +1,5 @@
 using Dat.Converters;
 using Dat.FileParsing;
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -13,7 +12,7 @@ namespace Dat.Tests;
 [TestFixture]
 public class IdempotenceTests
 {
-	static PaletteMap PaletteMap { get; } = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
+	static PaletteMap PaletteMap { get; } = PaletteMapLoader.LoadDefault();
 
 	static string[] VanillaFiles =>
 	[

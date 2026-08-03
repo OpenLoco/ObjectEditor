@@ -1,6 +1,6 @@
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
-using Common.Json;
+using Core.Graphics;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
@@ -406,7 +406,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		{
 			Logger.LogInformation("Reloading image table grouping from {ConfigFilePath}", groupingConfigFilePath);
 			var json = File.ReadAllText(groupingConfigFilePath);
-			ImageTableGrouper.LoadGroupConfigurationJson(Logger, json);
+			ImageTableGrouper.GroupConfigurations = ImageTableGroupLoader.LoadGroupConfigurationJson(Logger, json);
 		}
 		else
 		{
@@ -458,96 +458,22 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 	async Task ImportSpritesJsonAsync(string filename)
 	{
-		var offsets = await LoadSpritesJsonFileAsync(filename);
-		if (offsets == null)
-		{
-			Logger.LogError("Failed to load offsets from {Filename}", filename);
-			return;
-		}
-
-		var itvms = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
-
-		foreach (var (offset, i) in offsets.Select((o, index) => (o, index)))
-		{
-			if (itvms.Count <= i)
-			{
-				Logger.LogError("Offset for Image[{Index}] is provided in the sprites.json file, but only {Count} images are available in the current image table. This offset will be skipped.", i, itvms.Count);
-				continue;
-			}
-			var ivm = itvms[i];
-			if (ivm == null)
-			{
-				Logger.LogError("Image[{Index}] is not found in the current image table.", i);
-				continue;
-			}
-
-			ivm.XOffset = offset.XOffset;
-			ivm.YOffset = offset.YOffset;
-		}
-	}
-
-	async Task<ICollection<GraphicsElementJson>?> LoadSpritesJsonFileAsync(string filename)
-	{
-		if (!File.Exists(filename))
-		{
-			return null;
-		}
-
-		var offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(filename) ?? null;
-		Logger.LogDebug("Found sprites.json file with {Count} images", offsets?.Count ?? 0);
-		return offsets;
+		_ = await ImageTableIo.ApplyOffsetsAsync(Model, filename, Logger);
+		RecreateViewModelGroupsFromImageTable(Model);
 	}
 
 	async Task ImportImagesAsync(string directory)
 	{
-		if (string.IsNullOrEmpty(directory))
-		{
-			Logger.LogError("Directory is invalid: \"{Directory}\"", directory);
-			return;
-		}
-
-		if (!Directory.Exists(directory))
-		{
-			Logger.LogError("Directory does not exist: \"{Directory}\"", directory);
-			return;
-		}
-
-		Logger.LogInformation("Importing images from {Directory}", directory);
-
 		// Step 1: Clear selection model
 		ClearSelectionModel();
 
 		try
 		{
-			// Step 2: Load sprites.json file
-			var spritesFile = Path.Combine(directory, "sprites.json");
-			var sprites = await LoadSpritesJsonFileAsync(spritesFile);
-
-			if (sprites == null || sprites.Count == 0)
+			// Step 2+3: Load sprites.json and all the PNG files it references
+			var importedImages = await ImageTableIo.LoadImagesAsync(directory, Model.PaletteMap, Logger);
+			if (importedImages == null)
 			{
-				Logger.LogError("No sprites.json found or file is empty in {Directory}. Import aborted.", directory);
 				return;
-			}
-
-			// Step 3: Load all PNG files referenced in sprites.json
-			var importedImages = new List<GraphicsElement>();
-			foreach (var (sprite, i) in sprites.Select((x, i) => (x, i)))
-			{
-				var is1Pixel = string.IsNullOrEmpty(sprite.Path);
-				var img = is1Pixel
-					? ImageTableHelpers.OnePixelTransparent
-					: Image.Load<Rgba32>(Path.Combine(directory, sprite.Path));
-
-				var effectiveSprite = is1Pixel
-					? sprite with { Flags = GraphicsElementFlags.HasTransparency }
-					: sprite;
-
-				var graphicsElement = GraphicsElementFromImage(effectiveSprite, img, Model.PaletteMap, i);
-				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
-					? DefaultImageTableNameProvider.GetImageName(i)
-					: graphicsElement.Name;
-
-				importedImages.Add(graphicsElement);
 			}
 
 			// Step 4: Clear the existing model image table
@@ -565,78 +491,8 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 	}
 
-	static GraphicsElement GraphicsElementFromImage(GraphicsElementJson ele, Image<Rgba32> img, PaletteMap paletteMap, int index)
-	{
-		var flags = ele.Flags ?? GraphicsElementFlags.None;
-		var ge = new GraphicsElement()
-		{
-			Width = (int16_t)img.Width,
-			Height = (int16_t)img.Height,
-			XOffset = ele.XOffset,
-			YOffset = ele.YOffset,
-			Flags = flags,
-			ZoomOffset = ele.ZoomOffset ?? 0,
-			ImageData = paletteMap.ConvertRgba32ImageToG1Data(img, flags),
-			Name = ele.Name ?? string.Empty,
-			Image = img,
-			ImageTableIndex = index,
-		};
-
-		ge.Image = paletteMap.TryConvertG1ToRgba32Bitmap(ge, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var convertedImage)
-			? convertedImage
-			: ImageTableHelpers.ErrorImage;
-
-		return ge;
-	}
-
 	async Task ExportImages(string directory, bool prependGroupAndImageNameInFilename)
-	{
-		if (string.IsNullOrEmpty(directory))
-		{
-			Logger.LogError("Directory is invalid: \"{Directory}\"", directory);
-			return;
-		}
-
-		if (!Directory.Exists(directory))
-		{
-			Logger.LogError("Directory does not exist: \"{Directory}\"", directory);
-			return;
-		}
-
-		Logger.LogInformation("Exporting images to {Directory}", directory);
-
-		var offsets = new List<GraphicsElementJson>();
-
-		var invalidChars = Path.GetInvalidFileNameChars();
-
-		foreach (var item in GroupedImageViewModels
-			.SelectMany(group => group.Images, (group, image) => new { group.GroupName, Image = image })
-			.OrderBy(x => x.Image.ImageTableIndex))
-		{
-			var image = item.Image;
-
-			var fileName = $"{image.ImageTableIndex}.png";
-			if (prependGroupAndImageNameInFilename)
-			{
-				var imageName = new string([.. item.Image.Name.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
-				var groupName = new string([.. item.GroupName.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
-
-				if (!string.IsNullOrEmpty(groupName) && !string.IsNullOrEmpty(imageName))
-				{
-					fileName = $"{groupName}_{imageName}.png";
-				}
-			}
-
-			var path = Path.Combine(directory, fileName);
-			await image.UnderlyingImage.SaveAsPngAsync(path);
-
-			offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement(Model.PaletteMap)));
-		}
-
-		var offsetsFile = Path.Combine(directory, "sprites.json");
-		Logger.LogInformation("Saving sprite offsets to {OffsetsFile}", offsetsFile);
-		await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
-	}
+		=> _ = await ImageTableIo.ExportAsync(Model, directory, prependGroupAndImageNameInFilename, Logger);
 
 	void DisposeGroupedViewModels()
 	{

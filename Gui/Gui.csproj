@@ -43,11 +43,6 @@
     <Compile Include="..\Dat\Types\GlobalUsings.cs" Link="GlobalUsings.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="..\Definitions\ObjectModels\Graphics\ImageTableGroups.json">
-      <LogicalName>Gui.ImageTableGroups.json</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.1" />
@@ -76,6 +71,7 @@
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
     <ProjectReference Include="..\GuiUpdater\GuiUpdater.csproj" />
     <ProjectReference Include="..\Index\Index.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

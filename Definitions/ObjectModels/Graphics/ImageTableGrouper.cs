@@ -1,20 +1,22 @@
 using Common;
-using Common.Json;
-using Common.Logging;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.LevelCrossing;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
-using Microsoft.Extensions.Logging;
-using NuGet.Versioning;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+
+using GroupConfigDict = System.Collections.Generic.IReadOnlyDictionary<
+	Definitions.ObjectModels.Types.ObjectType,
+	Definitions.ObjectModels.Graphics.ImageTableGroupConfigurationType>;
 
 namespace Definitions.ObjectModels.Graphics;
 
 public static class ImageTableGrouper
 {
+
+	public static GroupConfigDict GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfigurationType>();
+
 	public static ImageTable CreateImageTable(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{
 		var originalCount = imageList.Count;
@@ -201,54 +203,6 @@ public static class ImageTableGrouper
 			}
 		}
 	}
-
-	public static SemanticVersion? ReadImageTableGroupVersion(Logger logger, string imageTableGroupsFileName)
-	{
-		var existingText = File.ReadAllText(imageTableGroupsFileName);
-		if (string.IsNullOrWhiteSpace(existingText))
-		{
-			logger.LogError("Existing image table group configuration file is empty");
-			return null;
-		}
-
-		try
-		{
-			using var doc = JsonDocument.Parse(existingText);
-			if (doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("version", out var verProp) && verProp.ValueKind == JsonValueKind.String)
-			{
-				var existingVersionText = verProp.GetString();
-				if (!string.IsNullOrEmpty(existingVersionText) && SemanticVersion.TryParse(existingVersionText, out var existingVersion))
-				{
-					logger.LogDebug("Existing image table group configuration version: {version}", existingVersion);
-					return existingVersion;
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Error occurred while reading image table group version");
-		}
-
-		return null;
-	}
-
-	public static void LoadGroupConfigurationJson(ILogger logger, string json)
-	{
-		try
-		{
-			var itgc = JsonSerializer.Deserialize<ImageTableGroupConfiguration>(json, JsonFile.DefaultSerializerOptions);
-			GroupConfigurations = itgc?.Definitions
-				.Select(configuration => (configuration, success: Enum.TryParse<ObjectType>(configuration.ObjectType, ignoreCase: true, out var objectType), objectType))
-				.Where(pair => pair.success)
-				.ToDictionary(pair => pair.objectType, pair => pair.configuration) ?? [];
-		}
-		catch (JsonException ex)
-		{
-			logger.LogError(ex, "Image table group config is not valid JSON or version could not be read");
-		}
-	}
-
-	private static IReadOnlyDictionary<ObjectType, ImageTableGroupConfigurationType> GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfigurationType>();
 
 	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups2(LevelCrossingObject model, List<GraphicsElement> imageList)
 	{
@@ -477,5 +431,4 @@ public static class ImageTableGrouper
 			yield return new("<uncategorised>", remainder);
 		}
 	}
-
 }

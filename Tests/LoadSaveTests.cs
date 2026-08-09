@@ -679,7 +679,7 @@ public class LoadSaveTests
 				Assert.That(struc.TopToolbarSecondaryColour, Is.EqualTo(Colour.MutedSeaGreen), nameof(struc.TopToolbarSecondaryColour));
 				Assert.That(struc.TopToolbarTertiaryColour, Is.EqualTo(Colour.Brown), nameof(struc.TopToolbarTertiaryColour));
 				Assert.That(struc.TopToolbarQuaternaryColour, Is.EqualTo(Colour.Grey), nameof(struc.TopToolbarQuaternaryColour));
-				Assert.That(struc.PlayerInfoToolbarColour, Is.EqualTo(Colour.Grey), nameof(struc.PlayerInfoToolbarColour));
+				Assert.That(struc.CompanyInfoToolbarColour, Is.EqualTo(Colour.Grey), nameof(struc.CompanyInfoToolbarColour));
 				Assert.That(struc.TimeToolbarColour, Is.EqualTo(Colour.Grey), nameof(struc.TimeToolbarColour));
 
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(470));

@@ -10,7 +10,7 @@ public class LevelCrossingObject : ILocoStruct
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
 
-	public uint8_t ClosedAnimationDelay { get; set; }
+	public uint8_t ClosedAnimationFrameInterval { get; set; }
 	public uint8_t ClosedAnimationFrameCount { get; set; }
 	public uint8_t TransitionAnimationFrameCount { get; set; }
 	public uint8_t TransitionAnimationDelayBitmask { get; set; } // something like IdleAnimationFrames or something

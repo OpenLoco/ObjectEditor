@@ -8,7 +8,7 @@ public class TblObjectLevelCrossing : DbSubObject, IConvertibleToTable<TblObject
 	public int16_t CostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public uint8_t ClosedAnimationDelay { get; set; }
+	public uint8_t ClosedAnimationFrameInterval { get; set; }
 	public uint8_t ClosedAnimationFrameCount { get; set; }
 	public uint8_t TransitionAnimationFrameCount { get; set; }
 	public uint8_t TransitionAnimationDelayBitmask { get; set; }
@@ -21,7 +21,7 @@ public class TblObjectLevelCrossing : DbSubObject, IConvertibleToTable<TblObject
 			CostFactor = obj.BuildCostFactor,
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
-			ClosedAnimationDelay = obj.ClosedAnimationDelay,
+			ClosedAnimationFrameInterval = obj.ClosedAnimationFrameInterval,
 			ClosedAnimationFrameCount = obj.ClosedAnimationFrameCount,
 			TransitionAnimationFrameCount = obj.TransitionAnimationFrameCount,
 			TransitionAnimationDelayBitmask = obj.TransitionAnimationDelayBitmask,

@@ -28,7 +28,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
-			model.ClosedAnimationDelay = br.ReadByte();
+			model.ClosedAnimationFrameInterval = br.ReadByte();
 			model.ClosedAnimationFrameCount = br.ReadByte();
 			model.TransitionAnimationFrameCount = br.ReadByte();
 			model.TransitionAnimationDelayBitmask = br.ReadByte();
@@ -66,7 +66,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
-			bw.Write(model.ClosedAnimationDelay);
+			bw.Write(model.ClosedAnimationFrameInterval);
 			bw.Write(model.ClosedAnimationFrameCount);
 			bw.Write(model.TransitionAnimationFrameCount);
 			bw.Write(model.TransitionAnimationDelayBitmask);

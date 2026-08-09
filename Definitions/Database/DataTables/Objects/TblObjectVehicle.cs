@@ -34,7 +34,7 @@ public class TblObjectVehicle : DbSubObject, IConvertibleToTable<TblObjectVehicl
 	//public List<uint8_t> MaxCargo { get; set; }
 	//public List<List<CargoCategory>> CompatibleCargoCategories { get; set; }
 	//public Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets { get; set; }
-	//public ICollection<SimpleAnimation> Animation { get; set; }
+	//public ICollection<EmitterAnimation> ParticleEmitters { get; set; }
 
 	public static TblObjectVehicle FromObject(TblObject tbl, VehicleObject obj)
 		=> new()

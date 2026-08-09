@@ -1,6 +1,6 @@
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
-public enum SimpleAnimationType : uint8_t
+public enum EmitterAnimationType : uint8_t
 {
 	None = 0,
 	SteamPuff1,

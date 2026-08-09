@@ -249,11 +249,16 @@ public class LocoBinaryReader : BinaryReader
 		for (var i = 0; i < count; ++i)
 		{
 			SkipByte(); // object_id
-			yield return new EmitterAnimation
+			var emitterAnimation = new EmitterAnimation
 			{
 				EmitterVerticalPos = ReadByte(),
-				Type = (SimpleAnimationType)ReadByte(),
+				Type = (EmitterAnimationType)ReadByte(),
 			};
+
+			if (emitterAnimation.Type != EmitterAnimationType.None)
+			{
+				yield return emitterAnimation;
+			}
 		}
 	}
 

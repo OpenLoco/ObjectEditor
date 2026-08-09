@@ -1276,10 +1276,10 @@ public class LoadSaveTests
 				Assert.That(struc.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(struc.NumSimultaneousCargoTypes));
 				Assert.That(struc.ParticleEmitters[0].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[0].EmitterVerticalPos, Is.EqualTo(24), nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[0].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
+				Assert.That(struc.ParticleEmitters[0].Type, Is.EqualTo(EmitterAnimationType.None), nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[1].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[1].EmitterVerticalPos, Is.Zero, nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[1].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
+				Assert.That(struc.ParticleEmitters[1].Type, Is.EqualTo(EmitterAnimationType.None), nameof(struc.ParticleEmitters));
 				Assert.That(struc.ShipWakeSpacing, Is.Zero, nameof(struc.ShipWakeSpacing));
 				Assert.That(struc.DesignedYear, Is.EqualTo(1957), nameof(struc.DesignedYear));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(1987), nameof(struc.ObsoleteYear));

@@ -175,7 +175,7 @@ public record S5File(
 		}
 		else
 		{
-			if (GameState is GameStateSave gsv)
+			if (GameState is GeneralStateSave gsv)
 			{
 				gameState = [.. SawyerStreamWriter.WriteChunk(gsv, SawyerEncoding.RunLengthSingle)];
 			}
@@ -248,10 +248,9 @@ public record S5File(
 			var gameStateA = SawyerStreamReader.ReadChunk<GameStateScenarioA>(ref data);
 			var gameStateB = SawyerStreamReader.ReadChunk<GameStateScenarioB>(ref data);
 			var gameStateC = SawyerStreamReader.ReadChunk<GameStateScenarioC>(ref data);
-			var newFlags = gameStateA.FixFlags | S5FixFlags.FixFlag1;
-			gameStateA = gameStateA with { FixFlags = newFlags };
+			var newFlags = gameStateA.FixFlags | S5FixFlags.FixFlag0; // fixState
+			gameStateA = gameStateA with { FixFlags = newFlags }; // fixState
 			gameState = new GameStateScenario(gameStateA, gameStateB, gameStateC);
-			FixState();
 
 			if (gameStateA.GameStateFlags.HasFlag(GameStateFlags.TileManagerLoaded))
 			{
@@ -261,8 +260,20 @@ public record S5File(
 		}
 		else
 		{
-			gameState = SawyerStreamReader.ReadChunk<GameStateSave>(ref data);
-			FixState();
+			var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
+			var fixFlags = (S5FixFlags)BitConverter.ToUInt16(chunkData[0x434..(0x434 + 2)]);
+			if (!fixFlags.HasFlag(S5FixFlags.FixFlag0) && !fixFlags.HasFlag(S5FixFlags.FixFlag1))
+			{
+				var gs2 = ByteReader.ReadLocoStruct<GameStateSave2>(chunkData);
+				var newFlags = gs2.GeneralState.FixFlags | S5FixFlags.FixFlag0; // fixState
+				gameState = gs2 with { GeneralState = gs2.GeneralState with { FixFlags = newFlags } }; // fixState
+			}
+			else
+			{
+				var gs1 = ByteReader.ReadLocoStruct<GameStateSave1>(chunkData);
+				var newFlags = gs1.GeneralState.FixFlags | S5FixFlags.FixFlag0; // fixState
+				gameState = gs1 with { GeneralState = gs1.GeneralState with { FixFlags = newFlags } }; // fixState
+			}
 
 			tileElementData = SawyerStreamReader.ReadChunkCore(ref data).ToArray();
 			(tileElements, tileElementMap) = ParseTileElements(tileElementData, mapSize.Width, mapSize.Height);
@@ -273,9 +284,6 @@ public record S5File(
 
 		return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameState, tileElements, packedObjects, checksum) { TileElementMap = tileElementMap, OriginalTileElementData = tileElementData };
 	}
-
-	static void FixState()
-	{ }
 
 	static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData, int mapWidth, int mapHeight)
 	{
@@ -318,8 +326,4 @@ public record S5File(
 
 		return (tileElements, tileElementMap);
 	}
-
-	//public ReadOnlySpan<byte> Write()
-	//{
-	//}
 }

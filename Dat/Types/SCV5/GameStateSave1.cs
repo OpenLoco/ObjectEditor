@@ -183,8 +183,9 @@ public record GameStateScenarioC(
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-[LocoStructSize(0x4A0644)] // 4,851,268
-public record GameStateSave([property: LocoStructOffset(0x00), LocoArrayLength(2)] uint32_t[] Rng,
+[LocoStructSize(0x00B96C)]
+public record GeneralStateSave(
+	[property: LocoStructOffset(0x00), LocoArrayLength(2)] uint32_t[] Rng,
 	[property: LocoStructOffset(0x08), LocoArrayLength(2)] uint32_t[] UnkRng,
 	[property: LocoStructOffset(0x10)] uint32_t GameStateFlags,
 	[property: LocoStructOffset(0x14)] uint32_t CurrentDay,
@@ -302,17 +303,49 @@ public record GameStateSave([property: LocoStructOffset(0x00), LocoArrayLength(2
 	[property: LocoStructOffset(0xB956)] uint8_t var_B956,
 	[property: LocoStructOffset(0xB957), LocoArrayLength(0xB968 - 0xB957)] uint8_t[] pad_B957,
 	[property: LocoStructOffset(0xB958)] uint8_t CurrentRainLevel,
-	[property: LocoStructOffset(0xB959), LocoArrayLength(0xB96C - 0xB969)] uint8_t[] pad_B969,
-	[property: LocoStructOffset(0xB96C), LocoArrayLength((int)Limits.kMaxCompanies)] Company[] Companies,
-	[property: LocoStructOffset(0x92444), LocoArrayLength((int)Limits.kMaxTowns)] Town[] Towns,
-	[property: LocoStructOffset(0x9E744), LocoArrayLength((int)Limits.kMaxIndustries)] Industry[] Industries,
-	[property: LocoStructOffset(0xC10C4), LocoArrayLength((int)Limits.kMaxStations)] Station[] Stations,
+	[property: LocoStructOffset(0xB959), LocoArrayLength(0xB96C - 0xB969)] uint8_t[] pad_B969
+	)
+	: ILocoStruct, IGameState
+{
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
+}
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+[LocoStructSize(0x4A0644)]
+public record GameStateSave1(
+	[property: LocoStructOffset(0x000000)] GeneralStateSave GeneralState,
+	[property: LocoStructOffset(0x00B96C), LocoArrayLength((int)Limits.kMaxCompanies)] CompanyType1[] Companies,
+	[property: LocoStructOffset(0x092444), LocoArrayLength((int)Limits.kMaxTowns)] Town[] Towns,
+	[property: LocoStructOffset(0x09E744), LocoArrayLength((int)Limits.kMaxIndustries)] Industry[] Industries,
+	[property: LocoStructOffset(0x0C10C4), LocoArrayLength((int)Limits.kMaxStations)] Station[] Stations,
 	[property: LocoStructOffset(0x1B58C4), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities,
 	[property: LocoStructOffset(0x4268C4), LocoArrayLength((int)Limits.kMaxAnimations)] Animation[] Animations,
 	[property: LocoStructOffset(0x4328C4), LocoArrayLength((int)Limits.kMaxWaves)] Wave[] Waves,
 	[property: LocoStructOffset(0x432A44), LocoArrayLength((int)Limits.kMaxUserStrings * 32)] uint8_t[] UserStrings,
 	[property: LocoStructOffset(0x442A44), LocoArrayLength((int)(Limits.kMaxVehicles * Limits.kMaxRoutingsPerVehicle))] uint16_t[] Routings,
 	[property: LocoStructOffset(0x461E44), LocoArrayLength((int)Limits.kMaxOrders)] uint8_t[] Orders
+	)
+	: ILocoStruct, IGameState
+{
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
+}
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+[LocoStructSize(0x49EA24)]
+public record GameStateSave2(
+	[property: LocoStructOffset(0x000000)] GeneralStateSave GeneralState,
+	[property: LocoStructOffset(0x00B96C), LocoArrayLength((int)Limits.kMaxCompanies)] CompanyType2[] Companies, // used CompanyType2 instead of CompanyType1 in this save format
+	[property: LocoStructOffset(0x090824), LocoArrayLength((int)Limits.kMaxTowns)] Town[] Towns,
+	[property: LocoStructOffset(0x09CB24), LocoArrayLength((int)Limits.kMaxIndustries)] Industry[] Industries,
+	[property: LocoStructOffset(0x0BF4A4), LocoArrayLength((int)Limits.kMaxStations)] Station[] Stations,
+	[property: LocoStructOffset(0x1B3CA4), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities,
+	[property: LocoStructOffset(0x424CA4), LocoArrayLength((int)Limits.kMaxAnimations)] Animation[] Animations,
+	[property: LocoStructOffset(0x430CA4), LocoArrayLength((int)Limits.kMaxWaves)] Wave[] Waves,
+	[property: LocoStructOffset(0x430E24), LocoArrayLength((int)Limits.kMaxUserStrings * 32)] uint8_t[] UserStrings,
+	[property: LocoStructOffset(0x440E24), LocoArrayLength((int)(Limits.kMaxVehicles * Limits.kMaxRoutingsPerVehicle))] uint16_t[] Routings,
+	[property: LocoStructOffset(0x460224), LocoArrayLength((int)Limits.kMaxOrders)] uint8_t[] Orders
 	)
 	: ILocoStruct, IGameState
 {

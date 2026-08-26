@@ -1,7 +1,7 @@
 namespace Definitions.ObjectModels.Objects.Competitor;
 
 [Flags]
-public enum PlaystyleFlags : uint32_t
+public enum NameSuffixFlags : uint32_t
 {
 	Transport = 1 << 0,
 	Express = 1 << 1,

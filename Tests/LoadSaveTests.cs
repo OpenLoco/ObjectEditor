@@ -362,12 +362,12 @@ public class LoadSaveTests
 						| NamePrefixFlags.Owner),
 					nameof(struc.AvailableNamePrefixes));
 
-				Assert.That(struc.AvailablePlayStyles,
+				Assert.That(struc.AvailableNameSuffixes,
 					Is.EqualTo(
-						PlaystyleFlags.Transport
-						| PlaystyleFlags.Lines
-						| PlaystyleFlags.Freight),
-					nameof(struc.AvailablePlayStyles));
+						NameSuffixFlags.Transport
+						| NameSuffixFlags.Lines
+						| NameSuffixFlags.Freight),
+					nameof(struc.AvailableNameSuffixes));
 
 				Assert.That(struc.Emotions,
 					Is.EqualTo(

@@ -6,7 +6,6 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using SixLabors.ImageSharp;
 using System.Text.Json;
-using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
 
@@ -24,7 +23,7 @@ public class IdempotenceTests
 	[TestCaseSource(nameof(VanillaFiles))]
 	public void DecodeEncodeDecode(string filename)
 	{
-		var logger = new Logger();
+		var logger = new Common.Logging.Logger();
 		using var fs = new FileStream(filename, FileMode.Open);
 
 		if (!SawyerStreamReader.TryGetHeadersFromBytes(fs, out var hdrs, logger))
@@ -44,7 +43,7 @@ public class IdempotenceTests
 	[TestCaseSource(nameof(VanillaFiles))]
 	public void LoadSaveLoad(string filename)
 	{
-		var logger = new Logger();
+		var logger = new Common.Logging.Logger();
 		var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!;
 		var header = obj1.DatFileInfo.S5Header;
 

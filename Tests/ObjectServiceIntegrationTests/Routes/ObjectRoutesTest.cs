@@ -1,5 +1,4 @@
 using Common;
-using Common.Logging;
 using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
@@ -171,7 +170,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	public override async Task PostAsync()
 	{
 		var objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects"; // this is naughty for a test but it'll do
-		var logger = new Logger();
+		var logger = new Common.Logging.Logger();
 		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
 		_ = index.TryFind(7051740550869341430, out var entry); // randomly selected and hardcoded object
 		Assert.That(entry, Is.Not.Null);

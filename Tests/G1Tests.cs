@@ -4,14 +4,13 @@ using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
-using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
 
 [TestFixture]
 public class G1Tests
 {
-	readonly ILogger Logger = new Logger();
+	readonly ILogger Logger = new Common.Logging.Logger();
 	const string Steam_G1 = "Q:\\Games\\Locomotion\\G1\\steam-g1.dat"; // todo: check both steam and gog
 	const string GoG_G1 = "Q:\\Games\\Locomotion\\G1\\gog-g1.dat"; // todo: check both steam and gog 
 

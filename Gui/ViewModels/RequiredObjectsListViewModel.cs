@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Common.Logging;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Gui.Models;
@@ -129,7 +128,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 		}
 
 		var dirPath = dir.Path.LocalPath;
-		var logger = editorContext?.Logger ?? new Logger();
+		var logger = editorContext?.Logger ?? new Common.Logging.Logger();
 		var objectIndex = await ObjectIndex.CreateIndexAsync(dirPath, logger);
 
 		var headers = objectIndex.Objects

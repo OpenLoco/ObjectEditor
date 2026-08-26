@@ -47,7 +47,6 @@ using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
 
@@ -73,7 +72,7 @@ public class LoadSaveTests
 
 	static (DatHeaderInfo, LocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
 	{
-		var logger = new Logger();
+		var logger = new Common.Logging.Logger();
 		var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObject(data.ToArray(), logger);
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -88,7 +87,7 @@ public class LoadSaveTests
 
 	static void LoadSaveGenericTest<T>(string filename, Action<LocoObject, T> assertFunc) where T : ILocoStruct
 	{
-		var logger = new Logger();
+		var logger = new Common.Logging.Logger();
 
 		var (datInfo1, obj1, struc1) = LoadObject<T>(filename);
 		assertFunc(obj1, struc1);

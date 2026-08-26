@@ -29,7 +29,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 {
 	public EditorSettings Settings { get; private set; }
 
-	public Logger Logger { get; init; }
+	public Common.Logging.Logger Logger { get; init; }
 
 	public ObjectIndex ObjectIndex { get; private set; } = new();
 
@@ -79,7 +79,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public ObjectEditorContext()
 	{
-		Logger = new Logger();
+		Logger = new Common.Logging.Logger();
 		LoggerObservableLogs = [];
 		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log).ConfigureAwait(false);
 
@@ -171,7 +171,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	public async Task LoadAsync()
 		=> await EnsureDefaultImageTableGroupsConfigFileAsync(Logger, ImageTableGroupsPathName);
 
-	static async Task EnsureDefaultImageTableGroupsConfigFileAsync(Logger logger, string imageTableGroupsPathName)
+	static async Task EnsureDefaultImageTableGroupsConfigFileAsync(Common.Logging.Logger logger, string imageTableGroupsPathName)
 	{
 		logger.LogInformation("Attempting to load image table group config from '{ImageTableGroupsFileName}'", imageTableGroupsPathName);
 		var defaultImageTableGroups = await ReadDefaultImageTableGroupsConfigAsync(logger, imageTableGroupsPathName);
@@ -203,7 +203,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		ImageTableGrouper.LoadGroupConfigurationJson(logger, currentImageTableGroups);
 	}
 
-	static async Task<string?> ReadDefaultImageTableGroupsConfigAsync(Logger logger, string imageTableGroupsFileName)
+	static async Task<string?> ReadDefaultImageTableGroupsConfigAsync(Common.Logging.Logger logger, string imageTableGroupsFileName)
 	{
 		try
 		{

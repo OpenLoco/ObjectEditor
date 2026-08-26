@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
 
@@ -16,7 +15,7 @@ public class ImagePaletteConversionTests
 	public const string BaseImagePath = "Q:\\Games\\Locomotion\\ExportedImagesFromObjectEditor\\";
 	public const string BasePalettePath = "Q:\\Games\\Locomotion\\Palettes\\";
 	public const string PaletteFileName = "palette.png";
-	readonly ILogger Logger = new Logger();
+	readonly ILogger Logger = new Common.Logging.Logger();
 
 	[Test]
 	public void Write00000000ToIndex0()

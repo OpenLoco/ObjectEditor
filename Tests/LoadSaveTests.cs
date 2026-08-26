@@ -356,17 +356,17 @@ public class LoadSaveTests
 			{
 				Assert.That(struc.AvailableNamePrefixes,
 					Is.EqualTo(
-						NamePrefixFlags.unk4
-						| NamePrefixFlags.unk9
-						| NamePrefixFlags.unk11
-						| NamePrefixFlags.unk12),
+						NamePrefixFlags.Sapphire
+						| NamePrefixFlags.Bergundy
+						| NamePrefixFlags.TownName
+						| NamePrefixFlags.Owner),
 					nameof(struc.AvailableNamePrefixes));
 
 				Assert.That(struc.AvailablePlayStyles,
 					Is.EqualTo(
-						PlaystyleFlags.unk0
-						| PlaystyleFlags.unk2
-						| PlaystyleFlags.unk11),
+						PlaystyleFlags.Transport
+						| PlaystyleFlags.Lines
+						| PlaystyleFlags.Freight),
 					nameof(struc.AvailablePlayStyles));
 
 				Assert.That(struc.Emotions,

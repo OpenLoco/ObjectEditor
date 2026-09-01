@@ -29,7 +29,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		CarComponents = [with(model.CarComponents)];
 		BodySprites = [with(model.BodySprites)];
 		BogieSprites = [with(model.BogieSprites)];
-		Animation = [with(model.ParticleEmitters)];
+		ParticleEmitters = [with(model.ParticleEmitters)];
 		CompatibleCargo1 = new(model.CompatibleCargoCategories[0], model.MaxCargo[0]);
 		CompatibleCargo2 = new(model.CompatibleCargoCategories[1], model.MaxCargo[1]);
 		CargoTypeSpriteOffsets = [with([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))])];
@@ -317,7 +317,8 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	public BindingList<BogieSprite> BogieSprites { get; init; }
 
 	[Category("Sprites")]
-	public BindingList<EmitterAnimation> Animation { get; init; }
+	[Length(0, 2)]
+	public BindingList<EmitterAnimation> ParticleEmitters { get; init; }
 
 	[Category("Cargo")]
 	public CompatibleCargoViewModel CompatibleCargo1 { get; init; }

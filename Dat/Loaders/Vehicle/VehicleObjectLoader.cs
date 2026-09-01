@@ -125,7 +125,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// animation
 		foreach (var anim in model.ParticleEmitters)
 		{
-			if (anim.Type == SimpleAnimationType.None)
+			if (anim.Type == EmitterAnimationType.None)
 			{
 				continue;
 			}
@@ -366,33 +366,33 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 
 internal static class SimpleAnimationTypeConverter
 {
-	public static SimpleAnimationType Convert(this DatSimpleAnimationType type)
+	public static EmitterAnimationType Convert(this DatSimpleAnimationType type)
 		=> type switch
 		{
-			DatSimpleAnimationType.None => SimpleAnimationType.None,
-			DatSimpleAnimationType.SteamPuff1 => SimpleAnimationType.SteamPuff1,
-			DatSimpleAnimationType.SteamPuff2 => SimpleAnimationType.SteamPuff2,
-			DatSimpleAnimationType.SteamPuff3 => SimpleAnimationType.SteamPuff3,
-			DatSimpleAnimationType.DieselExhaust1 => SimpleAnimationType.DieselExhaust1,
-			DatSimpleAnimationType.ElectricSpark1 => SimpleAnimationType.ElectricSpark1,
-			DatSimpleAnimationType.ElectricSpark2 => SimpleAnimationType.ElectricSpark2,
-			DatSimpleAnimationType.DieselExhaust2 => SimpleAnimationType.DieselExhaust2,
-			DatSimpleAnimationType.ShipWake => SimpleAnimationType.ShipWake,
+			DatSimpleAnimationType.None => EmitterAnimationType.None,
+			DatSimpleAnimationType.SteamPuff1 => EmitterAnimationType.SteamPuff1,
+			DatSimpleAnimationType.SteamPuff2 => EmitterAnimationType.SteamPuff2,
+			DatSimpleAnimationType.SteamPuff3 => EmitterAnimationType.SteamPuff3,
+			DatSimpleAnimationType.DieselExhaust1 => EmitterAnimationType.DieselExhaust1,
+			DatSimpleAnimationType.ElectricSpark1 => EmitterAnimationType.ElectricSpark1,
+			DatSimpleAnimationType.ElectricSpark2 => EmitterAnimationType.ElectricSpark2,
+			DatSimpleAnimationType.DieselExhaust2 => EmitterAnimationType.DieselExhaust2,
+			DatSimpleAnimationType.ShipWake => EmitterAnimationType.ShipWake,
 			_ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
 		};
 
-	public static DatSimpleAnimationType Convert(this SimpleAnimationType type)
+	public static DatSimpleAnimationType Convert(this EmitterAnimationType type)
 		=> type switch
 		{
-			SimpleAnimationType.None => DatSimpleAnimationType.None,
-			SimpleAnimationType.SteamPuff1 => DatSimpleAnimationType.SteamPuff1,
-			SimpleAnimationType.SteamPuff2 => DatSimpleAnimationType.SteamPuff2,
-			SimpleAnimationType.SteamPuff3 => DatSimpleAnimationType.SteamPuff3,
-			SimpleAnimationType.DieselExhaust1 => DatSimpleAnimationType.DieselExhaust1,
-			SimpleAnimationType.ElectricSpark1 => DatSimpleAnimationType.ElectricSpark1,
-			SimpleAnimationType.ElectricSpark2 => DatSimpleAnimationType.ElectricSpark2,
-			SimpleAnimationType.DieselExhaust2 => DatSimpleAnimationType.DieselExhaust2,
-			SimpleAnimationType.ShipWake => DatSimpleAnimationType.ShipWake,
+			EmitterAnimationType.None => DatSimpleAnimationType.None,
+			EmitterAnimationType.SteamPuff1 => DatSimpleAnimationType.SteamPuff1,
+			EmitterAnimationType.SteamPuff2 => DatSimpleAnimationType.SteamPuff2,
+			EmitterAnimationType.SteamPuff3 => DatSimpleAnimationType.SteamPuff3,
+			EmitterAnimationType.DieselExhaust1 => DatSimpleAnimationType.DieselExhaust1,
+			EmitterAnimationType.ElectricSpark1 => DatSimpleAnimationType.ElectricSpark1,
+			EmitterAnimationType.ElectricSpark2 => DatSimpleAnimationType.ElectricSpark2,
+			EmitterAnimationType.DieselExhaust2 => DatSimpleAnimationType.DieselExhaust2,
+			EmitterAnimationType.ShipWake => DatSimpleAnimationType.ShipWake,
 			_ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
 		};
 }

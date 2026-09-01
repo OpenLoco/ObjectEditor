@@ -11,10 +11,10 @@ public class CompetitorViewModel(CompetitorObject model)
 		set => Model.AvailableNamePrefixes = value;
 	}
 
-	public PlaystyleFlags AvailablePlayStyles
+	public NameSuffixFlags AvailableNameSuffixes
 	{
-		get => Model.AvailablePlayStyles;
-		set => Model.AvailablePlayStyles = value;
+		get => Model.AvailableNameSuffixes;
+		set => Model.AvailableNameSuffixes = value;
 	}
 
 	public EmotionFlags Emotions

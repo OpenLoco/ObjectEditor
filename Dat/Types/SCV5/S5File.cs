@@ -9,83 +9,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
-public static class ObjectManager
-{
-	public static readonly S5Header FillHeader = new(uint.MaxValue, "ÿÿÿÿÿÿÿÿ", uint.MaxValue);
-
-	public static List<S5Header> GetStructuredHeaders(List<S5Header> allHeaders)
-	{
-		var structuredList = new List<S5Header>(S5File.RequiredObjectsCount);
-		var grouped = allHeaders.GroupBy(x => x.ObjectType).ToDictionary(x => x.Key, x => x.Select(y => y).ToList());
-
-		for (var i = 0; i < Limits.kMaxObjectTypes; ++i)
-		{
-			var ot = (DatObjectType)i;
-			var count = GetMaxObjectCount(ot);
-
-			for (var hdr = 0; hdr < count; ++hdr)
-			{
-				if (grouped.TryGetValue(ot, out var hdrs))
-				{
-					var item = hdr < hdrs.Count ? hdrs[hdr] : FillHeader;
-					structuredList.Add(item);
-				}
-				else
-				{
-					structuredList.Add(FillHeader);
-				}
-			}
-		}
-
-		if (structuredList.Count != S5File.RequiredObjectsCount)
-		{
-			throw new ArgumentOutOfRangeException(nameof(allHeaders), $"The constructed list didn't have exactly {S5File.RequiredObjectsCount} objects, so it is invalid.");
-		}
-
-		return structuredList;
-	}
-
-	public static int GetMaxObjectCount(DatObjectType objectType)
-		=> objectType switch
-		{
-			DatObjectType.InterfaceSkin => 1,
-			DatObjectType.Sound => 128,
-			DatObjectType.Currency => 1,
-			DatObjectType.Steam => 32,
-			DatObjectType.CliffEdge => 8,
-			DatObjectType.Water => 1,
-			DatObjectType.Land => 32,
-			DatObjectType.TownNames => 1,
-			DatObjectType.Cargo => 32,
-			DatObjectType.Wall => 32,
-			DatObjectType.TrackSignal => 16,
-			DatObjectType.LevelCrossing => 4,
-			DatObjectType.StreetLight => 1,
-			DatObjectType.Tunnel => 16,
-			DatObjectType.Bridge => 8,
-			DatObjectType.TrackStation => 16,
-			DatObjectType.TrackExtra => 8,
-			DatObjectType.Track => 8,
-			DatObjectType.RoadStation => 16,
-			DatObjectType.RoadExtra => 4,
-			DatObjectType.Road => 8,
-			DatObjectType.Airport => 8,
-			DatObjectType.Dock => 8,
-			DatObjectType.Vehicle => 224,
-			DatObjectType.Tree => 64,
-			DatObjectType.Snow => 1,
-			DatObjectType.Climate => 1,
-			DatObjectType.HillShapes => 1,
-			DatObjectType.Building => 128,
-			DatObjectType.Scaffolding => 1,
-			DatObjectType.Industry => 16,
-			DatObjectType.Region => 1,
-			DatObjectType.Competitor => 32,
-			DatObjectType.ScenarioText => 1,
-			_ => throw new NotImplementedException()
-		};
-}
-
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(StructLength)]
 public record S5File(
@@ -175,7 +98,7 @@ public record S5File(
 		}
 		else
 		{
-			if (GameState is GameStateSave gsv)
+			if (GameState is GeneralStateSave gsv)
 			{
 				gameState = [.. SawyerStreamWriter.WriteChunk(gsv, SawyerEncoding.RunLengthSingle)];
 			}
@@ -248,10 +171,9 @@ public record S5File(
 			var gameStateA = SawyerStreamReader.ReadChunk<GameStateScenarioA>(ref data);
 			var gameStateB = SawyerStreamReader.ReadChunk<GameStateScenarioB>(ref data);
 			var gameStateC = SawyerStreamReader.ReadChunk<GameStateScenarioC>(ref data);
-			var newFlags = gameStateA.FixFlags | S5FixFlags.FixFlag1;
-			gameStateA = gameStateA with { FixFlags = newFlags };
+			var newFlags = gameStateA.FixFlags | S5FixFlags.FixFlag0; // fixState
+			gameStateA = gameStateA with { FixFlags = newFlags }; // fixState
 			gameState = new GameStateScenario(gameStateA, gameStateB, gameStateC);
-			FixState();
 
 			if (gameStateA.GameStateFlags.HasFlag(GameStateFlags.TileManagerLoaded))
 			{
@@ -261,8 +183,20 @@ public record S5File(
 		}
 		else
 		{
-			gameState = SawyerStreamReader.ReadChunk<GameStateSave>(ref data);
-			FixState();
+			var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
+			var fixFlags = (S5FixFlags)BitConverter.ToUInt16(chunkData[0x434..(0x434 + 2)]);
+			if (!fixFlags.HasFlag(S5FixFlags.FixFlag0) && !fixFlags.HasFlag(S5FixFlags.FixFlag1))
+			{
+				var gs2 = ByteReader.ReadLocoStruct<GameStateSave2>(chunkData);
+				var newFlags = gs2.GeneralState.FixFlags | S5FixFlags.FixFlag0; // fixState
+				gameState = gs2 with { GeneralState = gs2.GeneralState with { FixFlags = newFlags } }; // fixState
+			}
+			else
+			{
+				var gs1 = ByteReader.ReadLocoStruct<GameStateSave1>(chunkData);
+				var newFlags = gs1.GeneralState.FixFlags | S5FixFlags.FixFlag0; // fixState
+				gameState = gs1 with { GeneralState = gs1.GeneralState with { FixFlags = newFlags } }; // fixState
+			}
 
 			tileElementData = SawyerStreamReader.ReadChunkCore(ref data).ToArray();
 			(tileElements, tileElementMap) = ParseTileElements(tileElementData, mapSize.Width, mapSize.Height);
@@ -273,9 +207,6 @@ public record S5File(
 
 		return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameState, tileElements, packedObjects, checksum) { TileElementMap = tileElementMap, OriginalTileElementData = tileElementData };
 	}
-
-	static void FixState()
-	{ }
 
 	static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData, int mapWidth, int mapHeight)
 	{
@@ -318,8 +249,4 @@ public record S5File(
 
 		return (tileElements, tileElementMap);
 	}
-
-	//public ReadOnlySpan<byte> Write()
-	//{
-	//}
 }

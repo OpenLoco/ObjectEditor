@@ -1,0 +1,37 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".github/copilot-instructions.md" />
+    <File Path=".gitignore" />
+    <File Path="build.sh" />
+    <File Path="build_object_service.sh" />
+    <File Path="dat-object-layout.md" />
+    <File Path="loco.db.dbml" />
+    <File Path="loco_icon.ico" />
+    <File Path="palette.png" />
+    <File Path="README.md" />
+    <File Path="tag.sh" />
+  </Folder>
+  <Project Path="Cli/Cli.csproj" />
+  <Project Path="Common/Common.csproj" />
+  <Project Path="Core/Core.csproj" />
+  <Project Path="Dat/Dat.csproj" />
+  <Project Path="DatabaseTools/DatabaseTools.csproj" />
+  <Project Path="DatabaseToolsConsole/DatabaseToolsConsole.csproj" />
+  <Project Path="Definitions/Definitions.csproj" />
+  <Project Path="Gui/Gui.csproj" />
+  <Project Path="GuiUpdater/GuiUpdater.csproj" />
+  <Project Path="Index/Index.csproj" />
+  <Project Path="ObjectService/ObjectService.csproj">
+    <BuildDependency Project="Dat/Dat.csproj" />
+  </Project>
+  <Project Path="PaletteGenerator/PaletteGenerator.csproj" />
+  <Project Path="Shared/Shared.csproj" />
+  <Project Path="Tests/Tests.csproj" />
+</Solution>

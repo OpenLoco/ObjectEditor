@@ -118,13 +118,13 @@ public class MainWindowViewModel : ViewModelBase
 		OpenCacheFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorContext.Settings.CacheFolder, EditorContext.Logger));
 		OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorContext.Settings.DownloadFolder, EditorContext.Logger));
 		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorContext.ProgramDataPath, EditorContext.Logger));
-		OpenG1 = ReactiveCommand.Create(LoadG1);
-		OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
-		OpenMusic = ReactiveCommand.Create(LoadMusic);
-		OpenSoundEffect = ReactiveCommand.Create(LoadSoundEffects);
-		OpenTutorial = ReactiveCommand.Create(LoadTutorial);
-		OpenScores = ReactiveCommand.Create(LoadScores);
-		OpenLanguage = ReactiveCommand.Create(LoadLanguage);
+		OpenG1 = ReactiveCommand.Create(() => Load<G1ViewModel>(PlatformSpecific.DatFileTypes));
+		OpenSCV5 = ReactiveCommand.Create(() => Load<SCV5ViewModel>(PlatformSpecific.SCV5FileTypes));
+		OpenMusic = ReactiveCommand.Create(() => Load<MusicViewModel>(PlatformSpecific.DatFileTypes));
+		OpenSoundEffect = ReactiveCommand.Create(() => Load<SoundEffectsViewModel>(PlatformSpecific.DatFileTypes));
+		OpenTutorial = ReactiveCommand.Create(() => Load<TutorialViewModel>(PlatformSpecific.DatFileTypes));
+		OpenScores = ReactiveCommand.Create(() => Load<ScoresViewModel>(PlatformSpecific.DatFileTypes));
+		OpenLanguage = ReactiveCommand.Create(() => Load<LanguageFileViewModel>(PlatformSpecific.DatFileTypes));
 
 		UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
 		UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
@@ -315,66 +315,32 @@ public class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	public async Task LoadG1()
+	public async Task Load<T>(IReadOnlyList<FilePickerFileType> filetypes) where T : IFileViewModel
 	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+		var fsi = await GetFileSystemItemFromUser(filetypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new G1ViewModel(fsi, EditorContext));
-		}
-	}
-
-	public async Task LoadSCV5()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.SCV5FileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new SCV5ViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadMusic()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new MusicViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadSoundEffects()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new SoundEffectsViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadTutorial()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new TutorialViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadScores()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new ScoresViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadLanguage()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new LanguageFileViewModel(fsi, EditorContext));
+			try
+			{
+				// use reflection because C# cannot handle generic type constraints with constructors that take parameters, ie we cannot do "new T(fsi, EditorContext)" because T is not known at compile time
+				var modelType = typeof(T);
+				var cstrParams = new Type[] { typeof(FileSystemItem), typeof(ObjectEditorContext) };
+				var cstr = modelType.GetConstructor(cstrParams);
+				var cstrArgs = new object[] { fsi, EditorContext };
+				if (cstr != null)
+				{
+					var model = (T)cstr.Invoke(cstrArgs);
+					CurrentTabModel.AddDocument(model);
+				}
+				else
+				{
+					EditorContext.Logger.LogError("Unable to find constructor for {ModelType} with parameters {CstrParams}", modelType, cstrParams);
+				}
+			}
+			catch (Exception ex)
+			{
+				EditorContext.Logger.LogError(ex, "Unable to load SCV5 file {FileName}", fsi.FileName);
+			}
 		}
 	}
 

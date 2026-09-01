@@ -59,11 +59,11 @@
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
     <PackageReference Include="NAudio" Version="2.3.0" />
-    <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
+    <PackageReference Include="NuGet.Versioning" Version="7.9.0" />
     <PackageReference Include="PanAndZoom" Version="12.0.0.1" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
     <PackageReference Include="ReactiveUI.Validation" Version="7.1.0" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="3.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>

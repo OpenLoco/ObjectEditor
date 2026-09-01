@@ -356,18 +356,18 @@ public class LoadSaveTests
 			{
 				Assert.That(struc.AvailableNamePrefixes,
 					Is.EqualTo(
-						NamePrefixFlags.unk4
-						| NamePrefixFlags.unk9
-						| NamePrefixFlags.unk11
-						| NamePrefixFlags.unk12),
+						NamePrefixFlags.Sapphire
+						| NamePrefixFlags.Bergundy
+						| NamePrefixFlags.TownName
+						| NamePrefixFlags.Owner),
 					nameof(struc.AvailableNamePrefixes));
 
-				Assert.That(struc.AvailablePlayStyles,
+				Assert.That(struc.AvailableNameSuffixes,
 					Is.EqualTo(
-						PlaystyleFlags.unk0
-						| PlaystyleFlags.unk2
-						| PlaystyleFlags.unk11),
-					nameof(struc.AvailablePlayStyles));
+						NameSuffixFlags.Transport
+						| NameSuffixFlags.Lines
+						| NameSuffixFlags.Freight),
+					nameof(struc.AvailableNameSuffixes));
 
 				Assert.That(struc.Emotions,
 					Is.EqualTo(
@@ -679,7 +679,7 @@ public class LoadSaveTests
 				Assert.That(struc.TopToolbarSecondaryColour, Is.EqualTo(Colour.MutedSeaGreen), nameof(struc.TopToolbarSecondaryColour));
 				Assert.That(struc.TopToolbarTertiaryColour, Is.EqualTo(Colour.Brown), nameof(struc.TopToolbarTertiaryColour));
 				Assert.That(struc.TopToolbarQuaternaryColour, Is.EqualTo(Colour.Grey), nameof(struc.TopToolbarQuaternaryColour));
-				Assert.That(struc.PlayerInfoToolbarColour, Is.EqualTo(Colour.Grey), nameof(struc.PlayerInfoToolbarColour));
+				Assert.That(struc.CompanyInfoToolbarColour, Is.EqualTo(Colour.Grey), nameof(struc.CompanyInfoToolbarColour));
 				Assert.That(struc.TimeToolbarColour, Is.EqualTo(Colour.Grey), nameof(struc.TimeToolbarColour));
 
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(470));
@@ -1276,10 +1276,10 @@ public class LoadSaveTests
 				Assert.That(struc.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(struc.NumSimultaneousCargoTypes));
 				Assert.That(struc.ParticleEmitters[0].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[0].EmitterVerticalPos, Is.EqualTo(24), nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[0].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
+				Assert.That(struc.ParticleEmitters[0].Type, Is.EqualTo(EmitterAnimationType.None), nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[1].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[1].EmitterVerticalPos, Is.Zero, nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[1].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
+				Assert.That(struc.ParticleEmitters[1].Type, Is.EqualTo(EmitterAnimationType.None), nameof(struc.ParticleEmitters));
 				Assert.That(struc.ShipWakeSpacing, Is.Zero, nameof(struc.ShipWakeSpacing));
 				Assert.That(struc.DesignedYear, Is.EqualTo(1957), nameof(struc.DesignedYear));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(1987), nameof(struc.ObsoleteYear));

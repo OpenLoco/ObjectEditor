@@ -21,7 +21,7 @@ public class TblObjectInterface : DbSubObject, IConvertibleToTable<TblObjectInte
 	public Colour TopToolbarSecondaryColour { get; set; }
 	public Colour TopToolbarTertiaryColour { get; set; }
 	public Colour TopToolbarQuaternaryColour { get; set; }
-	public Colour PlayerInfoToolbarColour { get; set; }
+	public Colour CompanyInfoToolbarColour { get; set; }
 	public Colour TimeToolbarColour { get; set; }
 
 	public static TblObjectInterface FromObject(TblObject tbl, InterfaceSkinObject obj)
@@ -44,7 +44,7 @@ public class TblObjectInterface : DbSubObject, IConvertibleToTable<TblObjectInte
 			TopToolbarSecondaryColour = obj.TopToolbarSecondaryColour,
 			TopToolbarTertiaryColour = obj.TopToolbarTertiaryColour,
 			TopToolbarQuaternaryColour = obj.TopToolbarQuaternaryColour,
-			PlayerInfoToolbarColour = obj.PlayerInfoToolbarColour,
+			CompanyInfoToolbarColour = obj.CompanyInfoToolbarColour,
 			TimeToolbarColour = obj.TimeToolbarColour,
 		};
 }

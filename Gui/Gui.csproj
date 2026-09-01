@@ -28,15 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="version.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Assets\loco_icon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="version.txt" />
   </ItemGroup>
 
   <ItemGroup>

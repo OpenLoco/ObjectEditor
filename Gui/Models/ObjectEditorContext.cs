@@ -168,7 +168,9 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	}
 
 	public async Task LoadAsync()
-		=> await ImageTableGroupLoader.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName);
+	{
+		ImageTableGrouper.GroupConfigurations = await ImageTableGroupLoader.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName);
+	}
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)
 	{

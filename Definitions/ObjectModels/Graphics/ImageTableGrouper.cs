@@ -74,7 +74,7 @@ public static class ImageTableGrouper
 			case ObjectType.TrackSignal:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.LevelCrossing:
-				return CreateLevelCrossingGroups2((LevelCrossingObject)obj, imageList);
+				return CreateLevelCrossingGroups((LevelCrossingObject)obj, imageList);
 			case ObjectType.StreetLight:
 				return CreateGroupsFromConfig(ObjectType.StreetLight, imageList);
 			case ObjectType.Tunnel:
@@ -203,7 +203,7 @@ public static class ImageTableGrouper
 		}
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups2(LevelCrossingObject model, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups(LevelCrossingObject model, List<GraphicsElement> imageList)
 	{
 		for (var i = 0; i < 8; ++i)
 		{

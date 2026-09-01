@@ -55,7 +55,11 @@ if (!context.ValidateOptions(command.Options))
 	return ExitCodes.UsageError;
 }
 
-await ImageTableGroupLoader.LoadDefaultAsync(logger);
+var groupConfigs = await ImageTableGroupLoader.LoadDefaultAsync(logger);
+if (groupConfigs != null)
+{
+	ImageTableGrouper.GroupConfigurations = groupConfigs;
+}
 
 try
 {

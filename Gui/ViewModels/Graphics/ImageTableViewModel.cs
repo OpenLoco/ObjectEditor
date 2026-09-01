@@ -406,7 +406,11 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		{
 			Logger.LogInformation("Reloading image table grouping from {ConfigFilePath}", groupingConfigFilePath);
 			var json = File.ReadAllText(groupingConfigFilePath);
-			ImageTableGrouper.GroupConfigurations = ImageTableGroupLoader.LoadGroupConfigurationJson(Logger, json);
+			var groupConfigurations = ImageTableGroupLoader.LoadGroupConfigurationJson(Logger, json);
+			if (groupConfigurations != null)
+			{
+				ImageTableGrouper.GroupConfigurations = groupConfigurations;
+			}
 		}
 		else
 		{

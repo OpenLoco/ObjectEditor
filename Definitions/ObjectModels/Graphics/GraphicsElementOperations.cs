@@ -50,9 +50,20 @@ public static class GraphicsElementOperations
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(paletteMap);
 
-		element.Image = paletteMap.TryConvertG1ToRgba32Bitmap(element, primary, secondary, out var image)
+		var currentImage = element.Image;
+		var decodedImage = paletteMap.TryConvertG1ToRgba32Bitmap(element, primary, secondary, out var image)
 			? image
 			: ImageTableHelpers.ErrorImage;
+
+		if (!ReferenceEquals(currentImage, decodedImage)
+			&& currentImage != null
+			&& !ReferenceEquals(currentImage, ImageTableHelpers.ErrorImage)
+			&& !ReferenceEquals(currentImage, ImageTableHelpers.OnePixelTransparent))
+		{
+			currentImage.Dispose();
+		}
+
+		element.Image = decodedImage;
 	}
 
 	public static void Crop(this GraphicsElement element, PaletteMap paletteMap)

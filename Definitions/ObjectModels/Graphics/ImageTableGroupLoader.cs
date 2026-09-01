@@ -70,15 +70,21 @@ public static class ImageTableGroupLoader
 	{
 		try
 		{
-			await using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(EmbeddedResourceName);
-			if (stream == null)
+			await using var stream = typeof(ImageTableGroupLoader).Assembly.GetManifestResourceStream(EmbeddedResourceName);
+			if (stream != null)
 			{
-				logger.LogError("Default image table group configuration resource not found");
-				return null;
+				using var reader = new StreamReader(stream, leaveOpen: true);
+				return await reader.ReadToEndAsync();
 			}
 
-			using var reader = new StreamReader(stream, leaveOpen: true);
-			return await reader.ReadToEndAsync();
+			var fallbackPath = Path.Combine(AppContext.BaseDirectory, "ObjectModels", "Graphics", "ImageTableGroups.json");
+			if (File.Exists(fallbackPath))
+			{
+				return await File.ReadAllTextAsync(fallbackPath);
+			}
+
+			logger.LogError("Default image table group configuration resource not found");
+			return null;
 		}
 		catch (Exception ex)
 		{

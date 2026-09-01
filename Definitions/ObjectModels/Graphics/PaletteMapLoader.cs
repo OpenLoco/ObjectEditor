@@ -10,7 +10,7 @@ public static class PaletteMapLoader
 
 	public static Image<Rgba32> LoadDefaultImage()
 	{
-		using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(EmbeddedPaletteResourceName)
+		using var stream = typeof(PaletteMapLoader).Assembly.GetManifestResourceStream(EmbeddedPaletteResourceName)
 			?? throw new InvalidOperationException($"Embedded palette resource \"{EmbeddedPaletteResourceName}\" was not found");
 
 		return Image.Load<Rgba32>(stream);

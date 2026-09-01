@@ -168,9 +168,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	}
 
 	public async Task LoadAsync()
-	{
-		ImageTableGrouper.GroupConfigurations = await ImageTableGroupLoader.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName);
-	}
+		=> ImageTableGrouper.GroupConfigurations = await ImageTableGroupLoader.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName);
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)
 	{
@@ -364,26 +362,20 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	bool TryLoadLocalFile(FileSystemItem filesystemItem, out LocoUIObjectModel? locoDatFile)
 	{
 		locoDatFile = null;
-
-		DatHeaderInfo? fileInfo = null;
-		LocoObject? locoObject = null;
-		ObjectMetadata? metadata = null;
-
 		var filename = File.Exists(filesystemItem.FileName)
 			? filesystemItem.FileName
 			: Path.Combine(Settings.ObjDataDirectory, filesystemItem.FileName ?? string.Empty);
 
 		var obj = SawyerStreamReader.LoadFullObject(filename, logger: Logger);
-		fileInfo = obj.DatFileInfo;
-		locoObject = obj.LocoObject;
-		metadata = new ObjectMetadata("<none>")
+		var fileInfo = obj.DatFileInfo;
+		var locoObject = obj.LocoObject;
+		var metadata = new ObjectMetadata("<none>")
 		{
 			CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
 			ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),
 			Availability = Definitions.ObjectAvailability.Available,
 			//DatObjects = [new(0)],
-		}; // todo: look up the rest of the data from internet
-
+		};
 		locoDatFile = new LocoUIObjectModel() { DatInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
 		return true;
 	}

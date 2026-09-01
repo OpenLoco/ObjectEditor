@@ -19,7 +19,7 @@ public class LogLevelToRowBrushConverter : IValueConverter
 			return Brushes.Black;
 		}
 
-		var resourceKey = string.Empty;
+		string? resourceKey;
 		if (type.Equals("Foreground", StringComparison.OrdinalIgnoreCase))
 		{
 			resourceKey = "Foreground";

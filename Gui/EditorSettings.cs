@@ -118,7 +118,7 @@ public class EditorSettings
 		{
 			File.WriteAllText(filename, text);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
 			logger.LogError(ex, "Failed to save settings to \"{Filename}\"", filename);
 		}

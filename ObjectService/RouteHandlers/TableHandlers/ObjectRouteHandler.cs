@@ -72,7 +72,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 	//		return Results.BadRequest("Unable to accept file sizes > 5MB");
 	//	}
 
-	//	var ssrLogger = new Logger();
+	//	var ssrLogger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("SawyerStreamReader");
 	//	if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
 	//	{
 	//		return Results.BadRequest("Provided data had invalid dat file headers");
@@ -177,7 +177,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 	//	_ = await db.SaveChangesAsync();
 
 	//	// update server index
-	//	sfm.ObjectIndex.Objects.Add(
+	//	sfm.ObjectIndex.AddEntry(
 	//		new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 
 	//	_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
@@ -213,7 +213,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			return Results.Problem($"Uploads are limited to {ServerLimits.MaximumUploadFileSize / (1024 * 1024)}MB.", statusCode: StatusCodes.Status413PayloadTooLarge);
 		}
 
-		var ssrLogger = new Logger();
+		var ssrLogger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("SawyerStreamReader");
 		if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
 		{
 			return Results.Problem("Provided data had invalid dat file headers", statusCode: StatusCodes.Status400BadRequest);
@@ -340,7 +340,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		_ = await db.SaveChangesAsync();
 
 		// update server index
-		sfm.ObjectIndex.Objects.Add(
+		sfm.ObjectIndex.AddEntry(
 			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 
 		_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);

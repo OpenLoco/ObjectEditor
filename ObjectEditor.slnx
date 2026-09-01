@@ -18,9 +18,12 @@
     <File Path="README.md" />
     <File Path="tag.sh" />
   </Folder>
+  <Project Path="Cli/Cli.csproj" />
   <Project Path="Common/Common.csproj" />
+  <Project Path="Core/Core.csproj" />
   <Project Path="Dat/Dat.csproj" />
   <Project Path="DatabaseTools/DatabaseTools.csproj" />
+  <Project Path="DatabaseToolsConsole/DatabaseToolsConsole.csproj" />
   <Project Path="Definitions/Definitions.csproj" />
   <Project Path="Gui/Gui.csproj" />
   <Project Path="GuiUpdater/GuiUpdater.csproj" />
@@ -29,5 +32,6 @@
     <BuildDependency Project="Dat/Dat.csproj" />
   </Project>
   <Project Path="PaletteGenerator/PaletteGenerator.csproj" />
+  <Project Path="Shared/Shared.csproj" />
   <Project Path="Tests/Tests.csproj" />
 </Solution>

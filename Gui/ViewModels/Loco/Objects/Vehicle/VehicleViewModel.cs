@@ -5,7 +5,6 @@ using Definitions.ObjectModels.Types;
 using DynamicData.Binding;
 using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
-using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;

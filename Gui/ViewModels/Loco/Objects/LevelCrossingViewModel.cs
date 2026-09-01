@@ -59,10 +59,10 @@ public class LevelCrossingViewModel(LevelCrossingObject obj)
 	}
 
 	[Category("Animation")]
-	[Description("The delay between animation frames for a closed/blocked crossing. Higher values mean slower animations.")]
-	public uint8_t ClosedAnimationDelay
+	[Description("The interval in game ticks between animation frames for a closed/blocked crossing. Higher values mean slower animations.")]
+	public uint8_t ClosedAnimationFrameInterval
 	{
-		get => Model.ClosedAnimationDelay;
-		set => Model.ClosedAnimationDelay = value;
+		get => Model.ClosedAnimationFrameInterval;
+		set => Model.ClosedAnimationFrameInterval = value;
 	}
 }

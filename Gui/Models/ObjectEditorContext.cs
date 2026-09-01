@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,7 +53,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	public const string ApplicationName = "OpenLoco Object Editor";
 	public const string SettingsFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
 	public const string LoggingFileName = "objectEditor.log";
-	public const string ImageTableGroupsFileName = "imageTableGroups.json";
+	public const string ImageTableGroupsFileName = ImageTableGroupLoader.FileName;
 
 	public string DefaultConfigFolder { get; set; } = "config";
 	public string DefaultDownloadFolder { get; set; } = "downloads";
@@ -169,63 +168,8 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	}
 
 	public async Task LoadAsync()
-		=> await EnsureDefaultImageTableGroupsConfigFileAsync(Logger, ImageTableGroupsPathName);
-
-	static async Task EnsureDefaultImageTableGroupsConfigFileAsync(Logger logger, string imageTableGroupsPathName)
 	{
-		logger.LogInformation("Attempting to load image table group config from '{ImageTableGroupsFileName}'", imageTableGroupsPathName);
-		var defaultImageTableGroups = await ReadDefaultImageTableGroupsConfigAsync(logger, imageTableGroupsPathName);
-		if (defaultImageTableGroups == null)
-		{
-			logger.LogError("Failed to load default image table group configuration - groups will not be automatically created for existing images. Please ensure the default config file is present and valid at '{ImageTableGroupsFileName}'", imageTableGroupsPathName);
-			return;
-		}
-
-		var currentImageTableGroups = defaultImageTableGroups;
-
-		if (File.Exists(imageTableGroupsPathName))
-		{
-			var jsonVersion = ImageTableGrouper.ReadImageTableGroupVersion(logger, imageTableGroupsPathName);
-			if (jsonVersion == null || jsonVersion < VersionHelpers.GetCurrentAppVersion())
-			{
-				currentImageTableGroups = defaultImageTableGroups;
-			}
-			else
-			{
-				await File.WriteAllTextAsync(imageTableGroupsPathName, defaultImageTableGroups);
-			}
-		}
-		else
-		{
-			await File.WriteAllTextAsync(imageTableGroupsPathName, defaultImageTableGroups);
-		}
-
-		ImageTableGrouper.LoadGroupConfigurationJson(logger, currentImageTableGroups);
-	}
-
-	static async Task<string?> ReadDefaultImageTableGroupsConfigAsync(Logger logger, string imageTableGroupsFileName)
-	{
-		try
-		{
-			var assembly = Assembly.GetExecutingAssembly();
-			var currentVersion = VersionHelpers.GetCurrentAppVersion();
-			using var assemblyStream = assembly.GetManifestResourceStream("Gui.ImageTableGroups.json");
-			if (assemblyStream == null)
-			{
-				logger.LogError("Default image table group configuration resource not found.");
-				return null;
-			}
-
-			using (var reader = new StreamReader(assemblyStream, leaveOpen: true))
-			{
-				return await reader.ReadToEndAsync();
-			}
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Failed to create default image table group config file.");
-			return null;
-		}
+		ImageTableGrouper.GroupConfigurations = await ImageTableGroupLoader.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName);
 	}
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)

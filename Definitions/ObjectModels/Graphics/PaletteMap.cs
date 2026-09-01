@@ -1,8 +1,7 @@
-using Definitions.ObjectModels.Graphics;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Definitions.ObjectModels;
+namespace Definitions.ObjectModels.Graphics;
 
 public class PaletteMap
 {

@@ -92,23 +92,33 @@ public static class VersionHelpers
 		}
 	}
 
+	static SemanticVersion? CachedSemanticVersion;
+
 	public static SemanticVersion GetCurrentAppVersion()
 	{
-		var assembly = Assembly.GetCallingAssembly();
-		if (assembly == null)
+		if (CachedSemanticVersion != null)
 		{
-			return UnknownVersion;
+			return CachedSemanticVersion;
 		}
 
-		// grab current app version from assembly
-		const string versionFilename = "Gui.version.txt";
-		using (var stream = assembly.GetManifestResourceStream(versionFilename))
-		using (var ms = new MemoryStream())
+		foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
 		{
-			stream!.CopyTo(ms);
-			var versionText = Encoding.ASCII.GetString(ms.ToArray());
-			return GetVersionFromText(versionText);
+			// version.txt is an embedded resource in the Definitions assembly
+			using var stream = assembly.GetManifestResourceStream("Definitions.version.txt") ?? assembly.GetManifestResourceStream("version.txt");
+			if (stream == null)
+			{
+				continue;
+			}
+
+			using var ms = new MemoryStream();
+			stream.CopyTo(ms);
+			CachedSemanticVersion = GetVersionFromText(Encoding.ASCII.GetString(ms.ToArray()));
+			return CachedSemanticVersion;
 		}
+
+		CachedSemanticVersion = UnknownVersion;
+		return CachedSemanticVersion;
+
 	}
 
 	// A single, process-wide HttpClient avoids socket exhaustion that comes from

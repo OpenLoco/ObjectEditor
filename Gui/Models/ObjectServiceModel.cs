@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,7 +54,7 @@ public class ObjectServiceModel
 				tags = [.. (await client.GetTagsAsync()).OrderBy(x => x.Name)];
 				packs = [.. (await client.GetObjectPacksAsync()).OrderBy(x => x.Name)];
 			}
-			catch (Exception ex)
+			catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
 			{
 				logger.LogError(ex, "Failed to load server metadata (licences/authors/tags/object packs)");
 				licences = [null];

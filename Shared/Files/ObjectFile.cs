@@ -71,7 +71,7 @@ public static class ObjectFile
 			logger.LogInformation("{ObjName} successfully saved to {Filename}", effectiveName, fileName);
 			return true;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
 			logger.LogError(ex, "An error occurred while saving {ObjName}", effectiveName);
 			return false;

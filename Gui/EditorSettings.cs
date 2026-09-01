@@ -91,7 +91,7 @@ public class EditorSettings
 			File.Move(filename, backup, overwrite: true);
 			logger.LogInformation("Backed up invalid settings file to \"{Backup}\"", backup);
 		}
-		catch (Exception backupEx)
+		catch (Exception backupEx) when (backupEx is IOException or UnauthorizedAccessException)
 		{
 			logger.LogError(backupEx, "Failed to back up invalid settings file \"{Filename}\"; it will be overwritten.", filename);
 		}

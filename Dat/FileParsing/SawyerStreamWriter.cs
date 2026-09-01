@@ -111,7 +111,7 @@ public static class SawyerStreamWriter
 			stream.Flush();
 			stream.Close();
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
 			// will usually be UnauthorizedAccessException
 			logger?.LogError(ex, "An error occurred while saving {ObjName}", objName);

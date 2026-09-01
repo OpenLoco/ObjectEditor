@@ -4,6 +4,12 @@ namespace Definitions.DTO.Comparers;
 
 public class DtoObjectDescriptorComparer : IEqualityComparer<DtoObjectPostResponse>
 {
+	private static readonly DtoLicenceEntryComparer s_licenceComparer = new();
+	private static readonly DtoAuthorEntryComparer s_authorComparer = new();
+	private static readonly DtoTagEntryComparer s_tagComparer = new();
+	private static readonly DtoItemPackEntryComparer s_packComparer = new();
+	private static readonly DtoDatObjectEntryComparer s_datComparer = new();
+
 	public bool Equals(DtoObjectPostResponse? x, DtoObjectPostResponse? y)
 	{
 		if (x is null || y is null)
@@ -23,11 +29,11 @@ public class DtoObjectDescriptorComparer : IEqualityComparer<DtoObjectPostRespon
 			&& x.CreatedDate == y.CreatedDate
 			&& x.ModifiedDate == y.ModifiedDate
 			&& x.UploadedDate == y.UploadedDate
-			&& new DtoLicenceEntryComparer().Equals(x.Licence, y.Licence)
-			&& x.Authors.SequenceEqual(y.Authors, new DtoAuthorEntryComparer())
-			&& x.Tags.SequenceEqual(y.Tags, new DtoTagEntryComparer())
-			&& x.ObjectPacks.SequenceEqual(y.ObjectPacks, new DtoItemPackEntryComparer())
-			&& x.DatObjects.SequenceEqual(y.DatObjects, new DtoDatObjectEntryComparer())
+			&& s_licenceComparer.Equals(x.Licence, y.Licence)
+			&& x.Authors.SequenceEqual(y.Authors, s_authorComparer)
+			&& x.Tags.SequenceEqual(y.Tags, s_tagComparer)
+			&& x.ObjectPacks.SequenceEqual(y.ObjectPacks, s_packComparer)
+			&& x.DatObjects.SequenceEqual(y.DatObjects, s_datComparer)
 			&& x.StringTable.Equals(y.StringTable);
 	}
 

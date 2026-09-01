@@ -93,9 +93,19 @@ public static class BatchProcessor
 				? new BatchItemResult(fileName, true, outcome.Message)
 				: new BatchItemResult(fileName, false, "failed to save");
 		}
-		catch (Exception ex)
+		catch (IOException ex)
 		{
-			logger.LogError(ex, "Unhandled error processing \"{FileName}\"", fileName);
+			logger.LogError(ex, "I/O error processing \"{FileName}\"", fileName);
+			return new BatchItemResult(fileName, false, ex.Message);
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			logger.LogError(ex, "Access denied processing \"{FileName}\"", fileName);
+			return new BatchItemResult(fileName, false, ex.Message);
+		}
+		catch (InvalidDataException ex)
+		{
+			logger.LogError(ex, "Invalid data in \"{FileName}\"", fileName);
 			return new BatchItemResult(fileName, false, ex.Message);
 		}
 	}

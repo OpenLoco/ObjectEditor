@@ -202,9 +202,10 @@ public class LegacyRouteHandler()
 
 			return Results.Ok(result);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is DbUpdateException or InvalidOperationException or IOException)
 		{
-			return Results.Problem(ex.Message);
+			logger.LogError(ex, "Database error listing objects");
+			return Results.Problem("An error occurred while retrieving objects.");
 		}
 	}
 
@@ -628,7 +629,7 @@ public class LegacyRouteHandler()
 		_ = db.DatObjects.Add(locoLookupTbl);
 		_ = await db.SaveChangesAsync();
 
-		sfm.ObjectIndex.Objects.Add(
+		sfm.ObjectIndex.AddEntry(
 			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, locoTbl.Id, hdrs.S5.Checksum, request.xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, createdDate, modifiedDate, locoTbl.VehicleType));
 
 		return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);

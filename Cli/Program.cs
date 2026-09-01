@@ -65,7 +65,7 @@ try
 {
 	return await command.RunAsync(context);
 }
-catch (Exception ex)
+catch (Exception ex) when (ex is not (OutOfMemoryException or StackOverflowException or ThreadAbortException))
 {
 	logger.LogError(ex, "Unhandled error running \"{Command}\"", command.Name);
 	return ExitCodes.OperationFailed;

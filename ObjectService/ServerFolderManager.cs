@@ -1,4 +1,5 @@
 using Index;
+using System.Text.Json;
 
 namespace ObjectService;
 
@@ -61,7 +62,7 @@ public class ServerFolderManager : IServerFolderManager
 		{
 			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
 		{
 			// Index file is corrupt or otherwise unreadable. Log the original failure
 			// before destroying the file so we can diagnose recurring corruption.
@@ -70,7 +71,7 @@ public class ServerFolderManager : IServerFolderManager
 			{
 				File.Delete(indexFile);
 			}
-			catch (Exception deleteEx)
+			catch (Exception deleteEx) when (deleteEx is IOException or UnauthorizedAccessException)
 			{
 				logger.LogError(deleteEx, "Failed to delete corrupt index file \"{IndexFile}\".", indexFile);
 				throw;
@@ -80,7 +81,7 @@ public class ServerFolderManager : IServerFolderManager
 			{
 				ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
 			}
-			catch (Exception retryEx)
+			catch (Exception retryEx) when (retryEx is IOException or UnauthorizedAccessException or JsonException)
 			{
 				logger.LogError(retryEx, "Failed to recreate object index at \"{IndexFile}\".", indexFile);
 				throw;

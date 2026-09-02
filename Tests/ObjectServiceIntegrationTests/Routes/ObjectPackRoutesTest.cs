@@ -44,10 +44,10 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 		await File.WriteAllBytesAsync(Path.Combine(rootFolder, "outside.dat"), [8, 8, 8]);
 		await File.WriteAllBytesAsync(Path.Combine(sfm.ObjectsFolder, @"..\outside-windows.dat"), [5, 5, 5]);
 
-		sfm.ObjectIndex.Objects.Add(new ObjectIndexEntry("SAFEOBJ", safeRelativePath, null, 111, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
-		sfm.ObjectIndex.Objects.Add(new ObjectIndexEntry("UNSAFEOBJ", Path.Combine("..", "outside.dat"), null, 222, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
-		sfm.ObjectIndex.Objects.Add(new ObjectIndexEntry("WINDOWSOBJ", @"..\outside-windows.dat", null, 333, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
-		sfm.ObjectIndex.Objects.Add(new ObjectIndexEntry("SAFEOBJ2", secondSafeRelativePath, null, 444, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
+		sfm.ObjectIndex.AddEntry(new ObjectIndexEntry("SAFEOBJ", safeRelativePath, null, 111, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
+		sfm.ObjectIndex.AddEntry(new ObjectIndexEntry("UNSAFEOBJ", Path.Combine("..", "outside.dat"), null, 222, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
+		sfm.ObjectIndex.AddEntry(new ObjectIndexEntry("WINDOWSOBJ", @"..\outside-windows.dat", null, 333, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
+		sfm.ObjectIndex.AddEntry(new ObjectIndexEntry("SAFEOBJ2", secondSafeRelativePath, null, 444, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
 
 		await db.ObjectPacks.AddRangeAsync(
 		[

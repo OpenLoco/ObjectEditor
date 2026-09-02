@@ -40,7 +40,7 @@ public static class ImageTableGroupLoader
 				}
 			}
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
 		{
 			logger.LogError(ex, "Error occurred while reading image table group version");
 		}

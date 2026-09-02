@@ -112,9 +112,14 @@ public static class ObjectValidation
 				validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
 			}
 		}
-		catch (Exception ex)
+		catch (IOException ex)
 		{
-			logger.LogError(ex, "Error validating for OpenGraphics");
+			logger.LogError(ex, "I/O error validating for OpenGraphics");
+			validationErrors.Add($"Error validating for OpenGraphics: {ex.Message}");
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			logger.LogError(ex, "Access denied during OpenGraphics validation");
 			validationErrors.Add($"Error validating for OpenGraphics: {ex.Message}");
 		}
 

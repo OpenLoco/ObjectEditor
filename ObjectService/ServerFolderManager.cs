@@ -1,15 +1,16 @@
 using Index;
+using System.Text.Json;
 
 namespace ObjectService;
 
 public interface IServerFolderManager
 {
-	//string RootDirectory { get; init; }
+//string RootDirectory { get; init; }
 }
 
 public class TestServerFolderManager : IServerFolderManager
 {
-	//string RootDirectory { get; init; }
+//string RootDirectory { get; init; }
 }
 
 /// <summary>
@@ -43,123 +44,131 @@ public class TestServerFolderManager : IServerFolderManager
 /// </summary>
 public class ServerFolderManager : IServerFolderManager
 {
-	string RootDirectory { get; init; }
+string RootDirectory { get; init; }
 
-	public ServerFolderManager(string rootDirectory)
-	{
-		if (!Directory.Exists(rootDirectory))
-		{
-			throw new DirectoryNotFoundException($"The specified root directory does not exist: {rootDirectory}");
-		}
+public ServerFolderManager(string rootDirectory)
+{
+if (!Directory.Exists(rootDirectory))
+{
+throw new DirectoryNotFoundException($"The specified root directory does not exist: {rootDirectory}");
+}
 
-		RootDirectory = rootDirectory;
+RootDirectory = rootDirectory;
 
-		ILogger logger = new Common.Logging.Logger();
+ILogger logger = new Common.Logging.Logger();
 
-		var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
-		try
-		{
-			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
-		}
-		catch (Exception ex)
-		{
-			// Index file is corrupt or otherwise unreadable. Log the original failure
-			// before destroying the file so we can diagnose recurring corruption.
-			logger.LogError(ex, "Failed to load object index at \"{IndexFile}\"; deleting and recreating.", indexFile);
-			try
-			{
-				File.Delete(indexFile);
-			}
-			catch (Exception deleteEx)
-			{
-				logger.LogError(deleteEx, "Failed to delete corrupt index file \"{IndexFile}\".", indexFile);
-				throw;
-			}
+var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
+try
+{
+ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
+}
+catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+{
+// Index file is corrupt or otherwise unreadable. Log the original failure
+// before destroying the file so we can diagnose recurring corruption.
+logger.LogError(ex, "Failed to load object index at \"{IndexFile}\"; deleting and recreating.", indexFile);
+try
+{
+File.Delete(indexFile);
+}
+catch (Exception deleteEx) when (deleteEx is IOException or UnauthorizedAccessException)
+{
+logger.LogError(deleteEx, "Failed to delete corrupt index file \"{IndexFile}\".", indexFile);
+throw;
+}
 
-			try
-			{
-				ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
-			}
-			catch (Exception retryEx)
-			{
-				logger.LogError(retryEx, "Failed to recreate object index at \"{IndexFile}\".", indexFile);
-				throw;
-			}
-		}
+try
+{
+ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
+}
+catch (Exception retryEx) when (retryEx is IOException or UnauthorizedAccessException or JsonException)
+{
+logger.LogError(retryEx, "Failed to recreate object index at \"{IndexFile}\".", indexFile);
+throw;
+}
+}
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder), nameof(ObjectsOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsCustomFolder), nameof(ObjectsCustomFolder));
+EnsureDirectoryExists(ObjectsOriginalFolder);
+EnsureDirectoryExists(ObjectsCustomFolder);
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsOriginalFolder), nameof(GraphicsOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsCustomFolder), nameof(GraphicsCustomFolder));
+EnsureDirectoryExists(GraphicsOriginalFolder);
+EnsureDirectoryExists(GraphicsCustomFolder);
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicOriginalFolder), nameof(MusicOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicCustomFolder), nameof(MusicCustomFolder));
+EnsureDirectoryExists(MusicOriginalFolder);
+EnsureDirectoryExists(MusicCustomFolder);
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsOriginalFolder), nameof(SoundEffectsOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsCustomFolder), nameof(SoundEffectsCustomFolder));
+EnsureDirectoryExists(SoundEffectsOriginalFolder);
+EnsureDirectoryExists(SoundEffectsCustomFolder);
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsOriginalFolder), nameof(TutorialsOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsCustomFolder), nameof(TutorialsCustomFolder));
+EnsureDirectoryExists(TutorialsOriginalFolder);
+EnsureDirectoryExists(TutorialsCustomFolder);
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosOriginalFolder), nameof(ScenariosOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosCustomFolder), nameof(ScenariosCustomFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosGoGFolder), nameof(ScenariosGoGFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosSteamFolder), nameof(ScenariosSteamFolder));
-	}
+EnsureDirectoryExists(ScenariosOriginalFolder);
+EnsureDirectoryExists(ScenariosCustomFolder);
+EnsureDirectoryExists(ScenariosGoGFolder);
+EnsureDirectoryExists(ScenariosSteamFolder);
+}
 
-	public ObjectIndex ObjectIndex { get; init; }
+private static void EnsureDirectoryExists(string path)
+{
+if (!Directory.Exists(path))
+{
+throw new DirectoryNotFoundException($"Required server directory not found: {path}");
+}
+}
 
-	public const string ObjectsFolderName = "Objects";
+public ObjectIndex ObjectIndex { get; init; }
 
-	public const string LandscapesFolderName = "Landscapes";
-	public const string ScenariosFolderName = "Scenarios";
-	public const string GameDataFolderName = "GameData";
+public const string ObjectsFolderName = "Objects";
 
-	public const string GraphicsFolderName = "Graphics";
-	public const string MusicFolderName = "Music";
-	public const string SoundEffectsFolderName = "SoundEffects";
-	public const string TutorialsFolderName = "Tutorials";
+public const string LandscapesFolderName = "Landscapes";
+public const string ScenariosFolderName = "Scenarios";
+public const string GameDataFolderName = "GameData";
 
-	public const string OriginalFolderName = "Original";
-	public const string CustomFolderName = "Custom";
+public const string GraphicsFolderName = "Graphics";
+public const string MusicFolderName = "Music";
+public const string SoundEffectsFolderName = "SoundEffects";
+public const string TutorialsFolderName = "Tutorials";
 
-	public const string SteamFolderName = "Steam";
-	public const string GoGFolderName = "GoG";
+public const string OriginalFolderName = "Original";
+public const string CustomFolderName = "Custom";
 
-	#region Objects
+public const string SteamFolderName = "Steam";
+public const string GoGFolderName = "GoG";
 
-	public string IndexFile => Path.Combine(RootDirectory, ObjectsFolderName, ObjectIndex.DefaultIndexFileName);
-	public string ObjectsFolder => Path.Combine(RootDirectory, ObjectsFolderName);
-	public string ObjectsOriginalFolder => Path.Combine(ObjectsFolder, OriginalFolderName);
-	public string ObjectsCustomFolder => Path.Combine(ObjectsFolder, CustomFolderName);
+#region Objects
 
-	#endregion
+public string IndexFile => Path.Combine(RootDirectory, ObjectsFolderName, ObjectIndex.DefaultIndexFileName);
+public string ObjectsFolder => Path.Combine(RootDirectory, ObjectsFolderName);
+public string ObjectsOriginalFolder => Path.Combine(ObjectsFolder, OriginalFolderName);
+public string ObjectsCustomFolder => Path.Combine(ObjectsFolder, CustomFolderName);
 
-	#region GameData
+#endregion
 
-	public string GameDataFolder => Path.Combine(RootDirectory, GameDataFolderName);
+#region GameData
 
-	public string GraphicsOriginalFolder => Path.Combine(GameDataFolder, GraphicsFolderName, OriginalFolderName);
-	public string GraphicsCustomFolder => Path.Combine(GameDataFolder, GraphicsFolderName, CustomFolderName);
-	public string MusicOriginalFolder => Path.Combine(GameDataFolder, MusicFolderName, OriginalFolderName);
-	public string MusicCustomFolder => Path.Combine(GameDataFolder, MusicFolderName, CustomFolderName);
-	public string SoundEffectsOriginalFolder => Path.Combine(GameDataFolder, SoundEffectsFolderName, OriginalFolderName);
-	public string SoundEffectsCustomFolder => Path.Combine(GameDataFolder, SoundEffectsFolderName, CustomFolderName);
-	public string TutorialsOriginalFolder => Path.Combine(GameDataFolder, TutorialsFolderName, OriginalFolderName);
-	public string TutorialsCustomFolder => Path.Combine(GameDataFolder, TutorialsFolderName, CustomFolderName);
+public string GameDataFolder => Path.Combine(RootDirectory, GameDataFolderName);
 
-	#endregion
+public string GraphicsOriginalFolder => Path.Combine(GameDataFolder, GraphicsFolderName, OriginalFolderName);
+public string GraphicsCustomFolder => Path.Combine(GameDataFolder, GraphicsFolderName, CustomFolderName);
+public string MusicOriginalFolder => Path.Combine(GameDataFolder, MusicFolderName, OriginalFolderName);
+public string MusicCustomFolder => Path.Combine(GameDataFolder, MusicFolderName, CustomFolderName);
+public string SoundEffectsOriginalFolder => Path.Combine(GameDataFolder, SoundEffectsFolderName, OriginalFolderName);
+public string SoundEffectsCustomFolder => Path.Combine(GameDataFolder, SoundEffectsFolderName, CustomFolderName);
+public string TutorialsOriginalFolder => Path.Combine(GameDataFolder, TutorialsFolderName, OriginalFolderName);
+public string TutorialsCustomFolder => Path.Combine(GameDataFolder, TutorialsFolderName, CustomFolderName);
 
-	#region SCV5
+#endregion
 
-	public string LandscapesFolder => Path.Combine(RootDirectory, LandscapesFolderName);
-	public string ScenariosFolder => Path.Combine(RootDirectory, ScenariosFolderName);
+#region SCV5
 
-	public string ScenariosOriginalFolder => Path.Combine(ScenariosFolder, OriginalFolderName);
-	public string ScenariosCustomFolder => Path.Combine(ScenariosFolder, CustomFolderName);
-	public string ScenariosGoGFolder => Path.Combine(ScenariosOriginalFolder, GoGFolderName);
-	public string ScenariosSteamFolder => Path.Combine(ScenariosOriginalFolder, SteamFolderName);
+public string LandscapesFolder => Path.Combine(RootDirectory, LandscapesFolderName);
+public string ScenariosFolder => Path.Combine(RootDirectory, ScenariosFolderName);
 
-	#endregion
+public string ScenariosOriginalFolder => Path.Combine(ScenariosFolder, OriginalFolderName);
+public string ScenariosCustomFolder => Path.Combine(ScenariosFolder, CustomFolderName);
+public string ScenariosGoGFolder => Path.Combine(ScenariosOriginalFolder, GoGFolderName);
+public string ScenariosSteamFolder => Path.Combine(ScenariosOriginalFolder, SteamFolderName);
+
+#endregion
 }

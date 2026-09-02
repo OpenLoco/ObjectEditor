@@ -5,6 +5,7 @@ using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Text.Json;
 
 namespace Core.Graphics;
 
@@ -159,7 +160,7 @@ public static class ImageTableIo
 		{
 			imageTable.Groups = [.. ImageTableGrouper.CreateGroupsForExistingImages(objectModel, objectType.Value, imageList)];
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is InvalidOperationException or JsonException)
 		{
 			logger.LogError(ex, "Failed to regroup the image table - images will remain in a single flat group");
 		}

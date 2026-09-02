@@ -23,25 +23,109 @@ public class ObjectIndex
 	[JsonIgnore]
 	public const string DefaultIndexDbFileName = "objectIndex.db";
 
+	private readonly ConcurrentDictionary<ulong, ObjectIndexEntry> _byXxHash3 = new();
+	private readonly ConcurrentDictionary<(string DisplayName, uint Checksum), ObjectIndexEntry> _byNameChecksum = new();
+
 	public ObjectIndex()
 	{ }
 
 	public ObjectIndex(ObservableCollection<ObjectIndexEntry> objects)
-		=> Objects = objects;
+	{
+		Objects = objects;
+		foreach (var entry in Objects)
+		{
+			AddToLookups(entry);
+		}
+	}
 
 	public ObjectIndex(IEnumerable<ObjectIndexEntry> objects)
-		=> Objects = [.. objects];
+	{
+		Objects = [.. objects];
+		foreach (var entry in Objects)
+		{
+			AddToLookups(entry);
+		}
+	}
+
+	private void AddToLookups(ObjectIndexEntry entry)
+	{
+		if (entry.xxHash3.HasValue)
+		{
+			_byXxHash3[entry.xxHash3.Value] = entry;
+		}
+
+		if (entry.DatChecksum.HasValue)
+		{
+			_byNameChecksum[(entry.DisplayName, entry.DatChecksum.Value)] = entry;
+		}
+	}
+
+	/// <summary>
+	/// Rebuilds the internal lookup dictionaries from the <see cref="Objects"/> collection.
+	/// Must be called after JSON deserialization since the dictionaries are not serialized.
+	/// </summary>
+	public void RebuildLookups()
+	{
+		_byXxHash3.Clear();
+		_byNameChecksum.Clear();
+
+		foreach (var entry in Objects)
+		{
+			AddToLookups(entry);
+		}
+	}
+
+	private void RemoveFromLookups(ObjectIndexEntry entry)
+	{
+		if (entry.xxHash3.HasValue)
+		{
+			var key = entry.xxHash3.Value;
+			if (_byXxHash3.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
+			{
+				_byXxHash3.TryRemove(key, out _);
+			}
+		}
+
+		if (entry.DatChecksum.HasValue)
+		{
+			var key = (entry.DisplayName, entry.DatChecksum.Value);
+			if (_byNameChecksum.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
+			{
+				_byNameChecksum.TryRemove(key, out _);
+			}
+		}
+	}
+
+	public void AddEntry(ObjectIndexEntry entry)
+	{
+		AddToLookups(entry);
+		Objects.Add(entry);
+	}
+
+	public void RemoveEntry(ObjectIndexEntry entry)
+	{
+		RemoveFromLookups(entry);
+		_ = Objects.Remove(entry);
+	}
 
 	public bool TryFind((string datName, uint datChecksum) key, out ObjectIndexEntry? entry)
 	{
-		entry = Objects.FirstOrDefault(x => x.DisplayName == key.datName && x.DatChecksum == key.datChecksum);
-		return entry != null;
+		EnsureLookupsBuilt();
+		return _byNameChecksum.TryGetValue(key, out entry);
 	}
 
 	public bool TryFind(ulong xxHash3, out ObjectIndexEntry? entry)
 	{
-		entry = Objects.FirstOrDefault(x => x.xxHash3 == xxHash3);
-		return entry != null;
+		EnsureLookupsBuilt();
+		return _byXxHash3.TryGetValue(xxHash3, out entry);
+	}
+
+	private void EnsureLookupsBuilt()
+	{
+		if ((_byXxHash3.IsEmpty && _byNameChecksum.IsEmpty) && Objects.Count > 0)
+		{
+			RebuildLookups();
+		}
 	}
 
 	//public bool TryFind(string internalName, out ObjectIndexEntry? entry)
@@ -60,8 +144,9 @@ public class ObjectIndex
 	// DataSanitiser, DatabaseImporter, etc.) which have no SynchronizationContext and
 	// cannot meaningfully be made async-from-Main everywhere. Avoid calling this from
 	// UI thread code — use LoadOrCreateIndexAsync instead.
+	[Obsolete("Use LoadOrCreateIndexAsync to avoid potential deadlocks on UI threads.")]
 	public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-		=> LoadOrCreateIndexAsync(directory, logger, progress).GetAwaiter().GetResult();
+		=> Task.Run(() => LoadOrCreateIndexAsync(directory, logger, progress)).GetAwaiter().GetResult();
 
 	public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 	{
@@ -71,6 +156,7 @@ public class ObjectIndex
 		{
 			logger.LogInformation("Index file found - loading it");
 			index = await LoadIndexAsync(indexPath).ConfigureAwait(false);
+			index?.RebuildLookups();
 		}
 
 		if (index == null)
@@ -92,7 +178,7 @@ public class ObjectIndex
 
 		foreach (var s in succeeded)
 		{
-			Objects.Add(s);
+			AddEntry(s);
 		}
 
 		foreach (var f in failed)
@@ -118,7 +204,7 @@ public class ObjectIndex
 	{
 		foreach (var d in Objects.Where(predicate).ToList())
 		{
-			_ = Objects.Remove(d);
+			RemoveEntry(d);
 		}
 	}
 
@@ -128,16 +214,24 @@ public class ObjectIndex
 
 		if (File.Exists(fullFilename))
 		{
-			var bytes = File.ReadAllBytes(fullFilename);
 			ObjectIndexEntry? entry = null;
 
 			try
 			{
+				var bytes = File.ReadAllBytes(fullFilename);
 				entry = GetDatFileInfoFromBytes(fullFilename, filename, bytes, logger);
 			}
-			catch (Exception ex)
+			catch (IOException ex)
 			{
-				logger.LogError(ex, "Failed to parse file \"{Filename}\"", filename);
+				logger.LogError(ex, "I/O error parsing file \"{Filename}\"", filename);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				logger.LogError(ex, "Access denied reading file \"{Filename}\"", filename);
+			}
+			catch (InvalidDataException ex)
+			{
+				logger.LogError(ex, "Invalid data in file \"{Filename}\"", filename);
 			}
 
 			if (entry == null)

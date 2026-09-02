@@ -2,7 +2,6 @@ using Dat.FileParsing;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
-using Definitions.ObjectModels.Graphics;
 using Definitions.SourceData;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -23,14 +22,12 @@ public class ObjectQueryService : IObjectQueryService
 {
 	private readonly LocoDbContext _db;
 	private readonly ServerFolderManager _sfm;
-	private readonly PaletteMap _paletteMap;
 	private readonly ILogger<ObjectQueryService> _logger;
 
-	public ObjectQueryService(LocoDbContext db, ServerFolderManager sfm, PaletteMap paletteMap, ILogger<ObjectQueryService> logger)
+	public ObjectQueryService(LocoDbContext db, ServerFolderManager sfm, ILogger<ObjectQueryService> logger)
 	{
 		_db = db;
 		_sfm = sfm;
-		_paletteMap = paletteMap;
 		_logger = logger;
 	}
 

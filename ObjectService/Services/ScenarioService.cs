@@ -20,8 +20,9 @@ public class ScenarioService : IScenarioService
 	public IEnumerable<DtoScenarioEntry> ListScenarios()
 	{
 		var files = GetSortedScenarioFiles(_sfm.ScenariosFolder);
-		ulong count = 0;
-		return files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(_sfm.ScenariosFolder, x)));
+		return files
+			.Select((file, index) => new DtoScenarioEntry((ulong)index, Path.GetRelativePath(_sfm.ScenariosFolder, file)))
+			.ToArray();
 	}
 
 	public string? GetScenarioFilePath(ulong index)

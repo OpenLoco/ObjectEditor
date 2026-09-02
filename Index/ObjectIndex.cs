@@ -51,12 +51,12 @@ public class ObjectIndex
 	{
 		if (entry.xxHash3.HasValue)
 		{
-			_ = _byXxHash3.TryAdd(entry.xxHash3.Value, entry);
+			_byXxHash3[entry.xxHash3.Value] = entry;
 		}
 
 		if (entry.DatChecksum.HasValue)
 		{
-			_ = _byNameChecksum.TryAdd((entry.DisplayName, entry.DatChecksum.Value), entry);
+			_byNameChecksum[(entry.DisplayName, entry.DatChecksum.Value)] = entry;
 		}
 	}
 
@@ -79,12 +79,20 @@ public class ObjectIndex
 	{
 		if (entry.xxHash3.HasValue)
 		{
-			_ = _byXxHash3.TryRemove(entry.xxHash3.Value, out _);
+			var key = entry.xxHash3.Value;
+			if (_byXxHash3.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
+			{
+				_ = _byXxHash3.TryRemove(key, out _);
+			}
 		}
 
 		if (entry.DatChecksum.HasValue)
 		{
-			_ = _byNameChecksum.TryRemove((entry.DisplayName, entry.DatChecksum.Value), out _);
+			var key = (entry.DisplayName, entry.DatChecksum.Value);
+			if (_byNameChecksum.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
+			{
+				_ = _byNameChecksum.TryRemove(key, out _);
+			}
 		}
 	}
 

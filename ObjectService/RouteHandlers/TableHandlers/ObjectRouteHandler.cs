@@ -1,4 +1,6 @@
+using Definitions;
 using Definitions.DTO;
+using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using ObjectService.Services;
@@ -22,8 +24,6 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	public void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 	{
-		var config = parentRoute.ServiceProvider.GetRequiredService<IConfiguration>();
-		BaseTableRouteHandler.MapRoutes(new ObjectMissingRouteHandler(), parentRoute, config);
 		var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
 		_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
@@ -63,12 +63,35 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
+		var descriptor = await query.GetByIdAsync(id, ct);
+		if (descriptor == null)
+		{
+			return Results.NotFound();
+		}
+
+		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+		{
+			logger.LogWarning("Object {ObjectId} cannot expose images due to source/availability restrictions", id);
+			return Results.Forbid();
+		}
+
 		var zip = await query.GetImagesZipAsync(id, ct);
 		return zip != null ? Results.File(zip, "application/zip", $"{id}_images.zip") : Results.NotFound();
 	}
 
 	async Task<IResult> GetObjectFileAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, CancellationToken ct)
 	{
+		var descriptor = await query.GetByIdAsync(id, ct);
+		if (descriptor == null)
+		{
+			return Results.NotFound();
+		}
+
+		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+		{
+			return Results.Forbid();
+		}
+
 		var path = await query.GetFilePathAsync(id, ct);
 		return path != null && File.Exists(path) ? Results.File(path, "application/octet-stream", Path.GetFileName(path)) : Results.NotFound();
 	}

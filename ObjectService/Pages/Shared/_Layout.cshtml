@@ -1,5 +1,9 @@
 @using Microsoft.Extensions.Diagnostics.HealthChecks
+@using Microsoft.AspNetCore.Identity
+@using Definitions.Database
 @inject HealthCheckService HealthCheckService
+@inject SignInManager<TblUser> SignInManager
+@inject UserManager<TblUser> UserManager
 @{
 	var healthReport = await HealthCheckService.CheckHealthAsync();
 	var healthDescription = healthReport.Entries.Values
@@ -12,6 +16,7 @@
 		HealthStatus.Degraded => "health-indicator-degraded",
 		_ => "health-indicator-unhealthy",
 	};
+	var isAuthenticated = SignInManager.IsSignedIn(User);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -303,6 +308,15 @@
 				@await RenderSectionAsync("HeaderContent", required: false)
 				<nav class="site-nav">
 					<a href="/api">API</a>
+					@if (isAuthenticated)
+					{
+						<a asp-page="/Account/Manage">@(User.Identity?.Name ?? "Account")</a>
+					}
+					else
+					{
+						<a asp-page="/Account/Login">Log in</a>
+						<a asp-page="/Account/Register">Register</a>
+					}
 				</nav>
 				<span class="health-indicator @healthClass" title="@healthDescription">
 					<span class="health-indicator-dot" aria-hidden="true"></span>

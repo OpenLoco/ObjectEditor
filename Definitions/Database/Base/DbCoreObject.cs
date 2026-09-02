@@ -39,4 +39,20 @@ public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMet
 	public DateOnly UploadedDate { get; set; }
 
 	#endregion
+
+	#region Ownership
+
+	/// <summary>
+	/// The user who owns (uploaded) this object.
+	/// <see langword="null"/> for objects not owned by any user (e.g. imported/vanilla).
+	/// </summary>
+	public UniqueObjectId? OwnerUserId { get; set; }
+
+	/// <summary>
+	/// Navigation property to the owning user.
+	/// </summary>
+	[ForeignKey(nameof(OwnerUserId))]
+	public TblUser? OwnerUser { get; set; }
+
+	#endregion
 }

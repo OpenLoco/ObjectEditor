@@ -205,6 +205,14 @@ public sealed class ObjectExplorerService
 		var httpContext = _httpContextAccessor.HttpContext ?? throw new InvalidOperationException("An active HTTP request is required to create the ObjectService API client.");
 		var client = _httpClientFactory.CreateClient();
 		client.BaseAddress = new Uri($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}/");
+
+		// Forward the bearer token from the access_token cookie to API calls
+		var accessToken = httpContext.Request.Cookies["access_token"];
+		if (!string.IsNullOrEmpty(accessToken))
+		{
+			client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+		}
+
 		return client;
 	}
 

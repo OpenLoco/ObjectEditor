@@ -2,6 +2,7 @@ using Definitions.Database;
 using Definitions.ObjectModels.Graphics;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -11,9 +12,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using ObjectService;
 using ObjectService.Frontend;
+using ObjectService.Identity;
 using ObjectService.Services;
 using ObjectService.RouteHandlers;
 using Scalar.AspNetCore;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -138,7 +141,19 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 
 builder.Services
 	.AddIdentityApiEndpoints<TblUser>()
+	.AddRoles<TblUserRole>()
 	.AddEntityFrameworkStores<LocoDbContext>();
+
+// Relax default password rules for development.
+// Override via appsettings or user secrets in production.
+builder.Services.Configure<IdentityOptions>(options =>
+{
+	options.Password.RequireDigit = true;
+	options.Password.RequireLowercase = true;
+	options.Password.RequireUppercase = true;
+	options.Password.RequireNonAlphanumeric = true;
+	options.Password.RequiredLength = 12;
+});
 
 // Configure bearer token expiration from settings
 builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, options =>
@@ -164,12 +179,27 @@ builder.Services.AddAuthentication()
 
 builder.Services.AddAuthorization(options =>
 {
-	// Configure the default policy to accept both Identity Bearer tokens and JWT tokens
+	// Configure the default policy to accept Identity cookies, Identity Bearer tokens, and JWT tokens.
+	// This allows both page-based cookie auth (from SignInManager) and API bearer token auth.
 	options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-		.AddAuthenticationSchemes(IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+		.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
 		.RequireAuthenticatedUser()
 		.Build();
+
+	// Policy: user must own the object (id from route) or be an Admin
+	options.AddPolicy("CanEditObject", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.AddRequirements(new ObjectOwnershipRequirement()));
+
+	// Admin-only policy (for user/role management)
+	options.AddPolicy("AdminOnly", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireRole("Admin"));
 });
+
+// Register the ownership authorization handler
+builder.Services.AddScoped<IAuthorizationHandler, ObjectOwnershipHandler>();
 
 // Used for the Identity stuff to send emails to users
 // disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
@@ -179,6 +209,28 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 app.UseHttpLogging();
+
+// Dev-mode authentication bypass: when enabled, every request runs as an authenticated admin.
+// Set "ObjectService:DisableAuthentication": true in appsettings.Development.json.
+var disableAuth = builder.Configuration.GetValue<bool?>("ObjectService:DisableAuthentication") ?? false;
+if (disableAuth)
+{
+	app.Use((context, next) =>
+	{
+		// Inject a fake admin ClaimsPrincipal before the auth middleware runs.
+		// ASP.NET Core's UseAuthentication skips when context.User is already set.
+		var claims = new[]
+		{
+			new Claim(ClaimTypes.NameIdentifier, "0"),
+			new Claim(ClaimTypes.Name, "devadmin"),
+			new Claim(ClaimTypes.Role, "Admin"),
+		};
+		var identity = new ClaimsIdentity(claims, "DevBypass");
+		context.User = new ClaimsPrincipal(identity);
+		return next();
+	});
+}
+
 app.UseRateLimiter();
 app.UseStaticFiles();
 app.UseAuthentication();
@@ -214,6 +266,9 @@ if (showScalar == true)
 			.AddPreferredSecuritySchemes("Bearer");
 	});
 }
+
+// Run database initialization (creates admin user, assigns ownership, etc.)
+await DatabaseInitializer.InitializeAsync(app);
 
 app.Run();
 

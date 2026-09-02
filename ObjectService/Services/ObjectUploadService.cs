@@ -9,6 +9,7 @@ using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Definitions.Web;
 using Index;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.IO.Hashing;
 
@@ -27,13 +28,23 @@ public class ObjectUploadService : IObjectUploadService
 	private readonly ServerFolderManager _sfm;
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly ILogger<ObjectUploadService> _logger;
+	private readonly IHttpContextAccessor _httpContextAccessor;
+	private readonly UserManager<TblUser> _userManager;
 
-	public ObjectUploadService(LocoDbContext db, ServerFolderManager sfm, ILoggerFactory loggerFactory, ILogger<ObjectUploadService> logger)
+	public ObjectUploadService(
+		LocoDbContext db,
+		ServerFolderManager sfm,
+		ILoggerFactory loggerFactory,
+		ILogger<ObjectUploadService> logger,
+		IHttpContextAccessor httpContextAccessor,
+		UserManager<TblUser> userManager)
 	{
 		_db = db;
 		_sfm = sfm;
 		_loggerFactory = loggerFactory;
 		_logger = logger;
+		_httpContextAccessor = httpContextAccessor;
+		_userManager = userManager;
 	}
 
 	public async Task<UploadResult> UploadDatAsync(DtoObjectPost request, CancellationToken ct)
@@ -114,6 +125,18 @@ public class ObjectUploadService : IObjectUploadService
 			vehicleType = veh.Type;
 		}
 
+		// Determine the owner user if the request is authenticated
+		UniqueObjectId? ownerUserId = null;
+		var currentUser = _httpContextAccessor.HttpContext?.User;
+		if (currentUser?.Identity?.IsAuthenticated == true)
+		{
+			var user = await _userManager.GetUserAsync(currentUser);
+			if (user != null)
+			{
+				ownerUserId = user.Id;
+			}
+		}
+
 		var tblObject = new TblObject()
 		{
 			Name = objName,
@@ -132,6 +155,7 @@ public class ObjectUploadService : IObjectUploadService
 			StringTable = [],
 			SubObjectId = 0,
 			Licence = null,
+			OwnerUserId = ownerUserId,
 		};
 
 		_ = await _db.Objects.AddAsync(tblObject, ct);

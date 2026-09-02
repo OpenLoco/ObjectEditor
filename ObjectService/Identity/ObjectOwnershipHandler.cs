@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Microsoft.AspNetCore.Authorization;
+using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
 
 namespace ObjectService.Identity;
@@ -14,6 +15,7 @@ public class ObjectOwnershipRequirement : IAuthorizationRequirement
 /// <summary>
 /// Handles <see cref="ObjectOwnershipRequirement"/> by checking if the current user
 /// is the owner of the object identified by the {id} route value, or is in the "Admin" role.
+/// Vanilla game objects (LocomotionSteam / LocomotionGoG) are never editable by anyone.
 /// </summary>
 public class ObjectOwnershipHandler : AuthorizationHandler<ObjectOwnershipRequirement>
 {
@@ -51,10 +53,21 @@ public class ObjectOwnershipHandler : AuthorizationHandler<ObjectOwnershipRequir
 			var obj = await _db.Objects
 				.AsNoTracking()
 				.Where(x => x.Id == objectId)
-				.Select(x => new { x.OwnerUserId })
+				.Select(x => new { x.OwnerUserId, x.ObjectSource })
 				.SingleOrDefaultAsync();
 
-			if (obj?.OwnerUserId == userId)
+			if (obj == null)
+			{
+				return;
+			}
+
+			// Vanilla game objects (original Locomotion assets) can not be edited
+			if (obj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+			{
+				return;
+			}
+
+			if (obj.OwnerUserId == userId)
 			{
 				context.Succeed(requirement);
 			}

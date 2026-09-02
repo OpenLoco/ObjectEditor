@@ -2,6 +2,7 @@ using Dat.FileParsing;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
+using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -47,6 +48,15 @@ public class ObjectQueryService : IObjectQueryService
 		var obj = await _db.Objects.Include(x => x.Licence).Include(x => x.Authors).Include(x => x.Tags).Include(x => x.ObjectPacks).Include(x => x.DatObjects).Include(x => x.StringTable).Where(x => x.Id == id).SingleOrDefaultAsync(ct);
 		if (obj == null)
 		{
+			return null;
+		}
+
+		// Vanilla game objects (original Locomotion assets) can NEVER be edited by anyone,
+		// regardless of role or ownership. This is a defense-in-depth check alongside
+		// the ObjectOwnershipHandler authorization.
+		if (obj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+		{
+			_logger.LogWarning("Attempt to update vanilla object {ObjectId} was blocked", id);
 			return null;
 		}
 

@@ -11,6 +11,13 @@ using System.ComponentModel.DataAnnotations;
 namespace Dat.Types.SCV5;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
+public sealed record S5PackedObject(
+	S5Header Header,
+	SawyerEncoding Encoding,
+	byte[] Data,
+	byte[]? RawChunk = null);
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(StructLength)]
 public record S5File(
 	[property: LocoStructOffset(0x00)] S5FileHeader Header,
@@ -19,15 +26,13 @@ public record S5File(
 	[property: LocoStructOffset(0x10952), LocoArrayLength(S5File.RequiredObjectsCount), Browsable(false)] List<S5Header> RequiredObjects,
 	IGameState? GameState,
 	[property: LocoStructOffset(0x4B4546)] List<TileElement>? TileElements,
-	List<PackedObject> PackedObjects,
+	List<S5PackedObject> PackedObjects,
 	uint32_t Checksum
 	)
 	: ILocoStruct
 {
 	public const int StructLength = 0x20;
 	public const int RequiredObjectsCount = 859;
-
-	public sealed record PackedObject(S5Header Header, SawyerEncoding Encoding, byte[] Data);
 
 	// convert the 1D TileElements into a more usable 2D array
 	public List<TileElement>[,]? TileElementMap { get; set; }
@@ -75,7 +80,7 @@ public record S5File(
 		}
 
 		// packed
-		ReadOnlySpan<byte> packed = [];
+		byte[] packed = [];
 		if (Header.NumPackedObjects != 0)
 		{
 			packed = WritePackedObjects();
@@ -99,7 +104,15 @@ public record S5File(
 		}
 		else
 		{
-			if (GameState is GeneralStateSave gsv)
+			if (GameState is GameStateSave1 gs1)
+			{
+				gameState = [.. SawyerStreamWriter.WriteChunk(gs1, SawyerEncoding.RunLengthSingle)];
+			}
+			else if (GameState is GameStateSave2 gs2)
+			{
+				gameState = [.. SawyerStreamWriter.WriteChunk(gs2, SawyerEncoding.RunLengthSingle)];
+			}
+			else if (GameState is GeneralStateSave gsv)
 			{
 				gameState = [.. SawyerStreamWriter.WriteChunk(gsv, SawyerEncoding.RunLengthSingle)];
 			}
@@ -138,7 +151,7 @@ public record S5File(
 		}
 
 		// packed objects
-		List<PackedObject> packedObjects = [];
+		List<S5PackedObject> packedObjects = [];
 		for (var i = 0; i < header.NumPackedObjects; ++i)
 		{
 			var obj = S5Header.Read(data[..S5Header.StructLength]);
@@ -151,7 +164,10 @@ public record S5File(
 			data = data[(int)objectHeader.DataLength..];
 
 			var decodedData = SawyerStreamReader.Decode(objectHeader.Encoding, encodedData);
-			packedObjects.Add(new PackedObject(obj, objectHeader.Encoding, decodedData));
+			var rawChunk = new byte[ObjectHeader.StructLength + encodedData.Length];
+			objectHeader.Write().CopyTo(rawChunk);
+			encodedData.CopyTo(rawChunk.AsSpan(ObjectHeader.StructLength));
+			packedObjects.Add(new S5PackedObject(obj, objectHeader.Encoding, decodedData, rawChunk));
 		}
 
 		// read required objects
@@ -181,8 +197,6 @@ public record S5File(
 			var gameStateA = SawyerStreamReader.ReadChunk<GameStateScenarioA>(ref data);
 			var gameStateB = SawyerStreamReader.ReadChunk<GameStateScenarioB>(ref data);
 			var gameStateC = SawyerStreamReader.ReadChunk<GameStateScenarioC>(ref data);
-			var newFlags = gameStateA.FixFlags | S5FixFlags.FixFlag0; // fixState
-			gameStateA = gameStateA with { FixFlags = newFlags }; // fixState
 			gameState = new GameStateScenario(gameStateA, gameStateB, gameStateC);
 
 			if (gameStateA.GameStateFlags.HasFlag(GameStateFlags.TileManagerLoaded))
@@ -198,14 +212,12 @@ public record S5File(
 			if (!fixFlags.HasFlag(S5FixFlags.FixFlag0) && !fixFlags.HasFlag(S5FixFlags.FixFlag1))
 			{
 				var gs2 = ByteReader.ReadLocoStruct<GameStateSave2>(chunkData);
-				var newFlags = gs2.GeneralState.FixFlags | S5FixFlags.FixFlag0; // fixState
-				gameState = gs2 with { GeneralState = gs2.GeneralState with { FixFlags = newFlags } }; // fixState
+				gameState = gs2;
 			}
 			else
 			{
 				var gs1 = ByteReader.ReadLocoStruct<GameStateSave1>(chunkData);
-				var newFlags = gs1.GeneralState.FixFlags | S5FixFlags.FixFlag0; // fixState
-				gameState = gs1 with { GeneralState = gs1.GeneralState with { FixFlags = newFlags } }; // fixState
+				gameState = gs1;
 			}
 
 			tileElementData = SawyerStreamReader.ReadChunkCore(ref data).ToArray();
@@ -218,13 +230,13 @@ public record S5File(
 		return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameState, tileElements, packedObjects, checksum) { TileElementMap = tileElementMap, OriginalTileElementData = tileElementData };
 	}
 
-	ReadOnlySpan<byte> WritePackedObjects()
+	byte[] WritePackedObjects()
 	{
 		var bytes = new List<byte>();
-		foreach (var (header, encoding, data) in PackedObjects)
+		foreach (var packedObject in PackedObjects)
 		{
-			bytes.AddRange(header.Write().ToArray());
-			bytes.AddRange(SawyerStreamWriter.WriteChunkCore(data, encoding));
+			bytes.AddRange(packedObject.Header.Write().ToArray());
+			bytes.AddRange(packedObject.RawChunk ?? SawyerStreamWriter.WriteChunkCore(packedObject.Data, packedObject.Encoding));
 		}
 
 		return [.. bytes];

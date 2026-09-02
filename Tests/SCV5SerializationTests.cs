@@ -53,7 +53,7 @@ public class SCV5SerializationTests
 		var header = new S5FileHeader(
 			fileType,
 			hasSaveDetails ? HeaderFlags.HasSaveDetails : HeaderFlags.None,
-			(ushort)packedObjects.Length,
+			(ushort)packedObjects.Count,
 			0x62262,
 			0x62300,
 			new byte[20]);
@@ -130,7 +130,11 @@ public class SCV5SerializationTests
 	static byte[] CreateRequiredObjectsRaw()
 	{
 		var required = new byte[S5File.RequiredObjectsCount * S5Header.StructLength];
-		Array.Fill(required, (byte)0xFF);
+		var emptyHeader = ObjectManager.FillHeader.Write().ToArray();
+		for (var i = 0; i < S5File.RequiredObjectsCount; i++)
+		{
+			emptyHeader.CopyTo(required, i * S5Header.StructLength);
+		}
 		return required;
 	}
 

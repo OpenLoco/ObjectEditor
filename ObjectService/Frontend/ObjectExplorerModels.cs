@@ -10,6 +10,7 @@ public sealed record ObjectBrowseQuery(
 	ObjectType? ObjectType,
 	ObjectSource? ObjectSource,
 	ObjectAvailability? Availability,
+	VehicleType? VehicleType = null,
 	int Page = 1,
 	int PageSize = 48);
 
@@ -47,6 +48,8 @@ public sealed record ObjectListItemViewModel(
 	public string ApiUrl => $"{RoutesV2.Prefix}{RoutesV2.Objects}/{Id}";
 
 	public string DownloadUrl => $"{ApiUrl}{RoutesV2.File}";
+
+	public string PreviewImageUrl => $"{ApiUrl}{RoutesV2.FirstImage}";
 }
 
 public sealed record ObjectDetailViewModel(

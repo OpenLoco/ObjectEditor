@@ -134,7 +134,7 @@ a {
 }
 
 .site-shell {
-    max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
     padding: 24px;
 }
@@ -363,6 +363,22 @@ dt {
     padding: 24px;
 }
 
+.dev-stats {
+    display: grid;
+    gap: 16px;
+}
+
+.dev-stats-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.dev-stats-header .eyebrow {
+    margin: 0;
+}
+
 .theme-studio {
     display: grid;
     gap: 20px;
@@ -505,6 +521,22 @@ dt {
     padding: 22px;
 }
 
+.card-img-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border-soft);
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
 .card-header,
 .card-actions,
 .detail-actions,
@@ -602,6 +634,166 @@ dd {
     padding: 0 8px;
     font-weight: 600;
     color: var(--muted);
+}
+/* ==========================================================================
+   Master tabs (primary category navigation)
+   ========================================================================== */
+
+.master-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.master-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--muted);
+    transition:
+        background-color 140ms ease,
+        color 140ms ease,
+        transform 140ms ease;
+}
+
+.master-tab:hover {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    transform: translateY(-1px);
+}
+
+.master-tab-active {
+    background: var(--accent);
+    color: var(--button-primary-text);
+    border-color: transparent;
+}
+
+.master-tab-active:hover {
+    background: var(--accent);
+    color: var(--button-primary-text);
+}
+
+/* ==========================================================================
+   Master-detail layout (sidebar + content)
+   ========================================================================== */
+
+.master-detail-layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.object-type-sidebar {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-title {
+    margin: 0 0 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+}
+
+.object-type-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.object-type-link {
+    display: block;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--text);
+    transition:
+        background-color 120ms ease,
+        color 120ms ease;
+}
+
+.object-type-link:hover {
+    background: var(--surface-subtle);
+    color: var(--accent-strong);
+}
+
+.object-type-link-active {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-weight: 700;
+}
+
+/* Treeview sub-list for Vehicle subtypes ─────────────────────────────── */
+
+.object-type-sub-list {
+    margin: 2px 0 4px 12px;
+    padding: 0 0 0 14px;
+    border-left: 2px solid var(--border);
+    list-style: none;
+}
+
+.object-type-sub-list .object-type-link {
+    font-size: 0.84rem;
+    padding: 5px 12px;
+}
+
+/* Detail area inside master-detail */
+.detail-area {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+}
+
+.filter-panel {
+    /* subtle distinction from other panels */
+}
+
+/* ==========================================================================
+   Responsive: master-detail
+   ========================================================================== */
+
+@media (max-width: 900px) {
+    .master-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .object-type-sidebar {
+        position: static;
+        max-height: none;
+    }
+
+    .object-type-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 4px;
+    }
+
+    .object-type-link {
+        text-align: center;
+    }
 }
 
 .back-link {

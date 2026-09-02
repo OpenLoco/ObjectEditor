@@ -27,6 +27,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
 		_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
+		_ = resourceRoute.MapGet(RoutesV2.FirstImage, GetObjectFirstImageAsync);
 	}
 
 	async Task<IResult> CreateDatAsync([FromBody] DtoObjectPost request, [FromServices] IObjectUploadService upload, CancellationToken ct)
@@ -77,6 +78,24 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		var zip = await query.GetImagesZipAsync(id, ct);
 		return zip != null ? Results.File(zip, "application/zip", $"{id}_images.zip") : Results.NotFound();
+	}
+
+	async Task<IResult> GetObjectFirstImageAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
+	{
+		var descriptor = await query.GetByIdAsync(id, ct);
+		if (descriptor == null)
+		{
+			return Results.NotFound();
+		}
+
+		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+		{
+			logger.LogWarning("Object {ObjectId} cannot expose images due to source/availability restrictions", id);
+			return Results.Forbid();
+		}
+
+		var png = await query.GetFirstImagePngAsync(id, ct);
+		return png != null ? Results.File(png, "image/png") : Results.NotFound();
 	}
 
 	async Task<IResult> GetObjectFileAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, CancellationToken ct)

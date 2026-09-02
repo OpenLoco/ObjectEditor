@@ -44,6 +44,11 @@ public sealed class ObjectExplorerService
 			query = query.Where(x => x.Availability == request.Availability.Value);
 		}
 
+		if (request.VehicleType.HasValue)
+		{
+			query = query.Where(x => x.VehicleType == request.VehicleType.Value);
+		}
+
 		if (search != null)
 		{
 			query = query.Where(x =>

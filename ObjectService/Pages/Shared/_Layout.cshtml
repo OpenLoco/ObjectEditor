@@ -1,9 +1,13 @@
 @using Microsoft.Extensions.Diagnostics.HealthChecks
+@using Microsoft.Extensions.Hosting
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @using Definitions.Database
 @inject HealthCheckService HealthCheckService
 @inject SignInManager<TblUser> SignInManager
 @inject UserManager<TblUser> UserManager
+@inject IHostEnvironment HostEnvironment
+@inject LocoDbContext LocoDb
 @{
 	var healthReport = await HealthCheckService.CheckHealthAsync();
 	var healthDescription = healthReport.Entries.Values
@@ -17,6 +21,20 @@
 		_ => "health-indicator-unhealthy",
 	};
 	var isAuthenticated = SignInManager.IsSignedIn(User);
+
+	var isDevelopment = false; //HostEnvironment.IsDevelopment();
+	string? databaseProvider = null;
+	string? databaseSource = null;
+	string? databaseName = null;
+	string? databaseConnectionString = null;
+	if (isDevelopment)
+	{
+		var connection = LocoDb.Database.GetDbConnection();
+		databaseProvider = LocoDb.Database.ProviderName;
+		databaseSource = connection.DataSource;
+		databaseName = connection.Database;
+		databaseConnectionString = connection.ConnectionString;
+	}
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -332,6 +350,33 @@
 		</header>
 
 		<main class="site-main">
+			@if (isDevelopment)
+			{
+				<section class="dev-stats panel" aria-label="Developer environment details">
+					<div class="dev-stats-header">
+						<p class="eyebrow">Developer mode</p>
+						<span class="chip">@HostEnvironment.EnvironmentName</span>
+					</div>
+					<dl class="meta-grid">
+						<div>
+							<dt>Database provider</dt>
+							<dd>@(databaseProvider ?? "Unknown")</dd>
+						</div>
+						<div>
+							<dt>Database name</dt>
+							<dd>@(databaseName ?? "Unknown")</dd>
+						</div>
+						<div>
+							<dt>Data source</dt>
+							<dd>@(databaseSource ?? "Unknown")</dd>
+						</div>
+						<div>
+							<dt>Connection string</dt>
+							<dd>@(databaseConnectionString ?? "Unknown")</dd>
+						</div>
+					</dl>
+				</section>
+			}
 			@RenderBody()
 		</main>
 	</div>

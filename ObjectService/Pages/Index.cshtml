@@ -88,63 +88,139 @@
 	</form>
 </section>
 
-<section class="panel">
-	<form method="get" class="filter-form">
-		<div class="field field-search">
-			<label asp-for="Search">Search</label>
-			<input asp-for="Search" placeholder="DAT name, internal name, or string-table text" />
-		</div>
+@* ── Master tab bar (primary navigation) ── *@
+<nav class="master-tabs" role="tablist" aria-label="Content categories">
+	@foreach (var cat in Model.Categories)
+	{
+		var isActive = cat.Key == Model.Category;
+		<a class="master-tab @(isActive ? "master-tab-active" : "")"
+		   asp-page="/Index"
+		   asp-route-category="@cat.Key"
+		   role="tab"
+		   aria-selected="@(isActive ? "true" : "false")">
+		   @cat.Value
+		</a>
+	}
+</nav>
 
-		<div class="field">
-			<label asp-for="ObjectType">Object type</label>
-			<select asp-for="ObjectType">
-				<option value="">All types</option>
+@if (Model.Category == "objects")
+{
+	@* ── Master-detail layout for Objects ── *@
+	<div class="master-detail-layout">
+		@* ── Second master: object type sidebar ── *@
+		<aside class="object-type-sidebar">
+			<h3 class="sidebar-title">Object Types</h3>
+			<ul class="object-type-list">
+				<li>
+					<a class="object-type-link @(Model.ObjectType == null ? "object-type-link-active" : "")"
+					   asp-page="/Index"
+					   asp-route-category="objects"
+					   asp-route-Search="@Model.Search"
+					   asp-route-ObjectSource="@Model.ObjectSource"
+					   asp-route-Availability="@Model.Availability">
+					   All Types
+					</a>
+				</li>
 				@foreach (var objectType in Model.ObjectTypes)
 				{
-					<option value="@objectType">@objectType</option>
+					var isTypeActive = Model.ObjectType == objectType;
+					var isVehicle = objectType == ObjectType.Vehicle;
+					<li>
+						<a class="object-type-link @(isTypeActive ? "object-type-link-active" : "")"
+						   asp-page="/Index"
+						   asp-route-category="objects"
+						   asp-route-ObjectType="@objectType"
+						   asp-route-ObjectSource="@Model.ObjectSource"
+						   asp-route-Availability="@Model.Availability"
+						   asp-route-Search="@Model.Search">
+						   @objectType
+						</a>
+						@if (isVehicle && isTypeActive)
+						{
+							<ul class="object-type-sub-list">
+								<li>
+									<a class="object-type-link @(Model.VehicleType == null ? "object-type-link-active" : "")"
+									   asp-page="/Index"
+									   asp-route-category="objects"
+									   asp-route-ObjectType="@ObjectType.Vehicle"
+									   asp-route-ObjectSource="@Model.ObjectSource"
+									   asp-route-Availability="@Model.Availability"
+									   asp-route-Search="@Model.Search">
+									   All Vehicles
+									</a>
+								</li>
+								@foreach (var vt in Model.VehicleTypes)
+								{
+									var isVtActive = Model.VehicleType == vt;
+									<li>
+										<a class="object-type-link @(isVtActive ? "object-type-link-active" : "")"
+										   asp-page="/Index"
+										   asp-route-category="objects"
+										   asp-route-ObjectType="@ObjectType.Vehicle"
+										   asp-route-VehicleType="@vt"
+										   asp-route-ObjectSource="@Model.ObjectSource"
+										   asp-route-Availability="@Model.Availability"
+										   asp-route-Search="@Model.Search">
+										   @vt
+										</a>
+									</li>
+								}
+							</ul>
+						}
+					</li>
 				}
-			</select>
-		</div>
+			</ul>
+		</aside>
 
-		<div class="field">
-			<label asp-for="ObjectSource">Source</label>
-			<select asp-for="ObjectSource">
-				<option value="">All sources</option>
-				@foreach (var objectSource in Model.ObjectSources)
-				{
-					<option value="@objectSource">@objectSource</option>
-				}
-			</select>
-		</div>
+		@* ── Detail area ── *@
+		<div class="detail-area">
+	<section class="panel filter-panel">
+			<form method="get" class="filter-form">
+				<input type="hidden" name="category" value="objects" />
+				<div class="field field-search">
+					<label asp-for="Search">Search</label>
+					<input asp-for="Search" placeholder="DAT name, internal name, or string-table text" />
+				</div>
 
-		<div class="field">
-			<label asp-for="Availability">Availability</label>
-			<select asp-for="Availability">
-				<option value="">Any state</option>
-				@foreach (var state in Model.AvailabilityStates)
-				{
-					<option value="@state">@state</option>
-				}
-			</select>
-		</div>
+				<div class="field">
+					<label asp-for="ObjectSource">Source</label>
+					<select asp-for="ObjectSource">
+						<option value="">All sources</option>
+						@foreach (var objectSource in Model.ObjectSources)
+						{
+							<option value="@objectSource">@objectSource</option>
+						}
+					</select>
+				</div>
 
-		<div class="form-actions">
-			<button type="submit" class="button button-primary">Apply filters</button>
-			<a class="button button-secondary" asp-page="/Index">Reset</a>
-		</div>
-	</form>
+				<div class="field">
+					<label asp-for="Availability">Availability</label>
+					<select asp-for="Availability">
+						<option value="">Any state</option>
+						@foreach (var state in Model.AvailabilityStates)
+						{
+							<option value="@state">@state</option>
+						}
+					</select>
+				</div>
 
-	<div class="filter-summary stat-grid">
-		<div class="stat-card">
-			<span>Matching filters</span>
-			<strong>@Model.Results.FilteredCount</strong>
-		</div>
-		<div class="stat-card">
-			<span>Current page</span>
-			<strong>@Model.Results.Page / @Model.Results.TotalPages</strong>
-		</div>
-	</div>
-</section>
+				<div class="form-actions">
+					<button type="submit" class="button button-primary">Apply filters</button>
+					<a class="button button-secondary" asp-page="/Index" asp-route-category="objects">Reset</a>
+				</div>
+			</form>
+
+			<div class="filter-summary stat-grid">
+				<div class="stat-card">
+					<span>Matching filters</span>
+					<strong>@Model.Results.FilteredCount</strong>
+				</div>
+				<div class="stat-card">
+					<span>Current page</span>
+					<strong>@Model.Results.Page / @Model.Results.TotalPages</strong>
+				</div>
+			</div>
+		</section>
 
 @if (Model.Results.Items.Count == 0)
 {
@@ -159,28 +235,30 @@ else
 		@foreach (var item in Model.Results.Items)
 		{
 			<article class="object-card">
+				<div class="card-img-wrap">
+					<img class="card-img" src="@item.PreviewImageUrl" loading="lazy" alt="Preview of @item.ResolvedTitle"
+					     onerror="this.style.display='none'" />
+				</div>
 				<div class="card-header">
 					<div>
 						<p class="eyebrow">@item.ObjectType@if (item.VehicleType != null){<text> / @item.VehicleType</text>}</p>
 						<h2>@item.ResolvedTitle</h2>
 						<p class="muted">@item.InternalName</p>
 					</div>
-					<span class="status-chip status-@item.Availability.ToString().ToLowerInvariant()">@item.Availability</span>
-				</div>
-
-				<div class="chip-row">
-					<span class="chip">@item.ObjectSource</span>
-					<span class="chip">Uploaded @item.UploadedDate.ToString("yyyy-MM-dd")</span>
-					@if (!string.IsNullOrWhiteSpace(item.DatName))
-					{
-						<span class="chip">@item.DatName</span>
-					}
 				</div>
 
 				<dl class="card-meta">
 					<div>
-						<dt>Checksum</dt>
-						<dd>@(item.DatChecksum is uint checksum ? $"0x{checksum:X8}" : "-")</dd>
+						<dt>Source</dt>
+						<dd>@item.ObjectSource</dd>
+					</div>
+					<div>
+						<dt>Uploaded</dt>
+						<dd>@item.UploadedDate.ToString("yyyy-MM-dd")</dd>
+					</div>
+					<div>
+						<dt>Availability</dt>
+						<dd>@item.Availability</dd>
 					</div>
 					<div>
 						<dt>Public file</dt>
@@ -210,12 +288,14 @@ else
 			@if (Model.Results.HasPreviousPage)
 			{
 				<a class="button button-secondary"
-				   asp-page="/Index"
-				   asp-route-Search="@Model.Search"
-				   asp-route-ObjectType="@Model.ObjectType"
-				   asp-route-ObjectSource="@Model.ObjectSource"
-				   asp-route-Availability="@Model.Availability"
-				   asp-route-Page="@(Model.Results.Page - 1)">Previous</a>
+					   asp-page="/Index"
+					   asp-route-category="objects"
+					   asp-route-Search="@Model.Search"
+					   asp-route-ObjectType="@Model.ObjectType"
+					   asp-route-ObjectSource="@Model.ObjectSource"
+					   asp-route-Availability="@Model.Availability"
+					   asp-route-VehicleType="@Model.VehicleType"
+					   asp-route-p="@(Model.Results.Page - 1)">Previous</a>
 			}
 			else
 			{
@@ -228,11 +308,13 @@ else
 			{
 				<a class="button button-secondary"
 				   asp-page="/Index"
+				   asp-route-category="objects"
 				   asp-route-Search="@Model.Search"
 				   asp-route-ObjectType="@Model.ObjectType"
 				   asp-route-ObjectSource="@Model.ObjectSource"
 				   asp-route-Availability="@Model.Availability"
-				   asp-route-Page="@(Model.Results.Page + 1)">Next</a>
+				   asp-route-VehicleType="@Model.VehicleType"
+				   asp-route-p="@(Model.Results.Page + 1)">Next</a>
 			}
 			else
 			{
@@ -240,4 +322,35 @@ else
 			}
 		</nav>
 	}
+}
+		</div>
+	</div>
+}
+else if (Model.Category == "scenarios")
+{
+	<section class="panel empty-state">
+		<h2>Scenarios</h2>
+		<p>Scenario browsing is coming soon. Scenarios are available through the <a href="/api">API</a>.</p>
+	</section>
+}
+else if (Model.Category == "music")
+{
+	<section class="panel empty-state">
+		<h2>Music</h2>
+		<p>Music browsing is coming soon.</p>
+	</section>
+}
+else if (Model.Category == "sfx")
+{
+	<section class="panel empty-state">
+		<h2>Sound Effects</h2>
+		<p>Sound effect browsing is coming soon.</p>
+	</section>
+}
+else if (Model.Category == "ai")
+{
+	<section class="panel empty-state">
+		<h2>AI / Competitors</h2>
+		<p>AI competitor browsing is coming soon.</p>
+	</section>
 }

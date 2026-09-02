@@ -3,6 +3,7 @@ using System;
 using Definitions.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Definitions.Database.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
-    partial class LocoDbModelSnapshot : ModelSnapshot
+    [Migration("20260902133456_UnknownBulkUpgrades")]
+    partial class UnknownBulkUpgrades
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");

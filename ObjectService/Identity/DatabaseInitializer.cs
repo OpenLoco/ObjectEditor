@@ -34,14 +34,25 @@ public static class DatabaseInitializer
 		// Ensure the database file and core schema exist
 		await db.Database.EnsureCreatedAsync();
 
-		// Add OwnerUserId column to existing databases
-		try
+		// Add OwnerUserId column to existing databases that were created before
+		// DbCoreObject gained the OwnerUserId property. We omit the REFERENCES
+		// clause because SQLite ALTER TABLE ADD COLUMN has limited FK support;
+		// EF Core tracks the FK at the model level instead.
+		foreach (var table in new[] { "Objects", "ObjectPacks", "SC5Files", "SC5FilePacks" })
 		{
-			await db.Database.ExecuteSqlRawAsync(
-				"ALTER TABLE Objects ADD COLUMN OwnerUserId INTEGER NULL REFERENCES AspNetUsers(Id)");
-			logger.LogInformation("Added OwnerUserId column to Objects table");
+			try
+			{
+#pragma warning disable EF1002 // table names are from a hard-coded array, no injection risk
+				await db.Database.ExecuteSqlRawAsync(
+					$"ALTER TABLE \"{table}\" ADD COLUMN \"OwnerUserId\" INTEGER NULL");
+#pragma warning restore EF1002
+				logger.LogInformation("Added OwnerUserId column to {Table} table", table);
+			}
+			catch (Exception ex)
+			{
+				logger.LogWarning(ex, "Could not add OwnerUserId column to {Table} table (may already exist)", table);
+			}
 		}
-		catch (Exception) { /* column already exists */ }
 
 		// Ensure Admin role
 		if (!await roleManager.RoleExistsAsync("Admin"))

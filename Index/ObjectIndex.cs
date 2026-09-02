@@ -51,12 +51,12 @@ public class ObjectIndex
 	{
 		if (entry.xxHash3.HasValue)
 		{
-			_byXxHash3.TryAdd(entry.xxHash3.Value, entry);
+			_byXxHash3[entry.xxHash3.Value] = entry;
 		}
 
 		if (entry.DatChecksum.HasValue)
 		{
-			_byNameChecksum.TryAdd((entry.DisplayName, entry.DatChecksum.Value), entry);
+			_byNameChecksum[(entry.DisplayName, entry.DatChecksum.Value)] = entry;
 		}
 	}
 
@@ -79,12 +79,20 @@ public class ObjectIndex
 	{
 		if (entry.xxHash3.HasValue)
 		{
-			_byXxHash3.TryRemove(entry.xxHash3.Value, out _);
+			var key = entry.xxHash3.Value;
+			if (_byXxHash3.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
+			{
+				_byXxHash3.TryRemove(key, out _);
+			}
 		}
 
 		if (entry.DatChecksum.HasValue)
 		{
-			_byNameChecksum.TryRemove((entry.DisplayName, entry.DatChecksum.Value), out _);
+			var key = (entry.DisplayName, entry.DatChecksum.Value);
+			if (_byNameChecksum.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
+			{
+				_byNameChecksum.TryRemove(key, out _);
+			}
 		}
 	}
 
@@ -101,10 +109,24 @@ public class ObjectIndex
 	}
 
 	public bool TryFind((string datName, uint datChecksum) key, out ObjectIndexEntry? entry)
-		=> _byNameChecksum.TryGetValue(key, out entry);
+	{
+		EnsureLookupsBuilt();
+		return _byNameChecksum.TryGetValue(key, out entry);
+	}
 
 	public bool TryFind(ulong xxHash3, out ObjectIndexEntry? entry)
-		=> _byXxHash3.TryGetValue(xxHash3, out entry);
+	{
+		EnsureLookupsBuilt();
+		return _byXxHash3.TryGetValue(xxHash3, out entry);
+	}
+
+	private void EnsureLookupsBuilt()
+	{
+		if ((_byXxHash3.IsEmpty && _byNameChecksum.IsEmpty) && Objects.Count > 0)
+		{
+			RebuildLookups();
+		}
+	}
 
 	//public bool TryFind(string internalName, out ObjectIndexEntry? entry)
 	//{
@@ -192,11 +214,11 @@ public class ObjectIndex
 
 		if (File.Exists(fullFilename))
 		{
-			var bytes = File.ReadAllBytes(fullFilename);
 			ObjectIndexEntry? entry = null;
 
 			try
 			{
+				var bytes = File.ReadAllBytes(fullFilename);
 				entry = GetDatFileInfoFromBytes(fullFilename, filename, bytes, logger);
 			}
 			catch (IOException ex)

@@ -108,6 +108,11 @@ public static class BatchProcessor
 			logger.LogError(ex, "Invalid data in \"{FileName}\"", fileName);
 			return new BatchItemResult(fileName, false, ex.Message);
 		}
+		catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
+		{
+			logger.LogError(ex, "Unexpected error processing \"{FileName}\"", fileName);
+			return new BatchItemResult(fileName, false, ex.Message);
+		}
 	}
 
 	public static string ResolveOutputFileName(string inputFileName, BatchOptions options)

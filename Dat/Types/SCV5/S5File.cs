@@ -3,6 +3,7 @@
 
 using Dat.Data;
 using Dat.FileParsing;
+using Dat.Types;
 using Definitions.ObjectModels;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -18,13 +19,15 @@ public record S5File(
 	[property: LocoStructOffset(0x10952), LocoArrayLength(S5File.RequiredObjectsCount), Browsable(false)] List<S5Header> RequiredObjects,
 	IGameState? GameState,
 	[property: LocoStructOffset(0x4B4546)] List<TileElement>? TileElements,
-	List<(S5Header, byte[])> PackedObjects,
+	List<PackedObject> PackedObjects,
 	uint32_t Checksum
 	)
 	: ILocoStruct
 {
 	public const int StructLength = 0x20;
 	public const int RequiredObjectsCount = 859;
+
+	public sealed record PackedObject(S5Header Header, SawyerEncoding Encoding, byte[] Data);
 
 	// convert the 1D TileElements into a more usable 2D array
 	public List<TileElement>[,]? TileElementMap { get; set; }
@@ -75,9 +78,7 @@ public record S5File(
 		ReadOnlySpan<byte> packed = [];
 		if (Header.NumPackedObjects != 0)
 		{
-			// todo: add data here
-			// todo: copy ObjectManager::writePackedObjects
-			//packed = WritePackedObjects();
+			packed = WritePackedObjects();
 		}
 
 		// required
@@ -109,7 +110,10 @@ public record S5File(
 			throw new NotImplementedException();
 		}
 
-		tiles = SawyerStreamWriter.WriteChunkCore(OriginalTileElementData, SawyerEncoding.RunLengthMulti);
+		var tileData = TileElements is { Count: > 0 }
+			? SerializeTileElements(TileElements)
+			: OriginalTileElementData;
+		tiles = SawyerStreamWriter.WriteChunkCore(tileData, SawyerEncoding.RunLengthMulti);
 
 		byte[] data = [.. hdr, .. save, .. scenario, .. packed, .. required, .. gameState, .. tiles];
 		var checksum = data.Sum(x => x);
@@ -134,14 +138,20 @@ public record S5File(
 		}
 
 		// packed objects
-		List<(S5Header, byte[])> packedObjects = [];
+		List<PackedObject> packedObjects = [];
 		for (var i = 0; i < header.NumPackedObjects; ++i)
 		{
 			var obj = S5Header.Read(data[..S5Header.StructLength]);
 			data = data[S5Header.StructLength..];
 
-			var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
-			packedObjects.Add((obj, chunkData.ToArray()));
+			var objectHeader = ObjectHeader.Read(data[..ObjectHeader.StructLength]);
+			data = data[ObjectHeader.StructLength..];
+
+			var encodedData = data[..(int)objectHeader.DataLength];
+			data = data[(int)objectHeader.DataLength..];
+
+			var decodedData = SawyerStreamReader.Decode(objectHeader.Encoding, encodedData);
+			packedObjects.Add(new PackedObject(obj, objectHeader.Encoding, decodedData));
 		}
 
 		// read required objects
@@ -207,6 +217,21 @@ public record S5File(
 
 		return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameState, tileElements, packedObjects, checksum) { TileElementMap = tileElementMap, OriginalTileElementData = tileElementData };
 	}
+
+	ReadOnlySpan<byte> WritePackedObjects()
+	{
+		var bytes = new List<byte>();
+		foreach (var (header, encoding, data) in PackedObjects)
+		{
+			bytes.AddRange(header.Write().ToArray());
+			bytes.AddRange(SawyerStreamWriter.WriteChunkCore(data, encoding));
+		}
+
+		return [.. bytes];
+	}
+
+	static byte[] SerializeTileElements(IEnumerable<TileElement> tileElements)
+		=> tileElements.SelectMany(x => x.Write()).ToArray();
 
 	static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData, int mapWidth, int mapHeight)
 	{

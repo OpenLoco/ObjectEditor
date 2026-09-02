@@ -26,7 +26,12 @@ public abstract class TileElement
 	public const uint8_t FLAG_GHOST = 1 << 4;
 	public const uint8_t FLAG_LAST = 1 << 7;
 
-	public ElementType Type { get; set; }
+	public uint8_t TypeByte { get; set; }
+	public ElementType Type
+	{
+		get => (ElementType)((TypeByte & 0x3C) >> 2);
+		set => TypeByte = (uint8_t)((TypeByte & ~0x3C) | (((uint8_t)value << 2) & 0x3C));
+	}
 	public uint8_t Flags { get; set; }
 	public uint8_t BaseZ { get; set; }
 	public uint8_t ClearZ { get; set; }
@@ -54,21 +59,89 @@ public abstract class TileElement
 	{
 		ArgumentOutOfRangeException.ThrowIfNotEqual(data.Length, StructLength);
 
-		var Type = (ElementType)((data[0] & 0x3C) >> 2); // https://github.com/OpenLoco/OpenLoco/blob/master/src/OpenLoco/src/Map/Tile.cpp#L23
+		var type = (ElementType)((data[0] & 0x3C) >> 2); // https://github.com/OpenLoco/OpenLoco/blob/master/src/OpenLoco/src/Map/Tile.cpp#L23
 
-		return Type switch
+		return type switch
 		{
-			ElementType.Building => new BuildingElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = BitConverter.ToUInt16(data[6..8]) },
-			ElementType.Industry => new IndustryElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], IndustryId = data[4], _5 = data[5], _6 = BitConverter.ToUInt16(data[6..8]) },
-			ElementType.Road => new RoadElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = data[6], _7 = data[7] },
-			ElementType.Signal => new SignalElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], LeftSide = new SignalElement.Side() { _4 = data[4], _5 = data[5] }, RightSide = new SignalElement.Side() { _4 = data[6], _5 = data[7] } },
-			ElementType.Station => new StationElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], StationId = BitConverter.ToUInt16(data[6..8]) },
-			ElementType.Surface => new SurfaceElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], Slope = data[4], Water = data[5], Terrain = data[6], _7 = data[7] },
-			ElementType.Track => new TrackElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = data[6], _7 = data[7] },
-			ElementType.Tree => new TreeElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = data[6], _7 = data[7] },
-			ElementType.Wall => new WallElement() { Type = Type, Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = data[6], _7 = data[7] },
+			ElementType.Building => new BuildingElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = BitConverter.ToUInt16(data[6..8]) },
+			ElementType.Industry => new IndustryElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], IndustryId = data[4], _5 = data[5], _6 = BitConverter.ToUInt16(data[6..8]) },
+			ElementType.Road => new RoadElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = data[6], _7 = data[7] },
+			ElementType.Signal => new SignalElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], LeftSide = new SignalElement.Side() { _4 = data[4], _5 = data[5] }, RightSide = new SignalElement.Side() { _4 = data[6], _5 = data[7] } },
+			ElementType.Station => new StationElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], StationId = BitConverter.ToUInt16(data[6..8]) },
+			ElementType.Surface => new SurfaceElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], Slope = data[4], Water = data[5], Terrain = data[6], _7 = data[7] },
+			ElementType.Track => new TrackElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = data[6], _7 = data[7] },
+			ElementType.Tree => new TreeElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = data[6], _7 = data[7] },
+			ElementType.Wall => new WallElement() { TypeByte = data[0], Flags = data[1], BaseZ = data[2], ClearZ = data[3], _4 = data[4], _5 = data[5], _6 = data[6], _7 = data[7] },
 			_ => throw new NotImplementedException(),
 		};
+	}
+
+	public byte[] Write()
+	{
+		var data = new byte[StructLength];
+		data[0] = TypeByte;
+		data[1] = Flags;
+		data[2] = BaseZ;
+		data[3] = ClearZ;
+
+		switch (this)
+		{
+			case BuildingElement x:
+				data[4] = x._4;
+				data[5] = x._5;
+				BitConverter.GetBytes(x._6).CopyTo(data, 6);
+				break;
+			case IndustryElement x:
+				data[4] = x.IndustryId;
+				data[5] = x._5;
+				BitConverter.GetBytes(x._6).CopyTo(data, 6);
+				break;
+			case RoadElement x:
+				data[4] = x._4;
+				data[5] = x._5;
+				data[6] = x._6;
+				data[7] = x._7;
+				break;
+			case SignalElement x:
+				data[4] = x.LeftSide._4;
+				data[5] = x.LeftSide._5;
+				data[6] = x.RightSide._4;
+				data[7] = x.RightSide._5;
+				break;
+			case StationElement x:
+				data[4] = x._4;
+				data[5] = x._5;
+				BitConverter.GetBytes(x.StationId).CopyTo(data, 6);
+				break;
+			case SurfaceElement x:
+				data[4] = x.Slope;
+				data[5] = x.Water;
+				data[6] = x.Terrain;
+				data[7] = x._7;
+				break;
+			case TrackElement x:
+				data[4] = x._4;
+				data[5] = x._5;
+				data[6] = x._6;
+				data[7] = x._7;
+				break;
+			case TreeElement x:
+				data[4] = x._4;
+				data[5] = x._5;
+				data[6] = x._6;
+				data[7] = x._7;
+				break;
+			case WallElement x:
+				data[4] = x._4;
+				data[5] = x._5;
+				data[6] = x._6;
+				data[7] = x._7;
+				break;
+			default:
+				throw new NotImplementedException($"Unsupported tile element type {GetType().Name}");
+		}
+
+		return data;
 	}
 }
 

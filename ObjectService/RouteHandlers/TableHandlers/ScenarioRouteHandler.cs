@@ -1,67 +1,38 @@
-using Definitions.DTO;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
+using ObjectService.Services;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class ScenarioRouteHandler : ITableRouteHandler
 {
-	public static string BaseRoute => RoutesV2.Scenarios;
-	public static Delegate ListDelegate => ListAsync;
-	public static Delegate CreateDelegate => CreateAsync;
-	public static Delegate ReadDelegate => ReadAsync;
-	public static Delegate UpdateDelegate => UpdateAsync;
-	public static Delegate DeleteDelegate => DeleteAsync;
+	public string BaseRoute => RoutesV2.Scenarios;
+	public Delegate ListDelegate => ListAsync;
+	public Delegate CreateDelegate => CreateAsync;
+	public Delegate ReadDelegate => ReadAsync;
+	public Delegate UpdateDelegate => UpdateAsync;
+	public Delegate DeleteDelegate => DeleteAsync;
 
-	public static void MapRoutes(IEndpointRouteBuilder endpoints)
-		=> BaseTableRouteHandler.MapRoutes<ScenarioRouteHandler>(endpoints);
+	public void MapRoutes(IEndpointRouteBuilder endpoints)
+		=> BaseTableRouteHandler.MapRoutes(this, endpoints, endpoints.ServiceProvider.GetRequiredService<IConfiguration>());
 
-	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
+	public void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
+		=> parentRoute.MapGroup(RoutesV2.ResourceRoute).MapGet(RoutesV2.File, GetScenarioFileAsync);
+
+	Task<IResult> ListAsync([FromServices] IScenarioService svc)
 	{
-		var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
-		_ = resourceRoute.MapGet(RoutesV2.File, GetScenarioFileAsync);
+		var items = svc.ListScenarios();
+		return Task.FromResult(Results.Ok(items.ToList()));
 	}
 
-	static string[] GetSortedScenarioFiles(string scenarioFolder)
-		=> [.. Directory
-			.GetFiles(scenarioFolder, "*.SC5", SearchOption.AllDirectories)
-			.OrderBy(x => Path.GetRelativePath(scenarioFolder, x), StringComparer.Ordinal)];
-
-	static async Task<IResult> ListAsync([FromServices] IServiceProvider sp)
-		=> await Task.Run(() =>
-		{
-			var sfm = sp.GetRequiredService<ServerFolderManager>();
-			var scenarioFolder = sfm.ScenariosFolder;
-			var files = GetSortedScenarioFiles(scenarioFolder);
-			var count = 0UL;
-			var filenames = files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(scenarioFolder, x)));
-			return Results.Ok(filenames.ToList());
-		});
-
-	static Task<IResult> GetScenarioFileAsync([FromRoute] UniqueObjectId id, [FromServices] IServiceProvider sp)
+	Task<IResult> GetScenarioFileAsync([FromRoute] UniqueObjectId id, [FromServices] IScenarioService svc)
 	{
-		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		var files = GetSortedScenarioFiles(sfm.ScenariosFolder);
-
-		if (id >= (ulong)files.Length)
-		{
-			return Task.FromResult(Results.NotFound());
-		}
-
-		var path = files[(int)id];
-		const string contentType = "application/octet-stream";
-		return Task.FromResult(Results.File(path, contentType, Path.GetFileName(path)));
+		var path = svc.GetScenarioFilePath(id);
+		return Task.FromResult(path != null ? Results.File(path, "application/octet-stream", Path.GetFileName(path)) : Results.NotFound());
 	}
 
-	static async Task<IResult> CreateAsync(DtoScenarioEntry request)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-
-	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId Id)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId Id, DtoScenarioEntry request)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-
-	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId Id)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	Task<IResult> CreateAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	Task<IResult> ReadAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	Task<IResult> UpdateAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	Task<IResult> DeleteAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 }

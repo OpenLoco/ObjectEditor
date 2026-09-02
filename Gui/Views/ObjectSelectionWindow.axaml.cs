@@ -10,7 +10,7 @@ public partial class ObjectSelectionWindow : ReactiveWindow<ObjectSelectionWindo
 	public ObjectSelectionWindow()
 	{
 		InitializeComponent();
-		this.WhenActivated(d =>
+		_ = this.WhenActivated(d =>
 		{
 			d(ViewModel!.ConfirmCommand.Subscribe(Observer.Create<Unit>(_ => Close(ViewModel))));
 			d(ViewModel!.CancelCommand.Subscribe(Observer.Create<Unit>(_ => Close(null))));

@@ -51,12 +51,12 @@ public class ObjectIndex
 	{
 		if (entry.xxHash3.HasValue)
 		{
-			_byXxHash3[entry.xxHash3.Value] = entry;
+			_ = _byXxHash3.TryAdd(entry.xxHash3.Value, entry);
 		}
 
 		if (entry.DatChecksum.HasValue)
 		{
-			_byNameChecksum[(entry.DisplayName, entry.DatChecksum.Value)] = entry;
+			_ = _byNameChecksum.TryAdd((entry.DisplayName, entry.DatChecksum.Value), entry);
 		}
 	}
 
@@ -79,20 +79,12 @@ public class ObjectIndex
 	{
 		if (entry.xxHash3.HasValue)
 		{
-			var key = entry.xxHash3.Value;
-			if (_byXxHash3.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
-			{
-				_byXxHash3.TryRemove(key, out _);
-			}
+			_ = _byXxHash3.TryRemove(entry.xxHash3.Value, out _);
 		}
 
 		if (entry.DatChecksum.HasValue)
 		{
-			var key = (entry.DisplayName, entry.DatChecksum.Value);
-			if (_byNameChecksum.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
-			{
-				_byNameChecksum.TryRemove(key, out _);
-			}
+			_ = _byNameChecksum.TryRemove((entry.DisplayName, entry.DatChecksum.Value), out _);
 		}
 	}
 
@@ -122,7 +114,7 @@ public class ObjectIndex
 
 	private void EnsureLookupsBuilt()
 	{
-		if ((_byXxHash3.IsEmpty && _byNameChecksum.IsEmpty) && Objects.Count > 0)
+		if (_byXxHash3.IsEmpty && _byNameChecksum.IsEmpty && Objects.Count > 0)
 		{
 			RebuildLookups();
 		}

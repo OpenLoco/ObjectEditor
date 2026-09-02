@@ -51,15 +51,15 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel, IDisposab
 
 	public BuildingComponentsViewModel()
 	{
-		this.WhenAnyValue(x => x.BuildingVariations)
+		_ = this.WhenAnyValue(x => x.BuildingVariations)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(BuildingVariationViewModels)))
 			.DisposeWith(_subscriptions);
 
-		this.WhenAnyValue(x => x.VerticalLayerSpacing)
+		_ = this.WhenAnyValue(x => x.VerticalLayerSpacing)
 			.Subscribe(ApplyOffsetToAllLayers)
 			.DisposeWith(_subscriptions);
 
-		MessageBus.Current.Listen<BuildingComponents>()
+		_ = MessageBus.Current.Listen<BuildingComponents>()
 			.Subscribe(UpdateBuildingComponents)
 			.DisposeWith(_subscriptions);
 	}

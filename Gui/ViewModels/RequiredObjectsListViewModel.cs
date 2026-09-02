@@ -115,7 +115,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 	{
 		if (SelectedItem != null)
 		{
-			sourceList.Remove(SelectedItem);
+			_ = sourceList.Remove(SelectedItem);
 		}
 	}
 

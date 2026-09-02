@@ -4,29 +4,29 @@ namespace ObjectService.RouteHandlers;
 
 public static class BaseTableRouteHandler
 {
-public static void MapRoutes<THandler>(
-IEndpointRouteBuilder parentRoute
-) where THandler : ITableRouteHandler
-{
-var baseRoute = parentRoute
-.MapGroup(THandler.BaseRoute)
-.WithTags(RouteHelpers.MakeNicePlural(typeof(THandler).Name));
+	public static void MapRoutes(
+	ITableRouteHandler handler,
+	IEndpointRouteBuilder parentRoute,
+	IConfiguration config)
+	{
+		var baseRoute = parentRoute
+		.MapGroup(handler.BaseRoute)
+		.WithTags(RouteHelpers.MakeNicePlural(handler.GetType().Name));
 
-_ = baseRoute.MapGet(string.Empty, THandler.ListDelegate);
+		_ = baseRoute.MapGet(string.Empty, handler.ListDelegate);
 
-var resourceRoute = baseRoute.MapGroup(RoutesV2.ResourceRoute);
-_ = resourceRoute.MapGet(string.Empty, THandler.ReadDelegate);
+		var resourceRoute = baseRoute.MapGroup(RoutesV2.ResourceRoute);
+		_ = resourceRoute.MapGet(string.Empty, handler.ReadDelegate);
 
-var config = parentRoute.ServiceProvider.GetRequiredService<IConfiguration>();
-var enableWriteRoutes = config.GetValue<bool?>("ObjectService:EnableWriteRoutes") ?? false;
+		var enableWriteRoutes = config.GetValue<bool?>("ObjectService:EnableWriteRoutes") ?? false;
 
-if (enableWriteRoutes)
-{
-_ = baseRoute.MapPost(string.Empty, THandler.CreateDelegate);
-_ = resourceRoute.MapPut(string.Empty, THandler.UpdateDelegate);
-_ = resourceRoute.MapDelete(string.Empty, THandler.DeleteDelegate);
-}
+		if (enableWriteRoutes)
+		{
+			_ = baseRoute.MapPost(string.Empty, handler.CreateDelegate);
+			_ = resourceRoute.MapPut(string.Empty, handler.UpdateDelegate);
+			_ = resourceRoute.MapDelete(string.Empty, handler.DeleteDelegate);
+		}
 
-THandler.MapAdditionalRoutes(baseRoute);
-}
+		handler.MapAdditionalRoutes(baseRoute);
+	}
 }

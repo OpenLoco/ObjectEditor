@@ -11,8 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using ObjectService;
 using ObjectService.Frontend;
-using ObjectService.RouteHandlers;
 using ObjectService.Services;
+using ObjectService.RouteHandlers;
 using Scalar.AspNetCore;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -63,7 +63,7 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 	}
 });
 
-builder.Services.AddScoped<ObjectExplorerService>();
+builder.Services.AddScoped<ObjectExplorerService>(); builder.Services.AddObjectEditorServices();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -195,10 +195,7 @@ _ = app
 
 _ = app.MapRazorPages();
 
-_ = app.MapV2Routes()
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapV1Routes()
+_ = app.MapApiRoutes()
 	.RequireRateLimiting(tokenPolicy);
 
 var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");

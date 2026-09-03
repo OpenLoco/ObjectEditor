@@ -372,11 +372,14 @@ else if (Model.Category == "objectpacks")
 	<section class="panel">
 		<div class="admin-page-header">
 			<h1>Object Packs</h1>
-			@if (Model.IsAdmin)
-			{
-				<a asp-page="/Manage/ObjectPacks/Index" class="button button-secondary">Manage</a>
-			}
 		</div>
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
 		@if (Model.ObjectPackList.Count > 0)
 		{
 			<div class="table-container">
@@ -390,6 +393,7 @@ else if (Model.Category == "objectpacks")
 							<th>Authors</th>
 							<th>Tags</th>
 							<th>Licence</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
 						</tr>
 					</thead>
 					<tbody>
@@ -403,6 +407,16 @@ else if (Model.Category == "objectpacks")
 								<td>@pack.AuthorCount</td>
 								<td>@pack.TagCount</td>
 								<td>@pack.Licence</td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this pack?')">
+											<input type="hidden" name="CrudId" value="@pack.Id" />
+											<input type="hidden" name="CrudCategory" value="objectpacks" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+									</td>
+								}
 							</tr>
 						}
 					</tbody>
@@ -420,10 +434,6 @@ else if (Model.Category == "sc5files")
 	<section class="panel">
 		<div class="admin-page-header">
 			<h1>SC5 Files</h1>
-			@if (Model.IsAdmin)
-			{
-				<a asp-page="/Manage/Index" class="button button-secondary">Admin</a>
-			}
 		</div>
 		@if (Model.SC5FileList.Count > 0)
 		{
@@ -445,7 +455,7 @@ else if (Model.Category == "sc5files")
 						@foreach (var file in Model.SC5FileList)
 						{
 							<tr>
-								<td><strong>@file.Name</strong></td>
+								<td><a asp-page="/Scenarios/Details" asp-route-id="@file.Id"><strong>@file.Name</strong></a></td>
 								<td>@(file.Description.Length > 80 ? file.Description[..80] + "…" : file.Description)</td>
 								<td>@file.UploadedDate.ToString("yyyy-MM-dd")</td>
 								<td>@file.ObjectSource</td>
@@ -470,11 +480,14 @@ else if (Model.Category == "sc5filepacks")
 	<section class="panel">
 		<div class="admin-page-header">
 			<h1>SC5 File Packs</h1>
-			@if (Model.IsAdmin)
-			{
-				<a asp-page="/Manage/Index" class="button button-secondary">Admin</a>
-			}
 		</div>
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
 		@if (Model.SC5FilePackList.Count > 0)
 		{
 			<div class="table-container">
@@ -488,6 +501,7 @@ else if (Model.Category == "sc5filepacks")
 							<th>Tags</th>
 							<th>Licence</th>
 							<th>Files</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
 						</tr>
 					</thead>
 					<tbody>
@@ -501,6 +515,16 @@ else if (Model.Category == "sc5filepacks")
 								<td>@pack.TagCount</td>
 								<td>@pack.Licence</td>
 								<td>@pack.FileCount</td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this pack?')">
+											<input type="hidden" name="CrudId" value="@pack.Id" />
+											<input type="hidden" name="CrudCategory" value="sc5filepacks" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+									</td>
+								}
 							</tr>
 						}
 					</tbody>
@@ -520,9 +544,30 @@ else if (Model.Category == "authors")
 			<h1>Authors</h1>
 			@if (Model.IsAdmin)
 			{
-				<a asp-page="/Manage/Authors/Index" class="button button-secondary">Manage</a>
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-authors').hidden = !document.getElementById('create-form-authors').hidden">+ New</button>
 			}
 		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-authors" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="CrudCategory" value="authors" />
+				<div class="form-group">
+					<label for="newAuthorName">Name</label>
+					<input id="newAuthorName" name="CrudName" type="text" placeholder="Author name" required class="form-input" />
+				</div>
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-authors').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
 		@if (Model.AuthorList.Count > 0)
 		{
 			<div class="table-container">
@@ -530,6 +575,7 @@ else if (Model.Category == "authors")
 					<thead>
 						<tr>
 							<th>Name</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
 						</tr>
 					</thead>
 					<tbody>
@@ -537,6 +583,24 @@ else if (Model.Category == "authors")
 						{
 							<tr>
 								<td><a asp-page="/Authors/Details" asp-route-id="@author.Id">@author.Name</a></td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-@author.Id');f.hidden=!f.hidden">Edit</button>
+										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this author?')">
+											<input type="hidden" name="CrudId" value="@author.Id" />
+											<input type="hidden" name="CrudCategory" value="authors" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+										<form method="post" asp-page-handler="Edit" id="edit-@author.Id" hidden style="display:inline-flex;gap:0.25rem;align-items:center">
+											<input type="hidden" name="CrudId" value="@author.Id" />
+											<input type="hidden" name="CrudCategory" value="authors" />
+											<input type="text" name="CrudName" value="@author.Name" required class="form-input" style="width:150px" />
+											<button type="submit" class="button button-primary button-small">Save</button>
+											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-@author.Id').hidden=true">Cancel</button>
+										</form>
+									</td>
+								}
 							</tr>
 						}
 					</tbody>
@@ -556,9 +620,30 @@ else if (Model.Category == "tags")
 			<h1>Tags</h1>
 			@if (Model.IsAdmin)
 			{
-				<a asp-page="/Manage/Tags/Index" class="button button-secondary">Manage</a>
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-tags').hidden = !document.getElementById('create-form-tags').hidden">+ New</button>
 			}
 		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-tags" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="CrudCategory" value="tags" />
+				<div class="form-group">
+					<label for="newTagName">Name</label>
+					<input id="newTagName" name="CrudName" type="text" placeholder="Tag name" required class="form-input" />
+				</div>
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-tags').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
 		@if (Model.TagList.Count > 0)
 		{
 			<div class="table-container">
@@ -566,6 +651,7 @@ else if (Model.Category == "tags")
 					<thead>
 						<tr>
 							<th>Name</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
 						</tr>
 					</thead>
 					<tbody>
@@ -573,6 +659,24 @@ else if (Model.Category == "tags")
 						{
 							<tr>
 								<td><a asp-page="/Tags/Details" asp-route-id="@tag.Id">@tag.Name</a></td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-t-@tag.Id');f.hidden=!f.hidden">Edit</button>
+										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this tag?')">
+											<input type="hidden" name="CrudId" value="@tag.Id" />
+											<input type="hidden" name="CrudCategory" value="tags" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+										<form method="post" asp-page-handler="Edit" id="edit-t-@tag.Id" hidden style="display:inline-flex;gap:0.25rem;align-items:center">
+											<input type="hidden" name="CrudId" value="@tag.Id" />
+											<input type="hidden" name="CrudCategory" value="tags" />
+											<input type="text" name="CrudName" value="@tag.Name" required class="form-input" style="width:150px" />
+											<button type="submit" class="button button-primary button-small">Save</button>
+											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-t-@tag.Id').hidden=true">Cancel</button>
+										</form>
+									</td>
+								}
 							</tr>
 						}
 					</tbody>
@@ -592,9 +696,34 @@ else if (Model.Category == "licences")
 			<h1>Licences</h1>
 			@if (Model.IsAdmin)
 			{
-				<a asp-page="/Manage/Licences/Index" class="button button-secondary">Manage</a>
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-licences').hidden = !document.getElementById('create-form-licences').hidden">+ New</button>
 			}
 		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-licences" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="CrudCategory" value="licences" />
+				<div class="form-group">
+					<label for="newLicenceName">Name</label>
+					<input id="newLicenceName" name="CrudName" type="text" placeholder="Licence name" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newLicenceText">Text</label>
+					<textarea id="newLicenceText" name="CrudText" placeholder="Licence text" class="form-input"></textarea>
+				</div>
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-licences').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
 		@if (Model.LicenceList.Count > 0)
 		{
 			<div class="table-container">
@@ -603,6 +732,7 @@ else if (Model.Category == "licences")
 						<tr>
 							<th>Name</th>
 							<th>Text</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
 						</tr>
 					</thead>
 					<tbody>
@@ -611,6 +741,25 @@ else if (Model.Category == "licences")
 							<tr>
 								<td><a asp-page="/Licences/Details" asp-route-id="@licence.Id">@licence.Name</a></td>
 								<td>@(licence.Text.Length > 120 ? licence.Text[..120] + "…" : licence.Text)</td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-l-@licence.Id');f.hidden=!f.hidden">Edit</button>
+										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this licence?')">
+											<input type="hidden" name="CrudId" value="@licence.Id" />
+											<input type="hidden" name="CrudCategory" value="licences" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+										<form method="post" asp-page-handler="Edit" id="edit-l-@licence.Id" hidden style="display:flex;gap:0.25rem;flex-wrap:wrap">
+											<input type="hidden" name="CrudId" value="@licence.Id" />
+											<input type="hidden" name="CrudCategory" value="licences" />
+											<input type="text" name="CrudName" value="@licence.Name" required class="form-input" style="width:150px" />
+											<input type="text" name="CrudText" value="@licence.Text" class="form-input" style="width:200px" />
+											<button type="submit" class="button button-primary button-small">Save</button>
+											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-l-@licence.Id').hidden=true">Cancel</button>
+										</form>
+									</td>
+								}
 							</tr>
 						}
 					</tbody>

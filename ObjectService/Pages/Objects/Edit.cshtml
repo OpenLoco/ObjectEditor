@@ -1,20 +1,20 @@
-@page "/manage/objectpacks/Edit/{id}"
-@model ObjectService.Pages.Manage.ObjectPacks.EditModel
+@page "/Objects/Edit/{id}"
+@model ObjectService.Pages.Objects.EditModel
 @{
-	ViewData["Title"] = $"Edit Object Pack - {Model.Name}";
+	ViewData["Title"] = $"Edit Object - {Model.Name}";
 }
 
 <div class="admin-page-container">
-	<h1>Edit Object Pack: @Model.Name</h1>
+	<h1>Edit Object: @Model.Name</h1>
 
 	@if (!string.IsNullOrEmpty(Model.ErrorMessage))
 	{
 		<div class="alert alert-error">@Model.ErrorMessage</div>
 	}
 
-	@if (Model.Pack == null)
+	@if (Model.Object == null)
 	{
-		<p>Object pack not found.</p>
+		<p>Object not found.</p>
 	}
 	else
 	{
@@ -24,13 +24,13 @@
 				<legend>Basic Information</legend>
 
 				<div class="form-group">
-					<label for="name">Name</label>
+					<label for="name">Internal Name</label>
 					<input id="name" type="text" asp-for="Name" required />
 				</div>
 
 				<div class="form-group">
 					<label for="description">Description</label>
-					<textarea id="description" asp-for="Description" placeholder="Enter pack description..."></textarea>
+					<textarea id="description" asp-for="Description" placeholder="Enter object description..."></textarea>
 				</div>
 
 				<div class="form-row">
@@ -48,6 +48,16 @@
 						<label for="uploadedDate">Uploaded Date</label>
 						<input id="uploadedDate" type="date" asp-for="UploadedDate" required />
 					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="availability">Availability</label>
+					<select id="availability" asp-for="Availability">
+						@foreach (var status in Enum.GetValues<Definitions.ObjectAvailability>())
+						{
+							<option value="@status">@status</option>
+						}
+					</select>
 				</div>
 			</fieldset>
 
@@ -93,21 +103,16 @@
 						}
 					</div>
 				</div>
-			</fieldset>
-
-			<!-- Objects in Pack -->
-			<fieldset class="form-section">
-				<legend>Objects in Pack</legend>
 
 				<div class="form-group">
-					<label>Select Objects to Include</label>
-					<div class="multi-select large">
-						@foreach (var obj in Model.AvailableObjects)
+					<label>Object Packs</label>
+					<div class="multi-select">
+						@foreach (var pack in Model.AvailableObjectPacks)
 						{
-							var isSelected = Model.SelectedObjectIds.Contains(obj.Id);
+							var isSelected = Model.SelectedObjectPackIds.Contains(pack.Id);
 							<label class="checkbox">
-								<input type="checkbox" name="SelectedObjectIds" value="@obj.Id" checked="@isSelected" />
-								<span>@obj.Name</span>
+								<input type="checkbox" name="SelectedObjectPackIds" value="@pack.Id" checked="@isSelected" />
+								<span>@pack.Name</span>
 							</label>
 						}
 					</div>
@@ -116,7 +121,7 @@
 
 			<div class="form-actions">
 				<button type="submit" class="button button-primary">Save Changes</button>
-				<a asp-page="/Manage/ObjectPacks/Index" class="button button-secondary">Cancel</a>
+				<a asp-page="/Objects/Details" asp-route-id="@Model.Id" class="button button-secondary">Cancel</a>
 			</div>
 		</form>
 	}
@@ -136,5 +141,32 @@
 		padding: 2rem;
 		border-top: 1px solid var(--color-muted);
 		margin-top: 0;
+	}
+	
+	.dat-objects {
+		background: var(--color-background);
+		border: 1px solid var(--color-muted);
+		border-radius: 0.25rem;
+		padding: 1rem;
+		display: grid;
+		gap: 0.75rem;
+	}
+	
+	.dat-object-item {
+		padding: 0.75rem;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 0.25rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.9rem;
+	}
+	
+	.dat-object-item code {
+		background: rgba(255, 255, 255, 0.1);
+		padding: 0.25rem 0.5rem;
+		border-radius: 0.2rem;
+		font-family: monospace;
+		font-size: 0.85rem;
 	}
 </style>

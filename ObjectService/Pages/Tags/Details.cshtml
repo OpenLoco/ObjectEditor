@@ -2,6 +2,7 @@
 @model ObjectService.Pages.Tags.DetailsModel
 @{
 	ViewData["Title"] = Model.Tag?.Name ?? "Tag";
+	var isAdmin = User.IsInRole("Admin");
 }
 
 @if (Model.Tag is null)
@@ -14,10 +15,44 @@
 	return;
 }
 
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+	<div class="alert alert-success">@Model.SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+	<div class="alert alert-error">@Model.ErrorMessage</div>
+}
+
 <section class="detail-hero panel">
 	<div>
 		<a class="back-link" asp-page="/Index" asp-route-category="tags">Back to tags</a>
-		<h1>@Model.Tag.Name</h1>
+		<div class="admin-page-header">
+			<h1>@Model.Tag.Name</h1>
+			@if (isAdmin)
+			{
+				<div class="action-buttons">
+					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
+					<form method="post" asp-page-handler="Delete" asp-route-id="@Model.Tag.Id" style="display:inline" onsubmit="return confirm('Delete this tag?')">
+						<button type="submit" class="button button-small button-danger">Delete</button>
+					</form>
+				</div>
+			}
+		</div>
+		@if (isAdmin)
+		{
+			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form" style="margin-top:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="Id" value="@Model.Tag.Id" />
+				<div class="form-group">
+					<label for="editName">Name</label>
+					<input id="editName" name="Name" type="text" value="@Model.Tag.Name" required class="form-input" />
+				</div>
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Save</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-form').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
 	</div>
 </section>
 

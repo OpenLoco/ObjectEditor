@@ -9,7 +9,7 @@ using Definitions.ObjectModels.Types;
 using ObjectService.Services;
 using static Definitions.ObjectAvailability;
 
-namespace ObjectService.Pages.Manage.Objects;
+namespace ObjectService.Pages.Objects;
 
 [Authorize(Policy = "AdminOnly")]
 public sealed class EditModel : PageModel
@@ -107,7 +107,7 @@ public sealed class EditModel : PageModel
 		AvailableAuthors = (await _authorService.ListAsync(HttpContext, CancellationToken.None)).OrderBy(a => a.Name).ToList();
 		AvailableTags = (await _tagService.ListAsync(HttpContext, CancellationToken.None)).OrderBy(t => t.Name).ToList();
 		AvailableLicences = (await _licenceService.ListAsync(HttpContext, CancellationToken.None)).OrderBy(l => l.Name).ToList();
-		AvailableObjectPacks = await _db.ObjectPacks.Select(p => new DtoItemPackEntry(p.Id, p.Name, p.Description, p.CreatedDate, p.ModifiedDate, p.UploadedDate, null)).OrderBy(p => p.Name).ToListAsync();
+		AvailableObjectPacks = (await _db.ObjectPacks.ToListAsync()).Select(p => new DtoItemPackEntry(p.Id, p.Name, p.Description, p.CreatedDate, p.ModifiedDate, p.UploadedDate, null)).OrderBy(p => p.Name).ToList();
 
 		return Page();
 	}
@@ -125,10 +125,11 @@ public sealed class EditModel : PageModel
 			var tags = await _tagService.ListAsync(HttpContext, CancellationToken.None);
 			var tagEntries = tags.Where(t => SelectedTagIds.Contains(t.Id)).ToList();
 
-			var packItems = await _db.ObjectPacks
+			var packItems = (await _db.ObjectPacks
 				.Where(p => SelectedObjectPackIds.Contains(p.Id))
+				.ToListAsync())
 				.Select(p => new DtoItemPackEntry(p.Id, p.Name, p.Description, p.CreatedDate, p.ModifiedDate, p.UploadedDate, null))
-				.ToListAsync();
+				.ToList();
 
 			var updateRequest = new DtoObjectPostResponse(
 				Id,
@@ -153,8 +154,7 @@ public sealed class EditModel : PageModel
 			var updated = await _objectService.UpdateAsync(Id, updateRequest, CancellationToken.None);
 			if (updated != null)
 			{
-				TempData["SuccessMessage"] = $"Object '{Name}' updated successfully.";
-				return RedirectToPage("/manage/objects");
+				return RedirectToPage("/Objects/Details", new { id = Id.ToString() });
 			}
 
 			ErrorMessage = "Failed to update object. It may no longer exist.";

@@ -16,6 +16,10 @@
 
 	<div class="detail-actions">
 		<span class="status-chip status-@item.Availability.ToString().ToLowerInvariant()">@item.Availability</span>
+		@if (User.IsInRole("Admin"))
+		{
+			<a class="button button-secondary" asp-page="/Objects/Edit" asp-route-id="@item.Id">Edit</a>
+		}
 		<a class="button button-secondary" href="@item.ApiUrl">Open JSON</a>
 		@if (item.CanDownloadAnyFile)
 		{

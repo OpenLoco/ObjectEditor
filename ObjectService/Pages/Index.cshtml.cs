@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using ObjectService.Frontend;
+using ObjectService.Services;
 
 namespace ObjectService.Pages;
 
@@ -14,11 +15,22 @@ public sealed class IndexModel : PageModel
 {
 	readonly ObjectExplorerService _explorerService;
 	readonly LocoDbContext _db;
+	readonly ICrudService<DtoAuthorEntry, TblAuthor> _authorService;
+	readonly ICrudService<DtoTagEntry, TblTag> _tagService;
+	readonly ICrudService<DtoLicenceEntry, TblLicence> _licenceService;
 
-	public IndexModel(ObjectExplorerService explorerService, LocoDbContext db)
+	public IndexModel(
+		ObjectExplorerService explorerService,
+		LocoDbContext db,
+		ICrudService<DtoAuthorEntry, TblAuthor> authorService,
+		ICrudService<DtoTagEntry, TblTag> tagService,
+		ICrudService<DtoLicenceEntry, TblLicence> licenceService)
 	{
 		_explorerService = explorerService;
 		_db = db;
+		_authorService = authorService;
+		_tagService = tagService;
+		_licenceService = licenceService;
 	}
 
 	[BindProperty(SupportsGet = true)]
@@ -214,6 +226,215 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 			.ToListAsync(ct);
 
 		LicenceList = licences.Select(l => new LicenceListViewModel(l.Id, l.Name, l.Text)).ToList();
+	}
+
+	// ── CRUD form bindings ──
+
+	[BindProperty]
+	public UniqueObjectId CrudId { get; set; }
+
+	[BindProperty]
+	public string CrudName { get; set; } = string.Empty;
+
+	[BindProperty]
+	public string CrudText { get; set; } = string.Empty;
+
+	[BindProperty]
+	public string CrudCategory { get; set; } = string.Empty;
+
+	[TempData]
+	public string? SuccessMessage { get; set; }
+
+	[TempData]
+	public string? ErrorMessage { get; set; }
+
+	// ── POST: Create author/tag/licence ──
+
+	public async Task<IActionResult> OnPostCreateAsync()
+	{
+		if (!IsAdmin)
+			return Forbid();
+
+		if (string.IsNullOrWhiteSpace(CrudName))
+		{
+			ErrorMessage = "Name is required.";
+			return RedirectToPage(new { category = CrudCategory });
+		}
+
+		try
+		{
+			switch (CrudCategory)
+			{
+				case "authors":
+				{
+					var entry = new DtoAuthorEntry(0, CrudName.Trim());
+					if (!_authorService.TryValidateCreate(entry, out var err))
+					{
+						ErrorMessage = err;
+						return RedirectToPage(new { category = CrudCategory });
+					}
+					await _authorService.CreateAsync(entry, CancellationToken.None);
+					SuccessMessage = $"Author '{CrudName.Trim()}' created.";
+					break;
+				}
+				case "tags":
+				{
+					var entry = new DtoTagEntry(0, CrudName.Trim());
+					if (!_tagService.TryValidateCreate(entry, out var err))
+					{
+						ErrorMessage = err;
+						return RedirectToPage(new { category = CrudCategory });
+					}
+					await _tagService.CreateAsync(entry, CancellationToken.None);
+					SuccessMessage = $"Tag '{CrudName.Trim()}' created.";
+					break;
+				}
+				case "licences":
+				{
+					var entry = new DtoLicenceEntry(0, CrudName.Trim(), CrudText?.Trim() ?? string.Empty);
+					if (!_licenceService.TryValidateCreate(entry, out var err))
+					{
+						ErrorMessage = err;
+						return RedirectToPage(new { category = CrudCategory });
+					}
+					await _licenceService.CreateAsync(entry, CancellationToken.None);
+					SuccessMessage = $"Licence '{CrudName.Trim()}' created.";
+					break;
+				}
+				default:
+					break;
+			}
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Error creating: {ex.Message}";
+		}
+
+		return RedirectToPage(new { category = CrudCategory });
+	}
+
+	// ── POST: Edit author/tag/licence ──
+
+	public async Task<IActionResult> OnPostEditAsync()
+	{
+		if (!IsAdmin)
+			return Forbid();
+
+		if (string.IsNullOrWhiteSpace(CrudName))
+		{
+			ErrorMessage = "Name is required.";
+			return RedirectToPage(new { category = CrudCategory });
+		}
+
+		try
+		{
+			switch (CrudCategory)
+			{
+				case "authors":
+				{
+					var entry = new DtoAuthorEntry(CrudId, CrudName.Trim());
+					var updated = await _authorService.UpdateAsync(CrudId, entry, CancellationToken.None);
+					SuccessMessage = updated != null ? $"Author '{CrudName.Trim()}' updated." : "Author not found.";
+					if (updated == null) ErrorMessage = "Author not found.";
+					break;
+				}
+				case "tags":
+				{
+					var entry = new DtoTagEntry(CrudId, CrudName.Trim());
+					var updated = await _tagService.UpdateAsync(CrudId, entry, CancellationToken.None);
+					SuccessMessage = updated != null ? $"Tag '{CrudName.Trim()}' updated." : "Tag not found.";
+					if (updated == null) ErrorMessage = "Tag not found.";
+					break;
+				}
+				case "licences":
+				{
+					var entry = new DtoLicenceEntry(CrudId, CrudName.Trim(), CrudText?.Trim() ?? string.Empty);
+					var updated = await _licenceService.UpdateAsync(CrudId, entry, CancellationToken.None);
+					SuccessMessage = updated != null ? $"Licence '{CrudName.Trim()}' updated." : "Licence not found.";
+					if (updated == null) ErrorMessage = "Licence not found.";
+					break;
+				}
+				default:
+					break;
+			}
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Error updating: {ex.Message}";
+		}
+
+		return RedirectToPage(new { category = CrudCategory });
+	}
+
+	// ── POST: Delete author/tag/licence/objectpacks/sc5filepacks ──
+
+	public async Task<IActionResult> OnPostDeleteAsync()
+	{
+		if (!IsAdmin)
+			return Forbid();
+
+		try
+		{
+			switch (CrudCategory)
+			{
+				case "authors":
+				{
+					var deleted = await _authorService.DeleteAsync(CrudId, CancellationToken.None);
+					SuccessMessage = deleted ? "Author deleted." : null;
+					ErrorMessage = deleted ? null : "Failed to delete author.";
+					break;
+				}
+				case "tags":
+				{
+					var deleted = await _tagService.DeleteAsync(CrudId, CancellationToken.None);
+					SuccessMessage = deleted ? "Tag deleted." : null;
+					ErrorMessage = deleted ? null : "Failed to delete tag.";
+					break;
+				}
+				case "licences":
+				{
+					var deleted = await _licenceService.DeleteAsync(CrudId, CancellationToken.None);
+					SuccessMessage = deleted ? "Licence deleted." : null;
+					ErrorMessage = deleted ? null : "Failed to delete licence.";
+					break;
+				}
+				case "objectpacks":
+				{
+					var pack = await _db.ObjectPacks.FindAsync(new object[] { (object)CrudId }, CancellationToken.None);
+					if (pack != null)
+					{
+						_db.ObjectPacks.Remove(pack);
+						await _db.SaveChangesAsync();
+						SuccessMessage = $"Object pack '{pack.Name}' deleted.";
+					}
+					else
+						ErrorMessage = "Pack not found.";
+					break;
+				}
+				case "sc5filepacks":
+				{
+					var pack = await _db.SC5FilePacks.FindAsync(new object[] { (object)CrudId }, CancellationToken.None);
+					if (pack != null)
+					{
+						_db.SC5FilePacks.Remove(pack);
+						await _db.SaveChangesAsync();
+						SuccessMessage = $"SC5 file pack '{pack.Name}' deleted.";
+					}
+					else
+						ErrorMessage = "Pack not found.";
+					break;
+				}
+				default:
+					ErrorMessage = "Unknown category.";
+					break;
+			}
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Error deleting: {ex.Message}";
+		}
+
+		return RedirectToPage(new { category = CrudCategory });
 	}
 
 	// ── View models ──

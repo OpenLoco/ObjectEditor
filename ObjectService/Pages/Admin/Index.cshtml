@@ -1,0 +1,146 @@
+@page "/Admin"
+@model ObjectService.Pages.Admin.AdminIndexModel
+@{
+	ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="admin-container">
+	<h1>Admin Dashboard</h1>
+	
+	<div class="admin-stats">
+		<div class="stat-card">
+			<div class="stat-label">Total Objects</div>
+			<div class="stat-value">@Model.TotalObjects</div>
+			<a asp-page="/Admin/Objects/Index" class="stat-link">Manage →</a>
+		</div>
+		
+		<div class="stat-card">
+			<div class="stat-label">Total Authors</div>
+			<div class="stat-value">@Model.TotalAuthors</div>
+			<a asp-page="/Admin/Authors/Index" class="stat-link">Manage →</a>
+		</div>
+		
+		<div class="stat-card">
+			<div class="stat-label">Total Tags</div>
+			<div class="stat-value">@Model.TotalTags</div>
+			<a asp-page="/Admin/Tags/Index" class="stat-link">Manage →</a>
+		</div>
+		
+		<div class="stat-card">
+			<div class="stat-label">Total Licences</div>
+			<div class="stat-value">@Model.TotalLicences</div>
+			<a asp-page="/Admin/Licences/Index" class="stat-link">Manage →</a>
+		</div>
+		
+		<div class="stat-card">
+			<div class="stat-label">Total Object Packs</div>
+			<div class="stat-value">@Model.TotalObjectPacks</div>
+			<a asp-page="/Admin/ObjectPacks/Index" class="stat-link">Manage →</a>
+		</div>
+		
+		<div class="stat-card">
+			<div class="stat-label">Total Users</div>
+			<div class="stat-value">@Model.TotalUsers</div>
+			<a asp-page="/Admin/Users/Index" class="stat-link">Manage →</a>
+		</div>
+	</div>
+	
+	<div class="admin-menu">
+		<h2>Quick Navigation</h2>
+		<ul>
+			<li><a asp-page="/Admin/Objects/Index">View & Edit Objects</a> - Edit object metadata, authors, tags, licenses, and packs</li>
+			<li><a asp-page="/Admin/Authors/Index">Manage Authors</a> - Create, edit, or delete authors</li>
+			<li><a asp-page="/Admin/Tags/Index">Manage Tags</a> - Create, edit, or delete tags</li>
+			<li><a asp-page="/Admin/Licences/Index">Manage Licences</a> - Create, edit, or delete licenses</li>
+			<li><a asp-page="/Admin/ObjectPacks/Index">Manage Object Packs</a> - Create, edit, or delete object packs</li>
+		</ul>
+	</div>
+</div>
+
+<style>
+.admin-container {
+	max-width: 1200px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+.admin-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 1.5rem;
+	margin-bottom: 3rem;
+}
+
+.stat-card {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	padding: 1.5rem;
+	text-align: center;
+}
+
+.stat-label {
+	font-size: 0.875rem;
+	color: var(--color-muted);
+	margin-bottom: 0.5rem;
+}
+
+.stat-value {
+	font-size: 2rem;
+	font-weight: bold;
+	color: var(--color-accent);
+	margin-bottom: 1rem;
+}
+
+.stat-link {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	background: var(--color-accent);
+	color: var(--color-background);
+	border-radius: 0.25rem;
+	text-decoration: none;
+	font-size: 0.875rem;
+	transition: opacity 0.2s;
+}
+
+.stat-link:hover {
+	opacity: 0.8;
+}
+
+.admin-menu {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	padding: 2rem;
+}
+
+.admin-menu h2 {
+	margin-top: 0;
+	color: var(--color-accent);
+}
+
+.admin-menu ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.admin-menu li {
+	padding: 0.75rem 0;
+	border-bottom: 1px solid var(--color-muted);
+}
+
+.admin-menu li:last-child {
+	border-bottom: none;
+}
+
+.admin-menu a {
+	color: var(--color-accent);
+	text-decoration: none;
+	font-weight: 500;
+}
+
+.admin-menu a:hover {
+	text-decoration: underline;
+}
+</style>

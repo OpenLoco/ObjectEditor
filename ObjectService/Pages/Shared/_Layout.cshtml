@@ -22,7 +22,7 @@
 	};
 	var isAuthenticated = SignInManager.IsSignedIn(User);
 
-	var isDevelopment = false; //HostEnvironment.IsDevelopment();
+	var isDevelopment = HostEnvironment.IsDevelopment();
 	string? databaseProvider = null;
 	string? databaseSource = null;
 	string? databaseName = null;
@@ -339,8 +339,14 @@
 				<span class="health-indicator @healthClass" title="@healthDescription">
 					<span class="health-indicator-dot" aria-hidden="true"></span>
 					<span>Server @healthReport.Status</span>
-				</span>
-				<button type="button" class="button button-secondary theme-studio-toggle" data-theme-studio-toggle aria-controls="theme-studio-panel" aria-expanded="false" hidden>
+				</span>			@if (isDevelopment && !isAuthenticated)
+			{
+				<form method="post" asp-page="/Dev/QuickLogin" style="display: inline;">
+					<button type="submit" class="button button-secondary" style="background-color: var(--warning); color: var(--button-primary-text); font-weight: 500;">
+						Dev Login
+					</button>
+				</form>
+			}				<button type="button" class="button button-secondary theme-studio-toggle" data-theme-studio-toggle aria-controls="theme-studio-panel" aria-expanded="false" hidden>
 					Theme palette
 				</button>
 				<button type="button" class="button button-secondary theme-toggle" data-theme-toggle aria-label="Toggle between light and dark mode" aria-pressed="false">

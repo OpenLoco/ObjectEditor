@@ -1,0 +1,279 @@
+@page "/Admin/Objects"
+@model ObjectService.Pages.Admin.Objects.IndexModel
+@{
+	ViewData["Title"] = "Manage Objects";
+	var totalPages = (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+}
+
+<div class="admin-page-container">
+	<div class="admin-page-header">
+		<h1>Manage Objects</h1>
+	</div>
+
+	@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+	{
+		<div class="alert alert-success">@Model.SuccessMessage</div>
+	}
+
+	<div class="filter-panel">
+		<form method="get" class="filters">
+			<div class="filter-group">
+				<label for="search">Search</label>
+				<input type="text" id="search" name="search" placeholder="Search by name..." value="@Model.Search" />
+			</div>
+
+			<div class="filter-group">
+				<label for="objectType">Object Type</label>
+				<select id="objectType" name="objectType">
+					<option value="">All Types</option>
+					@foreach (var type in Model.ObjectTypes)
+					{
+						<option value="@type" selected="@(Model.ObjectType == type)">@type</option>
+					}
+				</select>
+			</div>
+
+			<div class="filter-group">
+				<button type="submit" class="button button-primary">Filter</button>
+				<a href="@Url.Page("/Admin/Objects")" class="button button-secondary">Clear</a>
+			</div>
+		</form>
+	</div>
+
+	<div class="table-container">
+		<p class="result-count">Total: <strong>@Model.TotalCount</strong> objects</p>
+
+		@if (Model.Objects.Count > 0)
+		{
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Uploaded Date</th>
+						<th>Authors</th>
+						<th>Tags</th>
+						<th>Licence</th>
+						<th class="actions-column">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var obj in Model.Objects)
+					{
+						<tr>
+							<td><strong>@obj.Name</strong></td>
+							<td>@obj.ObjectType</td>
+							<td>@obj.UploadedDate</td>
+							<td>@obj.AuthorCount</td>
+							<td>@obj.TagCount</td>
+							<td>@obj.Licence</td>
+							<td class="actions-column">
+								<a asp-page="/Admin/Objects/Edit" asp-route-id="@obj.Id" class="button button-small button-secondary">Edit</a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+		else
+		{
+			<p class="empty-state">No objects found matching your criteria.</p>
+		}
+	</div>
+
+	@if (totalPages > 1)
+	{
+		<div class="pagination">
+			@if (Model.PageNumber > 1)
+			{
+				<a asp-page="/Admin/Objects" asp-route-p="1" class="button button-small">« First</a>
+				<a asp-page="/Admin/Objects" asp-route-p="@(Model.PageNumber - 1)" asp-route-search="@Model.Search" asp-route-objectType="@Model.ObjectType" class="button button-small">‹ Previous</a>
+			}
+
+			<span class="page-info">Page @Model.PageNumber of @totalPages</span>
+
+			@if (Model.PageNumber < totalPages)
+			{
+				<a asp-page="/Admin/Objects" asp-route-p="@(Model.PageNumber + 1)" asp-route-search="@Model.Search" asp-route-objectType="@Model.ObjectType" class="button button-small">Next ›</a>
+				<a asp-page="/Admin/Objects" asp-route-p="@totalPages" asp-route-search="@Model.Search" asp-route-objectType="@Model.ObjectType" class="button button-small">Last »</a>
+			}
+		</div>
+	}
+
+	<a asp-page="/Admin" class="button button-secondary">Back to Dashboard</a>
+</div>
+
+<style>
+.admin-page-container {
+	max-width: 1400px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+.admin-page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
+.admin-page-header h1 {
+	margin: 0;
+}
+
+.filter-panel {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	padding: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+.filters {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+
+.filter-group {
+	flex: 1;
+	min-width: 150px;
+	display: flex;
+	flex-direction: column;
+}
+
+.filter-group label {
+	font-size: 0.875rem;
+	color: var(--color-muted);
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+}
+
+.filter-group input,
+.filter-group select {
+	padding: 0.5rem;
+	background: var(--color-background);
+	color: var(--color-contrast);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+}
+
+.alert {
+	padding: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 0.25rem;
+}
+
+.alert-success {
+	background-color: rgba(78, 141, 87, 0.1);
+	color: #4e8d57;
+	border: 1px solid rgba(78, 141, 87, 0.3);
+}
+
+.table-container {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	overflow: hidden;
+	margin-bottom: 2rem;
+}
+
+.result-count {
+	padding: 1rem;
+	margin: 0;
+	border-bottom: 1px solid var(--color-muted);
+	color: var(--color-muted);
+	font-size: 0.875rem;
+}
+
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.data-table thead {
+	background: var(--color-background);
+	border-bottom: 2px solid var(--color-muted);
+}
+
+.data-table th {
+	padding: 1rem;
+	text-align: left;
+	font-weight: 500;
+	color: var(--color-muted);
+}
+
+.data-table td {
+	padding: 1rem;
+	border-bottom: 1px solid var(--color-muted);
+}
+
+.data-table tbody tr:hover {
+	background-color: rgba(255, 255, 255, 0.02);
+}
+
+.actions-column {
+	width: 100px;
+	text-align: right;
+}
+
+.data-table .actions-column {
+	padding-right: 1rem;
+}
+
+.button {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	background: var(--color-accent);
+	color: var(--color-background);
+	border: none;
+	border-radius: 0.25rem;
+	cursor: pointer;
+	text-decoration: none;
+	font-size: 0.875rem;
+	transition: opacity 0.2s;
+	font-weight: 500;
+}
+
+.button:hover {
+	opacity: 0.8;
+}
+
+.button-primary {
+	background: var(--color-accent);
+	color: var(--color-background);
+}
+
+.button-secondary {
+	background: transparent;
+	color: var(--color-accent);
+	border: 1px solid var(--color-accent);
+}
+
+.button-small {
+	padding: 0.25rem 0.75rem;
+	font-size: 0.75rem;
+}
+
+.empty-state {
+	padding: 2rem;
+	text-align: center;
+	color: var(--color-muted);
+	margin: 0;
+}
+
+.pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 2rem 1rem;
+}
+
+.page-info {
+	color: var(--color-muted);
+	margin: 0 1rem;
+	font-size: 0.875rem;
+}
+</style>

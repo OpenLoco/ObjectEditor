@@ -1,0 +1,186 @@
+@page "/Admin/Tags"
+@model ObjectService.Pages.Admin.Tags.IndexModel
+@{
+	ViewData["Title"] = "Manage Tags";
+}
+
+<div class="admin-page-container">
+	<div class="admin-page-header">
+		<h1>Manage Tags</h1>
+		<a asp-page="/Admin/Tags/Create" class="button button-primary">+ New Tag</a>
+	</div>
+
+	@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+	{
+		<div class="alert alert-success">@Model.SuccessMessage</div>
+	}
+
+	@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+	{
+		<div class="alert alert-error">@Model.ErrorMessage</div>
+	}
+
+	<div class="table-container">
+		@if (Model.Tags.Count > 0)
+		{
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th class="actions-column">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var tag in Model.Tags)
+					{
+						<tr>
+							<td>@tag.Name</td>
+							<td class="actions-column">
+								<a asp-page="/Admin/Tags/Edit" asp-route-id="@tag.Id" class="button button-small button-secondary">Edit</a>
+								<form method="post" asp-page-handler="Delete" asp-route-id="@tag.Id" style="display: inline;">
+									<button type="submit" class="button button-small button-danger" onclick="return confirm('Are you sure you want to delete this tag?');">Delete</button>
+								</form>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+		else
+		{
+			<p class="empty-state">No tags found. <a asp-page="/Admin/Tags/Create">Create one</a>.</p>
+		}
+	</div>
+
+	<a asp-page="/Admin" class="button button-secondary">Back to Dashboard</a>
+</div>
+
+<style>
+.admin-page-container {
+	max-width: 1000px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+.admin-page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
+.admin-page-header h1 {
+	margin: 0;
+}
+
+.alert {
+	padding: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 0.25rem;
+}
+
+.alert-success {
+	background-color: rgba(78, 141, 87, 0.1);
+	color: #4e8d57;
+	border: 1px solid rgba(78, 141, 87, 0.3);
+}
+
+.alert-error {
+	background-color: rgba(244, 70, 70, 0.1);
+	color: #f44646;
+	border: 1px solid rgba(244, 70, 70, 0.3);
+}
+
+.table-container {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	overflow: hidden;
+	margin-bottom: 2rem;
+}
+
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.data-table thead {
+	background: var(--color-background);
+	border-bottom: 2px solid var(--color-muted);
+}
+
+.data-table th {
+	padding: 1rem;
+	text-align: left;
+	font-weight: 500;
+	color: var(--color-muted);
+}
+
+.data-table td {
+	padding: 1rem;
+	border-bottom: 1px solid var(--color-muted);
+}
+
+.data-table tbody tr:hover {
+	background-color: rgba(255, 255, 255, 0.02);
+}
+
+.actions-column {
+	width: 200px;
+	text-align: right;
+}
+
+.data-table .actions-column {
+	padding-right: 1rem;
+}
+
+.button {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	background: var(--color-accent);
+	color: var(--color-background);
+	border: none;
+	border-radius: 0.25rem;
+	cursor: pointer;
+	text-decoration: none;
+	font-size: 0.875rem;
+	transition: opacity 0.2s;
+	font-weight: 500;
+}
+
+.button:hover {
+	opacity: 0.8;
+}
+
+.button-primary {
+	background: var(--color-accent);
+	color: var(--color-background);
+}
+
+.button-secondary {
+	background: transparent;
+	color: var(--color-accent);
+	border: 1px solid var(--color-accent);
+}
+
+.button-danger {
+	background: #f64646;
+	color: white;
+	border: none;
+}
+
+.button-small {
+	padding: 0.25rem 0.75rem;
+	font-size: 0.75rem;
+}
+
+.empty-state {
+	padding: 2rem;
+	text-align: center;
+	color: var(--color-muted);
+}
+
+.empty-state a {
+	color: var(--color-accent);
+}
+</style>

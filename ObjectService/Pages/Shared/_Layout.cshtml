@@ -99,6 +99,88 @@
 				return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 			};
 
+			const hexToRgb = (hex) => {
+				const r = parseInt(hex.slice(1, 3), 16);
+				const g = parseInt(hex.slice(3, 5), 16);
+				const b = parseInt(hex.slice(5, 7), 16);
+				return [r, g, b];
+			};
+
+			const rgbToHsl = (r, g, b) => {
+				r /= 255; g /= 255; b /= 255;
+				const max = Math.max(r, g, b);
+				const min = Math.min(r, g, b);
+				const l = (max + min) / 2;
+				let h = 0, s = 0;
+				if (max !== min) {
+					const d = max - min;
+					s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+					switch (max) {
+						case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+						case g: h = ((b - r) / d + 2) / 6; break;
+						case b: h = ((r - g) / d + 4) / 6; break;
+					}
+				}
+				return [h * 360, s * 100, l * 100];
+			};
+
+			const hslToRgb = (h, s, l) => {
+				h /= 360; s /= 100; l /= 100;
+				let r, g, b;
+				if (s === 0) {
+					r = g = b = l;
+				} else {
+					const hue2rgb = (p, q, t) => {
+						if (t < 0) t += 1;
+						if (t > 1) t -= 1;
+						if (t < 1 / 6) return p + (q - p) * 6 * t;
+						if (t < 1 / 2) return q;
+						if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+						return p;
+					};
+					const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+					const p = 2 * l - q;
+					r = hue2rgb(p, q, h + 1 / 3);
+					g = hue2rgb(p, q, h);
+					b = hue2rgb(p, q, h - 1 / 3);
+				}
+				return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+			};
+
+			const rgbToHex = (r, g, b) => {
+				return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0").toUpperCase()).join("");
+			};
+
+			// Generate 5 evenly-spaced brightness variants from a base colour.
+			// Returns [darkest, darker, mid, lighter, lightest] as hex strings.
+			const generateVariants = (hex) => {
+				const [r, g, b] = hexToRgb(hex);
+				const [h, s, l] = rgbToHsl(r, g, b);
+
+				const lightnesses = [
+					Math.max(3, l - 44),   // darkest
+					Math.max(3, l - 22),   // darker
+					l,                      // mid (the base colour)
+					Math.min(97, l + 22),  // lighter
+					Math.min(97, l + 44),  // lightest
+				];
+
+				return lightnesses.map(lv => {
+					const [rr, gg, bb] = hslToRgb(h, s, lv);
+					return rgbToHex(rr, gg, bb);
+				});
+			};
+
+			// Reduce the HSL saturation of a hex colour by a given ratio (0–1).
+			// e.g. desaturateColour("#F6C945", 0.6) keeps 40% of original saturation.
+			const desaturateColour = (hex, amount) => {
+				const [r, g, b] = hexToRgb(hex);
+				const [h, s, l] = rgbToHsl(r, g, b);
+				const newS = Math.max(0, s * (1 - amount));
+				const [rr, gg, bb] = hslToRgb(h, newS, l);
+				return rgbToHex(rr, gg, bb);
+			};
+
 			const normalisePalette = (candidate) => {
 				if (candidate === null || typeof candidate !== "object")
 				{
@@ -121,97 +203,72 @@
 			};
 
 			const buildTokens = (theme, palette) => {
-				if (theme === "dark")
+				// Generate 5 brightness variants [darkest, darker, mid, lighter, lightest] per palette key.
+				const variants = {};
+				for (const key of paletteFields)
 				{
-					return {
-						bg: palette.background,
-						"bg-accent": palette.muted,
-						"bg-end": palette.background,
-						panel: rgba(palette.background, 0.84),
-						"panel-strong": rgba(palette.background, 0.96),
-						"panel-glass": rgba(palette.background, 0.78),
-						"surface-raised": rgba(palette.muted, 0.18),
-						"surface-subtle": rgba(palette.muted, 0.12),
-						"surface-table": rgba(palette.muted, 0.16),
-						border: rgba(palette.surface, 0.18),
-						"border-soft": rgba(palette.surface, 0.1),
-						"field-border": rgba(palette.surface, 0.22),
-						"field-bg": rgba(palette.background, 0.94),
-						text: palette.contrast,
-						muted: palette.surface,
-						accent: palette.accent,
-						"accent-strong": palette.contrast,
-						"accent-soft": rgba(palette.accent, 0.2),
-						"accent-soft-strong": rgba(palette.accent, 0.14),
-						"accent-border": rgba(palette.accent, 0.32),
-						"accent-border-strong": rgba(palette.accent, 0.4),
-						success: palette.success,
-						"success-soft": rgba(palette.success, 0.18),
-						"success-border": rgba(palette.success, 0.3),
-						warning: palette.warning,
-						"warning-soft": rgba(palette.warning, 0.14),
-						"warning-border": rgba(palette.warning, 0.26),
-						error: palette.error,
-						"error-soft": rgba(palette.error, 0.16),
-						"error-border": rgba(palette.error, 0.28),
-						danger: palette.error,
-						"danger-soft": rgba(palette.error, 0.16),
-						"danger-border": rgba(palette.error, 0.28),
-						"disabled-bg": rgba(palette.muted, 0.12),
-						"disabled-border": rgba(palette.muted, 0.22),
-						"button-primary-text": palette.background,
-						"page-glow-accent": rgba(palette.accent, 0.18),
-						"page-glow-warning": rgba(palette.warning, 0.12),
-						"image-grid-accent": rgba(palette.accent, 0.08),
-						"image-grid-warning": rgba(palette.warning, 0.08),
-						"image-shadow": "rgba(0, 0, 0, 0.32)",
-						shadow: "0 18px 48px rgba(0, 0, 0, 0.28)",
-					};
+					variants[key] = generateVariants(palette[key]);
 				}
 
+				// In dark mode, desaturate the accent's darker variants so they lean
+				// towards grey instead of vivid yellow / whatever the accent hue is.
+				// This keeps the page dark and understated, not bright and colourful.
+				if (theme === "dark")
+				{
+					variants["accent"] = variants["accent"].map((hex, i) =>
+						desaturateColour(hex, [0.7, 0.55, 0.35, 0.15, 0][i])
+					);
+				}
+
+				// In dark mode, flip the brightness position: 0↔4, 1↔3, 2→2.
+				const pos = (lightPos) => theme === "dark" ? 4 - lightPos : lightPos;
+
+				// v(key, lightPos) → the appropriate hex colour for the current theme.
+				const v = (key, lightPos) => variants[key][pos(lightPos)];
+
 				return {
-					bg: palette.contrast,
-					"bg-accent": palette.accent,
-					"bg-end": palette.surface,
-					panel: rgba(palette.contrast, 0.84),
-					"panel-strong": palette.contrast,
-					"panel-glass": rgba(palette.contrast, 0.74),
-					"surface-raised": rgba(palette.contrast, 0.68),
-					"surface-subtle": rgba(palette.surface, 0.58),
-					"surface-table": rgba(palette.surface, 0.52),
-					border: rgba(palette.background, 0.16),
-					"border-soft": rgba(palette.background, 0.08),
-					"field-border": rgba(palette.background, 0.18),
-					"field-bg": rgba(palette.contrast, 0.9),
-					text: palette.background,
-					muted: palette.muted,
-					accent: palette.accent,
-					"accent-strong": palette.background,
-					"accent-soft": rgba(palette.accent, 0.18),
-					"accent-soft-strong": rgba(palette.accent, 0.12),
-					"accent-border": rgba(palette.accent, 0.32),
-					"accent-border-strong": rgba(palette.accent, 0.4),
-					success: palette.success,
-					"success-soft": rgba(palette.success, 0.14),
-					"success-border": rgba(palette.success, 0.24),
-					warning: palette.warning,
-					"warning-soft": rgba(palette.warning, 0.14),
-					"warning-border": rgba(palette.warning, 0.24),
-					error: palette.error,
-					"error-soft": rgba(palette.error, 0.12),
-					"error-border": rgba(palette.error, 0.24),
-					danger: palette.error,
-					"danger-soft": rgba(palette.error, 0.12),
-					"danger-border": rgba(palette.error, 0.24),
-					"disabled-bg": rgba(palette.surface, 0.42),
-					"disabled-border": rgba(palette.muted, 0.22),
-					"button-primary-text": palette.background,
-					"page-glow-accent": rgba(palette.accent, 0.24),
-					"page-glow-warning": rgba(palette.warning, 0.22),
-					"image-grid-accent": rgba(palette.accent, 0.08),
-					"image-grid-warning": rgba(palette.warning, 0.08),
-					"image-shadow": rgba(palette.background, 0.18),
-					shadow: `0 18px 48px ${rgba(palette.background, 0.14)}`,
+					bg: v("contrast", 4),
+					"bg-accent": v("accent", 4),
+					"bg-end": v("surface", 4),
+					panel: rgba(v("contrast", 3), 0.84),
+					"panel-strong": v("contrast", 4),
+					"panel-glass": rgba(v("contrast", 3), 0.74),
+					"surface-raised": rgba(v("contrast", 3), 0.68),
+					"surface-subtle": rgba(v("surface", 2), 0.58),
+					"surface-table": rgba(v("surface", 2), 0.52),
+					border: rgba(v("background", 1), 0.16),
+					"border-soft": rgba(v("background", 0), 0.08),
+					"field-border": rgba(v("background", 1), 0.18),
+					"field-bg": rgba(v("contrast", 3), 0.9),
+					text: v("background", 0),
+					muted: v("muted", 2),
+					accent: v("accent", 2),
+					"accent-strong": v("background", 0),
+					"accent-soft": rgba(v("accent", 2), 0.18),
+					"accent-soft-strong": rgba(v("accent", 2), 0.12),
+					"accent-border": rgba(v("accent", 2), 0.32),
+					"accent-border-strong": rgba(v("accent", 2), 0.4),
+					success: v("success", 1),
+					"success-soft": rgba(v("success", 1), 0.14),
+					"success-border": rgba(v("success", 1), 0.22),
+					warning: v("warning", 1),
+					"warning-soft": rgba(v("warning", 1), 0.14),
+					"warning-border": rgba(v("warning", 1), 0.22),
+					error: v("error", 1),
+					"error-soft": rgba(v("error", 1), 0.12),
+					"error-border": rgba(v("error", 1), 0.24),
+					danger: v("error", 1),
+					"danger-soft": rgba(v("error", 1), 0.12),
+					"danger-border": rgba(v("error", 1), 0.24),
+					"disabled-bg": rgba(v("surface", 1), 0.42),
+					"disabled-border": rgba(v("muted", 1), 0.22),
+					"button-primary-text": v("background", 0),
+					"page-glow-accent": rgba(v("accent", 2), 0.24),
+					"page-glow-warning": rgba(v("warning", 2), 0.22),
+					"image-grid-accent": rgba(v("accent", 2), 0.08),
+					"image-grid-warning": rgba(v("warning", 2), 0.08),
+					"image-shadow": rgba(v("background", 0), 0.18),
+					shadow: `0 18px 48px ${rgba(v("background", 0), 0.14)}`,
 				};
 			};
 
@@ -236,13 +293,11 @@
 				{
 					element.style.setProperty(`--${name}`, value);
 				}
+				element.style.setProperty("color-scheme", theme);
 			};
 
 			const clearPalette = (element) => {
-				for (const name of Object.keys(buildTokens("light", defaultPalette)))
-				{
-					element.style.removeProperty(`--${name}`);
-				}
+				applyPalette(element, "light", defaultPalette);
 			};
 
 			const readStorage = (key) => {
@@ -299,6 +354,7 @@
 				buildTokens,
 				clearPalette,
 				defaultPalette,
+				generateVariants,
 				getStoredPalette,
 				normaliseHex,
 				normalisePalette,
@@ -318,12 +374,17 @@
 				root.dataset.theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 			}
 
+			// Always apply a palette — default or custom.
 			const storedPalette = getStoredPalette(paletteStorageKey) ?? getStoredPalette(legacyPaletteStorageKey, true);
 			if (storedPalette !== null)
 			{
 				writeStorage(paletteStorageKey, JSON.stringify(storedPalette));
 				removeStorage(legacyPaletteStorageKey);
 				applyPalette(root, root.dataset.theme, storedPalette);
+			}
+			else
+			{
+				applyPalette(root, root.dataset.theme, defaultPalette);
 			}
 		})();
 	</script>

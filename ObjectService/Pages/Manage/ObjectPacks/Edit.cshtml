@@ -1,0 +1,277 @@
+@page "/manage/objectpacks/Edit/{id}"
+@model ObjectService.Pages.Manage.ObjectPacks.EditModel
+@{
+	ViewData["Title"] = $"Edit Object Pack - {Model.Name}";
+}
+
+<div class="admin-page-container">
+	<h1>Edit Object Pack: @Model.Name</h1>
+
+	@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+	{
+		<div class="alert alert-error">@Model.ErrorMessage</div>
+	}
+
+	@if (Model.Pack == null)
+	{
+		<p>Object pack not found.</p>
+	}
+	else
+	{
+		<form method="post" class="form">
+			<!-- Basic Information -->
+			<fieldset class="form-section">
+				<legend>Basic Information</legend>
+
+				<div class="form-group">
+					<label for="name">Name</label>
+					<input id="name" type="text" asp-for="Name" required />
+				</div>
+
+				<div class="form-group">
+					<label for="description">Description</label>
+					<textarea id="description" asp-for="Description" placeholder="Enter pack description..."></textarea>
+				</div>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label for="createdDate">Created Date</label>
+						<input id="createdDate" type="date" asp-for="CreatedDate" />
+					</div>
+
+					<div class="form-group">
+						<label for="modifiedDate">Modified Date</label>
+						<input id="modifiedDate" type="date" asp-for="ModifiedDate" />
+					</div>
+
+					<div class="form-group">
+						<label for="uploadedDate">Uploaded Date</label>
+						<input id="uploadedDate" type="date" asp-for="UploadedDate" required />
+					</div>
+				</div>
+			</fieldset>
+
+			<!-- Metadata -->
+			<fieldset class="form-section">
+				<legend>Metadata</legend>
+
+				<div class="form-group">
+					<label for="licenceId">Licence</label>
+					<select id="licenceId" asp-for="LicenceId">
+						<option value="">-- None --</option>
+						@foreach (var licence in Model.AvailableLicences)
+						{
+							<option value="@licence.Id" selected="@(Model.LicenceId == licence.Id)">@licence.Name</option>
+						}
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label>Authors</label>
+					<div class="multi-select">
+						@foreach (var author in Model.AvailableAuthors)
+						{
+							var isSelected = Model.SelectedAuthorIds.Contains(author.Id);
+							<label class="checkbox">
+								<input type="checkbox" name="SelectedAuthorIds" value="@author.Id" checked="@isSelected" />
+								<span>@author.Name</span>
+							</label>
+						}
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>Tags</label>
+					<div class="multi-select">
+						@foreach (var tag in Model.AvailableTags)
+						{
+							var isSelected = Model.SelectedTagIds.Contains(tag.Id);
+							<label class="checkbox">
+								<input type="checkbox" name="SelectedTagIds" value="@tag.Id" checked="@isSelected" />
+								<span>@tag.Name</span>
+							</label>
+						}
+					</div>
+				</div>
+			</fieldset>
+
+			<!-- Objects in Pack -->
+			<fieldset class="form-section">
+				<legend>Objects in Pack</legend>
+
+				<div class="form-group">
+					<label>Select Objects to Include</label>
+					<div class="multi-select large">
+						@foreach (var obj in Model.AvailableObjects)
+						{
+							var isSelected = Model.SelectedObjectIds.Contains(obj.Id);
+							<label class="checkbox">
+								<input type="checkbox" name="SelectedObjectIds" value="@obj.Id" checked="@isSelected" />
+								<span>@obj.Name</span>
+							</label>
+						}
+					</div>
+				</div>
+			</fieldset>
+
+			<div class="form-actions">
+				<button type="submit" class="button button-primary">Save Changes</button>
+				<a asp-page="/manage/objectpacks" class="button button-secondary">Cancel</a>
+			</div>
+		</form>
+	}
+</div>
+
+<style>
+.admin-page-container {
+	max-width: 900px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+.form {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	overflow: hidden;
+	margin-bottom: 2rem;
+}
+
+.form-section {
+	padding: 2rem;
+	border-bottom: 1px solid var(--color-muted);
+	border: none;
+	margin: 0;
+}
+
+.form-section:last-of-type {
+	border-bottom: none;
+}
+
+.form-section legend {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--color-accent);
+	padding: 0;
+	margin: 0 0 1.5rem 0;
+	width: 100%;
+}
+
+.form-group {
+	margin-bottom: 1.5rem;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+	color: var(--color-contrast);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+	width: 100%;
+	padding: 0.75rem;
+	background: var(--color-background);
+	color: var(--color-contrast);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+	font-family: inherit;
+	box-sizing: border-box;
+}
+
+.form-group textarea {
+	resize: vertical;
+	min-height: 120px;
+}
+
+.form-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 1.5rem;
+}
+
+.form-row .form-group {
+	margin-bottom: 0;
+}
+
+.multi-select {
+	background: var(--color-background);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+	padding: 1rem;
+	max-height: 300px;
+	overflow-y: auto;
+	display: grid;
+	gap: 0.75rem;
+}
+
+.multi-select.large {
+	max-height: 500px;
+}
+
+.checkbox {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	gap: 0.5rem;
+	font-size: 0.9rem;
+}
+
+.checkbox input[type="checkbox"] {
+	width: auto;
+	margin: 0;
+	cursor: pointer;
+}
+
+.checkbox span {
+	flex: 1;
+}
+
+.form-actions {
+	display: flex;
+	gap: 1rem;
+	padding: 2rem;
+	border-top: 1px solid var(--color-muted);
+}
+
+.alert {
+	padding: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 0.25rem;
+}
+
+.alert-error {
+	background-color: rgba(244, 70, 70, 0.1);
+	color: #f64646;
+	border: 1px solid rgba(244, 70, 70, 0.3);
+}
+
+.button {
+	padding: 0.75rem 1.5rem;
+	background: var(--color-accent);
+	color: var(--color-background);
+	border: none;
+	border-radius: 0.25rem;
+	cursor: pointer;
+	text-decoration: none;
+	font-weight: 500;
+	transition: opacity 0.2s;
+}
+
+.button:hover {
+	opacity: 0.8;
+}
+
+.button-primary {
+	background: var(--color-accent);
+	color: var(--color-background);
+}
+
+.button-secondary {
+	background: transparent;
+	color: var(--color-accent);
+	border: 1px solid var(--color-accent);
+}
+</style>

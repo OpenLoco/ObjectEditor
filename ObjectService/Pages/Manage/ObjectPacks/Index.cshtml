@@ -1,0 +1,174 @@
+@page "/manage/objectpacks"
+@model ObjectService.Pages.Manage.ObjectPacks.IndexModel
+@{
+	ViewData["Title"] = "Manage Object Packs";
+}
+
+<div class="admin-page-container">
+	<div class="admin-page-header">
+		<h1>Manage Object Packs</h1>
+	</div>
+
+	<div class="filter-panel">
+		<form method="get" class="filters">
+			<div class="filter-group">
+				<label for="search">Search</label>
+				<input type="text" id="search" name="search" placeholder="Search name or description…" value="@Model.Search" />
+			</div>
+			<div class="filter-group">
+				<button type="submit" class="button button-primary">Filter</button>
+				<a href="@Url.Page("/manage/objectpacks")" class="button button-secondary">Clear</a>
+			</div>
+		</form>
+	</div>
+
+	<div class="table-container">
+		@if (Model.ObjectPacks.Count > 0)
+		{
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Uploaded Date</th>
+						<th>Objects</th>
+						<th>Authors</th>
+						<th>Tags</th>
+						<th>Licence</th>
+						<th class="actions-column">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var pack in Model.ObjectPacks)
+					{
+						<tr>
+							<td><strong>@pack.Name</strong></td>
+							<td>
+								@{
+									var desc = pack.Description;
+									if (desc?.Length > 50)
+									{
+										desc = desc.Substring(0, 50) + "...";
+									}
+								}
+								@desc
+							</td>
+							<td>@pack.UploadedDate</td>
+							<td>@pack.ObjectCount</td>
+							<td>@pack.AuthorCount</td>
+							<td>@pack.TagCount</td>
+							<td>@pack.Licence</td>
+							<td class="actions-column">
+								<a asp-page="/manage/objectpacks/edit" asp-route-id="@pack.Id" class="button button-small button-secondary">Edit</a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+		else
+		{
+			<p class="empty-state">No object packs found.</p>
+		}
+	</div>
+
+	<a asp-page="/Manage/Index" class="button button-secondary">Back to Dashboard</a>
+</div>
+
+<style>
+.admin-page-container {
+	max-width: 1400px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+.admin-page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
+.admin-page-header h1 {
+	margin: 0;
+}
+
+.table-container {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	overflow: hidden;
+	margin-bottom: 2rem;
+}
+
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.data-table thead {
+	background: var(--color-background);
+	border-bottom: 2px solid var(--color-muted);
+}
+
+.data-table th {
+	padding: 1rem;
+	text-align: left;
+	font-weight: 500;
+	color: var(--color-muted);
+}
+
+.data-table td {
+	padding: 1rem;
+	border-bottom: 1px solid var(--color-muted);
+}
+
+.data-table tbody tr:hover {
+	background-color: rgba(255, 255, 255, 0.02);
+}
+
+.actions-column {
+	width: 100px;
+	text-align: right;
+}
+
+.data-table .actions-column {
+	padding-right: 1rem;
+}
+
+.button {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	background: var(--color-accent);
+	color: var(--color-background);
+	border: none;
+	border-radius: 0.25rem;
+	cursor: pointer;
+	text-decoration: none;
+	font-size: 0.875rem;
+	transition: opacity 0.2s;
+	font-weight: 500;
+}
+
+.button:hover {
+	opacity: 0.8;
+}
+
+.button-secondary {
+	background: transparent;
+	color: var(--color-accent);
+	border: 1px solid var(--color-accent);
+}
+
+.button-small {
+	padding: 0.25rem 0.75rem;
+	font-size: 0.75rem;
+}
+
+.empty-state {
+	padding: 2rem;
+	text-align: center;
+	color: var(--color-muted);
+	margin: 0;
+}
+</style>

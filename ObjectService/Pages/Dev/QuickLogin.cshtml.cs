@@ -72,7 +72,7 @@ public class QuickLoginModel : PageModel
 		var returnUrl = Request.Headers.Referer.ToString();
 		if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
 		{
-			returnUrl = "/Admin";
+			returnUrl = "/manage";
 		}
 
 		return Redirect(returnUrl);

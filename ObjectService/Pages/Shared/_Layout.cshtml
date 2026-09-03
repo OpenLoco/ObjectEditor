@@ -380,6 +380,37 @@
 							<dt>Connection string</dt>
 							<dd>@(databaseConnectionString ?? "Unknown")</dd>
 						</div>
+						<div>
+							<dt>Health status</dt>
+							<dd>@healthReport.Status</dd>
+						</div>
+						<div>
+							<dt>Health description</dt>
+							<dd>@healthDescription</dd>
+						</div>
+						<div>
+							<dt>Health checks</dt>
+							<dd>
+								<ul class="health-check-list">
+									@foreach (var entry in healthReport.Entries)
+									{
+										<li>
+											<strong>@entry.Key:</strong> @entry.Value.Status
+											@if (!string.IsNullOrWhiteSpace(entry.Value.Description))
+											{
+												<p>@entry.Value.Description</p>
+											}
+										</li>
+									}
+								</ul>
+							</dd>
+						</div>
+						<div>
+							<dt>Admin dashboard</dt>
+							<dd>
+								<a asp-page="/Manage/Index" class="button button-small button-secondary">Server management dashboard</a>
+							</dd>
+						</div>
 					</dl>
 				</section>
 			}

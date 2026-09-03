@@ -1,0 +1,359 @@
+@page "/manage/objects/Edit/{id}"
+@model ObjectService.Pages.Manage.Objects.EditModel
+@{
+	ViewData["Title"] = $"Edit Object - {Model.Name}";
+}
+
+<div class="admin-page-container">
+	<h1>Edit Object: @Model.Name</h1>
+
+	@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+	{
+		<div class="alert alert-error">@Model.ErrorMessage</div>
+	}
+
+	@if (Model.Object == null)
+	{
+		<p>Object not found.</p>
+	}
+	else
+	{
+		<form method="post" class="form">
+			<!-- Basic Information -->
+			<fieldset class="form-section">
+				<legend>Basic Information</legend>
+
+				<div class="form-group">
+					<label for="name">Name</label>
+					<input id="name" type="text" asp-for="Name" required disabled />
+					<p class="form-hint">Object name cannot be edited directly.</p>
+				</div>
+
+				<div class="form-group">
+					<label for="description">Description</label>
+					<textarea id="description" asp-for="Description" placeholder="Enter object description..."></textarea>
+				</div>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label for="createdDate">Created Date</label>
+						<input id="createdDate" type="date" asp-for="CreatedDate" />
+					</div>
+
+					<div class="form-group">
+						<label for="modifiedDate">Modified Date</label>
+						<input id="modifiedDate" type="date" asp-for="ModifiedDate" />
+					</div>
+
+					<div class="form-group">
+						<label for="uploadedDate">Uploaded Date</label>
+						<input id="uploadedDate" type="date" asp-for="UploadedDate" required />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="availability">Availability</label>
+					<select id="availability" asp-for="Availability">
+						@foreach (var status in Enum.GetValues<Definitions.ObjectAvailability>())
+						{
+							<option value="@status">@status</option>
+						}
+					</select>
+				</div>
+			</fieldset>
+
+			<!-- Metadata -->
+			<fieldset class="form-section">
+				<legend>Metadata</legend>
+
+				<div class="form-group">
+					<label for="licenceId">Licence</label>
+					<select id="licenceId" asp-for="LicenceId">
+						<option value="">-- None --</option>
+						@foreach (var licence in Model.AvailableLicences)
+						{
+							<option value="@licence.Id" selected="@(Model.LicenceId == licence.Id)">@licence.Name</option>
+						}
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label>Authors</label>
+					<div class="multi-select">
+						@foreach (var author in Model.AvailableAuthors)
+						{
+							var isSelected = Model.SelectedAuthorIds.Contains(author.Id);
+							<label class="checkbox">
+								<input type="checkbox" name="SelectedAuthorIds" value="@author.Id" checked="@isSelected" />
+								<span>@author.Name</span>
+							</label>
+						}
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>Tags</label>
+					<div class="multi-select">
+						@foreach (var tag in Model.AvailableTags)
+						{
+							var isSelected = Model.SelectedTagIds.Contains(tag.Id);
+							<label class="checkbox">
+								<input type="checkbox" name="SelectedTagIds" value="@tag.Id" checked="@isSelected" />
+								<span>@tag.Name</span>
+							</label>
+						}
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>Object Packs</label>
+					<div class="multi-select">
+						@foreach (var pack in Model.AvailableObjectPacks)
+						{
+							var isSelected = Model.SelectedObjectPackIds.Contains(pack.Id);
+							<label class="checkbox">
+								<input type="checkbox" name="SelectedObjectPackIds" value="@pack.Id" checked="@isSelected" />
+								<span>@pack.Name</span>
+							</label>
+						}
+					</div>
+				</div>
+			</fieldset>
+
+			<!-- Object Information (Read-only) -->
+			<fieldset class="form-section">
+				<legend>Object Information (Read-only)</legend>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label for="objectType">Object Type</label>
+						<input id="objectType" type="text" value="@Model.Object.ObjectType" disabled />
+					</div>
+
+					<div class="form-group">
+						<label for="objectSource">Object Source</label>
+						<input id="objectSource" type="text" value="@Model.Object.ObjectSource" disabled />
+					</div>
+
+					@if (Model.Object.VehicleType.HasValue)
+					{
+						<div class="form-group">
+							<label for="vehicleType">Vehicle Type</label>
+							<input id="vehicleType" type="text" value="@Model.Object.VehicleType" disabled />
+						</div>
+					}
+				</div>
+
+				@if (Model.Object.DatObjects.Count > 0)
+				{
+					<div class="form-group">
+						<label>Associated DAT Objects</label>
+						<div class="dat-objects">
+							@foreach (var dat in Model.Object.DatObjects)
+							{
+								<div class="dat-object-item">
+									<span>@dat.DatName</span>
+									<code>@dat.DatChecksum</code>
+								</div>
+							}
+						</div>
+					</div>
+				}
+			</fieldset>
+
+			<div class="form-actions">
+				<button type="submit" class="button button-primary">Save Changes</button>
+				<a asp-page="/manage/objects" class="button button-secondary">Cancel</a>
+			</div>
+		</form>
+	}
+</div>
+
+<style>
+.admin-page-container {
+	max-width: 900px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+.form {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	overflow: hidden;
+	margin-bottom: 2rem;
+}
+
+.form-section {
+	padding: 2rem;
+	border-bottom: 1px solid var(--color-muted);
+	border: none;
+	margin: 0;
+}
+
+.form-section:last-of-type {
+	border-bottom: none;
+}
+
+.form-section legend {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--color-accent);
+	padding: 0;
+	margin: 0 0 1.5rem 0;
+	width: 100%;
+}
+
+.form-group {
+	margin-bottom: 1.5rem;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+	color: var(--color-contrast);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+	width: 100%;
+	padding: 0.75rem;
+	background: var(--color-background);
+	color: var(--color-contrast);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+	font-family: inherit;
+	box-sizing: border-box;
+}
+
+.form-group input:disabled {
+	background: rgba(128, 128, 128, 0.1);
+	cursor: not-allowed;
+}
+
+.form-group textarea {
+	resize: vertical;
+	min-height: 120px;
+}
+
+.form-hint {
+	font-size: 0.875rem;
+	color: var(--color-muted);
+	margin-top: 0.25rem;
+	margin-bottom: 0;
+}
+
+.form-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 1.5rem;
+}
+
+.form-row .form-group {
+	margin-bottom: 0;
+}
+
+.multi-select {
+	background: var(--color-background);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+	padding: 1rem;
+	max-height: 300px;
+	overflow-y: auto;
+	display: grid;
+	gap: 0.75rem;
+}
+
+.checkbox {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	gap: 0.5rem;
+	font-size: 0.9rem;
+}
+
+.checkbox input[type="checkbox"] {
+	width: auto;
+	margin: 0;
+	cursor: pointer;
+}
+
+.checkbox span {
+	flex: 1;
+}
+
+.dat-objects {
+	background: var(--color-background);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+	padding: 1rem;
+	display: grid;
+	gap: 0.75rem;
+}
+
+.dat-object-item {
+	padding: 0.75rem;
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 0.25rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 0.9rem;
+}
+
+.dat-object-item code {
+	background: rgba(255, 255, 255, 0.1);
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.2rem;
+	font-family: monospace;
+	font-size: 0.85rem;
+}
+
+.form-actions {
+	display: flex;
+	gap: 1rem;
+	padding: 2rem;
+	border-top: 1px solid var(--color-muted);
+}
+
+.alert {
+	padding: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 0.25rem;
+}
+
+.alert-error {
+	background-color: rgba(244, 70, 70, 0.1);
+	color: #f64646;
+	border: 1px solid rgba(244, 70, 70, 0.3);
+}
+
+.button {
+	padding: 0.75rem 1.5rem;
+	background: var(--color-accent);
+	color: var(--color-background);
+	border: none;
+	border-radius: 0.25rem;
+	cursor: pointer;
+	text-decoration: none;
+	font-weight: 500;
+	transition: opacity 0.2s;
+}
+
+.button:hover {
+	opacity: 0.8;
+}
+
+.button-primary {
+	background: var(--color-accent);
+	color: var(--color-background);
+}
+
+.button-secondary {
+	background: transparent;
+	color: var(--color-accent);
+	border: 1px solid var(--color-accent);
+}
+</style>

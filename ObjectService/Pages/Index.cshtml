@@ -101,6 +101,18 @@
 		   @cat.Value
 		</a>
 	}
+	<span class="master-tab-separator" aria-hidden="true"></span>
+	@foreach (var cat in Model.DataCategories)
+	{
+		var isActive = cat.Key == Model.Category;
+		<a class="master-tab @(isActive ? "master-tab-active" : "")"
+		   asp-page="/Index"
+		   asp-route-category="@cat.Key"
+		   role="tab"
+		   aria-selected="@(isActive ? "true" : "false")">
+		   @cat.Value
+		</a>
+	}
 </nav>
 
 @if (Model.Category == "objects")
@@ -347,10 +359,259 @@ else if (Model.Category == "sfx")
 		<p>Sound effect browsing is coming soon.</p>
 	</section>
 }
-else if (Model.Category == "ai")
+else if (Model.Category == "objectpacks")
 {
-	<section class="panel empty-state">
-		<h2>AI / Competitors</h2>
-		<p>AI competitor browsing is coming soon.</p>
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Object Packs</h1>
+			@if (Model.IsAdmin)
+			{
+				<a asp-page="/manage/objectpacks" class="button button-secondary">Manage</a>
+			}
+		</div>
+		@if (Model.ObjectPackList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Description</th>
+							<th>Uploaded</th>
+							<th>Objects</th>
+							<th>Authors</th>
+							<th>Tags</th>
+							<th>Licence</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var pack in Model.ObjectPackList)
+						{
+							<tr>
+								<td><strong>@pack.Name</strong></td>
+								<td>@(pack.Description.Length > 80 ? pack.Description[..80] + "…" : pack.Description)</td>
+								<td>@pack.UploadedDate.ToString("yyyy-MM-dd")</td>
+								<td>@pack.ObjectCount</td>
+								<td>@pack.AuthorCount</td>
+								<td>@pack.TagCount</td>
+								<td>@pack.Licence</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No object packs found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "sc5files")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>SC5 Files</h1>
+			@if (Model.IsAdmin)
+			{
+				<a asp-page="/Manage/Index" class="button button-secondary">Admin</a>
+			}
+		</div>
+		@if (Model.SC5FileList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Description</th>
+							<th>Uploaded</th>
+							<th>Source</th>
+							<th>Authors</th>
+							<th>Tags</th>
+							<th>Licence</th>
+							<th>Packs</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var file in Model.SC5FileList)
+						{
+							<tr>
+								<td><strong>@file.Name</strong></td>
+								<td>@(file.Description.Length > 80 ? file.Description[..80] + "…" : file.Description)</td>
+								<td>@file.UploadedDate.ToString("yyyy-MM-dd")</td>
+								<td>@file.ObjectSource</td>
+								<td>@file.AuthorCount</td>
+								<td>@file.TagCount</td>
+								<td>@file.Licence</td>
+								<td>@file.PackCount</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No SC5 files found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "sc5filepacks")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>SC5 File Packs</h1>
+			@if (Model.IsAdmin)
+			{
+				<a asp-page="/Manage/Index" class="button button-secondary">Admin</a>
+			}
+		</div>
+		@if (Model.SC5FilePackList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Description</th>
+							<th>Uploaded</th>
+							<th>Authors</th>
+							<th>Tags</th>
+							<th>Licence</th>
+							<th>Files</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var pack in Model.SC5FilePackList)
+						{
+							<tr>
+								<td><strong>@pack.Name</strong></td>
+								<td>@(pack.Description.Length > 80 ? pack.Description[..80] + "…" : pack.Description)</td>
+								<td>@pack.UploadedDate.ToString("yyyy-MM-dd")</td>
+								<td>@pack.AuthorCount</td>
+								<td>@pack.TagCount</td>
+								<td>@pack.Licence</td>
+								<td>@pack.FileCount</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No SC5 file packs found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "authors")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Authors</h1>
+			@if (Model.IsAdmin)
+			{
+				<a asp-page="/manage/authors" class="button button-secondary">Manage</a>
+			}
+		</div>
+		@if (Model.AuthorList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var author in Model.AuthorList)
+						{
+							<tr>
+								<td>@author.Name</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No authors found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "tags")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Tags</h1>
+			@if (Model.IsAdmin)
+			{
+				<a asp-page="/manage/tags" class="button button-secondary">Manage</a>
+			}
+		</div>
+		@if (Model.TagList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var tag in Model.TagList)
+						{
+							<tr>
+								<td>@tag.Name</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No tags found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "licences")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Licences</h1>
+			@if (Model.IsAdmin)
+			{
+				<a asp-page="/manage/licences" class="button button-secondary">Manage</a>
+			}
+		</div>
+		@if (Model.LicenceList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Text</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var licence in Model.LicenceList)
+						{
+							<tr>
+								<td>@licence.Name</td>
+								<td>@(licence.Text.Length > 120 ? licence.Text[..120] + "…" : licence.Text)</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No licences found.</p>
+		}
 	</section>
 }

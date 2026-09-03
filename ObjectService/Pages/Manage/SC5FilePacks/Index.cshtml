@@ -1,12 +1,12 @@
-@page "/manage/objectpacks"
-@model ObjectService.Pages.Manage.ObjectPacks.IndexModel
+@page "/manage/sc5filepacks"
+@model ObjectService.Pages.Manage.SC5FilePacks.IndexModel
 @{
-	ViewData["Title"] = "Manage Object Packs";
+	ViewData["Title"] = "Manage SC5 File Packs";
 }
 
 <div class="admin-page-container">
 	<div class="admin-page-header">
-		<h1>Manage Object Packs</h1>
+		<h1>Manage SC5 File Packs</h1>
 	</div>
 
 	<div class="filter-panel">
@@ -17,7 +17,7 @@
 			</div>
 			<div class="filter-group">
 				<button type="submit" class="button button-primary">Filter</button>
-				<a href="@Url.Page("/Manage/ObjectPacks/Index")" class="button button-secondary">Clear</a>
+				<a href="@Url.Page("/Manage/SC5FilePacks/Index")" class="button button-secondary">Clear</a>
 			</div>
 		</form>
 	</div>
@@ -33,7 +33,7 @@
 	}
 
 	<div class="table-container">
-		@if (Model.ObjectPacks.Count > 0)
+		@if (Model.Packs.Count > 0)
 		{
 			<table class="data-table">
 				<thead>
@@ -41,7 +41,7 @@
 						<th>Name</th>
 						<th>Description</th>
 						<th>Uploaded Date</th>
-						<th>Objects</th>
+						<th>Files</th>
 						<th>Authors</th>
 						<th>Tags</th>
 						<th>Licence</th>
@@ -49,7 +49,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (var pack in Model.ObjectPacks)
+					@foreach (var pack in Model.Packs)
 					{
 						<tr>
 							<td><strong>@pack.Name</strong></td>
@@ -64,12 +64,12 @@
 								@desc
 							</td>
 							<td>@pack.UploadedDate</td>
-							<td>@pack.ObjectCount</td>
+							<td>@pack.SC5FileCount</td>
 							<td>@pack.AuthorCount</td>
 							<td>@pack.TagCount</td>
 							<td>@pack.Licence</td>
 							<td class="actions-column">
-								<a asp-page="/Manage/ObjectPacks/Edit" asp-route-id="@pack.Id" class="button button-small button-secondary">Edit</a>
+								<a asp-page="/Manage/SC5FilePacks/Edit" asp-route-id="@pack.Id" class="button button-small button-secondary">Edit</a>
 								<form method="post" asp-page-handler="Delete" asp-route-id="@pack.Id" style="display: inline;">
 									<button type="submit" class="button button-small button-danger" onclick="return confirm('Are you sure you want to delete this pack?');">Delete</button>
 								</form>
@@ -81,7 +81,7 @@
 		}
 		else
 		{
-			<p class="empty-state">No object packs found.</p>
+			<p class="empty-state">No SC5 file packs found.</p>
 		}
 	</div>
 

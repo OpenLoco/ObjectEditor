@@ -21,15 +21,17 @@ public static class RouteBuilderExtensions
 		MapHandler(new SC5FilePackRouteHandler(), publicGroup, config);
 		MapHandler(new ObjectPackRouteHandler(), publicGroup, config);
 
-		// Authenticated write routes for reference data (any authenticated user)
+		// Authenticated write routes for general data (any authenticated user)
 		var authGroup = v2.MapGroup(string.Empty).RequireAuthorization();
-		MapWriteHandler(new AuthorRouteHandler(), authGroup, config);
-		MapWriteHandler(new TagRouteHandler(), authGroup, config);
-		MapWriteHandler(new LicenceRouteHandler(), authGroup, config);
 		MapWriteHandler(new ObjectMissingRouteHandler(), authGroup, config);
 		MapWriteHandler(new ScenarioRouteHandler(), authGroup, config);
 		MapWriteHandler(new SC5FilePackRouteHandler(), authGroup, config);
 		MapWriteHandler(new ObjectPackRouteHandler(), authGroup, config);
+		// Curator write routes for metadata (requires Curator policy or Admin)
+		var curatorGroup = v2.MapGroup(string.Empty).RequireAuthorization("Curator");
+		MapWriteHandler(new AuthorRouteHandler(), curatorGroup, config);
+		MapWriteHandler(new TagRouteHandler(), curatorGroup, config);
+		MapWriteHandler(new LicenceRouteHandler(), curatorGroup, config);
 
 		// Object write routes (create/edit/delete require ownership or admin)
 		var ownerGroup = v2.MapGroup(string.Empty).RequireAuthorization("CanEditObject");

@@ -16,6 +16,7 @@ public interface IObjectPackService
 	Task<IEnumerable<DtoItemPackEntry>> ListPacksAsync(CancellationToken ct);
 	Task<IEnumerable<DtoItemPackDescriptor<DtoObjectEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct);
 	Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoItemPackEntry> CreatePackAsync(DtoItemPackDescriptor<DtoObjectEntry> request, UniqueObjectId ownerUserId, CancellationToken ct);
 }
 
 public class ObjectPackService : IObjectPackService
@@ -92,5 +93,39 @@ public class ObjectPackService : IObjectPackService
 		zipStream.Position = 0;
 		var dn = DownloadNameHelper.MakeSafeDownloadFileName(pack.Name, ".zip", "object-pack");
 		return (zipStream, dn);
+	}
+	public async Task<DtoItemPackEntry> CreatePackAsync(DtoItemPackDescriptor<DtoObjectEntry> request, UniqueObjectId ownerUserId, CancellationToken ct)
+	{
+		var pack = new TblObjectPack
+		{
+			Name = request.Name,
+			Description = request.Description,
+			OwnerUserId = ownerUserId,
+		};
+
+		// Link the owner's associated author if available
+		var owner = await _db.Users.Include(u => u.AssociatedAuthor).FirstOrDefaultAsync(u => u.Id == ownerUserId, ct);
+		if (owner?.AssociatedAuthor != null)
+		{
+			pack.Authors.Add(owner.AssociatedAuthor);
+		}
+
+		// Add requested objects if specified
+		if (request.Items?.Count > 0)
+		{
+			var objectIds = request.Items.Select(i => i.Id).ToList();
+			var objects = await _db.Objects.Where(o => objectIds.Contains(o.Id)).ToListAsync(ct);
+			foreach (var obj in objects)
+			{
+				pack.Objects.Add(obj);
+			}
+		}
+
+		_ = await _db.ObjectPacks.AddAsync(pack, ct);
+		_ = await _db.SaveChangesAsync(ct);
+
+		// Reload to get computed columns like UploadedDate
+		var created = await _db.ObjectPacks.Include(p => p.Licence).FirstAsync(p => p.Id == pack.Id, ct);
+		return created.ToDtoEntry();
 	}
 }

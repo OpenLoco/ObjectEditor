@@ -11,48 +11,55 @@
 		<div class="stat-card">
 			<div class="stat-label">Total Objects</div>
 			<div class="stat-value">@Model.TotalObjects</div>
-			<a asp-page="/manage/objects" class="stat-link">Manage →</a>
+			<a asp-page="/Manage/Objects/Index" class="stat-link">Manage →</a>
 		</div>
 		
 		<div class="stat-card">
 			<div class="stat-label">Total Authors</div>
 			<div class="stat-value">@Model.TotalAuthors</div>
-			<a asp-page="/manage/authors" class="stat-link">Manage →</a>
+			<a asp-page="/Manage/Authors/Index" class="stat-link">Manage →</a>
 		</div>
 		
 		<div class="stat-card">
 			<div class="stat-label">Total Tags</div>
 			<div class="stat-value">@Model.TotalTags</div>
-			<a asp-page="/manage/tags" class="stat-link">Manage →</a>
+			<a asp-page="/Manage/Tags/Index" class="stat-link">Manage →</a>
 		</div>
 		
 		<div class="stat-card">
 			<div class="stat-label">Total Licences</div>
 			<div class="stat-value">@Model.TotalLicences</div>
-			<a asp-page="/manage/licences" class="stat-link">Manage →</a>
+			<a asp-page="/Manage/Licences/Index" class="stat-link">Manage →</a>
+		</div>
+		
+		<div class="stat-card">
+			<div class="stat-label">Total SC5 File Packs</div>
+			<div class="stat-value">@Model.TotalSC5FilePacks</div>
+			<a asp-page="/Manage/SC5FilePacks/Index" class="stat-link">Manage →</a>
 		</div>
 		
 		<div class="stat-card">
 			<div class="stat-label">Total Object Packs</div>
 			<div class="stat-value">@Model.TotalObjectPacks</div>
-			<a asp-page="/manage/objectpacks" class="stat-link">Manage →</a>
+			<a asp-page="/Manage/ObjectPacks/Index" class="stat-link">Manage →</a>
 		</div>
 		
 		<div class="stat-card">
 			<div class="stat-label">Total Users</div>
 			<div class="stat-value">@Model.TotalUsers</div>
-			<a asp-page="/manage/users" class="stat-link">Manage →</a>
+			<a asp-page="/Manage/Users/Index" class="stat-link">Manage →</a>
 		</div>
 	</div>
 	
 	<div class="admin-menu">
 		<h2>Quick Navigation</h2>
 		<ul>
-			<li><a asp-page="/manage/objects">View & Edit Objects</a> - Edit object metadata, authors, tags, licenses, and packs</li>
-			<li><a asp-page="/manage/authors">Manage Authors</a> - Create, edit, or delete authors</li>
-			<li><a asp-page="/manage/tags">Manage Tags</a> - Create, edit, or delete tags</li>
-			<li><a asp-page="/manage/licences">Manage Licences</a> - Create, edit, or delete licenses</li>
-			<li><a asp-page="/manage/objectpacks">Manage Object Packs</a> - Create, edit, or delete object packs</li>
+			<li><a asp-page="/Manage/Objects/Index">View & Edit Objects</a> - Edit object metadata, authors, tags, licenses, and packs</li>
+			<li><a asp-page="/Manage/Authors/Index">Manage Authors</a> - Create, edit, or delete authors</li>
+			<li><a asp-page="/Manage/Tags/Index">Manage Tags</a> - Create, edit, or delete tags</li>
+			<li><a asp-page="/Manage/Licences/Index">Manage Licences</a> - Create, edit, or delete licenses</li>
+			<li><a asp-page="/Manage/ObjectPacks/Index">Manage Object Packs</a> - Create, edit, or delete object packs</li>
+			<li><a asp-page="/Manage/SC5FilePacks/Index">Manage SC5 File Packs</a> - Create, edit, or delete SC5 file packs (scenarios/landscapes)</li>
 		</ul>
 	</div>
 </div>

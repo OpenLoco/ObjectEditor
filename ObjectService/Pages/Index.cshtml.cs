@@ -55,16 +55,15 @@ public sealed class IndexModel : PageModel
 	public IReadOnlyDictionary<string, string> Categories { get; } = new Dictionary<string, string>
 	{
 		["objects"] = "Objects",
-		["scenarios"] = "Scenarios",
 		["music"] = "Music",
 		["sfx"] = "SFX",
+		["objectpacks"] = "Object Packs",
+		["sc5files"] = "Scenarios",
+		["sc5filepacks"] = "Scenario Packs",
 	};
 
 	public IReadOnlyDictionary<string, string> DataCategories { get; } = new Dictionary<string, string>
 	{
-		["objectpacks"] = "Object Packs",
-		["sc5files"] = "SC5 Files",
-		["sc5filepacks"] = "SC5 File Packs",
 		["authors"] = "Authors",
 		["tags"] = "Tags",
 		["licences"] = "Licences",

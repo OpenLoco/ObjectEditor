@@ -21,8 +21,19 @@
 		_ => "health-indicator-unhealthy",
 	};
 	var isAuthenticated = SignInManager.IsSignedIn(User);
+	// Defense-in-depth: verify the user actually exists in the database.
+	// A fake ClaimsPrincipal (e.g. from a misconfigured auth bypass) may appear
+	// signed in but has no backing DB record; treating it as unauthenticated
+	// prevents the header showing a non-existent user and avoids 401 errors
+	// when clicking the user name link.
+	if (isAuthenticated)
+	{
+		var currentUser = await UserManager.GetUserAsync(User);
+		isAuthenticated = currentUser != null;
+	}
 
 	var isDevelopment = HostEnvironment.IsDevelopment();
+	var isAdmin = User.IsInRole("Admin");
 	string? databaseProvider = null;
 	string? databaseSource = null;
 	string? databaseName = null;
@@ -356,7 +367,7 @@
 		</header>
 
 		<main class="site-main">
-			@if (isDevelopment)
+			@if (isDevelopment && isAdmin)
 			{
 				<section class="dev-stats panel" aria-label="Developer environment details">
 					<div class="dev-stats-header">

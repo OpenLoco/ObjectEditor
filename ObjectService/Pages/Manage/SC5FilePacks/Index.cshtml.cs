@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Definitions.Database;
 
-namespace ObjectService.Pages.Manage.ObjectPacks;
+namespace ObjectService.Pages.Manage.SC5FilePacks;
 
 [Authorize(Policy = "AdminOnly")]
 public sealed class IndexModel : PageModel
@@ -19,7 +19,7 @@ public sealed class IndexModel : PageModel
 	[BindProperty(SupportsGet = true)]
 	public string? Search { get; set; }
 
-	public List<ObjectPackListViewModel> ObjectPacks { get; set; } = [];
+	public List<SC5FilePackListViewModel> Packs { get; set; } = [];
 
 	[TempData]
 	public string? SuccessMessage { get; set; }
@@ -29,11 +29,11 @@ public sealed class IndexModel : PageModel
 
 	public async Task OnGetAsync()
 	{
-		var query = _db.ObjectPacks
+		var query = _db.SC5FilePacks
 			.Include(p => p.Authors)
 			.Include(p => p.Tags)
 			.Include(p => p.Licence)
-			.Include(p => p.Objects)
+			.Include(p => p.SC5Files)
 			.AsQueryable();
 
 		if (!string.IsNullOrWhiteSpace(Search))
@@ -46,20 +46,20 @@ public sealed class IndexModel : PageModel
 			.OrderByDescending(p => p.UploadedDate)
 			.ToListAsync();
 
-		ObjectPacks = packList.Select(p => new ObjectPackListViewModel(
+		Packs = packList.Select(p => new SC5FilePackListViewModel(
 				p.Id,
 				p.Name,
 				p.Description ?? "",
 				p.UploadedDate,
 				p.Authors.Count,
 				p.Tags.Count,
-				p.Licence != null ? p.Licence.Name : "None",
-				p.Objects.Count)).ToList();
+				p.Licence?.Name ?? "None",
+				p.SC5Files.Count)).ToList();
 	}
 
 	public async Task<IActionResult> OnPostDeleteAsync(UniqueObjectId id)
 	{
-		var pack = await _db.ObjectPacks.FindAsync(id);
+		var pack = await _db.SC5FilePacks.FindAsync(id);
 		if (pack == null)
 		{
 			ErrorMessage = "Pack not found.";
@@ -68,9 +68,9 @@ public sealed class IndexModel : PageModel
 
 		try
 		{
-			_db.ObjectPacks.Remove(pack);
+			_db.SC5FilePacks.Remove(pack);
 			await _db.SaveChangesAsync();
-			SuccessMessage = $"Object pack '{pack.Name}' deleted successfully.";
+			SuccessMessage = $"SC5 file pack '{pack.Name}' deleted successfully.";
 		}
 		catch (Exception ex)
 		{
@@ -80,7 +80,7 @@ public sealed class IndexModel : PageModel
 		return RedirectToPage();
 	}
 
-	public record ObjectPackListViewModel(
+	public record SC5FilePackListViewModel(
 		UniqueObjectId Id,
 		string Name,
 		string Description,
@@ -88,5 +88,5 @@ public sealed class IndexModel : PageModel
 		int AuthorCount,
 		int TagCount,
 		string Licence,
-		int ObjectCount);
+		int SC5FileCount);
 }

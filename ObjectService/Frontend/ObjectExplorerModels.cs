@@ -41,7 +41,8 @@ public sealed record ObjectListItemViewModel(
 	DateOnly UploadedDate,
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
-	bool CanDownload)
+	bool CanDownload,
+	string? Description)
 {
 	public string ResolvedTitle => string.IsNullOrWhiteSpace(DisplayName) ? DatName ?? InternalName : DisplayName;
 
@@ -65,10 +66,9 @@ public sealed record ObjectDetailViewModel(
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
 	DateOnly UploadedDate,
-	string? LicenceName,
-	string? LicenceText,
-	IReadOnlyList<string> Authors,
-	IReadOnlyList<string> Tags,
+	LicenceRefViewModel? Licence,
+	IReadOnlyList<NamedRefViewModel> Authors,
+	IReadOnlyList<NamedRefViewModel> Tags,
 	IReadOnlyList<string> ObjectPacks,
 	IReadOnlyList<ObjectFileEntryViewModel> Files,
 	IReadOnlyList<StringTableGroupViewModel> StringTableGroups,
@@ -104,3 +104,7 @@ public sealed record StringTableGroupViewModel(
 public sealed record StringTableTranslationViewModel(
 	LanguageId Language,
 	string Text);
+
+public sealed record NamedRefViewModel(UniqueObjectId Id, string Name);
+
+public sealed record LicenceRefViewModel(UniqueObjectId Id, string Name, string? Text);

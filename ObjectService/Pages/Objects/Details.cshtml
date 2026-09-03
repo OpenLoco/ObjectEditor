@@ -50,7 +50,14 @@
 			</div>
 			<div>
 				<dt>Licence</dt>
-				<dd>@(item.LicenceName ?? "-")</dd>
+				<dd>@if (item.Licence is not null)
+					{
+						<a asp-page="/Licences/Details" asp-route-id="@item.Licence.Id">@item.Licence.Name</a>
+					}
+					else
+					{
+						<text>-</text>
+					}</dd>
 			</div>
 			<div>
 				<dt>Files indexed</dt>
@@ -58,9 +65,9 @@
 			</div>
 		</dl>
 
-		@if (!string.IsNullOrWhiteSpace(item.LicenceText))
+		@if (!string.IsNullOrWhiteSpace(item.Licence?.Text))
 		{
-			<div class="note-block">@item.LicenceText</div>
+			<div class="note-block">@item.Licence?.Text</div>
 		}
 	</section>
 
@@ -69,11 +76,45 @@
 		<div class="stacked-list">
 			<div>
 				<h3>Authors</h3>
-				<p>@(item.Authors.Count > 0 ? string.Join(", ", item.Authors) : "No authors linked")</p>
+				<p>
+					@if (item.Authors.Count > 0)
+					{
+						@for (var i = 0; i < item.Authors.Count; i++)
+						{
+							var author = item.Authors[i];
+							<a asp-page="/Authors/Details" asp-route-id="@author.Id">@author.Name</a>
+							@if (i < item.Authors.Count - 1)
+							{
+								<text>, </text>
+							}
+						}
+					}
+					else
+					{
+						<text>No authors linked</text>
+					}
+				</p>
 			</div>
 			<div>
 				<h3>Tags</h3>
-				<p>@(item.Tags.Count > 0 ? string.Join(", ", item.Tags) : "No tags linked")</p>
+				<p>
+					@if (item.Tags.Count > 0)
+					{
+						@for (var i = 0; i < item.Tags.Count; i++)
+						{
+							var tag = item.Tags[i];
+							<a asp-page="/Tags/Details" asp-route-id="@tag.Id">@tag.Name</a>
+							@if (i < item.Tags.Count - 1)
+							{
+								<text>, </text>
+							}
+						}
+					}
+					else
+					{
+						<text>No tags linked</text>
+					}
+				</p>
 			</div>
 			<div>
 				<h3>Object packs</h3>

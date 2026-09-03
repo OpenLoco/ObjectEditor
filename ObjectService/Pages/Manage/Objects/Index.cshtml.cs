@@ -33,6 +33,9 @@ public sealed class IndexModel : PageModel
 	[TempData]
 	public string? SuccessMessage { get; set; }
 
+	[TempData]
+	public string? ErrorMessage { get; set; }
+
 	public IReadOnlyList<ObjectType> ObjectTypes { get; } = [.. Enum.GetValues<ObjectType>()];
 
 	public async Task OnGetAsync()
@@ -42,7 +45,7 @@ public sealed class IndexModel : PageModel
 		if (!string.IsNullOrWhiteSpace(Search))
 		{
 			var searchLower = Search.ToLower();
-			query = query.Where(o => o.Name.ToLower().Contains(searchLower));
+			query = query.Where(o => o.Name.ToLower().Contains(searchLower) || (o.Description != null && o.Description.ToLower().Contains(searchLower)));
 		}
 
 		if (ObjectType.HasValue)
@@ -64,6 +67,7 @@ public sealed class IndexModel : PageModel
 			Objects = objectList.Select(o => new ObjectListViewModel(
 				o.Id,
 				o.Name,
+				o.Description ?? "",
 				o.ObjectType,
 				o.UploadedDate,
 				o.Authors.Count,
@@ -75,6 +79,7 @@ public sealed class IndexModel : PageModel
 	public record ObjectListViewModel(
 		UniqueObjectId Id,
 		string Name,
+		string Description,
 		ObjectType ObjectType,
 		DateOnly UploadedDate,
 		int AuthorCount,

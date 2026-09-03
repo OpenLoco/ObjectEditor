@@ -20,6 +20,7 @@ public sealed class ManageIndexModel : PageModel
 	public int TotalTags { get; set; }
 	public int TotalLicences { get; set; }
 	public int TotalObjectPacks { get; set; }
+	public int TotalSC5FilePacks { get; set; }
 	public int TotalUsers { get; set; }
 
 	public async Task OnGetAsync()
@@ -29,6 +30,7 @@ public sealed class ManageIndexModel : PageModel
 		TotalTags = await _db.Tags.CountAsync();
 		TotalLicences = await _db.Licences.CountAsync();
 		TotalObjectPacks = await _db.ObjectPacks.CountAsync();
+		TotalSC5FilePacks = await _db.SC5FilePacks.CountAsync();
 		TotalUsers = await _db.Users.CountAsync();
 	}
 }

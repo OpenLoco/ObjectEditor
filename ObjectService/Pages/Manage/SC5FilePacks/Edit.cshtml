@@ -1,11 +1,11 @@
-@page "/manage/objectpacks/Edit/{id}"
-@model ObjectService.Pages.Manage.ObjectPacks.EditModel
+@page "/manage/sc5filepacks/edit/{id}"
+@model ObjectService.Pages.Manage.SC5FilePacks.EditModel
 @{
-	ViewData["Title"] = $"Edit Object Pack - {Model.Name}";
+	ViewData["Title"] = $"Edit SC5 File Pack - {Model.Name}";
 }
 
 <div class="admin-page-container">
-	<h1>Edit Object Pack: @Model.Name</h1>
+	<h1>Edit SC5 File Pack: @Model.Name</h1>
 
 	@if (!string.IsNullOrEmpty(Model.ErrorMessage))
 	{
@@ -14,7 +14,7 @@
 
 	@if (Model.Pack == null)
 	{
-		<p>Object pack not found.</p>
+		<p>SC5 file pack not found.</p>
 	}
 	else
 	{
@@ -95,19 +95,19 @@
 				</div>
 			</fieldset>
 
-			<!-- Objects in Pack -->
+			<!-- SC5 Files in Pack -->
 			<fieldset class="form-section">
-				<legend>Objects in Pack</legend>
+				<legend>SC5 Files in Pack</legend>
 
 				<div class="form-group">
-					<label>Select Objects to Include</label>
+					<label>Select SC5 Files to Include</label>
 					<div class="multi-select large">
-						@foreach (var obj in Model.AvailableObjects)
+						@foreach (var file in Model.AvailableSC5Files)
 						{
-							var isSelected = Model.SelectedObjectIds.Contains(obj.Id);
+							var isSelected = Model.SelectedSC5FileIds.Contains(file.Id);
 							<label class="checkbox">
-								<input type="checkbox" name="SelectedObjectIds" value="@obj.Id" checked="@isSelected" />
-								<span>@obj.Name</span>
+								<input type="checkbox" name="SelectedSC5FileIds" value="@file.Id" checked="@isSelected" />
+								<span>@file.Name</span>
 							</label>
 						}
 					</div>
@@ -116,25 +116,10 @@
 
 			<div class="form-actions">
 				<button type="submit" class="button button-primary">Save Changes</button>
-				<a asp-page="/Manage/ObjectPacks/Index" class="button button-secondary">Cancel</a>
+				<a asp-page="/Manage/SC5FilePacks/Index" class="button button-secondary">Cancel</a>
 			</div>
 		</form>
 	}
 </div>
 
 <link rel="stylesheet" href="~/css/manage.css" asp-append-version="true" />
-<style>
-	.admin-page-container {
-		max-width: 900px;
-	}
-	
-	.form {
-		overflow: hidden;
-	}
-	
-	.form-actions {
-		padding: 2rem;
-		border-top: 1px solid var(--color-muted);
-		margin-top: 0;
-	}
-</style>

@@ -126,10 +126,9 @@ public sealed class ObjectExplorerService
 			obj.CreatedDate,
 			obj.ModifiedDate,
 			obj.UploadedDate,
-			obj.Licence?.Name,
-			obj.Licence?.Text,
-			[.. obj.Authors.Select(x => x.Name).OrderBy(x => x)],
-			[.. obj.Tags.Select(x => x.Name).OrderBy(x => x)],
+			obj.Licence is not null ? new LicenceRefViewModel(obj.Licence.Id, obj.Licence.Name, obj.Licence.Text) : null,
+			[.. obj.Authors.Select(x => new NamedRefViewModel(x.Id, x.Name)).OrderBy(x => x.Name)],
+			[.. obj.Tags.Select(x => new NamedRefViewModel(x.Id, x.Name)).OrderBy(x => x.Name)],
 			[.. obj.ObjectPacks.Select(x => x.Name).OrderBy(x => x)],
 			files,
 			stringTableGroups,
@@ -154,7 +153,8 @@ public sealed class ObjectExplorerService
 			row.UploadedDate,
 			row.CreatedDate,
 			row.ModifiedDate,
-			canDownload);
+			canDownload,
+			row.Description);
 	}
 
 	ObjectFileEntryViewModel BuildFileEntry(DtoObjectPostResponse obj, DtoDatObjectEntry dat)

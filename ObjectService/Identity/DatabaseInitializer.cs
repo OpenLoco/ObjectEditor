@@ -62,6 +62,52 @@ public static class DatabaseInitializer
 				? "Created Admin role"
 				: "Failed to create Admin role: {Errors}", string.Join(", ", rr.Errors.Select(e => e.Description)));
 		}
+		// Ensure Curator role with permission claims
+		var curatorRole = await roleManager.FindByNameAsync("Curator");
+		if (curatorRole == null)
+		{
+			curatorRole = new TblUserRole { Name = "Curator" };
+			var cr = await roleManager.CreateAsync(curatorRole);
+			if (cr.Succeeded)
+			{
+				logger.LogInformation("Created Curator role");
+
+				// Assign curator permissions as role claims
+				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.ObjectPacksCreate));
+				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.TagsManage));
+				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.LicenceManage));
+				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.AuthorManage));
+				logger.LogInformation("Assigned curator permissions to Curator role");
+			}
+			else
+			{
+				logger.LogError("Failed to create Curator role: {Errors}", string.Join(", ", cr.Errors.Select(e => e.Description)));
+			}
+		}
+		else
+		{
+			logger.LogInformation("Curator role already exists (Id={Id})", curatorRole.Id);
+
+			// Ensure curator claims exist (idempotent)
+			var existingClaims = await roleManager.GetClaimsAsync(curatorRole);
+			var existingPermissionValues = existingClaims.Where(c => c.Type == LocoPermissions.ClaimType).Select(c => c.Value).ToHashSet();
+
+			foreach (var perm in new[] { LocoPermissions.ObjectPacksCreate, LocoPermissions.TagsManage, LocoPermissions.LicenceManage, LocoPermissions.AuthorManage })
+			{
+				if (!existingPermissionValues.Contains(perm))
+				{
+					var result = await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, perm));
+					if (!result.Succeeded)
+					{
+						logger.LogWarning("Could not add claim {Permission} to Curator: {Errors}", perm, string.Join(", ", result.Errors.Select(e => e.Description)));
+					}
+					else
+					{
+						logger.LogInformation("Added claim {Permission} to Curator role", perm);
+					}
+				}
+			}
+		}
 
 		// Ensure system admin user
 		var adminEmail = config["AdminUser:Email"] ?? DefaultAdminEmail;
@@ -105,6 +151,28 @@ public static class DatabaseInitializer
 		{
 			await userManager.AddToRoleAsync(adminUser, "Admin");
 			logger.LogInformation("Assigned Admin role to {Username}", adminUsername);
+		}
+
+		// Ensure every user has the DisplayNameChange user claim (idempotent)
+		var allUsers = await userManager.Users.ToListAsync();
+		foreach (var u in allUsers)
+		{
+			var existingUserClaims = await userManager.GetClaimsAsync(u);
+			if (!existingUserClaims.Any(c => c.Type == LocoPermissions.ClaimType && c.Value == LocoPermissions.DisplayNameChange))
+			{
+				var claimResult = await userManager.AddClaimAsync(u,
+					new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.DisplayNameChange));
+				if (claimResult.Succeeded)
+				{
+					logger.LogInformation("Granted {Permission} user claim to {Username}", LocoPermissions.DisplayNameChange, u.UserName);
+				}
+				else
+				{
+					logger.LogWarning("Failed to grant {Permission} to {Username}: {Errors}",
+						LocoPermissions.DisplayNameChange, u.UserName,
+						string.Join(", ", claimResult.Errors.Select(e => e.Description)));
+				}
+			}
 		}
 
 		// Assign unowned objects to admin

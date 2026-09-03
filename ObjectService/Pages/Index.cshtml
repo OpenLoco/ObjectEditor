@@ -255,7 +255,7 @@ else
 					<div>
 						<p class="eyebrow">@item.ObjectType@if (item.VehicleType != null){<text> / @item.VehicleType</text>}</p>
 						<h2>@item.ResolvedTitle</h2>
-						<p class="muted">@item.InternalName</p>
+						<p class="muted">@(item.Description ?? item.InternalName)</p>
 					</div>
 				</div>
 
@@ -366,7 +366,7 @@ else if (Model.Category == "objectpacks")
 			<h1>Object Packs</h1>
 			@if (Model.IsAdmin)
 			{
-				<a asp-page="/manage/objectpacks" class="button button-secondary">Manage</a>
+				<a asp-page="/Manage/ObjectPacks/Index" class="button button-secondary">Manage</a>
 			}
 		</div>
 		@if (Model.ObjectPackList.Count > 0)
@@ -512,7 +512,7 @@ else if (Model.Category == "authors")
 			<h1>Authors</h1>
 			@if (Model.IsAdmin)
 			{
-				<a asp-page="/manage/authors" class="button button-secondary">Manage</a>
+				<a asp-page="/Manage/Authors/Index" class="button button-secondary">Manage</a>
 			}
 		</div>
 		@if (Model.AuthorList.Count > 0)
@@ -528,7 +528,7 @@ else if (Model.Category == "authors")
 						@foreach (var author in Model.AuthorList)
 						{
 							<tr>
-								<td>@author.Name</td>
+								<td><a asp-page="/Authors/Details" asp-route-id="@author.Id">@author.Name</a></td>
 							</tr>
 						}
 					</tbody>
@@ -548,7 +548,7 @@ else if (Model.Category == "tags")
 			<h1>Tags</h1>
 			@if (Model.IsAdmin)
 			{
-				<a asp-page="/manage/tags" class="button button-secondary">Manage</a>
+				<a asp-page="/Manage/Tags/Index" class="button button-secondary">Manage</a>
 			}
 		</div>
 		@if (Model.TagList.Count > 0)
@@ -564,7 +564,7 @@ else if (Model.Category == "tags")
 						@foreach (var tag in Model.TagList)
 						{
 							<tr>
-								<td>@tag.Name</td>
+								<td><a asp-page="/Tags/Details" asp-route-id="@tag.Id">@tag.Name</a></td>
 							</tr>
 						}
 					</tbody>
@@ -584,7 +584,7 @@ else if (Model.Category == "licences")
 			<h1>Licences</h1>
 			@if (Model.IsAdmin)
 			{
-				<a asp-page="/manage/licences" class="button button-secondary">Manage</a>
+				<a asp-page="/Manage/Licences/Index" class="button button-secondary">Manage</a>
 			}
 		</div>
 		@if (Model.LicenceList.Count > 0)
@@ -601,7 +601,7 @@ else if (Model.Category == "licences")
 						@foreach (var licence in Model.LicenceList)
 						{
 							<tr>
-								<td>@licence.Name</td>
+								<td><a asp-page="/Licences/Details" asp-route-id="@licence.Id">@licence.Name</a></td>
 								<td>@(licence.Text.Length > 120 ? licence.Text[..120] + "…" : licence.Text)</td>
 							</tr>
 						}

@@ -22,11 +22,25 @@ public sealed class IndexModel : PageModel
 	[TempData]
 	public string? SuccessMessage { get; set; }
 
+	[TempData]
+	public string? ErrorMessage { get; set; }
+
+	[BindProperty(SupportsGet = true)]
+	public string? Search { get; set; }
+
 	public async Task OnGetAsync()
 	{
 		var allRoles = await _db.Roles.ToDictionaryAsync(r => r.Id, r => r.Name);
 		var userRolesData = await _db.UserRoles.ToListAsync();
-		var userList = await _db.Users.OrderBy(u => u.UserName).ToListAsync();
+		var userQuery = _db.Users.AsQueryable();
+
+		if (!string.IsNullOrWhiteSpace(Search))
+		{
+			var s = Search.Trim();
+			userQuery = userQuery.Where(u => (u.UserName != null && u.UserName.Contains(s)) || (u.Email != null && u.Email.Contains(s)));
+		}
+
+		var userList = await userQuery.OrderBy(u => u.UserName).ToListAsync();
 
 		Users = userList.Select(u =>
 		{

@@ -196,10 +196,37 @@ builder.Services.AddAuthorization(options =>
 	options.AddPolicy("AdminOnly", policy =>
 		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
 			.RequireRole("Admin"));
+// Curator policy – any user with at least one curator permission (or Admin)
+	options.AddPolicy("Curator", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.RequireAssertion(context =>
+				context.User.IsInRole("Admin") ||
+				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.TagsManage) ||
+				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.LicenceManage) ||
+				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.AuthorManage)));
+
+	// Individual permission policies for fine-grained control when needed
+	options.AddPolicy("CanManageTags", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.TagsManage)));
+
+	options.AddPolicy("CanManageLicences", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.LicenceManage)));
+
+	options.AddPolicy("CanManageAuthors", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.AuthorManage)));
 });
 
 // Register the ownership authorization handler
 builder.Services.AddScoped<IAuthorizationHandler, ObjectOwnershipHandler>();
+// Register the permission authorization handler
+builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
 // Used for the Identity stuff to send emails to users
 // disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
@@ -208,37 +235,45 @@ builder.Services.AddScoped<IAuthorizationHandler, ObjectOwnershipHandler>();
 var app = builder.Build();
 
 app.UseForwardedHeaders();
-app.UseHttpLogging();
 
-// Dev-mode authentication bypass: when enabled, every request runs as an authenticated admin.
+app.UseHttpLogging();
+app.UseRateLimiter();
+app.UseStaticFiles();
+
+// Dev-mode authentication bypass: when enabled, every API request runs as an authenticated admin.
 // Set "ObjectService:DisableAuthentication": true in appsettings.Development.json.
+// UI pages (Razor Pages) are excluded so the login/logout flow works normally;
+// developers can use the "Dev Login" button in the header for quick authentication.
 var disableAuth = builder.Configuration.GetValue<bool?>("ObjectService:DisableAuthentication") ?? false;
 if (disableAuth)
 {
 	app.Use((context, next) =>
 	{
-		// Inject a fake admin ClaimsPrincipal before the auth middleware runs.
-		// ASP.NET Core's UseAuthentication skips when context.User is already set.
-		var claims = new[]
+		// Only inject the fake identity for API endpoints.  UI pages (/Account/*,
+		// /Manage/*, etc.) should go through the normal cookie-based auth flow so
+		// that login, logout, and the header's "Log in"/user-name display all work correctly.
+		if (context.Request.Path.StartsWithSegments("/v2", StringComparison.OrdinalIgnoreCase))
 		{
-			new Claim(ClaimTypes.NameIdentifier, "0"),
-			new Claim(ClaimTypes.Name, "devadmin"),
-			new Claim(ClaimTypes.Role, "Admin"),
-		};
-		var identity = new ClaimsIdentity(claims, "DevBypass");
-		context.User = new ClaimsPrincipal(identity);
+			// Inject a fake admin ClaimsPrincipal before the auth middleware runs.
+			// ASP.NET Core's UseAuthentication skips when context.User is already set.
+			var claims = new[]
+			{
+				new Claim(ClaimTypes.NameIdentifier, "0"),
+				new Claim(ClaimTypes.Name, "devadmin"),
+				new Claim(ClaimTypes.Role, "Admin"),
+			};
+			var identity = new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme);
+			context.User = new ClaimsPrincipal(identity);
+		}
+
 		return next();
 	});
 }
 
-app.UseRateLimiter();
-app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapIdentityApi<TblUser>();
-
-// defining routes here, after MapIdentityApi, will overwrite them, allowing us to customise them
 // app.MapPost("/register", () => Results.Ok());
 
 _ = app

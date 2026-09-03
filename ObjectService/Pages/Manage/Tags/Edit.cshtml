@@ -22,91 +22,9 @@
 
 		<div class="form-actions">
 			<button type="submit" class="button button-primary">Save Changes</button>
-			<a asp-page="/manage/tags" class="button button-secondary">Cancel</a>
+			<a asp-page="/Manage/Tags/Index" class="button button-secondary">Cancel</a>
 		</div>
 	</form>
 </div>
 
-<style>
-.admin-page-container {
-	max-width: 600px;
-	margin: 2rem auto;
-	padding: 0 1rem;
-}
-
-.form {
-	background: var(--color-surface);
-	border: 1px solid var(--color-muted);
-	border-radius: 0.5rem;
-	padding: 2rem;
-	margin-bottom: 2rem;
-}
-
-.form-group {
-	margin-bottom: 1.5rem;
-}
-
-.form-group label {
-	display: block;
-	margin-bottom: 0.5rem;
-	font-weight: 500;
-	color: var(--color-contrast);
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-	width: 100%;
-	padding: 0.75rem;
-	background: var(--color-background);
-	color: var(--color-contrast);
-	border: 1px solid var(--color-muted);
-	border-radius: 0.25rem;
-	font-family: inherit;
-}
-
-.form-actions {
-	display: flex;
-	gap: 1rem;
-	margin-top: 2rem;
-}
-
-.alert {
-	padding: 1rem;
-	margin-bottom: 1rem;
-	border-radius: 0.25rem;
-}
-
-.alert-error {
-	background-color: rgba(244, 70, 70, 0.1);
-	color: #f64646;
-	border: 1px solid rgba(244, 70, 70, 0.3);
-}
-
-.button {
-	padding: 0.75rem 1.5rem;
-	background: var(--color-accent);
-	color: var(--color-background);
-	border: none;
-	border-radius: 0.25rem;
-	cursor: pointer;
-	text-decoration: none;
-	font-weight: 500;
-	transition: opacity 0.2s;
-}
-
-.button:hover {
-	opacity: 0.8;
-}
-
-.button-primary {
-	background: var(--color-accent);
-	color: var(--color-background);
-}
-
-.button-secondary {
-	background: transparent;
-	color: var(--color-accent);
-	border: 1px solid var(--color-accent);
-}
-</style>
+<link rel="stylesheet" href="~/css/manage.css" asp-append-version="true" />

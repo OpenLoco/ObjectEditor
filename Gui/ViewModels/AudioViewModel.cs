@@ -23,6 +23,8 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	WaveOutEvent? CurrentWOEvent { get; set; }
 
+	ISoundData? _soundObject;
+
 	[Reactive]
 	WaveStream? WaveStream { get; set; }
 
@@ -77,6 +79,18 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		=> WaveStream = new RawSourceWaveStream(
 			new MemoryStream(pcmData),
 			AudioHelpers.SoundEffectFormatToWaveFormat(locoWaveFormat));
+
+	public AudioViewModel(ILogger logger, string soundName, ISoundData soundObject)
+		: this(logger, soundName)
+	{
+		_soundObject = soundObject;
+		if (soundObject.PcmData.Length > 0)
+		{
+			WaveStream = new RawSourceWaveStream(
+				new MemoryStream(soundObject.PcmData),
+				AudioHelpers.SoundEffectFormatToWaveFormat(soundObject.SoundObjectData.PcmHeader));
+		}
+	}
 
 	// in future, this method needs to resample the audio to convert to the specific music or sfx format that loco uses
 	public (SoundEffectWaveFormat Header, byte[] Data)? GetAsDatWav(LocoAudioType format)
@@ -178,6 +192,7 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 
 		ImportSoundFromFile(fsi.FileName);
+		SyncToSoundObject();
 	}
 
 	void ImportSoundFromFile(string filename)
@@ -231,6 +246,22 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		{
 			WaveStream.Position = 0;
 			WaveFileWriter.CreateWaveFile(saveFile.Path.LocalPath, WaveStream);
+		}
+	}
+
+	void SyncToSoundObject()
+	{
+		if (_soundObject == null || WaveStream == null)
+		{
+			return;
+		}
+
+		var datWav = GetAsDatWav(LocoAudioType.SoundEffect);
+		if (datWav != null)
+		{
+			_soundObject.SoundObjectData.PcmHeader = datWav.Value.Header;
+			_soundObject.SoundObjectData.Length = (uint32_t)(uint)datWav.Value.Data.Length;
+			_soundObject.PcmData = datWav.Value.Data;
 		}
 	}
 

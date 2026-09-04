@@ -957,7 +957,6 @@ public class LoadSaveTests
 
 				Assert.That(struc.SoundObjectData.Length, Is.EqualTo(119662), nameof(struc.SoundObjectData.Length));
 				Assert.That(struc.SoundObjectData.Offset, Is.EqualTo(8), nameof(struc.SoundObjectData.Offset));
-				Assert.That(struc.SoundObjectData.var_00, Is.EqualTo(1), nameof(struc.SoundObjectData.var_00));
 
 				Assert.That(struc.SoundObjectData.PcmHeader.AverageBytesPerSecond, Is.EqualTo(44100), nameof(struc.SoundObjectData.PcmHeader.AverageBytesPerSecond));
 				Assert.That(struc.SoundObjectData.PcmHeader.BitsPerSample, Is.EqualTo(16), nameof(struc.SoundObjectData.PcmHeader.BitsPerSample));

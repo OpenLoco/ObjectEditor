@@ -112,7 +112,7 @@
 						@foreach (var pack in Model.ObjectPacks)
 						{
 							<tr>
-								<td>@pack.Name</td>
+								<td><a asp-page="/ObjectPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
 							</tr>
 						}
 					</tbody>
@@ -168,7 +168,7 @@
 						@foreach (var pack in Model.SC5FilePacks)
 						{
 							<tr>
-								<td>@pack.Name</td>
+								<td><a asp-page="/SC5FilePacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
 							</tr>
 						}
 					</tbody>

@@ -259,6 +259,9 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 	public string CrudText { get; set; } = string.Empty;
 
 	[BindProperty]
+	public string CrudDescription { get; set; } = string.Empty;
+
+	[BindProperty]
 	public uint32_t CrudChecksum { get; set; }
 
 	[BindProperty]
@@ -336,6 +339,22 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 					}
 					await _objectsMissingService.CreateAsync(entry, CancellationToken.None);
 					SuccessMessage = $"Missing object '{CrudName.Trim()}' created.";
+					break;
+				}
+				case "objectpacks":
+				{
+					var newPack = new TblObjectPack { Name = CrudName.Trim(), Description = CrudDescription?.Trim() };
+					_ = _db.ObjectPacks.Add(newPack);
+					_ = await _db.SaveChangesAsync();
+					SuccessMessage = $"Object pack '{CrudName.Trim()}' created.";
+					break;
+				}
+				case "sc5filepacks":
+				{
+					var newPack = new TblSC5FilePack { Name = CrudName.Trim(), Description = CrudDescription?.Trim() };
+					_ = _db.SC5FilePacks.Add(newPack);
+					_ = await _db.SaveChangesAsync();
+					SuccessMessage = $"Scenario pack '{CrudName.Trim()}' created.";
 					break;
 				}
 				default:

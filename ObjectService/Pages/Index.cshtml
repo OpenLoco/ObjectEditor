@@ -372,7 +372,29 @@ else if (Model.Category == "objectpacks")
 	<section class="panel">
 		<div class="admin-page-header">
 			<h1>Object Packs</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-objectpacks').hidden = !document.getElementById('create-form-objectpacks').hidden">+ New</button>
+			}
 		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-objectpacks" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="CrudCategory" value="objectpacks" />
+				<div class="form-group">
+					<label for="newPackName">Name</label>
+					<input id="newPackName" name="CrudName" type="text" placeholder="Pack name" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newPackDesc">Description</label>
+					<textarea id="newPackDesc" name="CrudDescription" placeholder="Pack description" class="form-input"></textarea>
+				</div>
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-objectpacks').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
 		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
 		{
 			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
@@ -400,7 +422,7 @@ else if (Model.Category == "objectpacks")
 						@foreach (var pack in Model.ObjectPackList)
 						{
 							<tr>
-								<td><strong>@pack.Name</strong></td>
+								<td><a asp-page="/ObjectPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
 								<td>@(pack.Description.Length > 80 ? pack.Description[..80] + "…" : pack.Description)</td>
 								<td>@pack.UploadedDate.ToString("yyyy-MM-dd")</td>
 								<td>@pack.ObjectCount</td>
@@ -480,7 +502,29 @@ else if (Model.Category == "sc5filepacks")
 	<section class="panel">
 		<div class="admin-page-header">
 			<h1>SC5 File Packs</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-sc5filepacks').hidden = !document.getElementById('create-form-sc5filepacks').hidden">+ New</button>
+			}
 		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-sc5filepacks" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="CrudCategory" value="sc5filepacks" />
+				<div class="form-group">
+					<label for="newSC5PackName">Name</label>
+					<input id="newSC5PackName" name="CrudName" type="text" placeholder="Pack name" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newSC5PackDesc">Description</label>
+					<textarea id="newSC5PackDesc" name="CrudDescription" placeholder="Pack description" class="form-input"></textarea>
+				</div>
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-sc5filepacks').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
 		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
 		{
 			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
@@ -508,7 +552,7 @@ else if (Model.Category == "sc5filepacks")
 						@foreach (var pack in Model.SC5FilePackList)
 						{
 							<tr>
-								<td><strong>@pack.Name</strong></td>
+								<td><a asp-page="/SC5FilePacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
 								<td>@(pack.Description.Length > 80 ? pack.Description[..80] + "…" : pack.Description)</td>
 								<td>@pack.UploadedDate.ToString("yyyy-MM-dd")</td>
 								<td>@pack.AuthorCount</td>

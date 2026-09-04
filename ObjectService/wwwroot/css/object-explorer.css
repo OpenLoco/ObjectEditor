@@ -177,6 +177,20 @@ a {
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     backdrop-filter: blur(10px);
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        border-color 180ms ease;
+}
+
+.object-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    border-color: var(--accent-border);
 }
 
 .detail-hero {
@@ -497,7 +511,6 @@ dt {
 }
 
 .card-header,
-.card-actions,
 .detail-actions,
 .pagination,
 .chip-row {
@@ -578,6 +591,34 @@ dd {
     font-family: var(--mono);
     font-size: 0.92rem;
     word-break: break-word;
+}
+
+/* ---- card icon row ------------------------------------------- */
+.card-icons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 8px 6px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.card-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.card-icon svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.card-icon-dimmed {
+    opacity: 0.45;
 }
 
 .empty-state {

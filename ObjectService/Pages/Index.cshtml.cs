@@ -59,7 +59,7 @@ public sealed class IndexModel : PageModel
 
 	public ObjectBrowsePageViewModel Results { get; private set; } = new(0, 0, 1, 48, []);
 
-	public IReadOnlyList<ObjectType> ObjectTypes { get; } = [.. Enum.GetValues<ObjectType>()];
+	public IReadOnlyList<ObjectType> ObjectTypes { get; } = [.. Enum.GetValues<ObjectType>().OrderBy(t => t.ToString())];
 
 	public IReadOnlyList<ObjectSource> ObjectSources { get; } = [.. Enum.GetValues<ObjectSource>()];
 
@@ -67,24 +67,34 @@ public sealed class IndexModel : PageModel
 
 	public IReadOnlyList<VehicleType> VehicleTypes { get; } = [.. Enum.GetValues<VehicleType>()];
 
-	public IReadOnlyDictionary<string, string> Categories { get; } = new Dictionary<string, string>
-	{
-		["objects"] = "Objects",
-		["music"] = "Music",
-		["sfx"] = "SFX",
-		["objectpacks"] = "Object Packs",
-		["sc5files"] = "Scenarios",
-		["sc5filepacks"] = "Scenario Packs",
-	};
+	public sealed record TabGroup(string Name, IReadOnlyDictionary<string, string> Items);
 
-	public IReadOnlyDictionary<string, string> DataCategories { get; } = new Dictionary<string, string>
-	{
-		["authors"] = "Authors",
-		["tags"] = "Tags",
-		["licences"] = "Licences",
-		["objectsmissing"] = "Missing Objects",
-	};
-
+	public IReadOnlyList<TabGroup> TabGroups { get; } =
+	[
+		new("Objects", new Dictionary<string, string>
+		{
+			["objects"] = "Objects",
+			["objectpacks"] = "Object\u00A0Packs",
+			["objectsmissing"] = "Missing Objects",
+		}),
+		new("Audio", new Dictionary<string, string>
+		{
+			["music"] = "Music",
+			["sfx"] = "SFX",
+		}),
+		new("Scenarios", new Dictionary<string, string>
+		{
+			["sc5files"] = "Scenarios",
+			["sc5filepacks"] = "Scenario\u00A0Packs",
+		}),
+		new("Data", new Dictionary<string, string>
+		{
+			["authors"] = "Authors",
+			["tags"] = "Tags",
+			["licences"] = "Licences",
+		}),
+	];
+	
 	public bool IsAdmin => User.IsInRole("Admin");
 
 	// ── Data lists for database-view categories ──

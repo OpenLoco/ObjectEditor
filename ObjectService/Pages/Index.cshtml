@@ -772,3 +772,103 @@ else if (Model.Category == "licences")
 		}
 	</section>
 }
+else if (Model.Category == "objectsmissing")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Missing Objects</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-objectsmissing').hidden = !document.getElementById('create-form-objectsmissing').hidden">+ New</button>
+			}
+		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-objectsmissing" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="CrudCategory" value="objectsmissing" />
+				<div class="form-group">
+					<label for="newMissingDatName">Dat Name</label>
+					<input id="newMissingDatName" name="CrudName" type="text" placeholder="Dat file name" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newMissingDatChecksum">Dat Checksum</label>
+					<input id="newMissingDatChecksum" name="CrudChecksum" type="number" placeholder="Checksum" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newMissingObjectType">Object Type</label>
+					<select id="newMissingObjectType" name="CrudObjectType" required class="form-input">
+						@foreach (var ot in Model.ObjectTypes)
+						{
+							<option value="@((int)ot)">@ot</option>
+						}
+					</select>
+				</div>
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-objectsmissing').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
+		@if (Model.ObjectsMissingList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Dat Name</th>
+							<th>Dat Checksum</th>
+							<th>Object Type</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var missing in Model.ObjectsMissingList)
+						{
+							<tr>
+								<td>@missing.DatName</td>
+								<td>@missing.DatChecksum</td>
+								<td>@missing.ObjectType</td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-m-@missing.Id');f.hidden=!f.hidden">Edit</button>
+										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this missing object entry?')">
+											<input type="hidden" name="CrudId" value="@missing.Id" />
+											<input type="hidden" name="CrudCategory" value="objectsmissing" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+										<form method="post" asp-page-handler="Edit" id="edit-m-@missing.Id" hidden style="display:flex;gap:0.25rem;flex-wrap:wrap">
+											<input type="hidden" name="CrudId" value="@missing.Id" />
+											<input type="hidden" name="CrudCategory" value="objectsmissing" />
+											<input type="text" name="CrudName" value="@missing.DatName" required class="form-input" style="width:120px" />
+											<input type="number" name="CrudChecksum" value="@missing.DatChecksum" required class="form-input" style="width:100px" />
+											<select name="CrudObjectType" required class="form-input" style="width:130px">
+												@foreach (var ot in Model.ObjectTypes)
+												{
+													<option value="@((int)ot)" selected="@(ot == missing.ObjectType)">@ot</option>
+												}
+											</select>
+											<button type="submit" class="button button-primary button-small">Save</button>
+											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-m-@missing.Id').hidden=true">Cancel</button>
+										</form>
+									</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No missing objects found.</p>
+		}
+	</section>
+}

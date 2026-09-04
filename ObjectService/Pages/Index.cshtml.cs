@@ -18,19 +18,22 @@ public sealed class IndexModel : PageModel
 	readonly ICrudService<DtoAuthorEntry, TblAuthor> _authorService;
 	readonly ICrudService<DtoTagEntry, TblTag> _tagService;
 	readonly ICrudService<DtoLicenceEntry, TblLicence> _licenceService;
+	readonly ICrudService<DtoObjectMissingEntry, TblObjectMissing> _objectsMissingService;
 
 	public IndexModel(
 		ObjectExplorerService explorerService,
 		LocoDbContext db,
 		ICrudService<DtoAuthorEntry, TblAuthor> authorService,
 		ICrudService<DtoTagEntry, TblTag> tagService,
-		ICrudService<DtoLicenceEntry, TblLicence> licenceService)
+		ICrudService<DtoLicenceEntry, TblLicence> licenceService,
+		ICrudService<DtoObjectMissingEntry, TblObjectMissing> objectsMissingService)
 	{
 		_explorerService = explorerService;
 		_db = db;
 		_authorService = authorService;
 		_tagService = tagService;
 		_licenceService = licenceService;
+		_objectsMissingService = objectsMissingService;
 	}
 
 	[BindProperty(SupportsGet = true)]
@@ -79,6 +82,7 @@ public sealed class IndexModel : PageModel
 		["authors"] = "Authors",
 		["tags"] = "Tags",
 		["licences"] = "Licences",
+		["objectsmissing"] = "Missing Objects",
 	};
 
 	public bool IsAdmin => User.IsInRole("Admin");
@@ -90,6 +94,7 @@ public sealed class IndexModel : PageModel
 	public List<ObjectPackListViewModel> ObjectPackList { get; private set; } = [];
 	public List<SC5FileListViewModel> SC5FileList { get; private set; } = [];
 	public List<SC5FilePackListViewModel> SC5FilePackList { get; private set; } = [];
+	public List<ObjectsMissingListViewModel> ObjectsMissingList { get; private set; } = [];
 
 	public async Task OnGetAsync(CancellationToken cancellationToken)
 	{
@@ -130,6 +135,10 @@ public sealed class IndexModel : PageModel
 
 			case "licences":
 				await LoadLicencesAsync(cancellationToken);
+				break;
+
+			case "objectsmissing":
+				await LoadObjectsMissingAsync(cancellationToken);
 				break;
 
 			default:
@@ -228,6 +237,16 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 		LicenceList = licences.Select(l => new LicenceListViewModel(l.Id, l.Name, l.Text)).ToList();
 	}
 
+	async Task LoadObjectsMissingAsync(CancellationToken ct)
+	{
+		var missing = await _db.ObjectsMissing
+			.OrderBy(m => m.DatName)
+			.ThenBy(m => m.DatChecksum)
+			.ToListAsync(ct);
+
+		ObjectsMissingList = missing.Select(m => new ObjectsMissingListViewModel(m.Id, m.DatName, m.DatChecksum, m.ObjectType)).ToList();
+	}
+
 	// ── CRUD form bindings ──
 
 	[BindProperty]
@@ -238,6 +257,12 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 
 	[BindProperty]
 	public string CrudText { get; set; } = string.Empty;
+
+	[BindProperty]
+	public uint32_t CrudChecksum { get; set; }
+
+	[BindProperty]
+	public ObjectType CrudObjectType { get; set; }
 
 	[BindProperty]
 	public string CrudCategory { get; set; } = string.Empty;
@@ -301,6 +326,18 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 					SuccessMessage = $"Licence '{CrudName.Trim()}' created.";
 					break;
 				}
+				case "objectsmissing":
+				{
+					var entry = new DtoObjectMissingEntry(0, CrudName.Trim(), CrudChecksum, CrudObjectType);
+					if (!_objectsMissingService.TryValidateCreate(entry, out var err))
+					{
+						ErrorMessage = err;
+						return RedirectToPage(new { category = CrudCategory });
+					}
+					await _objectsMissingService.CreateAsync(entry, CancellationToken.None);
+					SuccessMessage = $"Missing object '{CrudName.Trim()}' created.";
+					break;
+				}
 				default:
 					break;
 			}
@@ -354,6 +391,14 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 					if (updated == null) ErrorMessage = "Licence not found.";
 					break;
 				}
+				case "objectsmissing":
+				{
+					var entry = new DtoObjectMissingEntry(CrudId, CrudName.Trim(), CrudChecksum, CrudObjectType);
+					var updated = await _objectsMissingService.UpdateAsync(CrudId, entry, CancellationToken.None);
+					SuccessMessage = updated != null ? $"Missing object '{CrudName.Trim()}' updated." : "Missing object not found.";
+					if (updated == null) ErrorMessage = "Missing object not found.";
+					break;
+				}
 				default:
 					break;
 			}
@@ -396,6 +441,13 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 					var deleted = await _licenceService.DeleteAsync(CrudId, CancellationToken.None);
 					SuccessMessage = deleted ? "Licence deleted." : null;
 					ErrorMessage = deleted ? null : "Failed to delete licence.";
+					break;
+				}
+				case "objectsmissing":
+				{
+					var deleted = await _objectsMissingService.DeleteAsync(CrudId, CancellationToken.None);
+					SuccessMessage = deleted ? "Missing object deleted." : null;
+					ErrorMessage = deleted ? null : "Failed to delete missing object.";
 					break;
 				}
 				case "objectpacks":
@@ -444,4 +496,5 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 	public record ObjectPackListViewModel(UniqueObjectId Id, string Name, string Description, DateOnly UploadedDate, int AuthorCount, int TagCount, string Licence, int ObjectCount);
 	public record SC5FileListViewModel(UniqueObjectId Id, string Name, string Description, DateOnly UploadedDate, ObjectSource ObjectSource, int AuthorCount, int TagCount, string Licence, int PackCount);
 	public record SC5FilePackListViewModel(UniqueObjectId Id, string Name, string Description, DateOnly UploadedDate, int AuthorCount, int TagCount, string Licence, int FileCount);
+	public record ObjectsMissingListViewModel(UniqueObjectId Id, string DatName, uint32_t DatChecksum, ObjectType ObjectType);
 }

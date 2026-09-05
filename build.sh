@@ -28,7 +28,7 @@ echo "=== Building Object Editor v${FG_BLUE}$version${RESET} for ${FG_BLUE}$fram
 framework=$(grep '<TargetFramework>' Gui/Gui.csproj | sed 's/.*<TargetFramework>\(.*\)<\/TargetFramework>.*/\1/')
 
 # 2. Write the version to version.txt. This is read by the UI to know the current version.
-echo "$version" > Gui/version.txt
+echo "$version" > Definitions/version.txt
 
 # 3. Build the editor for different platforms
 echo "Building the ${FG_BLUE}Editor${RESET}"

@@ -13,10 +13,10 @@ version="$1"
 echo "Building version $version"
 
 # 2. Write the version to version.txt. This is purely to generate a commit on master for new version
-echo "$version" > Gui/version.txt
+echo "$version" > Definitions/version.txt
 
 # 3. Make a release commit
-git add Gui/version.txt
+git add Definitions/version.txt
 git commit -m "prepare $version"
 git push
 

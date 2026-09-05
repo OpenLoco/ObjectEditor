@@ -41,9 +41,9 @@ public class VehicleObject : ILocoStruct
 	public FrictionSound? FrictionSound { get; set; }
 	public SimpleMotorSound? SimpleMotorSound { get; set; }
 	public GearboxMotorSound? GearboxMotorSound { get; set; }
-	public ObjectModelHeader? Sound { get; set; }
-	public uint8_t[] var_135 { get; set; } = [];
+	public ObjectModelHeader? DrivingSound { get; set; }
 	public List<ObjectModelHeader> StartSounds { get; set; } = [];
+	public List<ObjectModelHeader> CrossingSounds { get; set; } = [];
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
@@ -113,6 +113,23 @@ public class VehicleObject : ILocoStruct
 			foreach (var result in bogieSprite.Validate(validationContext))
 			{
 				yield return result;
+			}
+		}
+
+		{
+			if (CrossingSounds.Count > 1)
+			{
+				yield return new ValidationResult($"{nameof(CrossingSounds)}  must have at most 1 entry.", [nameof(CrossingSounds)]);
+			}
+
+			if (StartSounds.Count > 3)
+			{
+				yield return new ValidationResult($"{nameof(StartSounds)} must have at most 3 entries.", [nameof(StartSounds)]);
+			}
+
+			if (StartSounds.Count + CrossingSounds.Count > 3)
+			{
+				yield return new ValidationResult($"{nameof(StartSounds)} and {nameof(CrossingSounds)} combined must have at most 3 entries.", [nameof(StartSounds), nameof(CrossingSounds)]);
 			}
 		}
 	}

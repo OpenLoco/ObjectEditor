@@ -73,43 +73,48 @@ public static class ObjectValidation
 				// DAT name is the expected dat name
 				if (header.Name != fileInfo.OpenGraphicsName)
 				{
-					validationErrors.Add($"✖ Internal DAT header name is not correct. Actual=\"{header.Name}\" Expected=\"{fileInfo.OpenGraphicsName}\" ");
+					validationErrors.Add($"Internal DAT header name is not correct. Actual=\"{header.Name}\" Expected=\"{fileInfo.OpenGraphicsName}\" ");
 				}
 			}
 			else
 			{
-				validationErrors.Add($"✖ Unable to find file info for the vanilla file. Name=\"{currentDirName}\".");
+				validationErrors.Add($"Unable to find file info for the vanilla file. Name=\"{currentDirName}\".");
 			}
 
-			var expectedFilename = $"OG_{currentDirName}.dat";
-			var actualFilename = Path.GetFileName(fileName);
-			if (expectedFilename != actualFilename)
+			string[] expectedPrefixes = ["OG", "EX"];
+
+			foreach (var expectedPrefix in expectedPrefixes)
 			{
-				validationErrors.Add($"✖ Filename not correct. Actual=\"{actualFilename}\" Expected=\"{expectedFilename}\" ");
+				var expectedFilename = $"{expectedPrefix}_{currentDirName}.dat";
+				var actualFilename = Path.GetFileName(fileName);
+				if (expectedFilename != actualFilename)
+				{
+					validationErrors.Add($"Filename not correct. Actual=\"{actualFilename}\" Expected=\"{expectedFilename}\" ");
+				}
 			}
 
 			// DAT name is NOT prefixed by OG_
 			if (header.Name.Contains('_'))
 			{
-				validationErrors.Add("✖ Internal header name should not contain an underscore");
+				validationErrors.Add("Internal header name should not contain an underscore");
 			}
 
 			// DAT name is prefixed by OG
-			if (!header.Name.StartsWith("OG"))
+			if (!header.Name.StartsWith("OG") && !header.Name.StartsWith("EX"))
 			{
-				validationErrors.Add("✖ Internal header name is not prefixed with OG");
+				validationErrors.Add("Internal header name is not prefixed with OG or EX");
 			}
 
 			// OpenGraphics object source set
 			if (header.ObjectSource != DatObjectSource.OpenLoco)
 			{
-				validationErrors.Add("✖ Object source is not set to OpenLoco");
+				validationErrors.Add("Object source is not set to OpenLoco");
 			}
 
 			// if Vehicle - use RunLengthSingle
 			if (header.ObjectType == DatObjectType.Vehicle && file.DatInfo.ObjectHeader.Encoding != SawyerEncoding.RunLengthSingle)
 			{
-				validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
+				validationErrors.Add("Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
 			}
 		}
 		catch (IOException ex)
@@ -123,7 +128,7 @@ public static class ObjectValidation
 			validationErrors.Add($"Error validating for OpenGraphics: {ex.Message}");
 		}
 
-		return validationErrors;
+		return validationErrors.Select(x => $"✖ {x}").ToList();
 	}
 
 	public static DirectoryInfo? FindDirectoryInParentDirectory(string startPath, string targetName)

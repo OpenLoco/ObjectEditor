@@ -1,0 +1,264 @@
+@page "/ObjectPacks/{id}"
+@model ObjectService.Pages.ObjectPacks.DetailsModel
+@{
+	var pack = Model.ObjectPack;
+	ViewData["Title"] = pack?.Name ?? "Object Pack";
+}
+
+@if (pack is null)
+{
+	<section class="panel">
+		<h1>Object pack not found</h1>
+		<p>The object pack you are looking for does not exist.</p>
+		<a class="button button-secondary" asp-page="/Index" asp-route-category="objectpacks">Back to object pack list</a>
+	</section>
+	return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+	<div class="alert alert-success">@Model.SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+	<div class="alert alert-error">@Model.ErrorMessage</div>
+}
+
+<section class="detail-hero panel">
+	<div>
+		<a class="back-link" asp-page="/Index" asp-route-category="objectpacks">Back to object packs</a>
+		<div class="admin-page-header">
+			<h1>@pack.Name</h1>
+			@if (Model.CanEdit)
+			{
+				<div class="action-buttons">
+					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
+					<form method="post" asp-page-handler="Delete" asp-route-id="@pack.Id" style="display:inline" onsubmit="return confirm('Delete this object pack?')">
+						<button type="submit" class="button button-small button-danger">Delete</button>
+					</form>
+				</div>
+			}
+		</div>
+		<p class="lede">@(string.IsNullOrWhiteSpace(pack.Description) ? "No description is stored for this object pack yet." : pack.Description)</p>
+
+		@if (Model.CanEdit)
+		{
+			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form" style="margin-top:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="Id" value="@pack.Id" />
+
+				<div class="form-group">
+					<label for="editName">Name</label>
+					<input id="editName" name="Name" type="text" value="@pack.Name" required class="form-input" />
+				</div>
+
+				<div class="form-group">
+					<label for="editDescription">Description</label>
+					<textarea id="editDescription" name="Description" class="form-input">@pack.Description</textarea>
+				</div>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label for="editCreated">Created Date</label>
+						<input id="editCreated" name="CreatedDate" type="date" value="@pack.CreatedDate?.ToString("yyyy-MM-dd")" class="form-input" />
+					</div>
+					<div class="form-group">
+						<label for="editModified">Modified Date</label>
+						<input id="editModified" name="ModifiedDate" type="date" value="@pack.ModifiedDate?.ToString("yyyy-MM-dd")" class="form-input" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="editLicence">Licence</label>
+					<select id="editLicence" name="LicenceId" class="form-input">
+						<option value="" selected="@(pack.Licence == null)">None</option>
+						@foreach (var lic in Model.AvailableLicences)
+						{
+							<option value="@lic.Id" selected="@(pack.Licence?.Id == lic.Id)">@lic.Name</option>
+						}
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label>Authors</label>
+					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+						@if (Model.AvailableAuthors.Count == 0)
+						{
+							<p class="muted">No authors available.</p>
+						}
+						else
+						{
+							@foreach (var author in Model.AvailableAuthors)
+							{
+								var isSelected = pack.Authors.Any(a => a.Id == author.Id);
+								<label class="checkbox" style="display:block;">
+									<input type="checkbox" name="SelectedAuthorIds" value="@author.Id" checked="@isSelected" />
+									<span>@author.Name</span>
+								</label>
+							}
+						}
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>Tags</label>
+					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+						@if (Model.AvailableTags.Count == 0)
+						{
+							<p class="muted">No tags available.</p>
+						}
+						else
+						{
+							@foreach (var tag in Model.AvailableTags)
+							{
+								var isSelected = pack.Tags.Any(t => t.Id == tag.Id);
+								<label class="checkbox" style="display:block;">
+									<input type="checkbox" name="SelectedTagIds" value="@tag.Id" checked="@isSelected" />
+									<span>@tag.Name</span>
+								</label>
+							}
+						}
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>Objects</label>
+					<div class="multi-select" style="max-height:200px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+						@if (Model.AvailableObjects.Count == 0)
+						{
+							<p class="muted">No objects available.</p>
+						}
+						else
+						{
+							@foreach (var obj in Model.AvailableObjects)
+							{
+								var isSelected = pack.Objects.Any(o => o.Id == obj.Id);
+								<label class="checkbox" style="display:block;">
+									<input type="checkbox" name="SelectedObjectIds" value="@obj.Id" checked="@isSelected" />
+									<span>@obj.DisplayName</span>
+								</label>
+							}
+						}
+					</div>
+				</div>
+
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Save</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-form').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+	</div>
+</section>
+<div class="detail-grid">
+	<section class="panel">
+		<h2>Metadata</h2>
+		<dl class="meta-grid">
+			<div>
+				<dt>Created</dt>
+				<dd>@(pack.CreatedDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+			</div>
+			<div>
+				<dt>Modified</dt>
+				<dd>@(pack.ModifiedDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+			</div>
+			<div>
+				<dt>Uploaded</dt>
+				<dd>@pack.UploadedDate.ToString("yyyy-MM-dd")</dd>
+			</div>
+			<div>
+				<dt>Licence</dt>
+				<dd>
+					@if (pack.Licence is not null)
+					{
+						<a asp-page="/Licences/Details" asp-route-id="@pack.Licence.Id">@pack.Licence.Name</a>
+					}
+					else
+					{
+						<text>-</text>
+					}
+				</dd>
+			</div>
+		</dl>
+
+		@if (!string.IsNullOrWhiteSpace(pack.Licence?.Text))
+		{
+			<div class="note-block">@pack.Licence?.Text</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>Relationships</h2>
+		<div class="stacked-list">
+			<div>
+				<h3>Authors</h3>
+				<p>
+					@if (pack.Authors.Count > 0)
+					{
+						@for (var i = 0; i < pack.Authors.Count; i++)
+						{
+							var author = pack.Authors.ElementAt(i);
+							<a asp-page="/Authors/Details" asp-route-id="@author.Id">@author.Name</a>
+							@if (i < pack.Authors.Count - 1)
+							{
+								<text>, </text>
+							}
+						}
+					}
+					else
+					{
+						<text>No authors linked</text>
+					}
+				</p>
+			</div>
+			<div>
+				<h3>Tags</h3>
+				<p>
+					@if (pack.Tags.Count > 0)
+					{
+						@for (var i = 0; i < pack.Tags.Count; i++)
+						{
+							var tag = pack.Tags.ElementAt(i);
+							<a asp-page="/Tags/Details" asp-route-id="@tag.Id">@tag.Name</a>
+							@if (i < pack.Tags.Count - 1)
+							{
+								<text>, </text>
+							}
+						}
+					}
+					else
+					{
+						<text>No tags linked</text>
+					}
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="panel panel-span">
+		<h2>Objects in this pack (@pack.Objects.Count)</h2>
+		@if (pack.Objects.Count == 0)
+		{
+			<p class="muted">No objects are linked to this pack.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var obj in pack.Objects.OrderBy(o => o.Name))
+						{
+							<tr>
+								<td><a asp-page="/Objects/Details" asp-route-id="@obj.Id">@obj.Name</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+</div>

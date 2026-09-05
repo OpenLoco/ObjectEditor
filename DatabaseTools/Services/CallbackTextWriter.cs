@@ -62,7 +62,7 @@ public sealed class CallbackTextWriter : TextWriter
 		}
 
 		var line = _buffer.ToString();
-		_buffer.Clear();
+		_ = _buffer.Clear();
 		_onLine(line);
 	}
 }

@@ -2,6 +2,7 @@ using Definitions.Database;
 using Definitions.ObjectModels.Graphics;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -11,9 +12,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using ObjectService;
 using ObjectService.Frontend;
-using ObjectService.RouteHandlers;
+using ObjectService.Identity;
 using ObjectService.Services;
+using ObjectService.RouteHandlers;
 using Scalar.AspNetCore;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -63,7 +66,7 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 	}
 });
 
-builder.Services.AddScoped<ObjectExplorerService>();
+builder.Services.AddScoped<ObjectExplorerService>(); builder.Services.AddObjectEditorServices();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -138,7 +141,19 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 
 builder.Services
 	.AddIdentityApiEndpoints<TblUser>()
+	.AddRoles<TblUserRole>()
 	.AddEntityFrameworkStores<LocoDbContext>();
+
+// Relax default password rules for development.
+// Override via appsettings or user secrets in production.
+builder.Services.Configure<IdentityOptions>(options =>
+{
+	options.Password.RequireDigit = true;
+	options.Password.RequireLowercase = true;
+	options.Password.RequireUppercase = true;
+	options.Password.RequireNonAlphanumeric = true;
+	options.Password.RequiredLength = 12;
+});
 
 // Configure bearer token expiration from settings
 builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, options =>
@@ -164,12 +179,54 @@ builder.Services.AddAuthentication()
 
 builder.Services.AddAuthorization(options =>
 {
-	// Configure the default policy to accept both Identity Bearer tokens and JWT tokens
+	// Configure the default policy to accept Identity cookies, Identity Bearer tokens, and JWT tokens.
+	// This allows both page-based cookie auth (from SignInManager) and API bearer token auth.
 	options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-		.AddAuthenticationSchemes(IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+		.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
 		.RequireAuthenticatedUser()
 		.Build();
+
+	// Policy: user must own the object (id from route) or be an Admin
+	options.AddPolicy("CanEditObject", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.AddRequirements(new ObjectOwnershipRequirement()));
+
+	// Admin-only policy (for user/role management)
+	options.AddPolicy("AdminOnly", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireRole("Admin"));
+// Curator policy – any user with at least one curator permission (or Admin)
+	options.AddPolicy("Curator", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.RequireAssertion(context =>
+				context.User.IsInRole("Admin") ||
+				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.TagsManage) ||
+				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.LicenceManage) ||
+				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.AuthorManage)));
+
+	// Individual permission policies for fine-grained control when needed
+	options.AddPolicy("CanManageTags", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.TagsManage)));
+
+	options.AddPolicy("CanManageLicences", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.LicenceManage)));
+
+	options.AddPolicy("CanManageAuthors", policy =>
+		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.AuthorManage)));
 });
+
+// Register the ownership authorization handler
+builder.Services.AddScoped<IAuthorizationHandler, ObjectOwnershipHandler>();
+// Register the permission authorization handler
+builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
 // Used for the Identity stuff to send emails to users
 // disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
@@ -178,15 +235,45 @@ builder.Services.AddAuthorization(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+
 app.UseHttpLogging();
 app.UseRateLimiter();
 app.UseStaticFiles();
+
+// Dev-mode authentication bypass: when enabled, every API request runs as an authenticated admin.
+// Set "ObjectService:DisableAuthentication": true in appsettings.Development.json.
+// UI pages (Razor Pages) are excluded so the login/logout flow works normally;
+// developers can use the "Dev Login" button in the header for quick authentication.
+var disableAuth = builder.Configuration.GetValue<bool?>("ObjectService:DisableAuthentication") ?? false;
+if (disableAuth)
+{
+	app.Use((context, next) =>
+	{
+		// Only inject the fake identity for API endpoints.  UI pages (/Account/*,
+		// /Manage/*, etc.) should go through the normal cookie-based auth flow so
+		// that login, logout, and the header's "Log in"/user-name display all work correctly.
+		if (context.Request.Path.StartsWithSegments("/v2", StringComparison.OrdinalIgnoreCase))
+		{
+			// Inject a fake admin ClaimsPrincipal before the auth middleware runs.
+			// ASP.NET Core's UseAuthentication skips when context.User is already set.
+			var claims = new[]
+			{
+				new Claim(ClaimTypes.NameIdentifier, "0"),
+				new Claim(ClaimTypes.Name, "devadmin"),
+				new Claim(ClaimTypes.Role, "Admin"),
+			};
+			var identity = new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme);
+			context.User = new ClaimsPrincipal(identity);
+		}
+
+		return next();
+	});
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapIdentityApi<TblUser>();
-
-// defining routes here, after MapIdentityApi, will overwrite them, allowing us to customise them
 // app.MapPost("/register", () => Results.Ok());
 
 _ = app
@@ -195,10 +282,7 @@ _ = app
 
 _ = app.MapRazorPages();
 
-_ = app.MapV2Routes()
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapV1Routes()
+_ = app.MapApiRoutes()
 	.RequireRateLimiting(tokenPolicy);
 
 var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");
@@ -217,6 +301,9 @@ if (showScalar == true)
 			.AddPreferredSecuritySchemes("Bearer");
 	});
 }
+
+// Run database initialization (creates admin user, assigns ownership, etc.)
+await DatabaseInitializer.InitializeAsync(app);
 
 app.Run();
 

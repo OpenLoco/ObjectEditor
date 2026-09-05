@@ -13,7 +13,7 @@ public class RouteHelpersTests
 
 		try
 		{
-			Directory.CreateDirectory(rootPath);
+			_ = Directory.CreateDirectory(rootPath);
 
 			var result = RouteHelpers.TryGetSafeRelativePathUnderRoot(rootPath, "packs/object-pack.zip", out var fullPath, out var normalizedRelativePath);
 
@@ -41,7 +41,7 @@ public class RouteHelpersTests
 
 		try
 		{
-			Directory.CreateDirectory(rootPath);
+			_ = Directory.CreateDirectory(rootPath);
 
 			var result = RouteHelpers.TryGetSafeRelativePathUnderRoot(rootPath, relativePath, out var fullPath, out var normalizedRelativePath);
 
@@ -65,7 +65,7 @@ public class RouteHelpersTests
 
 		try
 		{
-			Directory.CreateDirectory(rootPath);
+			_ = Directory.CreateDirectory(rootPath);
 			var absolutePath = Path.Combine(rootPath, "packs", "object-pack.zip");
 
 			var result = RouteHelpers.TryGetSafeRelativePathUnderRoot(rootPath, absolutePath, out var fullPath, out var normalizedRelativePath);
@@ -100,7 +100,7 @@ public class RouteHelpersTests
 
 		try
 		{
-			Directory.CreateDirectory(rootPath);
+			_ = Directory.CreateDirectory(rootPath);
 
 			var result = RouteHelpers.TryGetSafeRelativePathUnderRoot(rootPath, relativePath, out var fullPath, out var normalizedRelativePath);
 
@@ -130,7 +130,7 @@ public class RouteHelpersTests
 
 		try
 		{
-			Directory.CreateDirectory(rootPath);
+			_ = Directory.CreateDirectory(rootPath);
 
 			var result = RouteHelpers.TryGetSafeRelativePathUnderRoot(rootPath, input, out var fullPath, out var normalizedRelativePath);
 
@@ -154,7 +154,7 @@ public class RouteHelpersTests
 
 		try
 		{
-			Directory.CreateDirectory(rootPath);
+			_ = Directory.CreateDirectory(rootPath);
 
 			var result = RouteHelpers.TryGetSafeRelativePathUnderRoot(rootPath, @"\\server\share\file.dat", out var fullPath, out var normalizedRelativePath);
 
@@ -178,7 +178,7 @@ public class RouteHelpersTests
 
 		try
 		{
-			Directory.CreateDirectory(rootPath);
+			_ = Directory.CreateDirectory(rootPath);
 
 			var result = RouteHelpers.TryGetSafeRelativePathUnderRoot(rootPath, "subfolder/file.dat", out var fullPath, out _);
 

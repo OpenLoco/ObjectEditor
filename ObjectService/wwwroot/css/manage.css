@@ -1,0 +1,321 @@
+/* ============================================================
+   Management pages – shared styles
+   ============================================================ */
+
+/* ── Layout container ── */
+.admin-page-container {
+	max-width: 1200px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+/* ── Page header ── */
+.admin-page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
+.admin-page-header h1 {
+	margin: 0;
+}
+
+/* ── Filter panel ── */
+.filter-panel {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	padding: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+.filters {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+
+.filter-group {
+	flex: 1;
+	min-width: 150px;
+	display: flex;
+	flex-direction: column;
+}
+
+.filter-group label {
+	font-size: 0.875rem;
+	color: var(--color-muted);
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+}
+
+.filter-group input,
+.filter-group select {
+	padding: 0.5rem;
+	background: var(--color-background);
+	color: var(--color-contrast);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+}
+
+/* ── Alerts ── */
+.alert {
+	padding: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 0.25rem;
+}
+
+.alert-success {
+	background-color: rgba(78, 141, 87, 0.1);
+	color: #4e8d57;
+	border: 1px solid rgba(78, 141, 87, 0.3);
+}
+
+.alert-error {
+	background-color: rgba(244, 70, 70, 0.1);
+	color: #f44646;
+	border: 1px solid rgba(244, 70, 70, 0.3);
+}
+
+/* ── Table ── */
+.table-container {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	overflow: hidden;
+	margin-bottom: 2rem;
+}
+
+.result-count {
+	padding: 1rem;
+	margin: 0;
+	border-bottom: 1px solid var(--color-muted);
+	color: var(--color-muted);
+	font-size: 0.875rem;
+}
+
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.data-table thead {
+	background: var(--color-background);
+	border-bottom: 2px solid var(--color-muted);
+}
+
+.data-table th {
+	padding: 1rem;
+	text-align: left;
+	font-weight: 500;
+	color: var(--color-muted);
+}
+
+.data-table td {
+	padding: 1rem;
+	border-bottom: 1px solid var(--color-muted);
+	word-break: break-word;
+}
+
+.data-table tbody tr:hover {
+	background-color: rgba(255, 255, 255, 0.02);
+}
+
+.actions-column {
+	width: 200px;
+	text-align: right;
+}
+
+.data-table .actions-column {
+	padding-right: 1rem;
+}
+
+/* ── Empty state ── */
+.empty-state {
+	padding: 2rem;
+	text-align: center;
+	color: var(--color-muted);
+	margin: 0;
+}
+
+.empty-state a {
+	color: var(--color-accent);
+}
+
+/* ── Buttons ── */
+.button {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	background: var(--color-accent);
+	color: var(--color-background);
+	border: none;
+	border-radius: 0.25rem;
+	cursor: pointer;
+	text-decoration: none;
+	font-size: 0.875rem;
+	transition: opacity 0.2s;
+	font-weight: 500;
+}
+
+.button:hover {
+	opacity: 0.8;
+}
+
+.button-primary {
+	background: var(--color-accent);
+	color: var(--color-background);
+}
+
+.button-secondary {
+	background: transparent;
+	color: var(--color-accent);
+	border: 1px solid var(--color-accent);
+}
+
+.button-danger {
+	background: #f64646;
+	color: white;
+	border: none;
+}
+
+.button-small {
+	padding: 0.25rem 0.75rem;
+	font-size: 0.75rem;
+}
+
+/* ── Pagination ── */
+.pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 2rem 1rem;
+}
+
+.page-info {
+	color: var(--color-muted);
+	margin: 0 1rem;
+	font-size: 0.875rem;
+}
+
+/* ── Forms (Create / Edit) ── */
+.form {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	padding: 2rem;
+	margin-bottom: 2rem;
+}
+
+.form-section {
+	padding: 2rem;
+	border-bottom: 1px solid var(--color-muted);
+	border: none;
+	margin: 0;
+}
+
+.form-section:last-of-type {
+	border-bottom: none;
+}
+
+.form-section legend {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--color-accent);
+	padding: 0;
+	margin: 0 0 1.5rem 0;
+	width: 100%;
+}
+
+.form-group {
+	margin-bottom: 1.5rem;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+	color: var(--color-contrast);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+	width: 100%;
+	padding: 0.75rem;
+	background: var(--color-background);
+	color: var(--color-contrast);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+	font-family: inherit;
+	box-sizing: border-box;
+}
+
+.form-group input:disabled {
+	background: rgba(128, 128, 128, 0.1);
+	cursor: not-allowed;
+}
+
+.form-group textarea {
+	resize: vertical;
+	min-height: 120px;
+}
+
+.form-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 1.5rem;
+}
+
+.form-row .form-group {
+	margin-bottom: 0;
+}
+
+.form-hint {
+	font-size: 0.875rem;
+	color: var(--color-muted);
+	margin-top: 0.25rem;
+	margin-bottom: 0;
+}
+
+.form-actions {
+	display: flex;
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+/* Multi-select checklist */
+.multi-select {
+	background: var(--color-background);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+	padding: 1rem;
+	max-height: 300px;
+	overflow-y: auto;
+	display: grid;
+	gap: 0.75rem;
+}
+
+.multi-select.large {
+	max-height: 500px;
+}
+
+.checkbox {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	gap: 0.5rem;
+	font-size: 0.9rem;
+}
+
+.checkbox input[type="checkbox"] {
+	width: auto;
+	margin: 0;
+	cursor: pointer;
+}
+
+.checkbox span {
+	flex: 1;
+}

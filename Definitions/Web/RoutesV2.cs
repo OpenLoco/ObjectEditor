@@ -15,6 +15,7 @@ public static class RoutesV2
 	// extra Objects routes
 	public const string File = "/file";
 	public const string Images = "/images";
+	public const string FirstImage = "/images/0";
 	public const string Missing = "/missing";
 
 	public const string ResourceRoute = "/{id}";

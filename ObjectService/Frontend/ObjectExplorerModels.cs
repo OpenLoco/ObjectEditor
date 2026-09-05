@@ -10,6 +10,7 @@ public sealed record ObjectBrowseQuery(
 	ObjectType? ObjectType,
 	ObjectSource? ObjectSource,
 	ObjectAvailability? Availability,
+	VehicleType? VehicleType = null,
 	int Page = 1,
 	int PageSize = 48);
 
@@ -40,13 +41,16 @@ public sealed record ObjectListItemViewModel(
 	DateOnly UploadedDate,
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
-	bool CanDownload)
+	bool CanDownload,
+	string? Description)
 {
 	public string ResolvedTitle => string.IsNullOrWhiteSpace(DisplayName) ? DatName ?? InternalName : DisplayName;
 
 	public string ApiUrl => $"{RoutesV2.Prefix}{RoutesV2.Objects}/{Id}";
 
 	public string DownloadUrl => $"{ApiUrl}{RoutesV2.File}";
+
+	public string PreviewImageUrl => $"{ApiUrl}{RoutesV2.FirstImage}";
 }
 
 public sealed record ObjectDetailViewModel(
@@ -62,10 +66,9 @@ public sealed record ObjectDetailViewModel(
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
 	DateOnly UploadedDate,
-	string? LicenceName,
-	string? LicenceText,
-	IReadOnlyList<string> Authors,
-	IReadOnlyList<string> Tags,
+	LicenceRefViewModel? Licence,
+	IReadOnlyList<NamedRefViewModel> Authors,
+	IReadOnlyList<NamedRefViewModel> Tags,
 	IReadOnlyList<string> ObjectPacks,
 	IReadOnlyList<ObjectFileEntryViewModel> Files,
 	IReadOnlyList<StringTableGroupViewModel> StringTableGroups,
@@ -101,3 +104,7 @@ public sealed record StringTableGroupViewModel(
 public sealed record StringTableTranslationViewModel(
 	LanguageId Language,
 	string Text);
+
+public sealed record NamedRefViewModel(UniqueObjectId Id, string Name);
+
+public sealed record LicenceRefViewModel(UniqueObjectId Id, string Name, string? Text);

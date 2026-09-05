@@ -1,0 +1,71 @@
+@page "/manage/users"
+@model ObjectService.Pages.Manage.Users.IndexModel
+@{
+	ViewData["Title"] = "Manage Users";
+}
+
+<div class="admin-page-container">
+	<div class="admin-page-header">
+		<h1>Manage Users</h1>
+	</div>
+
+	@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+	{
+		<div class="alert alert-success">@Model.SuccessMessage</div>
+	}
+
+	@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+	{
+		<div class="alert alert-error">@Model.ErrorMessage</div>
+	}
+
+	<div class="filter-panel">
+		<form method="get" class="filters">
+			<div class="filter-group">
+				<label for="search">Search</label>
+				<input type="text" id="search" name="search" placeholder="Search by username or email…" value="@Model.Search" />
+			</div>
+			<div class="filter-group">
+				<button type="submit" class="button button-primary">Filter</button>
+				<a href="@Url.Page("/Manage/Users/Index")" class="button button-secondary">Clear</a>
+			</div>
+		</form>
+	</div>
+
+	<div class="table-container">
+		@if (Model.Users.Count > 0)
+		{
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Username</th>
+						<th>Email</th>
+						<th>Roles</th>
+						<th class="actions-column">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var user in Model.Users)
+					{
+						<tr>
+							<td><strong>@user.UserName</strong></td>
+							<td>@user.Email</td>
+							<td>@(string.IsNullOrEmpty(user.Roles) ? "None" : user.Roles)</td>
+							<td class="actions-column">
+								<a asp-page="/Manage/Users/Edit" asp-route-id="@user.Id" class="button button-small button-secondary">Manage</a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+		else
+		{
+			<p class="empty-state">No users found.</p>
+		}
+	</div>
+
+	<a asp-page="/Manage/Index" class="button button-secondary">Back to Dashboard</a>
+</div>
+
+<link rel="stylesheet" href="~/css/manage.css" asp-append-version="true" />

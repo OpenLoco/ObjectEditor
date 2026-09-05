@@ -3,53 +3,54 @@ using ObjectService.RouteHandlers.TableHandlers;
 
 namespace ObjectService.RouteHandlers;
 
-public static class V1RouteBuilderExtensions
+public static class RouteBuilderExtensions
 {
-	public static IEndpointConventionBuilder MapV1Routes(this IEndpointRouteBuilder endpoints)
-	{
-		var routeGroup = endpoints.MapGroup(RoutesV1.Prefix);
-		ArgumentNullException.ThrowIfNull(routeGroup);
-
-		LegacyRouteHandler.MapRoutes(routeGroup);
-		return routeGroup;
-	}
-}
-
-public static class V2RouteBuilderExtensions
-{
-	public static IEndpointConventionBuilder MapV2Routes(this IEndpointRouteBuilder endpoints)
+	public static IEndpointConventionBuilder MapApiRoutes(this IEndpointRouteBuilder endpoints)
 	{
 		var v2 = endpoints.MapGroup(RoutesV2.Prefix);
-		_ = v2.MapServerRoutes();
-		_ = v2.MapAdminRoutes().RequireAuthorization();
+		var config = endpoints.ServiceProvider.GetRequiredService<IConfiguration>();
+
+		// Public read-only routes (guest + authenticated can read)
+		var publicGroup = v2.MapGroup(string.Empty);
+		MapHandler(new AuthorRouteHandler(), publicGroup, config);
+		MapHandler(new TagRouteHandler(), publicGroup, config);
+		MapHandler(new LicenceRouteHandler(), publicGroup, config);
+		MapHandler(new ObjectRouteHandler(), publicGroup, config);
+		MapHandler(new ObjectMissingRouteHandler(), publicGroup, config);
+		MapHandler(new ScenarioRouteHandler(), publicGroup, config);
+		MapHandler(new SC5FilePackRouteHandler(), publicGroup, config);
+		MapHandler(new ObjectPackRouteHandler(), publicGroup, config);
+
+		// Authenticated write routes for general data (any authenticated user)
+		var authGroup = v2.MapGroup(string.Empty).RequireAuthorization();
+		MapWriteHandler(new ObjectMissingRouteHandler(), authGroup, config);
+		MapWriteHandler(new ScenarioRouteHandler(), authGroup, config);
+		MapWriteHandler(new SC5FilePackRouteHandler(), authGroup, config);
+		MapWriteHandler(new ObjectPackRouteHandler(), authGroup, config);
+		// Curator write routes for metadata (requires Curator policy or Admin)
+		var curatorGroup = v2.MapGroup(string.Empty).RequireAuthorization("Curator");
+		MapWriteHandler(new AuthorRouteHandler(), curatorGroup, config);
+		MapWriteHandler(new TagRouteHandler(), curatorGroup, config);
+		MapWriteHandler(new LicenceRouteHandler(), curatorGroup, config);
+
+		// Object write routes (create/edit/delete require ownership or admin)
+		var ownerGroup = v2.MapGroup(string.Empty).RequireAuthorization("CanEditObject");
+		MapWriteHandler(new ObjectRouteHandler(), ownerGroup, config);
+
+		// Admin-only routes (both read and write)
+		var adminGroup = v2.MapGroup(string.Empty).RequireAuthorization("AdminOnly");
+		MapAllHandler(new UserRouteHandler(), adminGroup, config);
+		MapAllHandler(new RoleRouteHandler(), adminGroup, config);
 
 		return v2;
 	}
 
-	static IEndpointConventionBuilder MapServerRoutes(this IEndpointRouteBuilder endpoints)
-	{
-		var routeGroup = endpoints.MapGroup(string.Empty);
-		ArgumentNullException.ThrowIfNull(routeGroup);
+	private static void MapHandler(ITableRouteHandler handler, IEndpointRouteBuilder group, IConfiguration config)
+		=> BaseTableRouteHandler.MapRoutes(handler, group, config);
 
-		AuthorRouteHandler.MapRoutes(routeGroup);
-		TagRouteHandler.MapRoutes(routeGroup);
-		LicenceRouteHandler.MapRoutes(routeGroup);
-		ObjectRouteHandler.MapRoutes(routeGroup);
-		ScenarioRouteHandler.MapRoutes(routeGroup);
-		SC5FilePackRouteHandler.MapRoutes(routeGroup);
-		ObjectPackRouteHandler.MapRoutes(routeGroup);
+	private static void MapWriteHandler(ITableRouteHandler handler, IEndpointRouteBuilder group, IConfiguration config)
+		=> BaseTableRouteHandler.MapWriteRoutes(handler, group, config);
 
-		return routeGroup;
-	}
-
-	static IEndpointConventionBuilder MapAdminRoutes(this IEndpointRouteBuilder endpoints)
-	{
-		var routeGroup = endpoints.MapGroup(string.Empty);
-		ArgumentNullException.ThrowIfNull(routeGroup);
-
-		UserRouteHandler.MapRoutes(routeGroup);
-		RoleRouteHandler.MapRoutes(routeGroup);
-
-		return routeGroup;
-	}
+	private static void MapAllHandler(ITableRouteHandler handler, IEndpointRouteBuilder group, IConfiguration config)
+		=> BaseTableRouteHandler.MapAllRoutes(handler, group, config);
 }

@@ -1,758 +1,117 @@
-using Common;
-using Common.Logging;
-using Dat.Converters;
-using Dat.FileParsing;
 using Definitions;
-using Definitions.Database;
 using Definitions.DTO;
-using Definitions.DTO.Mappers;
-using Definitions.ObjectModels;
-using Definitions.ObjectModels.Graphics;
-using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
-using Definitions.SourceData;
 using Definitions.Web;
-using Index;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SixLabors.ImageSharp;
-using System.IO.Compression;
-using System.IO.Hashing;
+using ObjectService.Services;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class ObjectRouteHandler : ITableRouteHandler
 {
-	public static string BaseRoute => RoutesV2.Objects;
-	public static Delegate ListDelegate => ListAsync;
-	public static Delegate CreateDelegate => CreateDatAsync;
-	public static Delegate ReadDelegate => ReadAsync;
-	public static Delegate UpdateDelegate => UpdateAsync;
-	public static Delegate DeleteDelegate => DeleteAsync;
+	public string BaseRoute => RoutesV2.Objects;
+	public Delegate ListDelegate => ListAsync;
+	public Delegate CreateDelegate => CreateDatAsync;
+	public Delegate ReadDelegate => ReadAsync;
+	public Delegate UpdateDelegate => UpdateAsync;
+	public Delegate DeleteDelegate => DeleteAsync;
 
-	public static void MapRoutes(IEndpointRouteBuilder parentRoute)
-		=> BaseTableRouteHandler.MapRoutes<ObjectRouteHandler>(parentRoute);
-
-	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
+	public void MapRoutes(IEndpointRouteBuilder parentRoute)
 	{
-		BaseTableRouteHandler.MapRoutes<ObjectMissingRouteHandler>(parentRoute);
+		var config = parentRoute.ServiceProvider.GetRequiredService<IConfiguration>();
+		BaseTableRouteHandler.MapRoutes(this, parentRoute, config);
+	}
 
+	public void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
+	{
 		var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
 		_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
+		_ = resourceRoute.MapGet(RoutesV2.FirstImage, GetObjectFirstImageAsync);
 	}
 
-	//static async Task<IResult> CreateAsync(DtoObjectDescriptor request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
-	//{
-	//	logger.LogInformation("[CreateAsync] Upload requested");
-
-	//	var dtoDatObjectEntry = request.DatObjects.First();
-	//	if (string.IsNullOrEmpty(dtoDatObjectEntry.DatBytesAsBase64))
-	//	{
-	//		return Results.BadRequest($"{nameof(dtoDatObjectEntry.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
-	//	}
-
-	//	byte[]? datFileBytes;
-	//	try
-	//	{
-	//		datFileBytes = Convert.FromBase64String(dtoDatObjectEntry.DatBytesAsBase64);
-	//	}
-	//	catch (FormatException ex)
-	//	{
-	//		return Results.BadRequest(ex.Message);
-	//	}
-
-	//	if (datFileBytes == null || datFileBytes.Length == 0)
-	//	{
-	//		return Results.BadRequest($"Unable to decode {nameof(dtoDatObjectEntry.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.");
-	//	}
-
-	//	if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
-	//	{
-	//		return Results.BadRequest("Unable to accept file sizes > 5MB");
-	//	}
-
-	//	var ssrLogger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("SawyerStreamReader");
-	//	if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
-	//	{
-	//		return Results.BadRequest("Provided data had invalid dat file headers");
-	//	}
-
-	//	if (hdrs.S5.IsVanilla())
-	//	{
-	//		return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
-	//	}
-
-	//	if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
-	//	{
-	//		return Results.BadRequest("Invalid DAT file.");
-	//	}
-
-	//	if (db.DoesObjectExist(hdrs.S5, out var existingObject))
-	//	{
-	//		return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
-	//	}
-
-	//	// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
-
-	//	var sfm = sp.GetRequiredService<ServerFolderManager>();
-	//	var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
-
-	//	if (LocoObject == null)
-	//	{
-	//		return Results.BadRequest("Could not parse DAT object from request");
-
-	//		// cannot proceed
-	//	}
-
-	//	var uuid = Guid.NewGuid();
-	//	var saveFileName = Path.Combine(sfm.ObjectsCustomFolder, $"{uuid}.dat");
-	//	File.WriteAllBytes(saveFileName, datFileBytes);
-
-	//	logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
-
-	//	var creationTime = request.CreatedDate;
-
-	//	VehicleType? vehicleType = null;
-	//	if (LocoObject.Object is VehicleObject veh)
-	//	{
-	//		vehicleType = veh.Type;
-	//	}
-
-	//	// make object header
-	//	var tblObject = new TblObject()
-	//	{
-	//		Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name. this is NOT unique
-	//		Description = string.Empty,
-	//		ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
-	//		ObjectType = hdrs.S5.ObjectType,
-	//		VehicleType = vehicleType,
-	//		Availability = request.Availability,
-	//		CreatedDate = creationTime,
-	//		ModifiedDate = null,
-	//		UploadedDate = DateOnly.Now,
-	//		Authors = [],
-	//		Tags = [],
-	//		ObjectPacks = [],
-	//		DatObjects = [],
-	//		StringTable = [],
-	//		SubObjectId = 0,
-	//		Licence = null,
-	//	};
-
-	//	// must save here to obtain the id for the new object, to link the dependent tables
-	//	_ = await db.Objects.AddAsync(tblObject);
-	//	_ = await db.SaveChangesAsync();
-
-	//	// make string table
-	//	foreach (var s in LocoObject.StringTable.Table)
-	//	{
-	//		foreach (var t in s.Value)
-	//		{
-	//			tblObject.StringTable.Add(new TblStringTableRow()
-	//			{
-	//				Name = s.Key,
-	//				Language = t.Key,
-	//				Text = t.Value,
-	//				ObjectId = tblObject.Id,
-	//			});
-	//		}
-	//	}
-
-	//	// make dat objects
-	//	var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-	//	tblObject.DatObjects.Add(new TblDatObject()
-	//	{
-	//		ObjectId = tblObject.Id,
-	//		DatName = DatFileInfo.S5Header.Name,
-	//		DatChecksum = DatFileInfo.S5Header.Checksum,
-	//		xxHash3 = xxHash3,
-	//		Object = tblObject,
-	//	});
-
-	//	// make sub object
-	//	_ = await DbSubObjectHelper.AddOrUpdate(db, tblObject, LocoObject.Object);
-
-	//	// save again
-	//	_ = await db.SaveChangesAsync();
-
-	//	// update server index
-	//	sfm.ObjectIndex.AddEntry(
-	//		new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
-
-	//	_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
-	//	return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
-	//}
-
-	static async Task<IResult> CreateDatAsync(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+	async Task<IResult> CreateDatAsync([FromBody] DtoObjectPost request, [FromServices] IObjectUploadService upload, CancellationToken ct)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[CreateAsync] Upload requested");
-
-		if (string.IsNullOrEmpty(request.DatBytesAsBase64))
-		{
-			return Results.Problem($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.", statusCode: StatusCodes.Status400BadRequest);
-		}
-
-		byte[]? datFileBytes;
-		try
-		{
-			datFileBytes = Convert.FromBase64String(request.DatBytesAsBase64);
-		}
-		catch (FormatException ex)
-		{
-			return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
-		}
-
-		if (datFileBytes == null || datFileBytes.Length == 0)
-		{
-			return Results.Problem($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.", statusCode: StatusCodes.Status400BadRequest);
-		}
-
-		if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
-		{
-			return Results.Problem($"Uploads are limited to {ServerLimits.MaximumUploadFileSize / (1024 * 1024)}MB.", statusCode: StatusCodes.Status413PayloadTooLarge);
-		}
-
-		var ssrLogger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("SawyerStreamReader");
-		if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
-		{
-			return Results.Problem("Provided data had invalid dat file headers", statusCode: StatusCodes.Status400BadRequest);
-		}
-
-		if (hdrs.S5.IsVanilla())
-		{
-			return Results.Problem("Uploading vanilla objects is not allowed.", statusCode: StatusCodes.Status400BadRequest);
-		}
-
-		if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
-		{
-			return Results.Problem("Invalid DAT file.", statusCode: StatusCodes.Status400BadRequest);
-		}
-
-		// todo: check the nested DAT objects and update appropriately, even if this top object exists already
-		var objName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}";
-		var existing = await db.Objects.FirstOrDefaultAsync(x => x.Name == objName);
-
-		if (existing != null)
-		{
-			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existing!.UploadedDate}");
-		}
-
-		// Check if this object was previously marked as missing
-		var missingEntry = await db.ObjectsMissing
-			.FirstOrDefaultAsync(x => x.DatName == hdrs.S5.Name && x.DatChecksum == hdrs.S5.Checksum);
-
-		if (missingEntry != null)
-		{
-			// we've found a missing object! delete it from the missing objects table since we're now adding the real object
-			// see #196
-			_ = db.ObjectsMissing.Remove(missingEntry);
-			_ = await db.SaveChangesAsync();
-
-			logger.LogInformation("[CreateAsync] Missing object found! DatName={datName} DatChecksum={datChecksum} MissingId={missingId}", missingEntry.DatName, missingEntry.DatChecksum, missingEntry.Id);
-		}
-
-		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))
-		{
-			// todo: if we get here - the object doesn't exist but the dat object does - we should then link them
-			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
-		}
-
-		// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
-
-		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObject(datFileBytes, ssrLogger);
-
-		if (LocoObject == null)
-		{
-			return Results.Problem("Could not parse DAT object from request", statusCode: StatusCodes.Status400BadRequest);
-
-			// cannot proceed
-		}
-
-		var uuid = Guid.NewGuid();
-		var saveFileName = Path.Combine(sfm.ObjectsCustomFolder, $"{uuid}.dat");
-		File.WriteAllBytes(saveFileName, datFileBytes);
-
-		logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
-
-		VehicleType? vehicleType = null;
-		if (LocoObject.Object is VehicleObject veh)
-		{
-			vehicleType = veh.Type;
-		}
-
-		// make object header
-		var tblObject = new TblObject()
-		{
-			Name = objName, // same as DB seeder name. this is NOT unique
-			Description = string.Empty,
-			ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
-			ObjectType = hdrs.S5.ObjectType.Convert(),
-			VehicleType = vehicleType,
-			Availability = request.InitialAvailability,
-			CreatedDate = request.CreatedDate,
-			ModifiedDate = request.ModifiedDate,
-			UploadedDate = DateOnly.UtcToday,
-			Authors = [],
-			Tags = [],
-			ObjectPacks = [],
-			DatObjects = [],
-			StringTable = [],
-			SubObjectId = 0,
-			Licence = null,
-		};
-
-		// must save here to obtain the id for the new object, to link the dependent tables
-		_ = await db.Objects.AddAsync(tblObject);
-		_ = await db.SaveChangesAsync();
-
-		// make string table
-		foreach (var s in LocoObject.StringTable.Table)
-		{
-			foreach (var t in s.Value)
-			{
-				tblObject.StringTable.Add(new TblStringTableRow()
-				{
-					Name = s.Key,
-					Language = t.Key,
-					Text = t.Value,
-					ObjectId = tblObject.Id,
-				});
-			}
-		}
-
-		// make dat objects
-		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-		tblObject.DatObjects.Add(new TblDatObject()
-		{
-			ObjectId = tblObject.Id,
-			DatName = DatFileInfo.S5Header.Name,
-			DatChecksum = DatFileInfo.S5Header.Checksum,
-			xxHash3 = xxHash3,
-			Object = tblObject,
-		});
-
-		// make sub object
-		_ = await DbSubObjectHelper.AddOrUpdate(db, tblObject, LocoObject.Object);
-
-		// save again
-		_ = await db.SaveChangesAsync();
-
-		// update server index
-		sfm.ObjectIndex.AddEntry(
-			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
-
-		_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
-
-		var response = new ExpandedTbl<TblObject, TblObjectPack>(tblObject, [], [], []).ToDtoDescriptor();
-		return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", response);
+		var result = await upload.UploadDatAsync(request, ct);
+		return result.Success ? Results.Created($"{BaseRoute}/{result.Descriptor!.Id}", result.Descriptor) : Results.Problem(result.ErrorMessage, statusCode: result.StatusCode);
 	}
 
-	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
+	async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
-		logger.LogInformation("[ReadAsync] Read requested for object {ObjectId}", id);
-
-		var eObj = await db.Objects
-			.Where(x => x.Id == id)
-			.Include(x => x.Licence)
-			.Include(x => x.DatObjects)
-			.Include(x => x.StringTable)
-			.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
-			.SingleOrDefaultAsync(cancellationToken);
-
-		//var subObject = DbSubObjectHelper.GetDbSubForType(db, eObj.Object.ObjectType, id);
-		var descriptor = eObj?.ToDtoDescriptor(/*subObject*/);
-
-		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		return ReturnObject(descriptor, sfm, logger);
+		logger.LogInformation("[Read] Object {ObjectId}", id);
+		var d = await query.GetByIdAsync(id, ct);
+		return d != null ? Results.Ok(d) : Results.NotFound();
 	}
 
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectPostResponse request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
+	async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectPostResponse request, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
-		logger.LogInformation("[UpdateAsync] Update requested for object {ObjectId}", id);
-
-		var obj = await db.Objects
-			.Include(x => x.Licence)
-			.Include(x => x.Authors)
-			.Include(x => x.Tags)
-			.Include(x => x.ObjectPacks)
-			.Include(x => x.DatObjects)
-			.Include(x => x.StringTable)
-			.Where(x => x.Id == id)
-			.SingleOrDefaultAsync(cancellationToken);
-
-		if (obj == null)
-		{
-			return Results.NotFound($"Object with id {id} not found");
-		}
-
-		// Update editable metadata fields
-		obj.Description = request.Description;
-		obj.CreatedDate = request.CreatedDate;
-		obj.ModifiedDate = request.ModifiedDate;
-		obj.Availability = request.Availability;
-
-		// Update licence navigation property
-		if (request.Licence == null)
-		{
-			obj.Licence = null;
-		}
-		else
-		{
-			var licenceEntity = await db.Licences
-				.SingleOrDefaultAsync(l => l.Id == request.Licence.Id, cancellationToken);
-
-			obj.Licence = licenceEntity;
-		}
-
-		// Update authors collection
-		if (request.Authors == null || request.Authors.Count == 0)
-		{
-			obj.Authors.Clear();
-		}
-		else
-		{
-			var authorIds = request.Authors
-				.Select(a => a.Id)
-				.ToList();
-
-			var authors = await db.Authors
-				.Where(a => authorIds.Contains(a.Id))
-				.ToListAsync(cancellationToken);
-
-			obj.Authors.Clear();
-			foreach (var author in authors)
-			{
-				obj.Authors.Add(author);
-			}
-		}
-
-		// Update tags collection
-		if (request.Tags == null || request.Tags.Count == 0)
-		{
-			obj.Tags.Clear();
-		}
-		else
-		{
-			var tagIds = request.Tags
-				.Select(t => t.Id)
-				.ToList();
-
-			var tags = await db.Tags
-				.Where(t => tagIds.Contains(t.Id))
-				.ToListAsync(cancellationToken);
-
-			obj.Tags.Clear();
-			foreach (var tag in tags)
-			{
-				obj.Tags.Add(tag);
-			}
-		}
-
-		// Update object packs collection
-		if (request.ObjectPacks == null || request.ObjectPacks.Count == 0)
-		{
-			obj.ObjectPacks.Clear();
-		}
-		else
-		{
-			var packIds = request.ObjectPacks
-				.Select(p => p.Id)
-				.ToList();
-
-			var packs = await db.ObjectPacks
-				.Where(p => packIds.Contains(p.Id))
-				.ToListAsync(cancellationToken);
-
-			obj.ObjectPacks.Clear();
-			foreach (var pack in packs)
-			{
-				obj.ObjectPacks.Add(pack);
-			}
-		}
-		// Save changes
-		_ = await db.SaveChangesAsync(cancellationToken);
-
-		logger.LogInformation("[UpdateAsync] Successfully updated object {ObjectId}", id);
-
-		// Return updated object
-		var expandedObj = new ExpandedTbl<TblObject, TblObjectPack>(obj, obj.Authors, obj.Tags, obj.ObjectPacks);
-		var descriptor = expandedObj.ToDtoDescriptor();
-		return Results.Ok(descriptor);
+		logger.LogInformation("[Update] Object {ObjectId}", id);
+		var r = await query.UpdateAsync(id, request, ct);
+		return r != null ? Results.Ok(r) : Results.NotFound();
 	}
 
-	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
+	async Task<IResult> DeleteAsync([FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
-		logger.LogInformation("[DeleteAsync] Delete requested for object {ObjectId}", id);
-		// for now we could soft-delete by marking an object as Unavailable?
-		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented), cancellationToken);
+		logger.LogInformation("[Delete] Not implemented");
+		return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
 	}
 
-	static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
+	async Task<IResult> ListAsync(HttpContext context, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[ListAsync] List requested for object");
-
-		if (context.Request.Query.Count == 0)
-		{
-			return Results.Ok(
-				await db.Objects
-					.Include(x => x.DatObjects)
-					.Select(x => x.ToDtoEntry())
-					.ToListAsync());
-		}
-		else
-		{
-			logger.LogInformation("[ListAsync] Request had {ParamCount} query params {Params}", context.Request.Query.Count, context.Request.Query.ToString());
-
-			var query = db.Objects.AsQueryable();
-			var filters = context.Request.Query;
-
-			if (!filters.TryGetValue("objectType", out var objectTypeStr) || !Enum.TryParse(objectTypeStr, out ObjectType objectType))
-			{
-				return Results.BadRequest();
-			}
-
-			query = query.Where(x => x.ObjectType == objectType);
-
-			var locoPropertiesForObject = ObjectTypeMapping
-				.TypeToStruct(objectType)
-				.GetProperties();
-
-			var metadataPropertiesForObject = typeof(Definitions.SourceData.ObjectMetadata).GetProperties();
-
-			var allProperties = locoPropertiesForObject.Union(metadataPropertiesForObject);
-
-			foreach (var filter in filters.Where(x => x.Key != "objectType" && !string.IsNullOrEmpty(x.Key) && !string.IsNullOrEmpty(x.Value)))
-			{
-				var key = filter.Key;
-				var value = filter.Value.FirstOrDefault();
-
-				if (!allProperties.Any(x => x.Name == key))
-				{
-					continue; // Skip disallowed keys
-				}
-
-				//query = query.Where("{key} == @0", value);
-
-				//switch (key)
-				//{
-				//	case "name":
-				//		query = query.Where("Name.Contains(@0)", value);
-				//		break;
-				//	case "age":
-				//		if (int.TryParse(value, out var age))
-				//		{
-				//			query = query.Where("Age == @0", age);
-				//		}
-				//		break;
-				//	case "category":
-				//		query = query.Where("Category == @0", value);
-				//		break;
-				//}
-			}
-
-			var results = await query.ToListAsync(cancellationToken);
-			return Results.Ok(results);
-
-			// transform query into linq/db query
-
-			// s5 header query params
-			// object-specific query params
-			// metadata query params
-
-			//return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
-		}
+		logger.LogInformation("[List] Objects");
+		return Results.Ok(await query.ListAsync(context, ct));
 	}
 
-	// eg: http://localhost:7229/v2/objects/{id}/images
-	static async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ServerFolderManager sfm, [FromServices] PaletteMap paletteMap, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
+	async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
-		logger.LogInformation("[GetObjectImages] Get requested for object {ObjectId}", id);
-
-		var obj = await db.Objects
-			.AsNoTracking()
-			.Include(x => x.DatObjects)
-			.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-		if (obj == null)
+		var descriptor = await query.GetByIdAsync(id, ct);
+		if (descriptor == null)
 		{
 			return Results.NotFound();
 		}
 
-		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "Indexed object is a vanilla object.");
+			logger.LogWarning("Object {ObjectId} cannot expose images due to source/availability restrictions", id);
 			return Results.Forbid();
 		}
 
-		if (obj.Availability == ObjectAvailability.Unavailable)
+		var zip = await query.GetImagesZipAsync(id, ct);
+		return zip != null ? Results.File(zip, "application/zip", $"{id}_images.zip") : Results.NotFound();
+	}
+
+	async Task<IResult> GetObjectFirstImageAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
+	{
+		var descriptor = await query.GetByIdAsync(id, ct);
+		if (descriptor == null)
 		{
-			logger.LogWarning("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot expose images", obj.Id, obj.Name);
+			return Results.NotFound();
+		}
+
+		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+		{
+			logger.LogWarning("Object {ObjectId} cannot expose images due to source/availability restrictions", id);
 			return Results.Forbid();
 		}
 
-		var dat = obj.DatObjects.FirstOrDefault();
-		if (dat == null)
-		{
-			logger.LogWarning("Object {ObjectId} has no DAT entries to load image data from", id);
-			return Results.NotFound();
-		}
-
-		if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index) || string.IsNullOrWhiteSpace(index?.FileName))
-		{
-			logger.LogWarning("Object {ObjectId} DAT {DatName} was not found in the server object index", id, dat.DatName);
-			return Results.NotFound();
-		}
-
-		var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.FileName!);
-		if (!File.Exists(pathOnDisk))
-		{
-			logger.LogWarning("Indexed object file for {ObjectId} was not found on disk at {PathOnDisk}", id, pathOnDisk);
-			return Results.NotFound();
-		}
-
-		var dummyLogger = new Logger();
-		var (_, locoObject) = SawyerStreamReader.LoadFullObject(pathOnDisk, dummyLogger, true);
-		if (locoObject == null)
-		{
-			logger.LogWarning("Object {ObjectId} could not be loaded from {PathOnDisk} to render images", id, pathOnDisk);
-			return Results.NotFound();
-		}
-
-		await using var memoryStream = new MemoryStream();
-		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
-		{
-			var count = 0;
-			foreach (var g1 in locoObject.ImageTable?.GraphicsElements ?? [])
-			{
-				cancellationToken.ThrowIfCancellationRequested();
-
-				if (!paletteMap.TryConvertG1ToRgba32Bitmap(g1, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image) || image == null)
-				{
-					continue;
-				}
-
-				await using (var pngStream = new MemoryStream())
-				{
-					await image.SaveAsPngAsync(pngStream);
-					pngStream.Position = 0;
-
-					var zipEntry = zipArchive.CreateEntry(count++ + ".png", CompressionLevel.Optimal);
-					await using (var zipEntryStream = zipEntry.Open())
-					{
-						await pngStream.CopyToAsync(zipEntryStream);
-					}
-				}
-			}
-		}
-
-		memoryStream.Position = 0; // Reset stream position for reading
-		var bytes = memoryStream.ToArray();
-		return Results.File(bytes, "application/zip", "images.zip");
+		var png = await query.GetFirstImagePngAsync(id, ct);
+		return png != null ? Results.File(png, "image/png") : Results.NotFound();
 	}
 
-	// eg: https://localhost:7230/objects/114
-	static async Task<IResult> GetObjectFileAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+	async Task<IResult> GetObjectFileAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, CancellationToken ct)
 	{
-		logger.LogInformation("[GetObjectFile] Get requested for object {ObjectId}", id);
-
-		var obj = await db.Objects
-			.Include(x => x.DatObjects)
-			.Where(x => x.Id == id)
-			.SingleOrDefaultAsync();
-
-		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		return ReturnFile(obj, sfm, logger);
-	}
-
-	static IResult ReturnObject(DtoObjectPostResponse? dtoDescriptor, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
-	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "[ReturnObject]");
-
-		if (dtoDescriptor == null)
+		var descriptor = await query.GetByIdAsync(id, ct);
+		if (descriptor == null)
 		{
 			return Results.NotFound();
 		}
 
-		if (dtoDescriptor.Availability == ObjectAvailability.Unavailable)
+		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			logger.LogError("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", dtoDescriptor.Id, dtoDescriptor);
 			return Results.Forbid();
 		}
 
-		foreach (var dat in dtoDescriptor.DatObjects)
-		{
-			if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
-			{
-				logger.LogWarning("Object {datFile} didn't exist in the object index", dat);
-				continue;
-			}
-
-			if (entry.FileName == null)
-			{
-				logger.LogWarning("Object {datFile} has a null filename - suggest re-indexing the current folder", dat);
-				continue;
-			}
-
-			var path = Path.Combine(sfm.ObjectsFolder, entry.FileName);
-
-			if (!File.Exists(path))
-			{
-				logger.LogWarning("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
-				continue;
-			}
-
-			if (dtoDescriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
-			{
-				Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "User attempted to download a vanilla object");
-				dat.DatBytesAsBase64 = null;
-			}
-			else
-			{
-				dat.DatBytesAsBase64 = Convert.ToBase64String(File.ReadAllBytes(path));
-			}
-		}
-
-		return Results.Ok(dtoDescriptor);
-	}
-
-	static IResult ReturnFile(TblObject? obj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
-	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "[ReturnFile]");
-
-		if (obj == null)
-		{
-			return Results.NotFound();
-		}
-
-		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
-		{
-			Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "User attempted to download a vanilla object");
-			return Results.Forbid();
-		}
-
-		var dat = obj.DatObjects.First();
-		if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
-		{
-			logger.LogDebug("Object {datFile} didn't exist in the object index", dat);
-			return Results.NotFound();
-		}
-
-		if (string.IsNullOrEmpty(entry.FileName))
-		{
-			logger.LogWarning("Object {datFile} has a null filename - suggest re-indexing the current folder", dat);
-			return Results.NotFound();
-		}
-
-		var path = Path.Combine(sfm.ObjectsFolder, entry.FileName);
-		const string contentType = "application/octet-stream";
-
-		if (!File.Exists(path))
-		{
-			logger.LogWarning("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
-		}
-
-		return Results.File(path, contentType, Path.GetFileName(path));
+		var path = await query.GetFilePathAsync(id, ct);
+		return path != null && File.Exists(path) ? Results.File(path, "application/octet-stream", Path.GetFileName(path)) : Results.NotFound();
 	}
 }

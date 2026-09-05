@@ -44,6 +44,11 @@ public sealed class ObjectExplorerService
 			query = query.Where(x => x.Availability == request.Availability.Value);
 		}
 
+		if (request.VehicleType.HasValue)
+		{
+			query = query.Where(x => x.VehicleType == request.VehicleType.Value);
+		}
+
 		if (search != null)
 		{
 			query = query.Where(x =>
@@ -121,10 +126,9 @@ public sealed class ObjectExplorerService
 			obj.CreatedDate,
 			obj.ModifiedDate,
 			obj.UploadedDate,
-			obj.Licence?.Name,
-			obj.Licence?.Text,
-			[.. obj.Authors.Select(x => x.Name).OrderBy(x => x)],
-			[.. obj.Tags.Select(x => x.Name).OrderBy(x => x)],
+			obj.Licence is not null ? new LicenceRefViewModel(obj.Licence.Id, obj.Licence.Name, obj.Licence.Text) : null,
+			[.. obj.Authors.Select(x => new NamedRefViewModel(x.Id, x.Name)).OrderBy(x => x.Name)],
+			[.. obj.Tags.Select(x => new NamedRefViewModel(x.Id, x.Name)).OrderBy(x => x.Name)],
 			[.. obj.ObjectPacks.Select(x => x.Name).OrderBy(x => x)],
 			files,
 			stringTableGroups,
@@ -149,7 +153,8 @@ public sealed class ObjectExplorerService
 			row.UploadedDate,
 			row.CreatedDate,
 			row.ModifiedDate,
-			canDownload);
+			canDownload,
+			row.Description);
 	}
 
 	ObjectFileEntryViewModel BuildFileEntry(DtoObjectPostResponse obj, DtoDatObjectEntry dat)
@@ -205,6 +210,14 @@ public sealed class ObjectExplorerService
 		var httpContext = _httpContextAccessor.HttpContext ?? throw new InvalidOperationException("An active HTTP request is required to create the ObjectService API client.");
 		var client = _httpClientFactory.CreateClient();
 		client.BaseAddress = new Uri($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}/");
+
+		// Forward the bearer token from the access_token cookie to API calls
+		var accessToken = httpContext.Request.Cookies["access_token"];
+		if (!string.IsNullOrEmpty(accessToken))
+		{
+			client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+		}
+
 		return client;
 	}
 

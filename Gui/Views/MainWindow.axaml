@@ -42,26 +42,7 @@
 	<Window.DataTemplates>
 		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
 		<DataTemplate DataType="old5:TileElement">
-			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="*"/>
-				</Grid.ColumnDefinitions>
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
-				<TextBlock Grid.Row="0" Grid.Column="0" Margin="4" VerticalAlignment="Center" Text="Type"/>
-				<TextBox Grid.Row="0" Grid.Column="1" Margin="4" VerticalAlignment="Center" Text="{Binding Type}"/>
-				<TextBlock Grid.Row="1" Grid.Column="0" Margin="4" VerticalAlignment="Center" Text="Flags"/>
-				<TextBox Grid.Row="1" Grid.Column="1" Margin="4" VerticalAlignment="Center" IsReadOnly="True" Text="{Binding Flags}"/>
-				<TextBlock Grid.Row="2" Grid.Column="0" Margin="4" VerticalAlignment="Center" Text="BaseZ"/>
-				<TextBox Grid.Row="2" Grid.Column="1" Margin="4" VerticalAlignment="Center" IsReadOnly="True" Text="{Binding BaseZ}"/>
-				<TextBlock Grid.Row="3" Grid.Column="0" Margin="4" VerticalAlignment="Center" Text="ClearZ"/>
-				<TextBox Grid.Row="3" Grid.Column="1" Margin="4" VerticalAlignment="Center" IsReadOnly="True" Text="{Binding ClearZ}"/>
-			</Grid>
+			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False"/>
 		</DataTemplate>
 		<DataTemplate DataType="vm:AudioViewModel">
 			<Border BorderThickness="1">

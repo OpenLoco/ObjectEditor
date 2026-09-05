@@ -175,7 +175,7 @@ public record GameStateScenarioC(
 	[property: LocoStructOffset(0xC000), LocoArrayLength((int)Limits.kMaxWaves), Browsable(false)] Wave[] Waves,
 	[property: LocoStructOffset(0xC180), LocoArrayLength((int)Limits.kMaxUserStrings * 32), Browsable(false)] uint8_t[] UserStrings,
 	[property: LocoStructOffset(0x1C180), LocoArrayLength((int)(Limits.kMaxVehicles * Limits.kMaxRoutingsPerVehicle)), Browsable(false)] uint16_t[] Routings,
-	[property: LocoStructOffset(0x3B580), LocoArrayLength((int)Limits.kMaxWaves), Browsable(false)] uint8_t[] Orders
+	[property: LocoStructOffset(0x3B580), LocoArrayLength((int)Limits.kMaxOrders), Browsable(false)] uint8_t[] Orders
 ) : ILocoStruct
 {
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

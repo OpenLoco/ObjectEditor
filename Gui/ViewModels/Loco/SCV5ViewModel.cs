@@ -58,8 +58,6 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 		: base(currentFile, editorContext)
 	{
 		RequiredObjects = new RequiredObjectsListViewModel(editorContext);
-		SaveIsVisible = false;
-		SaveAsIsVisible = false;
 		Load();
 		DownloadMissingObjectsToGameObjDataCommand = ReactiveCommand.CreateFromTask<GameObjDataFolder>(DownloadMissingObjects);
 	}
@@ -86,7 +84,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			.Select(x => x.Convert());
 		RequiredObjects.Replace(headers);
 
-		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1.Convert())).OrderBy(x => x.Name);
+		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Header.Convert())).OrderBy(x => x.Name);
 		PackedObjects = [with([.. po])];
 
 		_ = this.WhenAnyValue(o => o.TileElementX)
@@ -315,12 +313,49 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	}
 
 	public override void Save()
-		=> Logger.LogWarning("Save is not currently implemented");
-
-	public override Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
-		Logger.LogWarning("SaveAs is not currently implemented");
-		return Task.FromResult<string?>(null);
+		var savePath = CurrentFile.FileLocation == FileLocation.Local
+			? CurrentFile.FileName
+			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".sv5"));
+
+		if (string.IsNullOrEmpty(savePath))
+		{
+			Logger.LogError("Cannot save scenario/save file because save path is empty");
+			return;
+		}
+
+		SaveCore(savePath);
+	}
+
+	public override async Task<string?> SaveAsAsync(SaveParameters saveParameters)
+	{
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.SCV5FileTypes);
+		if (saveFile == null)
+		{
+			return null;
+		}
+
+		var savePath = saveFile.Path.LocalPath;
+		SaveCore(savePath);
+		return savePath;
+	}
+
+	void SaveCore(string filename)
+	{
+		if (Model == null)
+		{
+			Logger.LogError("Cannot save scenario/save file because model is null");
+			return;
+		}
+
+		var newFile = Model with
+		{
+			RequiredObjects = [.. RequiredObjects.Items.Select(x => x.Convert())],
+		};
+
+		var bytes = newFile.Write();
+		File.WriteAllBytes(filename, bytes);
+		Logger.LogInformation("Saved scenario/save file to {Filename}", filename);
 	}
 
 	//public override void Save()

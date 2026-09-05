@@ -33,15 +33,15 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		CompatibleCargo1 = new(model.CompatibleCargoCategories[0], model.MaxCargo[0]);
 		CompatibleCargo2 = new(model.CompatibleCargoCategories[1], model.MaxCargo[1]);
 		CargoTypeSpriteOffsets = [with([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))])];
-		StartSounds = [with(model.StartSounds)];
-		var_135 = [with(model.var_135)];
 		RoadOrTrackType = model.RoadOrTrackType;
 		RackRail = model.RackRail;
 
 		SimpleMotorSound = model.SimpleMotorSound ?? new SimpleMotorSound();
 		FrictionSound = model.FrictionSound ?? new FrictionSound();
 		GearboxMotorSound = model.GearboxMotorSound ?? new GearboxMotorSound();
-		Sound = model.Sound;
+		StartSounds = [with(model.StartSounds)];
+		DrivingSound = model.DrivingSound;
+		CrossingSounds = [with(model.CrossingSounds)];
 
 		#region Road/Track Type Binding
 
@@ -62,8 +62,8 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 				this.RaisePropertyChanged(nameof(GearboxMotorSound));
 			});
 
-		_ = this.WhenAnyValue(x => x.Sound)
-			.Subscribe((_) => model.Sound = Sound);
+		_ = this.WhenAnyValue(x => x.DrivingSound)
+			.Subscribe((_) => model.DrivingSound = DrivingSound);
 
 		_ = this.WhenAnyValue(x => x.SimpleMotorSound)
 			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
@@ -352,7 +352,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	[Category("Sound")]
 	[Reactive]
 	[PropertyVisibilityCondition(nameof(IsDrivingSoundTypeSet), true)]
-	public ObjectModelHeader? Sound { get; set; }
+	public ObjectModelHeader? DrivingSound { get; set; }
 
 	[Category("Sound")]
 	[PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.Friction)]
@@ -368,11 +368,14 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	public GearboxMotorSound GearboxMotorSound { get; set; }
 
 	[Category("Sound")]
-	[Description("The sound the vehicle makes when starting or crossing a rail crossing. Essentially it's \"horn\"")]
+	[Description("The sounds the vehicle can make when starting. Essentially it's \"horn\"")]
+	[Length(0, 2)]
 	public BindingList<ObjectModelHeader> StartSounds { get; init; }
 
-	[Category("<unknown>")]
-	public BindingList<uint8_t> var_135 { get; init; }
+	[Category("Sound")]
+	[Description("The sounds the vehicle can make when crossing a rail crossing. Essentially it's \"whistle\"")]
+	[Length(0, 1)]
+	public BindingList<ObjectModelHeader> CrossingSounds { get; init; }
 
 	void OnCompatibleCargo1Changed(object? sender, NotifyCollectionChangedEventArgs e)
 	{

@@ -1,0 +1,40 @@
+@page "/account/login"
+@model ObjectService.Pages.Account.LoginModel
+@{
+	ViewData["Title"] = "Log in";
+}
+
+<section class="panel auth-panel">
+	<h1>Log in</h1>
+	<p class="lede">Sign in to manage your objects.</p>
+
+	@if (!ViewData.ModelState.IsValid)
+	{
+		<div class="validation-summary">
+			<ul>
+				@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+				{
+					<li>@error.ErrorMessage</li>
+				}
+			</ul>
+		</div>
+	}
+
+	<form method="post" class="auth-form">
+		<label class="field">
+			<span>Email</span>
+			<input type="email" name="Email" asp-for="Email" required placeholder="you@example.com" />
+		</label>
+		<label class="field">
+			<span>Password</span>
+			<input type="password" name="Password" asp-for="Password" required placeholder="Enter your password" />
+		</label>
+		<div class="form-actions">
+			<button type="submit" class="button button-primary">Log in</button>
+		</div>
+	</form>
+
+	<p class="auth-alt">
+		Don't have an account? <a asp-page="/Account/Register">Register</a>
+	</p>
+</section>

@@ -4,6 +4,7 @@
 using Common;
 using Dat.Data;
 using Dat.FileParsing;
+using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Cargo;
@@ -25,9 +26,12 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		public const int MaxUnionSoundStructLength = 0x1B;
 		public const int MaxBodySprites = 4;
 		public const int MaxBogieSprites = 2;
+		public const int MaxCrossingSounds = 1;
 		public const int MaxStartSounds = 3;
 		public const int MaxEmitterAnimations = 2;
 		public const int Var135PadSize = 0x15A - 0x135;
+		public const uint8_t StartSoundsMask = 0x7F; // 127
+		public const uint8_t StartSoundsCrossingWhistleMask = 1 << 7; // 128
 	}
 
 	public static class StructSizes
@@ -145,13 +149,27 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// driving sound
 		if (model.DrivingSoundType != DrivingSoundType.None)
 		{
-			model.Sound = br.ReadS5Header();
+			model.DrivingSound = br.ReadS5Header();
 		}
 
-		// driving start sounds
-		const int mask = 127;
-		var count = numStartSounds & mask;
-		model.StartSounds = [.. br.ReadS5HeaderList(count)];
+		// start sounds and crossing whistle
+		var startSoundCount = Math.Min(Constants.MaxStartSounds, numStartSounds & Constants.StartSoundsMask);
+		var sounds = br.ReadS5HeaderList(startSoundCount).ToList();
+		var lastSoundIsExclusiveToCrossingSounds = (numStartSounds & Constants.StartSoundsCrossingWhistleMask) != 0;
+
+		// if we have this flag set, then the last sound is a dedicated crossing whistle and should be excluded from the start sounds list
+		if (startSoundCount > 0)
+		{
+			if (lastSoundIsExclusiveToCrossingSounds)
+			{
+				model.StartSounds = sounds[0..^1];
+				model.CrossingSounds = [sounds[^1]];
+			}
+			else
+			{
+				model.StartSounds = sounds;
+			}
+		}
 	}
 
 	private static void LoadFixed(LocoBinaryReader br, VehicleObject model, out byte numRequiredTrackExtras, out byte numCompatibleVehicles, out byte numStartSounds)
@@ -214,7 +232,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 				throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
 		}
 
-		model.var_135 = br.ReadBytes(0x15A - 0x135);
+		br.SkipBytes(Constants.Var135PadSize);
 		numStartSounds = br.ReadByte();
 		br.SkipBytes(Constants.MaxStartSounds); // StartSounds, not part of object definition
 	}
@@ -288,8 +306,13 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 					throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
 			}
 
-			bw.Write(model.var_135.Fill(Constants.Var135PadSize, (byte)0).ToArray());
-			bw.Write((uint8_t)model.StartSounds.Count);
+			bw.WriteEmptyBytes(Constants.Var135PadSize);
+
+			// if there are crossing sounds, then we need to set the high bit of the start sounds count to indicate that the last sound is a dedicated crossing whistle and should be excluded from the start sounds list
+			var totalSounds = model.StartSounds.Count + model.CrossingSounds.Count;
+			var numStartSounds = (uint8_t)(totalSounds | (model.CrossingSounds.Count > 0 ? Constants.StartSoundsCrossingWhistleMask : 0x00));
+			bw.Write(numStartSounds);
+
 			bw.WriteEmptyBytes(Constants.MaxStartSounds * 1); // StartSounds, not part of object
 
 			// sanity check
@@ -356,11 +379,12 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// driving sound
 		if (model.DrivingSoundType != DrivingSoundType.None)
 		{
-			bw.WriteS5Header(model.Sound);
+			bw.WriteS5Header(model.DrivingSound);
 		}
 
-		// driving start sounds
+		// crossing whistle mask is handled in Save()
 		bw.WriteS5HeaderList(model.StartSounds);
+		bw.WriteS5HeaderList(model.CrossingSounds);
 	}
 }
 

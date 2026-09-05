@@ -1,0 +1,58 @@
+@page "/account/register"
+@model ObjectService.Pages.Account.RegisterModel
+@{
+	ViewData["Title"] = "Register";
+}
+
+<section class="panel auth-panel">
+	<h1>Create an account</h1>
+	<p class="lede">Register to upload and manage your own objects.</p>
+
+	@if (!ViewData.ModelState.IsValid)
+	{
+		<div class="validation-summary">
+			<ul>
+				@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+				{
+					<li>@error.ErrorMessage</li>
+				}
+			</ul>
+		</div>
+	}
+
+	@if (Model.RegistrationSuccess)
+	{
+		<div class="success-message">
+			<p>Registration successful! You are now logged in.</p>
+			<a class="button button-primary" asp-page="/Account/Manage">Go to your account</a>
+		</div>
+	}
+	else
+	{
+		<form method="post" class="auth-form">
+			<label class="field">
+				<span>Username</span>
+				<input type="text" name="UserName" asp-for="UserName" required minlength="3" maxlength="256" placeholder="Choose a username" />
+			</label>
+			<label class="field">
+				<span>Email</span>
+				<input type="email" name="Email" asp-for="Email" required placeholder="you@example.com" />
+			</label>
+			<label class="field">
+				<span>Password</span>
+				<input type="password" name="Password" asp-for="Password" required minlength="6" placeholder="At least 6 characters" />
+			</label>
+			<label class="field">
+				<span>Confirm password</span>
+				<input type="password" name="ConfirmPassword" asp-for="ConfirmPassword" required minlength="6" placeholder="Re-enter your password" />
+			</label>
+			<div class="form-actions">
+				<button type="submit" class="button button-primary">Register</button>
+			</div>
+		</form>
+
+		<p class="auth-alt">
+			Already have an account? <a asp-page="/Account/Login">Log in</a>
+		</p>
+	}
+</section>

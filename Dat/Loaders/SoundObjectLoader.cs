@@ -61,9 +61,11 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 		model.NumUnkStructs = br.ReadUInt32();
 		_ = br.ReadUInt32(); // unused
 		model.UnkData = br.ReadBytes((int)model.NumUnkStructs * Constants.NumUnkStructs);
+
+		br.SkipBytes(4); // var_00 is unused in loco
+
 		model.SoundObjectData = new SoundObjectData
 		{
-			var_00 = br.ReadInt32(),
 			Offset = br.ReadInt32(),
 			Length = br.ReadUInt32(),
 			PcmHeader = br.ReadSoundEffect(),
@@ -106,7 +108,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 		bw.Write(model.UnkData);
 
 		var m = model.SoundObjectData;
-		bw.Write(m.var_00);
+		bw.Write((uint32_t)0); // var_00 is unused in loco
 		bw.Write(m.Offset);
 		bw.Write(m.Length);
 		bw.Write(m.PcmHeader.WaveFormatTag);

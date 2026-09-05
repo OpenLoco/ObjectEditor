@@ -65,12 +65,8 @@
     const applyTheme = (theme) => {
         root.dataset.theme = theme;
 
-        const storedPalette = getStoredPalette();
-        if (storedPalette) {
-            themeTools.applyPalette(root, theme, storedPalette);
-        } else {
-            themeTools.clearPalette(root);
-        }
+        const palette = getStoredPalette() ?? themeTools.defaultPalette;
+        themeTools.applyPalette(root, theme, palette);
 
         if (!toggle) {
             return;
@@ -113,6 +109,39 @@
             field.input.value = value;
             field.picker.value = value;
             field.input.classList.remove("palette-input-invalid");
+        }
+
+        updateVariantSwatches(palette);
+    };
+
+    const updateVariantSwatches = (palette) => {
+        for (const key of themeTools.paletteFields) {
+            const container = paletteForm?.querySelector(
+                `[data-variant-swatches="${key}"]`,
+            );
+            if (!container) {
+                continue;
+            }
+
+            const variants = themeTools.generateVariants(palette[key]);
+
+            // Build swatch labels: [dark→bright, …, dark→dark]
+            // In light mode, positions 0=darkest, 4=lightest
+            // In dark mode, positions flip: 0=lightest (flipped from 4), 4=darkest (flipped from 0)
+            const lightLabels = ["Mid–Dk", "Mid–", "Mid", "Mid+", "Mid++"];
+            const darkLabels =  ["Mid++", "Mid+", "Mid", "Mid–", "Mid–Dk"];
+
+            container.innerHTML = variants
+                .map((hex, i) => {
+                    const lightLabel = i === 2 ? "Both" : lightLabels[i];
+                    const darkLabel  = i === 2 ? "Both" : darkLabels[i];
+                    return (
+                        `<span class="variant-swatch" style="background:${hex}" title="Light: ${lightLabel}  ·  Dark: ${darkLabel}  ·  ${hex}">` +
+                        `<span class="variant-swatch-label">Light: ${lightLabel}<br/>Dark: ${darkLabel}<br/>${hex}</span>` +
+                        `</span>`
+                    );
+                })
+                .join("");
         }
     };
 
@@ -261,9 +290,9 @@
 
     paletteResetButton?.addEventListener("click", () => {
         clearStoredPalette();
-        themeTools.clearPalette(root);
+        const theme = root.dataset.theme || resolveTheme();
+        themeTools.applyPalette(root, theme, themeTools.defaultPalette);
         setPaletteInputs(themeTools.defaultPalette);
-        applyTheme(root.dataset.theme || resolveTheme());
         setPaletteStatus("Reverted to the default palette.");
     });
 })();

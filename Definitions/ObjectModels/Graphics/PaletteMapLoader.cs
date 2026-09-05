@@ -1,6 +1,5 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System.Reflection;
 
 namespace Definitions.ObjectModels.Graphics;
 

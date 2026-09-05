@@ -1,0 +1,171 @@
+@page "/Tags/{id}"
+@model ObjectService.Pages.Tags.DetailsModel
+@{
+	ViewData["Title"] = Model.Tag?.Name ?? "Tag";
+	var isAdmin = User.IsInRole("Admin");
+}
+
+@if (Model.Tag is null)
+{
+	<section class="panel">
+		<h1>Tag not found</h1>
+		<p>The tag you are looking for does not exist.</p>
+		<a class="button button-secondary" asp-page="/Index" asp-route-category="tags">Back to tag list</a>
+	</section>
+	return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+	<div class="alert alert-success">@Model.SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+	<div class="alert alert-error">@Model.ErrorMessage</div>
+}
+
+<section class="detail-hero panel">
+	<div>
+		<a class="back-link" asp-page="/Index" asp-route-category="tags">Back to tags</a>
+		<div class="admin-page-header">
+			<h1>@Model.Tag.Name</h1>
+			@if (isAdmin)
+			{
+				<div class="action-buttons">
+					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
+					<form method="post" asp-page-handler="Delete" asp-route-id="@Model.Tag.Id" style="display:inline" onsubmit="return confirm('Delete this tag?')">
+						<button type="submit" class="button button-small button-danger">Delete</button>
+					</form>
+				</div>
+			}
+		</div>
+		@if (isAdmin)
+		{
+			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form" style="margin-top:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="Id" value="@Model.Tag.Id" />
+				<div class="form-group">
+					<label for="editName">Name</label>
+					<input id="editName" name="Name" type="text" value="@Model.Tag.Name" required class="form-input" />
+				</div>
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Save</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-form').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+	</div>
+</section>
+
+<div class="detail-grid-4col">
+	<section class="panel">
+		<h2>Objects</h2>
+		@if (Model.Objects.Count == 0)
+		{
+			<p class="muted">No objects are associated with this tag.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var obj in Model.Objects)
+						{
+							<tr>
+								<td><a asp-page="/Objects/Details" asp-route-id="@obj.Id">@obj.Name</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>Object Packs</h2>
+		@if (Model.ObjectPacks.Count == 0)
+		{
+			<p class="muted">No object packs are associated with this tag.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var pack in Model.ObjectPacks)
+						{
+							<tr>
+								<td><a asp-page="/ObjectPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>SC5 Files</h2>
+		@if (Model.SC5Files.Count == 0)
+		{
+			<p class="muted">No SC5 files are associated with this tag.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var file in Model.SC5Files)
+						{
+							<tr>
+								<td>@file.Name</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>SC5 File Packs</h2>
+		@if (Model.SC5FilePacks.Count == 0)
+		{
+			<p class="muted">No SC5 file packs are associated with this tag.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var pack in Model.SC5FilePacks)
+						{
+							<tr>
+								<td><a asp-page="/SC5FilePacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+</div>

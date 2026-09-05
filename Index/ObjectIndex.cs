@@ -82,7 +82,7 @@ public class ObjectIndex
 			var key = entry.xxHash3.Value;
 			if (_byXxHash3.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
 			{
-				_byXxHash3.TryRemove(key, out _);
+				_ = _byXxHash3.TryRemove(key, out _);
 			}
 		}
 
@@ -91,7 +91,7 @@ public class ObjectIndex
 			var key = (entry.DisplayName, entry.DatChecksum.Value);
 			if (_byNameChecksum.TryGetValue(key, out var existing) && ReferenceEquals(existing, entry))
 			{
-				_byNameChecksum.TryRemove(key, out _);
+				_ = _byNameChecksum.TryRemove(key, out _);
 			}
 		}
 	}
@@ -122,7 +122,7 @@ public class ObjectIndex
 
 	private void EnsureLookupsBuilt()
 	{
-		if ((_byXxHash3.IsEmpty && _byNameChecksum.IsEmpty) && Objects.Count > 0)
+		if (_byXxHash3.IsEmpty && _byNameChecksum.IsEmpty && Objects.Count > 0)
 		{
 			RebuildLookups();
 		}

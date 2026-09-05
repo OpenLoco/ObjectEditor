@@ -1,0 +1,370 @@
+@page "/manage/users/Edit/{id}"
+@model ObjectService.Pages.Manage.Users.EditModel
+@{
+	ViewData["Title"] = "Edit User";
+}
+
+<div class="admin-page-container">
+	<div class="admin-page-header">
+		<h1>Manage User: @(Model.UserDetail?.UserName ?? "…")</h1>
+		<a asp-page="/Manage/Users/Index" class="button button-secondary">Back to Users</a>
+	</div>
+
+	@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+	{
+		<div class="alert alert-success">@Model.SuccessMessage</div>
+	}
+	@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+	{
+		<div class="alert alert-error">@Model.ErrorMessage</div>
+	}
+
+	@if (Model.UserDetail == null)
+	{
+		<p class="empty-state">User not found.</p>
+	}
+	else
+	{
+<!-- ── User Details ── -->
+		<section class="panel">
+			<h2>User Details</h2>
+			<dl class="meta-grid">
+				<div>
+					<dt>ID</dt>
+					<dd>@Model.UserDetail.Id</dd>
+				</div>
+				<div>
+					<dt>Email</dt>
+					<dd>@Model.UserDetail.Email</dd>
+				</div>
+				<div>
+					<dt>Email Confirmed</dt>
+					<dd>
+						<span class="badge @(Model.UserDetail.EmailConfirmed ? "badge-success" : "badge-warning")">
+							@(Model.UserDetail.EmailConfirmed ? "Yes" : "No")
+						</span>
+					</dd>
+				</div>
+				<div>
+					<dt>Lockout Status</dt>
+					<dd>
+						<span class="badge @(Model.UserDetail.IsLockedOut ? "badge-error" : "badge-success")">
+							@(Model.UserDetail.IsLockedOut ? "Locked" : "Active")
+						</span>
+					</dd>
+				</div>
+				@if (Model.UserDetail.AssociatedAuthorId != null)
+				{
+					<div>
+						<dt>Associated Author</dt>
+						<dd>@Model.UserDetail.AssociatedAuthorName (@Model.UserDetail.AssociatedAuthorId)</dd>
+					</div>
+				}
+			</dl>
+		</section>
+
+		<!-- ── Display Name ── -->
+		<section class="panel">
+			<h2>Display Name</h2>
+			<form method="post" asp-page-handler="UpdateDisplayName" class="form-inline">
+				<input type="hidden" name="UserId" value="@Model.UserDetail.Id" />
+				<div class="form-group">
+					<label for="NewDisplayName">Display Name</label>
+					<input type="text" id="NewDisplayName" name="NewDisplayName"
+						value="@Model.UserDetail.UserName" required class="form-input" />
+				</div>
+				<button type="submit" class="button button-primary">Update Name</button>
+			</form>
+		</section>
+
+		<!-- ── Roles ── -->
+		<section class="panel">
+			<h2>Roles</h2>
+			<p class="muted">Current roles: 
+				@if (Model.UserDetail.Roles.Count == 0)
+				{<em>None</em>}
+				else
+				{@string.Join(", ", Model.UserDetail.Roles)}
+			</p>
+			<div class="toggle-grid">
+				@foreach (var role in Model.AllRoles)
+				{
+					var isInRole = Model.UserDetail.Roles.Contains(role.Name);
+					<form method="post" asp-page-handler="ToggleRole" class="toggle-form">
+						<input type="hidden" name="UserId" value="@Model.UserDetail.Id" />
+						<input type="hidden" name="RoleToToggle" value="@role.Name" />
+						<button type="submit" class="toggle-button @(isInRole ? "toggle-on" : "toggle-off")"
+							title="@(isInRole ? "Click to remove" : "Click to add")">
+							<span class="toggle-indicator"></span>
+							<span class="toggle-label">@role.Name</span>
+						</button>
+					</form>
+				}
+			</div>
+		</section>
+
+		<!-- ── Permissions ── -->
+		<section class="panel">
+			<h2>Direct Permissions</h2>
+			<p class="muted">These are user-level permission claims. Role-based permissions are inherited automatically.</p>
+			<div class="toggle-grid">
+				@foreach (var claim in Model.PermissionClaims)
+				{
+					<form method="post" asp-page-handler="TogglePermission" class="toggle-form">
+						<input type="hidden" name="UserId" value="@Model.UserDetail.Id" />
+						<input type="hidden" name="PermissionToToggle" value="@claim.Permission" />
+						<button type="submit" class="toggle-button @(claim.HasClaim ? "toggle-on" : "toggle-off")"
+							title="@(claim.HasClaim ? "Click to revoke" : "Click to grant")">
+							<span class="toggle-indicator"></span>
+							<span class="toggle-label">@claim.Permission</span>
+						</button>
+					</form>
+				}
+			</div>
+		</section>
+<!-- ── Actions ── -->
+		<section class="panel">
+			<h2>Account Actions</h2>
+			<div class="action-buttons">
+				<form method="post" asp-page-handler="ForcePasswordReset" onsubmit="return confirm('Generate a password reset token for this user?')">
+					<input type="hidden" name="UserId" value="@Model.UserDetail.Id" />
+					<button type="submit" class="button button-primary">Force Password Reset</button>
+				</form>
+				<form method="post" asp-page-handler="ToggleEmailConfirmed">
+					<input type="hidden" name="UserId" value="@Model.UserDetail.Id" />
+					<button type="submit" class="button @(Model.UserDetail.EmailConfirmed ? "button-warning" : "button-primary")">
+						@(Model.UserDetail.EmailConfirmed ? "Revoke Email Confirmation" : "Confirm Email")
+					</button>
+				</form>
+				<form method="post" asp-page-handler="ToggleLockout">
+					<input type="hidden" name="UserId" value="@Model.UserDetail.Id" />
+					<button type="submit" class="button @(Model.UserDetail.IsLockedOut ? "button-primary" : "button-warning")">
+						@(Model.UserDetail.IsLockedOut ? "Unlock Account" : "Lock Account")
+					</button>
+				</form>
+			</div>
+		</section>
+
+		<!-- ── Danger Zone ── -->
+		<section class="panel panel-danger">
+			<h2>Danger Zone</h2>
+			<p class="muted">Deleting a user is permanent and cannot be undone. Owned objects will be disassociated.</p>
+			<form method="post" asp-page-handler="DeleteUser"
+				onsubmit="return confirm('Are you absolutely sure you want to delete this user?\\n\\nThis action CANNOT be undone.')">
+				<input type="hidden" name="UserId" value="@Model.UserDetail.Id" />
+				<button type="submit" class="button button-danger">Delete This User</button>
+			</form>
+		</section>
+	}
+</div>
+
+<style>
+.admin-page-container {
+	max-width: 900px;
+	margin: 2rem auto;
+	padding: 0 1rem;
+}
+
+.admin-page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
+.admin-page-header h1 { margin: 0; }
+
+.panel {
+	background: var(--color-surface);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.5rem;
+	padding: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.panel h2 {
+	margin-top: 0;
+	margin-bottom: 1rem;
+	font-size: 1.1rem;
+}
+
+.panel-danger {
+	border-color: rgba(244, 70, 70, 0.3);
+}
+
+.muted {
+	color: var(--color-muted);
+	font-size: 0.875rem;
+	margin-top: 0;
+}
+
+.meta-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 1rem;
+	margin: 0;
+}
+
+.meta-grid dt {
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	color: var(--color-muted);
+	font-weight: 500;
+}
+
+.meta-grid dd {
+	margin: 0.25rem 0 0 0;
+	font-weight: 500;
+}
+
+.badge {
+	display: inline-block;
+	padding: 0.125rem 0.5rem;
+	border-radius: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.badge-success { background: rgba(78, 141, 87, 0.2); color: #4e8d57; }
+.badge-warning { background: rgba(246, 201, 69, 0.2); color: #e6b830; }
+.badge-error { background: rgba(244, 70, 70, 0.2); color: #f64646; }
+
+.alert {
+	padding: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 0.25rem;
+}
+
+.alert-success {
+	background-color: rgba(78, 141, 87, 0.1);
+	color: #4e8d57;
+	border: 1px solid rgba(78, 141, 87, 0.3);
+}
+
+.alert-error {
+	background-color: rgba(244, 70, 70, 0.1);
+	color: #f64646;
+	border: 1px solid rgba(244, 70, 70, 0.3);
+}
+
+.empty-state {
+	padding: 2rem;
+	text-align: center;
+	color: var(--color-muted);
+}
+
+.form-inline {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-end;
+}
+
+.form-group { flex: 1; }
+
+.form-group label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+}
+
+.form-input {
+	width: 100%;
+	padding: 0.75rem;
+	background: var(--color-background);
+	color: var(--color-contrast);
+	border: 1px solid var(--color-muted);
+	border-radius: 0.25rem;
+	font-family: inherit;
+	font-size: 1rem;
+}
+
+.toggle-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.toggle-form { display: inline; }
+
+.toggle-button {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 1rem;
+	border: 1px solid var(--color-muted);
+	border-radius: 2rem;
+	background: var(--color-background);
+	color: var(--color-contrast);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 0.875rem;
+	transition: all 0.15s;
+}
+
+.toggle-button:hover { opacity: 0.85; }
+
+.toggle-on {
+	background: rgba(78, 141, 87, 0.15);
+	border-color: #4e8d57;
+	color: #4e8d57;
+}
+
+.toggle-off {
+	background: var(--color-background);
+	border-color: var(--color-muted);
+}
+
+.toggle-indicator {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	display: inline-block;
+}
+
+.toggle-on .toggle-indicator { background: #4e8d57; }
+.toggle-off .toggle-indicator { background: var(--color-muted); }
+
+.toggle-label { font-weight: 500; }
+
+.action-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+.button {
+	display: inline-block;
+	padding: 0.6rem 1.2rem;
+	border: none;
+	border-radius: 0.25rem;
+	cursor: pointer;
+	text-decoration: none;
+	font-size: 0.875rem;
+	font-weight: 500;
+	font-family: inherit;
+	transition: opacity 0.2s;
+}
+
+.button:hover { opacity: 0.8; }
+
+.button-primary {
+	background: var(--color-accent);
+	color: var(--color-background);
+}
+
+.button-secondary {
+	background: transparent;
+	color: var(--color-accent);
+	border: 1px solid var(--color-accent);
+}
+
+.button-warning {
+	background: #e6b830;
+	color: var(--color-background);
+}
+
+.button-danger {
+	background: #f64646;
+	color: #fff;
+}
+</style>

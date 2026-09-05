@@ -33,7 +33,7 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 			var directory = Path.GetDirectoryName(fullPath);
 			if (!string.IsNullOrEmpty(directory))
 			{
-				Directory.CreateDirectory(directory);
+				_ = Directory.CreateDirectory(directory);
 			}
 
 			await File.WriteAllBytesAsync(fullPath, bytes);

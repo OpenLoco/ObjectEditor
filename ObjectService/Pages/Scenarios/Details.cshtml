@@ -1,0 +1,231 @@
+@page "/Scenarios/{id}"
+@model ObjectService.Pages.Scenarios.DetailsModel
+@{
+	var scenario = Model.Scenario;
+	ViewData["Title"] = scenario?.Name ?? "Scenario";
+}
+
+@if (scenario is null)
+{
+	<section class="panel">
+		<h1>Scenario not found</h1>
+		<p>The scenario you are looking for does not exist.</p>
+		<a class="button button-secondary" asp-page="/Index" asp-route-category="sc5files">Back to scenario list</a>
+	</section>
+	return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+	<div class="alert alert-success">@Model.SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+	<div class="alert alert-error">@Model.ErrorMessage</div>
+}
+
+<section class="detail-hero panel">
+	<div>
+		<a class="back-link" asp-page="/Index" asp-route-category="sc5files">Back to scenarios</a>
+		<div class="admin-page-header">
+			<h1>@scenario.Name</h1>
+			@if (Model.CanEdit)
+			{
+				<div class="action-buttons">
+					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
+					<form method="post" asp-page-handler="Delete" asp-route-id="@scenario.Id" style="display:inline" onsubmit="return confirm('Delete this scenario?')">
+						<button type="submit" class="button button-small button-danger">Delete</button>
+					</form>
+				</div>
+			}
+		</div>
+		<p class="muted">Source: @scenario.ObjectSource</p>
+		<p class="lede">@(string.IsNullOrWhiteSpace(scenario.Description) ? "No description is stored for this scenario yet." : scenario.Description)</p>
+
+		@if (Model.CanEdit)
+		{
+			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form" style="margin-top:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="Id" value="@scenario.Id" />
+
+				<div class="form-group">
+					<label for="editName">Name</label>
+					<input id="editName" name="Name" type="text" value="@scenario.Name" required class="form-input" />
+				</div>
+
+				<div class="form-group">
+					<label for="editDescription">Description</label>
+					<textarea id="editDescription" name="Description" class="form-input">@scenario.Description</textarea>
+				</div>
+
+				<div class="form-group">
+					<label for="editSource">Source</label>
+					<select id="editSource" name="ObjectSource" class="form-input">
+						@foreach (var src in Enum.GetValues<Definitions.ObjectModels.Types.ObjectSource>())
+						{
+							<option value="@src" selected="@(scenario.ObjectSource == src)">@src</option>
+						}
+					</select>
+				</div>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label for="editCreated">Created Date</label>
+						<input id="editCreated" name="CreatedDate" type="date" value="@scenario.CreatedDate?.ToString("yyyy-MM-dd")" class="form-input" />
+					</div>
+					<div class="form-group">
+						<label for="editModified">Modified Date</label>
+						<input id="editModified" name="ModifiedDate" type="date" value="@scenario.ModifiedDate?.ToString("yyyy-MM-dd")" class="form-input" />
+					</div>
+					<div class="form-group">
+						<label for="editUploaded">Uploaded Date</label>
+						<input id="editUploaded" name="UploadedDate" type="date" value="@scenario.UploadedDate.ToString("yyyy-MM-dd")" required class="form-input" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>Authors</label>
+					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+						@foreach (var author in Model.AvailableAuthors)
+						{
+							var isSelected = scenario.Authors.Any(a => a.Id == author.Id);
+							<label class="checkbox" style="display:block;">
+								<input type="checkbox" name="SelectedAuthorIds" value="@author.Id" checked="@isSelected" />
+								<span>@author.Name</span>
+							</label>
+						}
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>Tags</label>
+					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+						@foreach (var tag in Model.AvailableTags)
+						{
+							var isSelected = scenario.Tags.Any(t => t.Id == tag.Id);
+							<label class="checkbox" style="display:block;">
+								<input type="checkbox" name="SelectedTagIds" value="@tag.Id" checked="@isSelected" />
+								<span>@tag.Name</span>
+							</label>
+						}
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>SC5 File Packs</label>
+					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+						@if (Model.AvailablePacks.Count == 0)
+						{
+							<p class="muted">No packs available.</p>
+						}
+						else
+						{
+							@foreach (var pack in Model.AvailablePacks)
+							{
+								var isSelected = scenario.SC5FilePacks.Any(p => p.Id == pack.Id);
+								<label class="checkbox" style="display:block;">
+									<input type="checkbox" name="SelectedPackIds" value="@pack.Id" checked="@isSelected" />
+									<span>@pack.Name</span>
+								</label>
+							}
+						}
+					</div>
+				</div>
+
+				<div class="form-actions" style="margin-top:0.5rem;">
+					<button type="submit" class="button button-primary button-small">Save</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-form').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+	</div>
+</section>
+
+<div class="detail-grid">
+	<section class="panel">
+		<h2>Metadata</h2>
+		<dl class="meta-grid">
+			<div>
+				<dt>Created</dt>
+				<dd>@(scenario.CreatedDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+			</div>
+			<div>
+				<dt>Modified</dt>
+				<dd>@(scenario.ModifiedDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+			</div>
+			<div>
+				<dt>Uploaded</dt>
+				<dd>@scenario.UploadedDate.ToString("yyyy-MM-dd")</dd>
+			</div>
+			<div>
+				<dt>Licence</dt>
+				<dd>
+					@if (scenario.Licence is not null)
+					{
+						<a asp-page="/Licences/Details" asp-route-id="@scenario.Licence.Id">@scenario.Licence.Name</a>
+					}
+					else
+					{
+						<text>-</text>
+					}
+				</dd>
+			</div>
+		</dl>
+
+		@if (!string.IsNullOrWhiteSpace(scenario.Licence?.Text))
+		{
+			<div class="note-block">@scenario.Licence?.Text</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>Relationships</h2>
+		<div class="stacked-list">
+			<div>
+				<h3>Authors</h3>
+				<p>
+					@if (scenario.Authors.Count > 0)
+					{
+						@for (var i = 0; i < scenario.Authors.Count; i++)
+						{
+							var author = scenario.Authors.ElementAt(i);
+							<a asp-page="/Authors/Details" asp-route-id="@author.Id">@author.Name</a>
+							@if (i < scenario.Authors.Count - 1)
+							{
+								<text>, </text>
+							}
+						}
+					}
+					else
+					{
+						<text>No authors linked</text>
+					}
+				</p>
+			</div>
+			<div>
+				<h3>Tags</h3>
+				<p>
+					@if (scenario.Tags.Count > 0)
+					{
+						@for (var i = 0; i < scenario.Tags.Count; i++)
+						{
+							var tag = scenario.Tags.ElementAt(i);
+							<a asp-page="/Tags/Details" asp-route-id="@tag.Id">@tag.Name</a>
+							@if (i < scenario.Tags.Count - 1)
+							{
+								<text>, </text>
+							}
+						}
+					}
+					else
+					{
+						<text>No tags linked</text>
+					}
+				</p>
+			</div>
+			<div>
+				<h3>SC5 File Packs</h3>
+				<p>@(scenario.SC5FilePacks.Count > 0 ? string.Join(", ", scenario.SC5FilePacks.Select(p => p.Name)) : "No packs linked")</p>
+			</div>
+		</div>
+	</section>
+</div>

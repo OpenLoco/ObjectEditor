@@ -222,7 +222,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 				if (Model.LocoObject.Object is SoundObject soundObject)
 				{
-					AddViewModelToGroup(new AudioViewModel(Logger, Model.Metadata?.InternalName ?? Model.DatInfo?.S5Header.Name ?? "unk sound name", soundObject.SoundObjectData.PcmHeader, soundObject.PcmData), mediaGroup);
+					AddViewModelToGroup(new AudioViewModel(Logger, Model.Metadata?.InternalName ?? Model.DatInfo?.S5Header.Name ?? "unk sound name", soundObject), mediaGroup);
 				}
 				else
 				{

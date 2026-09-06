@@ -56,7 +56,7 @@ new("ObjectService:RootFolder", testFolder.FullName),
 new("ObjectService:PaletteMapFile", dummyPaletteFile),
 new("ObjectService:ShowScalar", "False"),
 new("ObjectService:DisableAuthentication", "True"),
-new("ObjectService:EnableWriteRoutes", "True"),
+new("ObjectService:BackendReadOnly", "False"),
 ])
 .Build();
 

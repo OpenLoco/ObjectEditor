@@ -34,9 +34,9 @@ public static class BaseTableRouteHandler
 		IEndpointRouteBuilder parentRoute,
 		IConfiguration config)
 	{
-		var enableWriteRoutes = config.GetValue<bool?>("ObjectService:EnableWriteRoutes") ?? false;
+		var backendReadOnly = config.GetValue<bool?>("ObjectService:BackendReadOnly") ?? false;
 
-		if (!enableWriteRoutes)
+		if (backendReadOnly)
 		{
 			return;
 		}

@@ -8,7 +8,9 @@
 @inject UserManager<TblUser> UserManager
 @inject IHostEnvironment HostEnvironment
 @inject LocoDbContext LocoDb
+@inject IConfiguration Configuration
 @{
+	var readOnlyMode = Configuration.GetValue<bool?>("ObjectService:FrontendReadOnly") ?? false;
 	var healthReport = await HealthCheckService.CheckHealthAsync();
 	var healthDescription = healthReport.Entries.Values
 		.Select(x => x.Description)
@@ -398,7 +400,9 @@
 				@await RenderSectionAsync("HeaderContent", required: false)
 				<nav class="site-nav">
 					<a href="/api">API</a>
-					@if (isAuthenticated)
+				@if (!readOnlyMode)
+				{
+					if (isAuthenticated)
 					{
 						<a asp-page="/Account/Manage">@(User.Identity?.Name ?? "Account")</a>
 					}
@@ -407,17 +411,28 @@
 						<a asp-page="/Account/Login">Log in</a>
 						<a asp-page="/Account/Register">Register</a>
 					}
+				}
 				</nav>
 				<span class="health-indicator @healthClass" title="@healthDescription">
 					<span class="health-indicator-dot" aria-hidden="true"></span>
 					<span>Server @healthReport.Status</span>
-				</span>			@if (isDevelopment && !isAuthenticated)
+				</span>
+			@if (!readOnlyMode)
 			{
+				if (isDevelopment && !isAuthenticated)
+				{
 				<form method="post" asp-page="/Dev/QuickLogin" style="display: inline;">
 					<button type="submit" class="button button-secondary" style="background-color: var(--warning); color: var(--button-primary-text); font-weight: 500;">
 						Dev Login
 					</button>
 				</form>
+				}
+			}
+			else
+			{
+				<span class="chip" style="background-color: var(--muted); color: var(--contrast); margin-left: 0.5rem;" title="The server is in read-only mode — browsing and downloads are available, but logins and account features are disabled.">
+					Read-only mode
+				</span>
 			}				<button type="button" class="button button-secondary theme-studio-toggle" data-theme-studio-toggle aria-controls="theme-studio-panel" aria-expanded="false" hidden>
 					Theme palette
 				</button>

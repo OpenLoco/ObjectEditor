@@ -1,5 +1,7 @@
+using Definitions.ObjectModels.Graphics.Dithering;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Definitions.ObjectModels.Graphics;
 
@@ -141,6 +143,59 @@ public class PaletteMap
 
 		return bytes;
 	}
+
+	/// <summary>Converts an RGBA32 image to G1 palette-indexed byte data using ImageSharp's dithering pipeline.</summary>
+	public byte[] ConvertRgba32ImageToG1DataWithDithering(Image<Rgba32> img, GraphicsElementFlags flags, DitheringMethod method = DitheringMethod.FloydSteinberg)
+	{
+		var isBgr = flags.HasFlag(GraphicsElementFlags.IsBgr24);
+		var pixels = img.Width * img.Height;
+		var bytes = new byte[pixels * (isBgr ? 3 : 1)];
+
+		if (isBgr)
+		{
+			// BGR24 images are copied directly, no dithering needed
+			var index = 0;
+			for (var y = 0; y < img.Height; y++)
+			{
+				for (var x = 0; x < img.Width; x++)
+				{
+					var pixel = img[x, y];
+					bytes[index++] = pixel.B;
+					bytes[index++] = pixel.G;
+					bytes[index++] = pixel.R;
+				}
+			}
+
+			return bytes;
+		}
+
+		// Build the ImageSharp Color palette
+		var colors = Palette.Select(p => p.Color).ToArray();
+		var paletteMemory = new ReadOnlyMemory<Color>(colors);
+
+		// Get the IDither instance from DitherFactory
+		var dither = DitherFactory.Create(method);
+
+		// Apply dithering using ImageSharp's pipeline
+		using var dithered = img.Clone(ctx => ctx.Dither(dither, paletteMemory));
+
+		// Extract palette indices from the dithered image
+		for (var y = 0; y < img.Height; y++)
+		{
+			for (var x = 0; x < img.Width; x++)
+			{
+				var pixel = dithered[x, y];
+				var idx = (y * img.Width) + x;
+				bytes[idx] = PaletteIndexLookup(pixel);
+			}
+		}
+
+		return bytes;
+	}
+
+	/// <summary>Looks up the palette index for a given pixel, matching the non-dithered conversion logic.</summary>
+	private byte PaletteIndexLookup(Rgba32 pixel)
+		=> ColorToPaletteIndex(Color.FromPixel(pixel));
 
 	public (Color Color, byte Index)[]? GetRemapSwatchFromName(ColourSwatch swatch)
 		=> swatch switch

@@ -231,7 +231,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 					if (Model.LocoObject.ImageTable != null)
 					{
 						var configFilePath = Path.Combine(EditorContext.Settings.ConfigFolder, ObjectEditorContext.ImageTableGroupsFileName);
-						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, Model.LocoObject.ObjectType, Model.LocoObject.Object, configFilePath), mediaGroup);
+						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, Model.LocoObject.ObjectType, Model.LocoObject.Object, configFilePath, EditorContext.Settings), mediaGroup);
 
 						// object-specific extra viewmodels
 						if (Model.LocoObject.ObjectType == ObjectType.Building)

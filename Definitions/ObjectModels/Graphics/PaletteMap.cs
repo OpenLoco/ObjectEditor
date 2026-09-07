@@ -113,8 +113,14 @@ public class PaletteMap
 
 	#endregion
 
-	public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, GraphicsElementFlags flags)
+	public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, GraphicsElementFlags flags, DitheringMethod? method = null)
 	{
+		// If a dithering method is selected and the image is NOT Bgr24, use the dithered pipeline
+		if (method.HasValue && method.Value != DitheringMethod.None && !flags.HasFlag(GraphicsElementFlags.IsBgr24))
+		{
+			return ConvertRgba32ImageToG1DataWithDithering(img, flags, method.Value);
+		}
+
 		var pixels = img.Width * img.Height;
 		var isBgr = flags.HasFlag(GraphicsElementFlags.IsBgr24);
 		var bytes = new byte[pixels * (isBgr ? 3 : 1)];

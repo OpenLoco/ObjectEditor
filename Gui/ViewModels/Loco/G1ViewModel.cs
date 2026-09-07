@@ -37,7 +37,7 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 
 		Model.ImageTable.PaletteMap = EditorContext.PaletteMap;
 		EditorContext.G1 = Model; // todo: do we still need? can we do another way?
-		ImageTableViewModel = new ImageTableViewModel(Model.ImageTable, Logger);
+		ImageTableViewModel = new ImageTableViewModel(Model.ImageTable, Logger, editorSettings: EditorContext.Settings);
 	}
 
 	public override void Save()

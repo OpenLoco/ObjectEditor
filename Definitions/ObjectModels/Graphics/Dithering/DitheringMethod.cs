@@ -3,6 +3,8 @@ namespace Definitions.ObjectModels.Graphics.Dithering;
 /// <summary>Available dithering algorithms for palette-indexed image conversion.</summary>
 public enum DitheringMethod
 {
+/// <summary>No dithering — nearest-neighbour palette mapping. Also used as the "no default" sentinel in editor settings.</summary>
+	None = 0,
 	// -- Built-in ImageSharp error-diffusion dithers ---------------------------------
 	/// <summary>Classic error diffusion (7/16, 3/16, 5/16, 1/16 kernel).</summary>
 	FloydSteinberg,

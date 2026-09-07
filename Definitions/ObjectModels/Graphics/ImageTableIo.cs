@@ -1,6 +1,7 @@
 using Common.Json;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.Dithering;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
@@ -83,7 +84,7 @@ public static class ImageTableIo
 		return offsets;
 	}
 
-	public static async Task<List<GraphicsElement>?> LoadImagesAsync(string directory, PaletteMap paletteMap, ILogger logger)
+	public static async Task<List<GraphicsElement>?> LoadImagesAsync(string directory, PaletteMap paletteMap, ILogger logger, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(logger);
 
@@ -114,7 +115,7 @@ public static class ImageTableIo
 				? sprite with { Flags = GraphicsElementFlags.HasTransparency }
 				: sprite;
 
-			var graphicsElement = GraphicsElementOperations.FromImage(effectiveSprite, img, paletteMap, i);
+			var graphicsElement = GraphicsElementOperations.FromImage(effectiveSprite, img, paletteMap, i, ditheringMethod);
 			graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
 				? DefaultImageTableNameProvider.GetImageName(i)
 				: graphicsElement.Name;
@@ -125,13 +126,13 @@ public static class ImageTableIo
 		return importedImages;
 	}
 
-	public static async Task<int> ImportAsync(ImageTable imageTable, string directory, PaletteMap paletteMap, ILogger logger, ILocoStruct? objectModel = null, ObjectType? objectType = null)
+	public static async Task<int> ImportAsync(ImageTable imageTable, string directory, PaletteMap paletteMap, ILogger logger, ILocoStruct? objectModel = null, ObjectType? objectType = null, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 
 		logger.LogInformation("Importing images from {Directory}", directory);
 
-		var importedImages = await LoadImagesAsync(directory, paletteMap, logger);
+		var importedImages = await LoadImagesAsync(directory, paletteMap, logger, ditheringMethod);
 		if (importedImages == null)
 		{
 			return 0;

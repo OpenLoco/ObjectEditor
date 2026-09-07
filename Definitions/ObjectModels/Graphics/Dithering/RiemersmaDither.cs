@@ -32,12 +32,12 @@ public sealed class RiemersmaDither : IDither
 			order++;
 		}
 
-		var hilbertOrder = GenerateHilbertOrder(order);
-
+		var hilbertSize = 1 << order;
+		var hilbertLength = hilbertSize * hilbertSize;
 		var traverse = new List<(int x, int y, int flatIdx)>(pixels);
-		for (var i = 0; i < hilbertOrder.Length; i++)
+		for (var i = 0; i < hilbertLength; i++)
 		{
-			var (hx, hy) = hilbertOrder[i];
+			var (hx, hy) = HilbertIndexToCoordinates(i, hilbertSize);
 			if (hx < width && hy < height)
 			{
 				traverse.Add((bounds.Left + hx, bounds.Top + hy, (hy * width) + hx));
@@ -132,40 +132,32 @@ public sealed class RiemersmaDither : IDither
 	Rectangle bounds)
 	=> throw new NotSupportedException("RiemersmaDither only supports palette dithering via ApplyPaletteDither.");
 
-	/// <summary>Generates Hilbert curve traversal order for the given power-of-two size.</summary>
-	private static (int x, int y)[] GenerateHilbertOrder(int order)
+	/// <summary>Converts a Hilbert traversal index to x/y coordinates for a power-of-two size.</summary>
+	private static (int x, int y) HilbertIndexToCoordinates(int index, int size)
 	{
-		var size = 1 << order;
-		var result = new (int x, int y)[size * size];
-
-		for (var i = 0; i < size * size; i++)
+		var x = 0;
+		var y = 0;
+		var t = index;
+		for (var s = 1; s < size; s <<= 1)
 		{
-			var x = 0;
-			var y = 0;
-			var t = i;
-			for (var s = 1; s < size; s <<= 1)
+			var rx = (t >> 1) & 1;
+			var ry = (t ^ rx) & 1;
+			if (ry == 0)
 			{
-				var rx = (t >> 1) & 1;
-				var ry = (t ^ rx) & 1;
-				if (ry == 0)
+				if (rx == 1)
 				{
-					if (rx == 1)
-					{
-						x = s - 1 - x;
-						y = s - 1 - y;
-					}
-
-					(x, y) = (y, x);
+					x = s - 1 - x;
+					y = s - 1 - y;
 				}
 
-				x += s * rx;
-				y += s * ry;
-				t >>= 2;
+				(x, y) = (y, x);
 			}
 
-			result[i] = (x, y);
+			x += s * rx;
+			y += s * ry;
+			t >>= 2;
 		}
 
-		return result;
+		return (x, y);
 	}
 }

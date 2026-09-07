@@ -3,7 +3,6 @@
 
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
 using Definitions.ObjectModels;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

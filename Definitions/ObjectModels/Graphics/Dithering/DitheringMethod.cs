@@ -3,7 +3,7 @@ namespace Definitions.ObjectModels.Graphics.Dithering;
 /// <summary>Available dithering algorithms for palette-indexed image conversion.</summary>
 public enum DitheringMethod
 {
-/// <summary>No dithering — nearest-neighbour palette mapping. Also used as the "no default" sentinel in editor settings.</summary>
+	/// <summary>No dithering — nearest-neighbour palette mapping. Also used as the "no default" sentinel in editor settings.</summary>
 	None = 0,
 	// -- Built-in ImageSharp error-diffusion dithers ---------------------------------
 	/// <summary>Classic error diffusion (7/16, 3/16, 5/16, 1/16 kernel).</summary>
@@ -26,11 +26,12 @@ public enum DitheringMethod
 	Stucki,
 
 	// -- Built-in ImageSharp ordered dither ------------------------------------------
-	/// <summary>Ordered dithering using an 8×8 Bayer threshold matrix — fast and deterministic.</summary>
+	/// <summary>Ordered dithering using Bayer threshold matrices — fast and deterministic.</summary>
 	Bayer2x2,
 	Bayer4x4,
 	Bayer8x8,
 	Bayer16x16,
+	/// <summary>Ordered dithering using a 3x3 threshold matrix — fast and deterministic.</summary>
 	Ordered3x3,
 
 	// -- Custom dithers (not available in ImageSharp) --------------------------------

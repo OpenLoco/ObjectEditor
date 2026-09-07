@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System.Xml.Linq;
 using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;

@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Graphics.Dithering;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -24,6 +25,13 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 	public void Commit()
 	{
 		Model.ObjDataDirectories = [.. ObjDataDirectories];
+	}
+
+	[Category("Misc"), DisplayName("Default Dithering Method"), Description("When set to a value other than None, the dithering popup is skipped and this algorithm is always used when importing palette-indexed images. Set to 'None' to always see the popup.")]
+	public DitheringMethod DefaultDitheringMethod
+	{
+		get => Model.DefaultDitheringMethod;
+		set => Model.DefaultDitheringMethod = value;
 	}
 
 	[Category("Misc"), DisplayName("Allow saving with vanilla object source"), Description("If enabled, the editor will allow saving objects with \"Vanilla\" object source flag set. If disabled, the object will be forcefully saved as \"Custom\" instead.")]

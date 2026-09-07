@@ -1,4 +1,5 @@
 using Common.Json;
+using Definitions.ObjectModels.Graphics.Dithering;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,9 @@ public class EditorSettings
 	public bool EnableOGValidation { get; set; }
 	public bool ShowLogsOnError { get; set; }
 	public bool AutoObjectDiscoveryAndUpload { get; set; }
+
+	/// <summary>When set to a value other than None, bypasses the dithering selection popup and always uses this algorithm when importing palette images.</summary>
+	public DitheringMethod DefaultDitheringMethod { get; set; }
 
 	public bool UseHttps { get; set; }
 	public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";

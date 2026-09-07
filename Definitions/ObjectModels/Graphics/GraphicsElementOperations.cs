@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.Dithering;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -7,7 +8,7 @@ namespace Definitions.ObjectModels.Graphics;
 
 public static class GraphicsElementOperations
 {
-	public static void SetImage(this GraphicsElement element, Image<Rgba32> image, PaletteMap paletteMap)
+	public static void SetImage(this GraphicsElement element, Image<Rgba32> image, PaletteMap paletteMap, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(image);
@@ -27,13 +28,13 @@ public static class GraphicsElementOperations
 
 		element.Width = (short)image.Width;
 		element.Height = (short)image.Height;
-		element.ImageData = paletteMap.ConvertRgba32ImageToG1Data(image, element.Flags);
+		element.ImageData = paletteMap.ConvertRgba32ImageToG1Data(image, element.Flags, ditheringMethod);
 	}
 
 	public static void ReplaceImage(this GraphicsElement element, string pngFileName, PaletteMap paletteMap)
 		=> element.SetImage(Image.Load<Rgba32>(pngFileName), paletteMap);
 
-	public static void SyncImageData(this GraphicsElement element, PaletteMap paletteMap)
+	public static void SyncImageData(this GraphicsElement element, PaletteMap paletteMap, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(element);
 
@@ -42,7 +43,7 @@ public static class GraphicsElementOperations
 			return;
 		}
 
-		element.SetImage(element.Image, paletteMap);
+		element.SetImage(element.Image, paletteMap, ditheringMethod);
 	}
 
 	public static void Decode(this GraphicsElement element, PaletteMap paletteMap, ColourSwatch primary = ColourSwatch.PrimaryRemap, ColourSwatch secondary = ColourSwatch.SecondaryRemap)
@@ -147,7 +148,7 @@ public static class GraphicsElementOperations
 		return new Rectangle(minX, minY, width, height);
 	}
 
-	public static GraphicsElement FromImage(GraphicsElementJson json, Image<Rgba32> image, PaletteMap paletteMap, int index)
+	public static GraphicsElement FromImage(GraphicsElementJson json, Image<Rgba32> image, PaletteMap paletteMap, int index, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(json);
 
@@ -160,7 +161,7 @@ public static class GraphicsElementOperations
 			YOffset = json.YOffset,
 			Flags = flags,
 			ZoomOffset = json.ZoomOffset ?? 0,
-			ImageData = paletteMap.ConvertRgba32ImageToG1Data(image, flags),
+			ImageData = paletteMap.ConvertRgba32ImageToG1Data(image, flags, ditheringMethod),
 			Name = json.Name ?? string.Empty,
 			Image = image,
 			ImageTableIndex = index,

@@ -89,6 +89,7 @@ public class ImagePaletteConversionTests
 	[TestCase(DitheringMethod.SierraLite)]
 	[TestCase(DitheringMethod.StevensonArce)]
 	[TestCase(DitheringMethod.Stucki)]
+	[Explicit("Requires a local input image and writes output files; not suitable for automated CI runs.")]
 	public void ImportImageWithDithering(DitheringMethod ditheringMethod)
 	{
 		var image = Image.Load<Rgba32>("C:\\Users\\bigba\\OneDrive\\Pictures\\gradient.png");

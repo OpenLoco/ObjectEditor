@@ -175,9 +175,11 @@ public class PaletteMap
 			return bytes;
 		}
 
-		// Build the ImageSharp Color palette
-		var colors = Palette.Select(p => p.Color).ToArray();
+		// Build a palette that excludes reserved/remap colours to match ColorToPaletteIndex/ValidColours behaviour.
+		var paletteEntries = ValidColours;
+		var colors = paletteEntries.Select(p => p.Color).ToArray();
 		var paletteMemory = new ReadOnlyMemory<Color>(colors);
+		var paletteIndexByColor = paletteEntries.ToDictionary(p => p.Color, p => p.Index);
 
 		// Get the IDither instance from DitherFactory
 		var dither = DitherFactory.Create(method);
@@ -190,14 +192,22 @@ public class PaletteMap
 		{
 			for (var x = 0; x < img.Width; x++)
 			{
-				var pixel = dithered[x, y];
 				var idx = (y * img.Width) + x;
-				bytes[idx] = PaletteIndexLookup(pixel);
+				var srcPixel = img[x, y];
+				if (srcPixel.A != 255)
+				{
+					bytes[idx] = 0;
+					continue;
+				}
+
+				var c = Color.FromPixel(dithered[x, y]);
+				bytes[idx] = paletteIndexByColor.TryGetValue(c, out var paletteIndex)
+					? paletteIndex
+					: ColorToPaletteIndex(c);
 			}
 		}
 
 		return bytes;
-	}
 
 	/// <summary>Looks up the palette index for a given pixel, matching the non-dithered conversion logic.</summary>
 	private byte PaletteIndexLookup(Rgba32 pixel)

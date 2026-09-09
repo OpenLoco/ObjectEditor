@@ -17,6 +17,7 @@ using Gui.Views;
 using Microsoft.Extensions.Logging;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
+using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -102,11 +103,16 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		{
 			var errorMsg = string.Join(Environment.NewLine, validationErrors);
 			box = MessageBoxManager.GetMessageBoxStandard(
-				"Validation failed",
-				errorMsg,
-				ButtonEnum.Ok,
-				Icon.Error,
-				windowStartupLocation: WindowStartupLocation.CenterOwner);
+				new MessageBoxStandardParams
+				{
+					ContentTitle = "Validation failed",
+					ContentHeader = "Validation failed",
+					ContentMessage = errorMsg,
+					ButtonDefinitions = ButtonEnum.Ok,
+					Icon = Icon.Error,
+					WindowStartupLocation = WindowStartupLocation.CenterOwner,
+					Topmost = true,
+				});
 
 			_ = box.ShowAsync();
 		}
@@ -115,11 +121,15 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			if (showPopupOnSuccess)
 			{
 				box = MessageBoxManager.GetMessageBoxStandard(
-					"Validation succeeded",
-					"✔ No issues found. Object is valid.",
-					ButtonEnum.Ok,
-					Icon.Success,
-					windowStartupLocation: WindowStartupLocation.CenterOwner);
+					new MessageBoxStandardParams
+					{
+						ContentTitle = "Validation succeeded",
+						ContentMessage = "✔ No issues found. Object is valid.",
+						ButtonDefinitions = ButtonEnum.Ok,
+						Icon = Icon.Success,
+						WindowStartupLocation = WindowStartupLocation.CenterOwner,
+						Topmost = true,
+					});
 
 				_ = box.ShowAsync();
 			}

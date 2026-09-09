@@ -46,6 +46,26 @@ public class ImagePaletteConversionTests
 		Assert.That(paletteColours.Length, Is.EqualTo(paletteColours.ToHashSet().Count));
 	}
 
+	[Test]
+	[Explicit]
+	public void OutputValidColourHexCodes()
+	{
+		var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
+		var paletteMap = new PaletteMap(paletteFile);
+		var validColours = paletteMap.ValidColours;
+
+		var jsonEntries = validColours
+			.Select(c =>
+			{
+				var p = c.Color.ToPixel<Rgba32>();
+				return $"{{\"hex\":\"#{p.R:X2}{p.G:X2}{p.B:X2}\"}}";
+			});
+
+		var json = $"[{string.Join(", ", jsonEntries)}]";
+		Console.WriteLine(json);
+		Assert.That(validColours.Length, Is.EqualTo(224)); // 256 - 32 reserved
+	}
+
 	[TestCase("AIRPORT1.DAT")]
 	[TestCase("BALDWIN1.DAT")]
 	[TestCase("FACTORY.DAT")]

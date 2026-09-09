@@ -55,6 +55,17 @@
 							</MenuFlyout>
 						</SplitButton.Flyout>
 					</SplitButton>
+					<Button Margin="4" Command="{Binding ValidateSCV5Command}" Content="Validate Scenario" ToolTip.Tip="Checks that every object dependency (e.g. an industry's produced/consumed cargo) is included in this file's required objects list">
+						<Button.Styles>
+							<Style>
+								<Style.Resources>
+									<SolidColorBrush x:Key="ButtonBackground">#4F759B</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#37526C</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPressed">#86A3C1</SolidColorBrush>
+								</Style.Resources>
+							</Style>
+						</Button.Styles>
+					</Button>
 				</StackPanel>
 				<vi:RequiredObjectsView DataContext="{Binding RequiredObjects}" />
 			</DockPanel>

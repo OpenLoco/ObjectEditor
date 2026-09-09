@@ -47,6 +47,14 @@ cp GuiUpdater/bin/Release/$framework/win-x64/publish/* Gui/bin/Release/$framewor
 cp GuiUpdater/bin/Release/$framework/linux-x64/publish/* Gui/bin/Release/$framework/linux-x64/publish
 cp GuiUpdater/bin/Release/$framework/osx-x64/publish/* Gui/bin/Release/$framework/osx-x64/publish
 
+# 4.5 Remove debug symbol (.pdb) files from the publish folders before archiving.
+# These are not needed by end users but otherwise inflate the release archives by
+# ~100MB on Windows (native libSkiaSharp.pdb / libHarfBuzzSharp.pdb are the big ones).
+echo "Deleting debug symbol (.pdb) files from the publish folders"
+find Gui/bin/Release/$framework/win-x64/publish -name '*.pdb' -delete
+find Gui/bin/Release/$framework/linux-x64/publish -name '*.pdb' -delete
+find Gui/bin/Release/$framework/osx-x64/publish -name '*.pdb' -delete
+
 # 5. Create the zip and tar archives
 pushd "Gui/bin/Release/$framework/"
 

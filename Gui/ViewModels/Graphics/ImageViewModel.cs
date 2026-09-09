@@ -1,5 +1,6 @@
 using Avalonia.Media.Imaging;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.Dithering;
 using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
@@ -97,6 +98,10 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 	[Reactive, Browsable(false)]
 	public Bitmap? DisplayedImage { get; private set; }
 
+	/// <summary>If set, this dithering method is used when converting the RGBA image to palette data on the next image change.</summary>
+	[Reactive, Browsable(false)]
+	public DitheringMethod? DitheringMethod { get; set; }
+
 	[Browsable(false)]
 	public Image<Rgba32> UnderlyingImage
 	{
@@ -136,14 +141,14 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 		Model = graphicsElement;
 		UnderlyingImage = Model.Image!;
 
-		_ = this.WhenAnyValue(o => o.UnderlyingImage)
-			.Where(x => x != null)
+		_ = this.WhenAnyValue(o => o.UnderlyingImage, o => o.DitheringMethod)
+			.Where(x => x.Item1 != null)
 			.Subscribe(_ =>
 			{
 				SetDisplayedImage(UnderlyingImage!.ToAvaloniaBitmap());
 				this.RaisePropertyChanged(nameof(Width));
 				this.RaisePropertyChanged(nameof(Height));
-				Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
+				Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags, DitheringMethod);
 				Model.Width = (short)UnderlyingImage.Width;
 				Model.Height = (short)UnderlyingImage.Height;
 			})

@@ -7,7 +7,6 @@ using Definitions.Database;
 using Definitions.DTO;
 using Definitions.ObjectModels.Types;
 using ObjectService.Services;
-using static Definitions.ObjectAvailability;
 
 namespace ObjectService.Pages.Objects;
 

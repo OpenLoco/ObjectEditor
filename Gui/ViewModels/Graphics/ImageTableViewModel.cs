@@ -1,8 +1,11 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using Core.Graphics;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.Dithering;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -19,6 +22,8 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Gui.Views;
+using Gui.Models;
 
 namespace Gui.ViewModels.Graphics;
 
@@ -103,10 +108,11 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	readonly ObjectType? objectType;
 	readonly ILocoStruct? objectModel;
 	readonly string? groupingConfigFilePath;
+	readonly EditorSettings? editorSettings;
 
 	ImageTable Model { get; init; }
 
-	public ImageTableViewModel(ImageTable imageTable, ILogger logger, ObjectType? objectType = null, ILocoStruct? objectModel = null, string? groupingConfigFilePath = null)
+	public ImageTableViewModel(ImageTable imageTable, ILogger logger, ObjectType? objectType = null, ILocoStruct? objectModel = null, string? groupingConfigFilePath = null, EditorSettings? editorSettings = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 
@@ -115,6 +121,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		this.objectType = objectType;
 		this.objectModel = objectModel;
 		this.groupingConfigFilePath = groupingConfigFilePath;
+		this.editorSettings = editorSettings;
 		RecreateViewModelGroupsFromImageTable(Model);
 
 		// swatches/palettes
@@ -287,7 +294,10 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			await ImportImagesAsync(dirPath);
+
+			// Show dithering popup if needed
+			var ditheringMethod = await ShowDitheringPopupAsync();
+			await ImportImagesAsync(dirPath, ditheringMethod);
 		}
 
 		animationTimer.Start();
@@ -337,6 +347,14 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		if (filename == null)
 		{
 			return;
+		}
+
+		// Show dithering popup if needed
+		var ditheringMethod = await ShowDitheringPopupAsync();
+
+		if (SelectedImage != null)
+		{
+			SelectedImage.DitheringMethod = ditheringMethod;
 		}
 
 		_ = SelectedImage?.UnderlyingImage = Image.Load<Rgba32>(filename);
@@ -460,13 +478,44 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		return result.Length == 0 ? "0" : result;
 	}
 
+	async Task<DitheringMethod?> ShowDitheringPopupAsync()
+	{
+		// If the user has set a default dithering method, use it without showing the popup
+		if (editorSettings != null && editorSettings.DefaultDitheringMethod != DitheringMethod.None)
+		{
+			return editorSettings.DefaultDitheringMethod;
+		}
+
+		if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime app || app.MainWindow == null)
+		{
+			return null;
+		}
+
+		var vm = new DitheringSelectionWindowViewModel(null);
+		var dialog = new DitheringSelectionWindow { DataContext = vm };
+		var result = await dialog.ShowDialog<DitheringSelectionWindowViewModel?>(app.MainWindow);
+
+		if (result != null && result.Confirmed)
+		{
+			if (result.SetAsDefault && editorSettings != null)
+			{
+				editorSettings.DefaultDitheringMethod = result.SelectedMethod;
+				editorSettings.Save(ObjectEditorContext.SettingsFilePathName, Logger);
+			}
+
+			return result.SelectedMethod;
+		}
+
+		return null; // user cancelled, use no dithering
+	}
+
 	async Task ImportSpritesJsonAsync(string filename)
 	{
 		_ = await ImageTableIo.ApplyOffsetsAsync(Model, filename, Logger);
 		RecreateViewModelGroupsFromImageTable(Model);
 	}
 
-	async Task ImportImagesAsync(string directory)
+	async Task ImportImagesAsync(string directory, DitheringMethod? ditheringMethod = null)
 	{
 		// Step 1: Clear selection model
 		ClearSelectionModel();
@@ -474,7 +523,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		try
 		{
 			// Step 2+3: Load sprites.json and all the PNG files it references
-			var importedImages = await ImageTableIo.LoadImagesAsync(directory, Model.PaletteMap, Logger);
+			var importedImages = await ImageTableIo.LoadImagesAsync(directory, Model.PaletteMap, Logger, ditheringMethod);
 			if (importedImages == null)
 			{
 				return;

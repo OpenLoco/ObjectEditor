@@ -171,7 +171,13 @@ x:DataType="vmg:ImageTableViewModel">
 									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop</TextBlock>
 								</DockPanel>
 							</Button>
-							<StackPanel Orientation="Vertical">
+							<Button Command="{Binding DitherAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Applies the chosen dithering method to all images">
+							<DockPanel>
+								<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Dither</TextBlock>
+							</DockPanel>
+						</Button>
+						<StackPanel Orientation="Vertical">
 								<TextBlock>
 									Offsets
 								</TextBlock>
@@ -243,7 +249,8 @@ x:DataType="vmg:ImageTableViewModel">
 												<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
 													<Image.ContextMenu>
 														<ContextMenu>
-															<MenuItem Header="Replace" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+															<MenuItem Header="Replace" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).ReplaceImageCommand}" CommandParameter="{Binding}"/>
+															<MenuItem Header="Dither" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).DitherImageCommand}" CommandParameter="{Binding}"/>
 															<MenuItem Header="Crop" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).CropImageCommand}"/>
 															<MenuItem Header="Delete" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).DeleteImageCommand}"/>
 															<MenuItem Header="Insert before" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).InsertImageAtCommand}" CommandParameter="{x:True}"/>

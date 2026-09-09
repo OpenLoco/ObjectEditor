@@ -62,6 +62,10 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	[Reactive]
 	public ICommand ReplaceImageCommand { get; set; }
 	[Reactive]
+	public ICommand DitherImageCommand { get; set; }
+	[Reactive]
+	public ICommand DitherAllImagesCommand { get; set; }
+	[Reactive]
 	public ICommand CropImageCommand { get; set; }
 	[Reactive]
 	public ICommand DeleteImageCommand { get; set; }
@@ -152,12 +156,14 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImagesAsync);
 		ImportJsonOffsetsCommand = ReactiveCommand.CreateFromTask(ImportJsonOffsetsAsync);
 		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImagesAsync);
-		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImageAsync);
+		ReplaceImageCommand = ReactiveCommand.CreateFromTask<ImageViewModel>(ReplaceImageAsync);
 		CropImageCommand = ReactiveCommand.Create(CropImage);
 		DeleteImageCommand = ReactiveCommand.CreateFromTask(DeleteImageAsync);
 		InsertImageAtCommand = ReactiveCommand.CreateFromTask<bool>(InsertImageAtAsync);
 		AppendImageCommand = ReactiveCommand.CreateFromTask<string>(AppendImageAsync);
 		CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
+		DitherImageCommand = ReactiveCommand.CreateFromTask<ImageViewModel>(DitherImageAsync);
+		DitherAllImagesCommand = ReactiveCommand.CreateFromTask(DitherAllImagesAsync);
 
 		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
 		{
@@ -335,8 +341,13 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		await ExportImages(dirPath, prependGroupAndImageNameInFilename);
 	}
 
-	public async Task ReplaceImageAsync()
+	public async Task ReplaceImageAsync(ImageViewModel image)
 	{
+		if (image == null)
+		{
+			return;
+		}
+
 		var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.PngFileTypes);
 		if (openFile == null)
 		{
@@ -352,12 +363,41 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		// Show dithering popup if needed
 		var ditheringMethod = await ShowDitheringPopupAsync();
 
-		if (SelectedImage != null)
+		// Operate on the image that was right-clicked (passed as the command parameter), not the
+		// animation-timer-driven SelectedImage. Load the image first so the preview/width/height update,
+		// then apply the chosen dithering method so the palette data and dithered preview reflect it.
+		image.UnderlyingImage = Image.Load<Rgba32>(filename);
+		image.DitheringMethod = ditheringMethod;
+	}
+
+	public async Task DitherImageAsync(ImageViewModel image)
+	{
+		if (image == null)
 		{
-			SelectedImage.DitheringMethod = ditheringMethod;
+			return;
 		}
 
-		_ = SelectedImage?.UnderlyingImage = Image.Load<Rgba32>(filename);
+		var ditheringMethod = await ShowDitheringPopupAsync();
+		if (ditheringMethod == null)
+		{
+			return; // user cancelled - leave the image's existing dithering (if any) untouched
+		}
+
+		image.DitheringMethod = ditheringMethod;
+	}
+
+	public async Task DitherAllImagesAsync()
+	{
+		var ditheringMethod = await ShowDitheringPopupAsync();
+		if (ditheringMethod == null)
+		{
+			return; // user cancelled
+		}
+
+		foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
+		{
+			ivm.DitheringMethod = ditheringMethod;
+		}
 	}
 
 	public async Task DeleteImageAsync()

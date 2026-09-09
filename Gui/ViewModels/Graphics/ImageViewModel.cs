@@ -130,6 +130,8 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	protected GraphicsElement Model { get; init; } = null!;
 
+	readonly PaletteMap paletteMap;
+
 	public ImageViewModel()
 	{ }
 
@@ -139,19 +141,12 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)
 	{
 		Model = graphicsElement;
+		this.paletteMap = paletteMap;
 		UnderlyingImage = Model.Image!;
 
 		_ = this.WhenAnyValue(o => o.UnderlyingImage, o => o.DitheringMethod)
 			.Where(x => x.Item1 != null)
-			.Subscribe(_ =>
-			{
-				SetDisplayedImage(UnderlyingImage!.ToAvaloniaBitmap());
-				this.RaisePropertyChanged(nameof(Width));
-				this.RaisePropertyChanged(nameof(Height));
-				Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags, DitheringMethod);
-				Model.Width = (short)UnderlyingImage.Width;
-				Model.Height = (short)UnderlyingImage.Height;
-			})
+			.Subscribe(_ => RefreshDisplayedImage())
 			.DisposeWith(subscriptions);
 
 		_ = this.WhenAnyValue(o => o.DisplayedImage, o => o.XOffset, o => o.YOffset, o => o.Width, o => o.Height)
@@ -196,6 +191,35 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 		DisplayedImage?.Dispose();
 		DisplayedImage = bitmap;
 		this.RaisePropertyChanged(nameof(DisplayedImage));
+	}
+
+	/// <summary>Synchronises the model's palette data with the underlying RGBA image and refreshes the
+	/// displayed preview. When a dithering method is active the preview shows the palette-converted
+	/// (dithered) result so its effect is visible in the editor rather than the un-dithered source.</summary>
+	void RefreshDisplayedImage()
+	{
+		Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags, DitheringMethod);
+		Model.Width = (short)UnderlyingImage.Width;
+		Model.Height = (short)UnderlyingImage.Height;
+
+		var method = DitheringMethod;
+		var applyingDithering = method.HasValue
+			// fully-qualified on purpose: a property named DitheringMethod shadows the enum type name here
+			&& method.Value != Definitions.ObjectModels.Graphics.Dithering.DitheringMethod.None
+			&& !Flags.HasFlag(GraphicsElementFlags.IsBgr24);
+
+		if (applyingDithering
+			&& paletteMap.TryConvertG1ToRgba32Bitmap(Model, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var dithered))
+		{
+			SetDisplayedImage(dithered!.ToAvaloniaBitmap());
+		}
+		else
+		{
+			SetDisplayedImage(UnderlyingImage!.ToAvaloniaBitmap());
+		}
+
+		this.RaisePropertyChanged(nameof(Width));
+		this.RaisePropertyChanged(nameof(Height));
 	}
 
 	public void CropImage()

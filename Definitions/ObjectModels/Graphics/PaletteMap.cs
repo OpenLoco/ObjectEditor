@@ -208,10 +208,7 @@ public class PaletteMap
 		}
 
 		return bytes;
-
-	/// <summary>Looks up the palette index for a given pixel, matching the non-dithered conversion logic.</summary>
-	private byte PaletteIndexLookup(Rgba32 pixel)
-		=> ColorToPaletteIndex(Color.FromPixel(pixel));
+	}
 
 	public (Color Color, byte Index)[]? GetRemapSwatchFromName(ColourSwatch swatch)
 		=> swatch switch

@@ -19,8 +19,8 @@ public record GraphicsElementJson(
 		: this(path, xOffset, yOffset, null, null, name)
 	{ }
 
-	public GraphicsElementJson(string path, GraphicsElement g1Element)
-		: this(path, g1Element.XOffset, g1Element.YOffset, g1Element.ZoomOffset, g1Element.Flags, g1Element.Name)
+	public GraphicsElementJson(string path, GraphicsImage image)
+		: this(path, image.XOffset, image.YOffset, image.ZoomOffset, image.Flags, image.Name)
 	{ }
 
 	public static GraphicsElementJson Zero

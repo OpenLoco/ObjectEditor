@@ -236,8 +236,6 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				}
 				else
 				{
-					_ = Model.LocoObject.ImageTable?.PaletteMap = EditorContext.PaletteMap;
-
 					if (Model.LocoObject.ImageTable != null)
 					{
 						var configFilePath = Path.Combine(EditorContext.Settings.ConfigFolder, ObjectEditorContext.ImageTableGroupsFileName);

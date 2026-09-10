@@ -292,7 +292,7 @@ public static class SawyerStreamReader
 				currElement.ImageData = DecodeRLEImageData(currElement);
 			}
 
-			graphicsElements.Add(currElement.Convert(DefaultImageTableNameProvider.GetImageName(i), i));
+			graphicsElements.Add(currElement.Convert());
 		}
 
 		return (g1Header, graphicsElements);

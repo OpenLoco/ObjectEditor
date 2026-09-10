@@ -63,7 +63,7 @@ public class G1Tests
 		var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
 		var d1 = g1!.ImageTable.GraphicsElements[element];
 		var e1 = SawyerStreamWriter.EncodeRLEImageData(d1);
-		var dd1 = new DatG1Element32(0, d1.Width, d1.Height, d1.XOffset, d1.YOffset, (DatG1ElementFlags)d1.Flags, d1.ZoomOffset)
+		var dd1 = new DatG1Element32(0, (short)d1.Width, (short)d1.Height, d1.XOffset, d1.YOffset, (DatG1ElementFlags)d1.Flags, d1.ZoomOffset)
 		{
 			ImageData = e1
 		};
@@ -71,7 +71,7 @@ public class G1Tests
 		Assert.That(d2, Is.EqualTo(d1.ImageData).AsCollection);
 	}
 
-	public static void AssertG1ElementsEqual(GraphicsElement expected, GraphicsElement actual, int i)
+	public static void AssertG1ElementsEqual(GraphicsImage expected, GraphicsImage actual, int i)
 	{
 		//Assert.That(actual.Offset, Is.EqualTo(expected.Offset), $"[{i}]");
 		Assert.That(actual.Width, Is.EqualTo(expected.Width), $"[{i}]");

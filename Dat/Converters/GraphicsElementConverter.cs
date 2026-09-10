@@ -19,7 +19,23 @@ public static class GraphicsElementConverter
 			ImageData = graphicsElement.ImageData,
 		};
 
-	public static GraphicsElement Convert(this DatG1Element32 graphicsElement, string name, int index)
+	/// <summary>Encodes an in-memory <see cref="GraphicsImage"/> into the DAT serialisation DTO,
+	/// deriving the raw palette/row bytes from the image.</summary>
+	public static DatG1Element32 ToDatG1Element32(this GraphicsImage graphicsImage, PaletteMap paletteMap)
+		=> new(
+			0U, // Offset is not used in the DatG1Element32, it is set later when writing to the file
+			(int16_t)graphicsImage.Width,
+			(int16_t)graphicsImage.Height,
+			graphicsImage.XOffset,
+			graphicsImage.YOffset,
+			(DatG1ElementFlags)graphicsImage.Flags,
+			graphicsImage.ZoomOffset
+		)
+		{
+			ImageData = graphicsImage.ToG1Data(paletteMap),
+		};
+
+	public static GraphicsElement Convert(this DatG1Element32 graphicsElement)
 		=> new()
 		{
 			Width = graphicsElement.Width,
@@ -29,7 +45,5 @@ public static class GraphicsElementConverter
 			Flags = (GraphicsElementFlags)graphicsElement.Flags,
 			ZoomOffset = graphicsElement.ZoomOffset,
 			ImageData = graphicsElement.ImageData,
-			Name = name,
-			ImageTableIndex = index,
 		};
 }

@@ -132,8 +132,8 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		ColourSwatches = [.. ColourSwatchesArr.Select(x => new ColourRemapSwatchViewModel()
 		{
 			Swatch = x,
-			Colour = Model.PaletteMap.GetRemapSwatchFromName(x)?[0].Color.ToAvaloniaColor() ?? Avalonia.Media.Colors.Red,
-			GradientColours = [.. Model.PaletteMap.GetRemapSwatchFromName(x)?.Select(x => x.Color.ToAvaloniaColor()) ?? [Avalonia.Media.Colors.DarkRed]],
+			Colour = PaletteMapLoader.Current.GetRemapSwatchFromName(x)?[0].Color.ToAvaloniaColor() ?? Avalonia.Media.Colors.Red,
+			GradientColours = [.. PaletteMapLoader.Current.GetRemapSwatchFromName(x)?.Select(x => x.Color.ToAvaloniaColor()) ?? [Avalonia.Media.Colors.DarkRed]],
 		})];
 
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
@@ -230,7 +230,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		GroupedImageViewModels.Clear();
 		foreach (var group in imageTable.Groups)
 		{
-			var givm = new GroupedImageViewModel(group.Name, group.GraphicsElements.Select(ge => new ImageViewModel(ge, Model.PaletteMap)));
+			var givm = new GroupedImageViewModel(group.Name, group.GraphicsElements.Select(ge => new ImageViewModel(ge, PaletteMapLoader.Current)));
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
 		}
@@ -366,7 +366,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		// Operate on the image that was right-clicked (passed as the command parameter), not the
 		// animation-timer-driven SelectedImage. Load the image first so the preview/width/height update,
 		// then apply the chosen dithering method so the palette data and dithered preview reflect it.
-		image.UnderlyingImage = Image.Load<Rgba32>(filename);
+		image.UnderlyingImage = GraphicsImage.FromRgba(image.Flags, Image.Load<Rgba32>(filename), image.XOffset, image.YOffset, image.ZoomOffset, image.Name, image.ImageTableIndex);
 		image.DitheringMethod = ditheringMethod;
 	}
 
@@ -426,7 +426,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 		// this doesn't work, because the groups don't store which indices they own, then
 		// if a group is ever empty we can't ever add something into it with the correct index
-		group.GraphicsElements.Add(ImageTableHelpers.GetErrorGraphicsElement(Model.Groups.Sum(x => x.GraphicsElements.Count)));
+		group.GraphicsElements.Add(ImageTableHelpers.GetErrorGraphicsImage(Model.Groups.Sum(x => x.GraphicsElements.Count)));
 		RecreateViewModelGroupsFromImageTable(Model);
 		await Task.CompletedTask;
 	}
@@ -497,7 +497,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	{
 		foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
 		{
-			ivm.RecolourImage(primary, secondary, Model.PaletteMap);
+			ivm.RecolourImage(primary, secondary, PaletteMapLoader.Current);
 		}
 	}
 
@@ -563,7 +563,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		try
 		{
 			// Step 2+3: Load sprites.json and all the PNG files it references
-			var importedImages = await ImageTableIo.LoadImagesAsync(directory, Model.PaletteMap, Logger, ditheringMethod);
+			var importedImages = await ImageTableIo.LoadImagesAsync(directory, PaletteMapLoader.Current, Logger, ditheringMethod);
 			if (importedImages == null)
 			{
 				return;
@@ -585,7 +585,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	}
 
 	async Task ExportImages(string directory, bool prependGroupAndImageNameInFilename)
-		=> _ = await ImageTableIo.ExportAsync(Model, directory, prependGroupAndImageNameInFilename, Logger);
+		=> _ = await ImageTableIo.ExportAsync(Model, directory, prependGroupAndImageNameInFilename, PaletteMapLoader.Current, Logger);
 
 	void DisposeGroupedViewModels()
 	{

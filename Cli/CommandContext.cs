@@ -13,7 +13,15 @@ public sealed class CommandContext(CommandLine commandLine, ILogger logger)
 	public ILogger Logger { get; } = logger;
 
 	public PaletteMap PaletteMap
-		=> field ??= PaletteMapLoader.Load(Args.GetString("palette"));
+		=> field ??= InitializePalette();
+
+	PaletteMap InitializePalette()
+	{
+		// Initialise the process-wide palette service (used everywhere without threading it as an argument).
+		var palette = PaletteMapLoader.Load(Args.GetString("palette"));
+		PaletteMapLoader.SetCurrent(palette);
+		return palette;
+	}
 
 	public static IReadOnlySet<string> CommonFlags { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 	{

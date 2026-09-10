@@ -20,19 +20,8 @@ public class DesignImageViewModel : ImageViewModel
 {
 	public DesignImageViewModel()
 	{
-		Model = new GraphicsElement()
-		{
-			Flags = GraphicsElementFlags.None,
-			Name = "NewImage",
-			Width = 16,
-			Height = 16,
-			Image = new Image<Rgba32>(16, 16),
-			ImageTableIndex = 0,
-			XOffset = 1,
-			YOffset = 2,
-			ZoomOffset = 3
-		};
-		UnderlyingImage = Model.Image!;
+		Model = GraphicsImage.FromRgba(GraphicsElementFlags.None, new Image<Rgba32>(16, 16), 1, 2, 3, "NewImage", 0);
+		UnderlyingImage = Model;
 	}
 }
 
@@ -46,11 +35,11 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	[Unit("px")]
 	public int Width
-		=> UnderlyingImage.Width;
+		=> UnderlyingImage!.Width;
 
 	[Unit("px")]
 	public int Height
-		=> UnderlyingImage.Height;
+		=> UnderlyingImage!.Height;
 
 	[Unit("px")]
 	public short XOffset
@@ -103,15 +92,25 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 	public DitheringMethod? DitheringMethod { get; set; }
 
 	[Browsable(false)]
-	public Image<Rgba32> UnderlyingImage
+	public GraphicsImage? UnderlyingImage
 	{
-		get => Model.Image!;
+		get => Model;
 		set
 		{
-			if (!ReferenceEquals(Model.Image, value))
+			// The table owns the same GraphicsImage that this view model models, and Model is init-only,
+			// so adopt the replacement's pixel data and metadata in-place rather than reassigning Model.
+			if (Model != null && value != null && !ReferenceEquals(Model, value))
 			{
-				Model.Image?.Dispose();
-				Model.Image = value;
+				Model.ReplaceDecoded(value.Rgba, value.Indexed);
+				Model.ImageData = value.ImageData;
+				Model.Width = value.Width;
+				Model.Height = value.Height;
+				Model.XOffset = value.XOffset;
+				Model.YOffset = value.YOffset;
+				Model.ZoomOffset = value.ZoomOffset;
+				Model.Flags = value.Flags;
+				Model.Name = value.Name;
+				Model.ImageTableIndex = value.ImageTableIndex;
 			}
 
 			this.RaisePropertyChanged(nameof(UnderlyingImage));
@@ -128,7 +127,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 				DisplayedImage.Size.Width + 2,
 				DisplayedImage.Size.Height + 2);
 
-	protected GraphicsElement Model { get; init; } = null!;
+	protected GraphicsImage Model { get; init; } = null!;
 
 	readonly PaletteMap paletteMap;
 
@@ -138,11 +137,11 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 	readonly CompositeDisposable subscriptions = [];
 	bool disposed;
 
-	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)
+	public ImageViewModel(GraphicsImage image, PaletteMap paletteMap)
 	{
-		Model = graphicsElement;
+		Model = image;
 		this.paletteMap = paletteMap;
-		UnderlyingImage = Model.Image!;
+		UnderlyingImage = image;
 
 		_ = this.WhenAnyValue(o => o.UnderlyingImage, o => o.DitheringMethod)
 			.Where(x => x.Item1 != null)
@@ -156,20 +155,19 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	public void RecolourImage(ColourSwatch primary, ColourSwatch secondary, PaletteMap paletteMap)
 	{
-		// turn rgba32 into raw palette image
-		var rawData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
+		// Decode the underlying image to RGBA, then re-encode to raw palette data for re-colouring.
+		var rgba = UnderlyingImage!.ToRgba(paletteMap);
+		var rawData = paletteMap.ConvertRgba32ImageToG1Data(rgba, Flags);
 
 		var dummyElement = new GraphicsElement
 		{
-			Name = Name, // not necessary for palette
-			Width = (short)UnderlyingImage.Width,
-			Height = (short)UnderlyingImage.Height,
+			Width = (short)rgba.Width,
+			Height = (short)rgba.Height,
 			XOffset = XOffset,
 			YOffset = YOffset,
 			Flags = Flags,
 			ZoomOffset = ZoomOffset,
 			ImageData = rawData,
-			ImageTableIndex = ImageTableIndex, // not necessary for palette
 		};
 
 		if (!paletteMap.TryConvertG1ToRgba32Bitmap(dummyElement, primary, secondary, out var image))
@@ -198,9 +196,10 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 	/// (dithered) result so its effect is visible in the editor rather than the un-dithered source.</summary>
 	void RefreshDisplayedImage()
 	{
-		Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags, DitheringMethod);
-		Model.Width = (short)UnderlyingImage.Width;
-		Model.Height = (short)UnderlyingImage.Height;
+		var rgba = UnderlyingImage!.ToRgba(paletteMap);
+		Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(rgba, Flags, DitheringMethod);
+		Model.Width = (short)rgba.Width;
+		Model.Height = (short)rgba.Height;
 
 		var method = DitheringMethod;
 		var applyingDithering = method.HasValue
@@ -208,14 +207,23 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 			&& method.Value != Definitions.ObjectModels.Graphics.Dithering.DitheringMethod.None
 			&& !Flags.HasFlag(GraphicsElementFlags.IsBgr24);
 
+		// The recolor/preview routines operate on the serialisation DTO; build a shim element from the image's raw bytes.
+		var shim = new GraphicsElement
+		{
+			Width = (short)Model.Width,
+			Height = (short)Model.Height,
+			Flags = Flags,
+			ImageData = Model.ImageData,
+		};
+
 		if (applyingDithering
-			&& paletteMap.TryConvertG1ToRgba32Bitmap(Model, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var dithered))
+			&& paletteMap.TryConvertG1ToRgba32Bitmap(shim, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var dithered))
 		{
 			SetDisplayedImage(dithered!.ToAvaloniaBitmap());
 		}
 		else
 		{
-			SetDisplayedImage(UnderlyingImage!.ToAvaloniaBitmap());
+			SetDisplayedImage(rgba.ToAvaloniaBitmap());
 		}
 
 		this.RaisePropertyChanged(nameof(Width));
@@ -224,20 +232,16 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	public void CropImage()
 	{
-		var cropRegion = GraphicsElementOperations.FindCropRegion(UnderlyingImage);
+		if (UnderlyingImage == null)
+		{
+			return;
+		}
 
-		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
-		{
-			UnderlyingImage = UnderlyingImage.Clone(i => i.Crop(new Rectangle(0, 0, 1, 1)));
-			XOffset = 0;
-			YOffset = 0;
-		}
-		else
-		{
-			UnderlyingImage = UnderlyingImage.Clone(i => i.Crop(cropRegion));
-			XOffset += (short)cropRegion.Left;
-			YOffset += (short)cropRegion.Top;
-		}
+		// Crop mutates the GraphicsImage (Model) in-place, adjusting its offsets.
+		UnderlyingImage.Crop(paletteMap);
+		RefreshDisplayedImage();
+		this.RaisePropertyChanged(nameof(XOffset));
+		this.RaisePropertyChanged(nameof(YOffset));
 	}
 
 	public void Dispose()
@@ -257,7 +261,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 		{
 			subscriptions.Dispose();
 			DisplayedImage?.Dispose();
-			// The underlying GraphicsElement image is owned by the model and may be shared across view models.
+			// The underlying GraphicsImage is owned by the model and may be shared across view models.
 			// Do not dispose it here during regrouping.
 		}
 

@@ -18,31 +18,49 @@ public class G1Dat
 	public bool IsSteamG1
 		=> ImageTable.GraphicsElements.Count == SteamImageCount;
 
+	/// <summary>Decodes each serialised <see cref="GraphicsElement"/> into an in-memory <see cref="GraphicsImage"/>.</summary>
+	static List<GraphicsImage> SelectGraphicsImages(List<GraphicsElement> graphicsElements)
+	{
+		var images = new List<GraphicsImage>(graphicsElements.Count);
+		for (var i = 0; i < graphicsElements.Count; ++i)
+		{
+			var image = graphicsElements[i].Decode(PaletteMapLoader.LoadDefault());
+			image.Name = DefaultImageTableNameProvider.GetImageName(i);
+			image.ImageTableIndex = i;
+			images.Add(image);
+		}
+		return images;
+	}
+
 	public G1Dat(G1Header g1Header, List<GraphicsElement> graphicsElements)
 	{
 		G1Header = g1Header;
-		if (graphicsElements.Count == SteamImageCount)
+
+		// Convert the DAT serialisation DTOs into the in-memory GraphicsImage model at the G1 loader boundary.
+		var images = SelectGraphicsImages(graphicsElements);
+
+		if (images.Count == SteamImageCount)
 		{
 			ImageTable = new ImageTable
 			{
 				// Note: The grouping below is good but its for steam only, and because elements are out of order, saving is not possible unless each element stores its index
 				Groups =
 				[
-					new ("terrain-masks", [.. graphicsElements[0..417], .. graphicsElements[3629..3896]]),
-					new ("palettes", [.. graphicsElements[417..428], .. graphicsElements[2170..2305]]),
-					new ("arrows", [.. graphicsElements[428..444], .. graphicsElements[449..457], .. graphicsElements[3492..3504]]),
-					new ("unk", graphicsElements[444..449]),
-					new ("supports", graphicsElements[457..1117]),
-					new ("glyphs", graphicsElements[1117..2170]),
-					new ("loading-bar", graphicsElements[2326..2335]),
-					new ("interface", [.. graphicsElements[2335..2470], .. graphicsElements[3477..3479], .. graphicsElements[2305..2326], .. graphicsElements[3539..3547]]),
-					new ("height-markers", graphicsElements[2470..3238]),
-					new ("numerical-markers", graphicsElements[3238..3302]),
-					new ("unk", graphicsElements[3302..3362]),
-					new ("particles", graphicsElements[3362..3477]),
-					new ("masks", [.. graphicsElements[3479..3492], graphicsElements[3504]]),
-					new ("object-types", graphicsElements[3505..3539]),
-					new ("title", graphicsElements[3547..3629]),
+					new ("terrain-masks", [.. images[0..417], .. images[3629..3896]]),
+					new ("palettes", [.. images[417..428], .. images[2170..2305]]),
+					new ("arrows", [.. images[428..444], .. images[449..457], .. images[3492..3504]]),
+					new ("unk", images[444..449]),
+					new ("supports", images[457..1117]),
+					new ("glyphs", images[1117..2170]),
+					new ("loading-bar", images[2326..2335]),
+					new ("interface", [.. images[2335..2470], .. images[3477..3479], .. images[2305..2326], .. images[3539..3547]]),
+					new ("height-markers", images[2470..3238]),
+					new ("numerical-markers", images[3238..3302]),
+					new ("unk", images[3302..3362]),
+					new ("particles", images[3362..3477]),
+					new ("masks", [.. images[3479..3492], images[3504]]),
+					new ("object-types", images[3505..3539]),
+					new ("title", images[3547..3629]),
 				]
 			};
 		}
@@ -52,27 +70,27 @@ public class G1Dat
 			{
 				Groups =
 				[
-					new ("terrain-masks", [.. graphicsElements[0..417], .. graphicsElements[3631..3898]]),
-					new ("palettes", [.. graphicsElements[417..428], .. graphicsElements[2170..2305]]),
-					new ("arrows", [.. graphicsElements[428..444], .. graphicsElements[449..457], .. graphicsElements[3492..3504]]),
-					new ("unk", graphicsElements[444..449]),
-					new ("supports", graphicsElements[457..1117]),
-					new ("glyphs", [.. graphicsElements[1117..2170], .. graphicsElements[3898..4122]]),
-					new ("loading-bar", graphicsElements[2326..2335]),
-					new ("interface", [.. graphicsElements[2335..2470], .. graphicsElements[3477..3479], .. graphicsElements[2305..2326], .. graphicsElements[3539..3547]]),
-					new ("height-markers", graphicsElements[2470..3238]),
-					new ("numerical-markers", graphicsElements[3238..3302]),
-					new ("unk", graphicsElements[3302..3362]),
-					new ("particles", graphicsElements[3362..3477]),
-					new ("masks", [.. graphicsElements[3479..3492], graphicsElements[3504]]),
-					new ("object-types", graphicsElements[3505..3539]),
-					new ("title", graphicsElements[3547..3631]),
+					new ("terrain-masks", [.. images[0..417], .. images[3631..3898]]),
+					new ("palettes", [.. images[417..428], .. images[2170..2305]]),
+					new ("arrows", [.. images[428..444], .. images[449..457], .. images[3492..3504]]),
+					new ("unk", images[444..449]),
+					new ("supports", images[457..1117]),
+					new ("glyphs", [.. images[1117..2170], .. images[3898..4122]]),
+					new ("loading-bar", images[2326..2335]),
+					new ("interface", [.. images[2335..2470], .. images[3477..3479], .. images[2305..2326], .. images[3539..3547]]),
+					new ("height-markers", images[2470..3238]),
+					new ("numerical-markers", images[3238..3302]),
+					new ("unk", images[3302..3362]),
+					new ("particles", images[3362..3477]),
+					new ("masks", [.. images[3479..3492], images[3504]]),
+					new ("object-types", images[3505..3539]),
+					new ("title", images[3547..3631]),
 				]
 			};
 		}
 
 		Debug.Assert(G1Header.NumEntries == ImageTable.GraphicsElements.Count);
-		Debug.Assert(ImageTable.GraphicsElements.Count == graphicsElements.Count);
+		Debug.Assert(ImageTable.GraphicsElements.Count == images.Count);
 	}
 
 	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)

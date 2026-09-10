@@ -260,7 +260,9 @@ public class MainWindowViewModel : ViewModelBase
 
 	async Task LoadDefaultPalette()
 	{
-		EditorContext.PaletteMap = await Task.Run(PaletteMapLoader.LoadDefault);
+		// The palette is a global service: (re)initialise it and reload any open tables so their
+		// displayed images pick up the change. The underlying image tables are not modified.
+		await Task.Run(() => PaletteMapLoader.SetCurrent(PaletteMapLoader.LoadDefault()));
 		await CurrentTabModel.ReloadAllAsync();
 	}
 
@@ -279,7 +281,7 @@ public class MainWindowViewModel : ViewModelBase
 			return;
 		}
 
-		EditorContext.PaletteMap = new PaletteMap(path);
+		await Task.Run(() => PaletteMapLoader.SetCurrent(new PaletteMap(path)));
 		await CurrentTabModel.ReloadAllAsync();
 	}
 

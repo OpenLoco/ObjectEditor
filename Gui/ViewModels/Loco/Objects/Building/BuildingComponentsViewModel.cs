@@ -131,7 +131,7 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel, IDisposab
 						{
 							XBase = layer[i].XOffset + (MaxWidth / 2),
 							YBase = layer[i].YOffset - cumulativeOffset + MaxHeight * 0.80,
-							DisplayedImage = layer[i].Image?.ToAvaloniaBitmap(),
+							DisplayedImage = layer[i].ToAvaloniaBitmap(PaletteMapLoader.Current),
 							XOffset = 0,
 							YOffset = 0,
 						};

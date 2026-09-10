@@ -180,7 +180,10 @@ public static class DatabaseInitializer
 		if (unowned.Count > 0)
 		{
 			foreach (var obj in unowned)
+			{
 				obj.OwnerUserId = adminUser.Id;
+			}
+
 			await db.SaveChangesAsync();
 			logger.LogInformation("Assigned {Count} unowned objects to admin", unowned.Count);
 		}

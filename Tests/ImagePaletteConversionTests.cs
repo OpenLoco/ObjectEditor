@@ -1,4 +1,4 @@
-using Dat.FileParsing;
+﻿using Dat.FileParsing;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Graphics.Dithering;
 using Microsoft.Extensions.Logging;
@@ -34,6 +34,114 @@ public class ImagePaletteConversionTests
 		_ = new PaletteMap(paletteFile);
 
 		Assert.That(PaletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
+	}
+
+	[Test]
+	public void GraphicsImageRoundTripPreservesReservedIndices()
+	{
+		var paletteMap = PaletteMapLoader.LoadDefault();
+
+		// Build a small indexed frame containing every reserved/remap index category.
+		// Row 0: primary remap indices; Row 1: secondary remap indices; Row 2: text/secondary + transparent.
+		byte[][] rows =
+		[
+			[paletteMap.PrimaryRemap[0].Index, paletteMap.PrimaryRemap[1].Index, paletteMap.ValidColours[0].Index],
+			[paletteMap.SecondaryRemap[0].Index, paletteMap.SecondaryRemap[1].Index, paletteMap.ValidColours[1].Index],
+			[0, paletteMap.TextRendering[0].Index, paletteMap.ChunkedTransparent.Index],
+		];
+
+		IndexedImageFrame<Rgba32> frame;
+		Assert.That(paletteMap.TryConvertImageDataToIndexedImage(MakeElementFromRows(rows), out frame), Is.True, "indexed frame built from raw byte data");
+
+		var image = GraphicsImage.FromIndexed(GraphicsElementFlags.None, frame);
+		var g1 = image.ToG1Data(paletteMap);
+
+		Assert.That(g1, Is.EqualTo(FlattenRows(rows)), "byte-for-byte round trip preserves indexed data");
+		image.Dispose();
+	}
+
+	[Test]
+	[TestCase(DitheringMethod.FloydSteinberg)]
+	[TestCase(DitheringMethod.Atkinson)]
+	[TestCase(DitheringMethod.Burkes)]
+	[TestCase(DitheringMethod.JarvisJudiceNinke)]
+	[TestCase(DitheringMethod.Sierra2)]
+	[TestCase(DitheringMethod.Sierra3)]
+	[TestCase(DitheringMethod.SierraLite)]
+	[TestCase(DitheringMethod.StevensonArce)]
+	[TestCase(DitheringMethod.Stucki)]
+	[TestCase(DitheringMethod.Bayer2x2)]
+	[TestCase(DitheringMethod.Bayer4x4)]
+	[TestCase(DitheringMethod.Bayer8x8)]
+	[TestCase(DitheringMethod.Bayer16x16)]
+	[TestCase(DitheringMethod.Ordered3x3)]
+	[TestCase(DitheringMethod.BlueNoise)]
+	[TestCase(DitheringMethod.Riemersma)]
+	public void GraphicsImageDitheringPreservesCompanyColours(DitheringMethod ditheringMethod)
+	{
+		var paletteMap = PaletteMapLoader.LoadDefault();
+
+		// Build an RGBA image with a primary-remap stripe, a secondary-remap stripe, and a valid-colour area.
+		var primary = paletteMap.PrimaryRemap[0].Color;
+		var secondary = paletteMap.SecondaryRemap[0].Color;
+		var valid = paletteMap.ValidColours[0].Color;
+
+		using var img = new Image<Rgba32>(6, 2);
+		for (var x = 0; x < 6; ++x)
+		{
+			img[x, 0] = x < 3 ? primary.ToPixel<Rgba32>() : secondary.ToPixel<Rgba32>();
+			img[x, 1] = valid.ToPixel<Rgba32>();
+		}
+
+		var image = GraphicsImage.FromRgba(GraphicsElementFlags.None, img);
+		var indexed = image.ToIndexed(paletteMap, ditheringMethod);
+		_ = indexed; // materialise the indexed frame so ToG1Data reuses it (also exercises ConvertRgba32ImageToIndexedImageDithering)
+
+		var g1 = image.ToG1Data(paletteMap, ditheringMethod);
+
+		// The 12 company-colour remap entries are all reserved, so any pixel that is NOT a valid colour
+		// after dithering must be a preserved company colour. Check the primary/secondary stripes:
+		// primary-coloured input pixels must decode to a primary remap index, secondary to a secondary remap index.
+		var primaryIndices = paletteMap.PrimaryRemap.Select(p => (int)p.Index).ToHashSet();
+		var secondaryIndices = paletteMap.SecondaryRemap.Select(p => (int)p.Index).ToHashSet();
+
+		for (var x = 0; x < 3; ++x)
+		{
+			Assert.That(primaryIndices.Contains(g1[x]), Is.True, $"row 0, col {x} must stay a primary remap colour ({ditheringMethod})");
+		}
+
+		for (var x = 3; x < 6; ++x)
+		{
+			Assert.That(secondaryIndices.Contains(g1[x]), Is.True, $"row 0, col {x} must stay a secondary remap colour ({ditheringMethod})");
+		}
+
+		// Valid-colour pixels should remain valid (non-reserved).
+		Assert.That(paletteMap.ReservedColours.Any(c => c.Index == g1[6]), Is.False, "valid colour stays valid");
+		image.Dispose();
+	}
+
+	/// <summary>Builds a small <see cref="GraphicsElement"/> whose raw image data is the flattened rows.</summary>
+	static GraphicsElement MakeElementFromRows(byte[][] rows)
+		=> new()
+		{
+			Width = (short)rows[0].Length,
+			Height = (short)rows.Length,
+			Flags = GraphicsElementFlags.None,
+			ImageData = FlattenRows(rows),
+		};
+
+	static byte[] FlattenRows(byte[][] rows)
+	{
+		var flattened = new List<byte>();
+		foreach (var row in rows)
+		{
+			foreach (var b in row)
+			{
+				flattened.Add(b);
+			}
+		}
+
+		return flattened.ToArray();
 	}
 
 	[Test]
@@ -84,7 +192,15 @@ public class ImagePaletteConversionTests
 		{
 			foreach (var element in g1Elements)
 			{
-				if (paletteMap.TryConvertG1ToRgba32Bitmap(element, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image0))
+				var shim = new GraphicsElement
+				{
+					Width = (short)element.Width,
+					Height = (short)element.Height,
+					Flags = element.Flags,
+					ImageData = element.ImageData,
+				};
+
+				if (paletteMap.TryConvertG1ToRgba32Bitmap(shim, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image0))
 				{
 					var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0!, element.Flags);
 					Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i++}]");

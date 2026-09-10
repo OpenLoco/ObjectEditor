@@ -1,41 +1,15 @@
-using System.Text.Json.Serialization;
-
 namespace Definitions.ObjectModels.Graphics;
 
-public record ImageTableGroup(string Name, List<GraphicsElement> GraphicsElements);
+public record ImageTableGroup(string Name, List<GraphicsImage> GraphicsElements);
 
 public class ImageTable : IHasGraphicsElements
 {
-	[JsonIgnore]
-	public PaletteMap PaletteMap
-	{
-		get => field!;
-		set
-		{
-			ArgumentNullException.ThrowIfNull(value);
-			field = value;
-
-			foreach (var g in Groups)
-			{
-				foreach (var ge in g.GraphicsElements)
-				{
-					if (!field.TryConvertG1ToRgba32Bitmap(ge, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
-					{
-						throw new InvalidOperationException("Failed to convert image");
-					}
-
-					ge.Image = image;
-				}
-			}
-		}
-	}
-
 	public void InsertAt(int index, bool insertBefore)
-		=> InsertAt(ImageTableHelpers.GetErrorGraphicsElement(index), insertBefore);
+		=> InsertAt(ImageTableHelpers.GetErrorGraphicsImage(index), insertBefore);
 
-	public void InsertAt(GraphicsElement ge, bool insertBefore)
+	public void InsertAt(GraphicsImage newImage, bool insertBefore)
 	{
-		var index = ge.ImageTableIndex;
+		var index = newImage.ImageTableIndex;
 
 		// find the group this image should go into
 		var group = Groups.SingleOrDefault(x => x.GraphicsElements.Any(y => y.ImageTableIndex == index));
@@ -49,11 +23,11 @@ public class ImageTable : IHasGraphicsElements
 		// update the ImageTableIndex of all images at or after this index
 		foreach (var g in Groups)
 		{
-			foreach (var ge2 in g.GraphicsElements)
+			foreach (var image in g.GraphicsElements)
 			{
-				if (ge2.ImageTableIndex >= index)
+				if (image.ImageTableIndex >= index)
 				{
-					++ge2.ImageTableIndex;
+					++image.ImageTableIndex;
 				}
 			}
 		}
@@ -61,11 +35,11 @@ public class ImageTable : IHasGraphicsElements
 		// actually insert it
 		if (insertPos >= 0 && insertPos < group.GraphicsElements.Count)
 		{
-			group.GraphicsElements.Insert(insertPos, ge);
+			group.GraphicsElements.Insert(insertPos, newImage);
 		}
 		else
 		{
-			group.GraphicsElements.Add(ge);
+			group.GraphicsElements.Add(newImage);
 		}
 	}
 
@@ -84,18 +58,18 @@ public class ImageTable : IHasGraphicsElements
 		// reindex all images after this one
 		foreach (var g in Groups)
 		{
-			foreach (var ge in g.GraphicsElements)
+			foreach (var image in g.GraphicsElements)
 			{
-				if (ge.ImageTableIndex > index)
+				if (image.ImageTableIndex > index)
 				{
-					--ge.ImageTableIndex;
+					--image.ImageTableIndex;
 				}
 			}
 		}
 	}
 
 	// public/old interface
-	public List<GraphicsElement> GraphicsElements
+	public List<GraphicsImage> GraphicsElements
 		=> [.. Groups
 			.SelectMany(x => x.GraphicsElements)
 			.OrderBy(x => x.ImageTableIndex)];

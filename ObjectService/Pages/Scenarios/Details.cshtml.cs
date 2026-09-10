@@ -92,7 +92,9 @@ public sealed class DetailsModel : PageModel
 	public async Task<IActionResult> OnPostEditAsync()
 	{
 		if (!CanEdit)
+		{
 			return Forbid();
+		}
 
 		if (string.IsNullOrWhiteSpace(Name))
 		{
@@ -143,7 +145,9 @@ public sealed class DetailsModel : PageModel
 					.Where(a => SelectedAuthorIds.Contains(a.Id))
 					.ToListAsync();
 				foreach (var author in authors)
+				{
 					scenario.Authors.Add(author);
+				}
 			}
 
 			// Tags
@@ -154,7 +158,9 @@ public sealed class DetailsModel : PageModel
 					.Where(t => SelectedTagIds.Contains(t.Id))
 					.ToListAsync();
 				foreach (var tag in tags)
+				{
 					scenario.Tags.Add(tag);
+				}
 			}
 
 			// SC5 File Packs
@@ -165,7 +171,9 @@ public sealed class DetailsModel : PageModel
 					.Where(p => SelectedPackIds.Contains(p.Id))
 					.ToListAsync();
 				foreach (var pack in packs)
+				{
 					scenario.SC5FilePacks.Add(pack);
+				}
 			}
 
 			await _db.SaveChangesAsync();
@@ -183,7 +191,9 @@ public sealed class DetailsModel : PageModel
 	public async Task<IActionResult> OnPostDeleteAsync(UniqueObjectId id)
 	{
 		if (!CanEdit)
+		{
 			return Forbid();
+		}
 
 		var scenario = await _db.SC5Files.FindAsync(new object[] { (object)id });
 		if (scenario is null)

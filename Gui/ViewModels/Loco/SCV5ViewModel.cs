@@ -12,7 +12,6 @@ using Gui.Models;
 using Index;
 using Microsoft.Extensions.Logging;
 using MsBox.Avalonia;
-using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using PropertyModels.Extensions;

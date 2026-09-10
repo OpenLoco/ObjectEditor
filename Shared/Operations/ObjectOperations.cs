@@ -19,16 +19,14 @@ public static class ObjectOperations
 
 		foreach (var group in imageTable.Groups)
 		{
-			foreach (var element in group.GraphicsElements)
+			foreach (var image in group.GraphicsElements)
 			{
-				if (element.Image != null
-					&& !ReferenceEquals(element.Image, ImageTableHelpers.ErrorImage)
-					&& !ReferenceEquals(element.Image, ImageTableHelpers.OnePixelTransparent))
+				if (image != null
+					&& !ReferenceEquals(image, ImageTableHelpers.ErrorImage)
+					&& !ReferenceEquals(image, ImageTableHelpers.OnePixelTransparent))
 				{
-					element.Image.Dispose();
+					image.Dispose();
 				}
-
-				element.Image = null;
 			}
 		}
 
@@ -49,22 +47,22 @@ public static class ObjectOperations
 	public static int TranslateAllOffsets(LocoObject locoObject, short deltaX, short deltaY)
 		=> ForEachImage(locoObject, x => x.TranslateOffsets(deltaX, deltaY));
 
-	public static int ForEachImage(LocoObject locoObject, Action<GraphicsElement> action)
+	public static int ForEachImage(LocoObject locoObject, Action<GraphicsImage> action)
 	{
 		ArgumentNullException.ThrowIfNull(locoObject);
 		ArgumentNullException.ThrowIfNull(action);
 
-		var elements = locoObject.ImageTable?.GraphicsElements;
-		if (elements == null)
+		var images = locoObject.ImageTable?.GraphicsElements;
+		if (images == null)
 		{
 			return 0;
 		}
 
-		foreach (var element in elements)
+		foreach (var image in images)
 		{
-			action(element);
+			action(image);
 		}
 
-		return elements.Count;
+		return images.Count;
 	}
 }

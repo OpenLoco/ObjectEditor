@@ -1,4 +1,4 @@
-using Definitions.ObjectModels.Graphics;
+﻿using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Common;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -45,19 +45,19 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 				new (
 					"Layer 0",
 					[
-						new GraphicsElement() { Name = "Layer 0 - South", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 0 - West ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 0 - North", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 0 - East ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
+						GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 0 - South", 0),
+						GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 0 - West ", 0),
+						GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 0 - North", 0),
+						GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 0 - East ", 0),
 					]
 				),
 				new (
 					"Layer 1",
 					[
-						new GraphicsElement() { Name = "Layer 1 - South", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 1 - West ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 1 - North", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 1 - East ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
+						GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 1 - South", 0),
+						GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 1 - West ", 0),
+						GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 1 - North", 0),
+						GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 1 - East ", 0),
 					]
 				)
 			]

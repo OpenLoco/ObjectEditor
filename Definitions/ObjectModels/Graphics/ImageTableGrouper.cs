@@ -20,16 +20,27 @@ public static class ImageTableGrouper
 	{
 		var originalCount = imageList.Count;
 
-		ImageTableNamer.NameImages(obj, objectType, imageList);
+		// Convert the serialisation DTOs from the DAT reader into the in-memory GraphicsImage model here,
+		// at the loader boundary. GraphicsElement is only used for DAT (de)serialisation from here onwards.
+		var images = new List<GraphicsImage>(imageList.Count);
+		for (var i = 0; i < imageList.Count; ++i)
+		{
+			var image = imageList[i].Decode(PaletteMapLoader.LoadDefault());
+			image.ImageTableIndex = i;
+			images.Add(image);
+		}
+
+		// Name each image from the object's naming rules, keyed by its image-table index.
+		ImageTableNamer.NameImages(obj, objectType, images);
 
 		var imageTable = new ImageTable();
 		try
 		{
-			imageTable.Groups = [.. CreateGroups(obj, objectType, imageList)];
+			imageTable.Groups = [.. CreateGroups(obj, objectType, images)];
 		}
 		catch (Exception)
 		{
-			imageTable.Groups = [new("<parsing-error>", [.. imageList])];
+			imageTable.Groups = [new("<parsing-error>", [.. images])];
 		}
 
 		Debug.Assert(imageTable.GraphicsElements.Count == originalCount, "Image grouping lost or gained images");
@@ -37,7 +48,7 @@ public static class ImageTableGrouper
 		return imageTable;
 	}
 
-	public static IEnumerable<ImageTableGroup> CreateGroupsForExistingImages(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
+	public static IEnumerable<ImageTableGroup> CreateGroupsForExistingImages(ILocoStruct obj, ObjectType objectType, List<GraphicsImage> imageList)
 	{
 		var originalCount = imageList.Count;
 		var groups = CreateGroups(obj, objectType, imageList).ToList();
@@ -47,7 +58,7 @@ public static class ImageTableGrouper
 		return groups;
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateGroups(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateGroups(ILocoStruct obj, ObjectType objectType, List<GraphicsImage> imageList)
 	{
 		switch (objectType)
 		{
@@ -124,7 +135,7 @@ public static class ImageTableGrouper
 		}
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateGroupsFromConfig(ObjectType objectType, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateGroupsFromConfig(ObjectType objectType, List<GraphicsImage> imageList)
 	{
 		if (TryGetGroupConfiguration(objectType, out var configuration))
 		{
@@ -140,7 +151,7 @@ public static class ImageTableGrouper
 		return GroupConfigurations.TryGetValue(objectType, out configuration);
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateGroupsFromConfig(ImageTableGroupConfigurationType configuration, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateGroupsFromConfig(ImageTableGroupConfigurationType configuration, List<GraphicsImage> imageList)
 	{
 		var groups = configuration.Groups.OrderBy(group => group.Start).ToList();
 		for (var index = 0; index < groups.Count; index++)
@@ -203,7 +214,7 @@ public static class ImageTableGrouper
 		}
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups(LevelCrossingObject model, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups(LevelCrossingObject model, List<GraphicsImage> imageList)
 	{
 		for (var i = 0; i < 8; ++i)
 		{
@@ -225,7 +236,7 @@ public static class ImageTableGrouper
 			};
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateCompetitorGroups(CompetitorObject model, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateCompetitorGroups(CompetitorObject model, List<GraphicsImage> imageList)
 	{
 		var offset = 0;
 		foreach (var emotion in Enum.GetValues<EmotionFlags>())
@@ -256,7 +267,7 @@ public static class ImageTableGrouper
 			_ => 3,
 		};
 
-	private static IEnumerable<ImageTableGroup> CreateVehicleGroups(VehicleObject model, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateVehicleGroups(VehicleObject model, List<GraphicsImage> imageList)
 	{
 		var offset = 0;
 

@@ -1,7 +1,3 @@
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using System.Text.Json.Serialization;
-
 namespace Definitions.ObjectModels.Graphics;
 
 [Flags]
@@ -26,16 +22,4 @@ public class GraphicsElement // follows G1Element32, except XOffset and YOffset 
 	public GraphicsElementFlags Flags { get; set; }
 	public short ZoomOffset { get; set; }
 	public byte[] ImageData { get; set; } = [];
-
-	[JsonIgnore]
-	public Image<Rgba32>? Image { get; set; }
-
-	// todo: use indexed image in SixLabors
-	//[JsonIgnore]
-	//public IndexedImageFrame<Rgba32>? Image { get; set; }
-
-	[JsonIgnore] // this is calculated based on object type, its not really a part of the object definition itself
-	public string Name { get; set; } = string.Empty; // taken from IImageNameProvider
-
-	public int ImageTableIndex { get; set; }
 }

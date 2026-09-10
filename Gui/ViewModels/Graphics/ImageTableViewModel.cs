@@ -366,7 +366,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		// Operate on the image that was right-clicked (passed as the command parameter), not the
 		// animation-timer-driven SelectedImage. Load the image first so the preview/width/height update,
 		// then apply the chosen dithering method so the palette data and dithered preview reflect it.
-		image.UnderlyingImage = GraphicsImage.FromRgba(image.Flags, Image.Load<Rgba32>(filename), image.XOffset, image.YOffset, image.ZoomOffset, image.Name, image.ImageTableIndex);
+		image.UnderlyingImage = GraphicsElement.FromRgba(image.Flags, Image.Load<Rgba32>(filename), image.XOffset, image.YOffset, image.ZoomOffset, image.Name, image.ImageTableIndex);
 		image.DitheringMethod = ditheringMethod;
 	}
 
@@ -426,7 +426,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 		// this doesn't work, because the groups don't store which indices they own, then
 		// if a group is ever empty we can't ever add something into it with the correct index
-		group.GraphicsElements.Add(ImageTableHelpers.GetErrorGraphicsImage(Model.Groups.Sum(x => x.GraphicsElements.Count)));
+		group.GraphicsElements.Add(ImageTableHelpers.GetErrorGraphicsElement(Model.Groups.Sum(x => x.GraphicsElements.Count)));
 		RecreateViewModelGroupsFromImageTable(Model);
 		await Task.CompletedTask;
 	}

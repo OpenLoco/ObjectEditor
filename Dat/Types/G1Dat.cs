@@ -8,7 +8,6 @@ namespace Dat.Types;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class G1Dat
 {
-
 	public G1Header G1Header { get; set; }
 	public ImageTable ImageTable { get; set; }
 
@@ -18,26 +17,17 @@ public class G1Dat
 	public bool IsSteamG1
 		=> ImageTable.GraphicsElements.Count == SteamImageCount;
 
-	/// <summary>Decodes each serialised <see cref="GraphicsElement"/> into an in-memory <see cref="GraphicsImage"/>.</summary>
-	static List<GraphicsImage> SelectGraphicsImages(List<GraphicsElement> graphicsElements)
-	{
-		var images = new List<GraphicsImage>(graphicsElements.Count);
-		for (var i = 0; i < graphicsElements.Count; ++i)
-		{
-			var image = graphicsElements[i].Decode(PaletteMapLoader.LoadDefault());
-			image.Name = DefaultImageTableNameProvider.GetImageName(i);
-			image.ImageTableIndex = i;
-			images.Add(image);
-		}
-		return images;
-	}
-
-	public G1Dat(G1Header g1Header, List<GraphicsElement> graphicsElements)
+	public G1Dat(G1Header g1Header, List<GraphicsElement> images)
 	{
 		G1Header = g1Header;
 
-		// Convert the DAT serialisation DTOs into the in-memory GraphicsImage model at the G1 loader boundary.
-		var images = SelectGraphicsImages(graphicsElements);
+		// The DAT reader has already decoded the raw bytes into GraphicsElement models; here we assign each image's
+		// table index and default name (concerned parties rename them later via the image table naming rules).
+		for (var i = 0; i < images.Count; ++i)
+		{
+			images[i].Name = DefaultImageTableNameProvider.GetImageName(i);
+			images[i].ImageTableIndex = i;
+		}
 
 		if (images.Count == SteamImageCount)
 		{

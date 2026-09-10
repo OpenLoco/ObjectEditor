@@ -12,7 +12,7 @@ public class PaletteMap
 
 	public PaletteMap(Image<Rgba32> img)
 	{
-		ArgumentOutOfRangeException.ThrowIfNotEqual(16, img.Height);
+		ArgumentOutOfRangeException.ThrowIfNotEqual(16, img.Width);
 		ArgumentOutOfRangeException.ThrowIfNotEqual(16, img.Height);
 
 		Palette = new (Color, byte)[img.Width * img.Height];
@@ -20,7 +20,7 @@ public class PaletteMap
 		{
 			for (var x = 0; x < img.Width; ++x)
 			{
-				var index = (byte)((y * img.Height) + x);
+				var index = (byte)((y * img.Width) + x);
 				Palette[index] = (Color.FromPixel(img[x, y]), index);
 			}
 		}
@@ -242,24 +242,24 @@ public class PaletteMap
 		return image;
 	}
 
-	/// <summary>Creates an <see cref="IndexedImageFrame{Rgba32}"/> directly from a <c>GraphicsElement</c>'s raw <see cref="GraphicsElement.ImageData"/>.
-	/// The frame's byte indices are copied verbatim (preserving company/remap &amp; reserved indices). Returns false if the element is Bgr24.</summary>
-	public bool TryConvertImageDataToIndexedImage(GraphicsElement element, out IndexedImageFrame<Rgba32> frame)
+	/// <summary>Creates an <see cref="IndexedImageFrame{Rgba32}"/> from raw palette-index bytes.
+	/// The frame's byte indices are copied verbatim (preserving company/remap &amp; reserved indices). Returns false if Bgr24.</summary>
+	public bool TryConvertImageDataToIndexedImage(int width, int height, GraphicsElementFlags flags, byte[] imageData, out IndexedImageFrame<Rgba32> frame)
 	{
 		frame = null!;
-		if (element.Flags.HasFlag(GraphicsElementFlags.IsBgr24))
+		if (flags.HasFlag(GraphicsElementFlags.IsBgr24))
 		{
 			return false;
 		}
 
-		frame = CreateIndexedImageFrame(element.Width, element.Height);
+		frame = CreateIndexedImageFrame(width, height);
 		var index = 0;
-		for (var y = 0; y < element.Height; y++)
+		for (var y = 0; y < height; y++)
 		{
 			var row = frame.GetWritablePixelRowSpanUnsafe(y);
-			for (var x = 0; x < element.Width; x++)
+			for (var x = 0; x < width; x++)
 			{
-				row[x] = index < element.ImageData.Length ? element.ImageData[index] : (byte)0;
+				row[x] = index < imageData.Length ? imageData[index] : (byte)0;
 				index++;
 			}
 		}
@@ -267,33 +267,33 @@ public class PaletteMap
 		return true;
 	}
 
-	/// <summary>Creates a decoded <see cref="Image{Rgba32}"/> directly from a <see cref="GraphicsElement"/>'s raw image data
-	/// (handles both indexed and Bgr24 elements). Used when materialising a view from raw DAT bytes.</summary>
-	public Image<Rgba32> ConvertImageDataToRgba32Bitmap(GraphicsElement element, ColourSwatch primary = ColourSwatch.PrimaryRemap, ColourSwatch secondary = ColourSwatch.SecondaryRemap)
+	/// <summary>Creates a decoded <see cref="Image{Rgba32}"/> directly from raw image-data bytes
+	/// (handles both indexed and Bgr24 data). Used when materialising a view from raw DAT bytes.</summary>
+	public Image<Rgba32> ConvertImageDataToRgba32Bitmap(int width, int height, GraphicsElementFlags flags, byte[] imageData, ColourSwatch primary = ColourSwatch.PrimaryRemap, ColourSwatch secondary = ColourSwatch.SecondaryRemap)
 	{
-		var image = new Image<Rgba32>(element.Width, element.Height);
+		var image = new Image<Rgba32>(width, height);
 		var index = 0;
 
-		for (var y = 0; y < element.Height; y++)
+		for (var y = 0; y < height; y++)
 		{
-			for (var x = 0; x < element.Width; x++)
+			for (var x = 0; x < width; x++)
 			{
-				if (element.Flags.HasFlag(GraphicsElementFlags.IsBgr24))
+				if (flags.HasFlag(GraphicsElementFlags.IsBgr24))
 				{
-					if (index + 2 >= element.ImageData.Length)
+					if (index + 2 >= imageData.Length)
 					{
 						break;
 					}
 
-					var b = element.ImageData[index++];
-					var g = element.ImageData[index++];
-					var r = element.ImageData[index++];
+					var b = imageData[index++];
+					var g = imageData[index++];
+					var r = imageData[index++];
 					image[x, y] = new Rgba32(r, g, b);
 				}
 				else
 				{
-					var paletteIndex = index < element.ImageData.Length ? element.ImageData[index] : (byte)0;
-					var colour = DecodeIndexToColour(paletteIndex, element.Flags, primary, secondary);
+					var paletteIndex = index < imageData.Length ? imageData[index] : (byte)0;
+					var colour = DecodeIndexToColour(paletteIndex, flags, primary, secondary);
 					image[x, y] = colour.ToPixel<Rgba32>();
 					index++;
 				}
@@ -404,32 +404,32 @@ public class PaletteMap
 			_ => default,
 		};
 
-	public bool TryConvertG1ToRgba32Bitmap(GraphicsElement graphicsElement, ColourSwatch primary, ColourSwatch secondary, out Image<Rgba32>? image)
+	public bool TryConvertG1ToRgba32Bitmap(int width, int height, GraphicsElementFlags flags, byte[] imageData, ColourSwatch primary, ColourSwatch secondary, out Image<Rgba32>? image)
 	{
-		image = new Image<Rgba32>(graphicsElement.Width, graphicsElement.Height);
+		image = new Image<Rgba32>(width, height);
 
 		var index = 0;
-		for (var y = 0; y < graphicsElement.Height; y++)
+		for (var y = 0; y < height; y++)
 		{
-			for (var x = 0; x < graphicsElement.Width; x++)
+			for (var x = 0; x < width; x++)
 			{
-				if (graphicsElement.Flags.HasFlag(GraphicsElementFlags.IsBgr24))
+				if (flags.HasFlag(GraphicsElementFlags.IsBgr24))
 				{
-					if (index >= graphicsElement.ImageData.Length)
+					if (index >= imageData.Length)
 					{
 						// malformed image - didn't have enough bytes to cover the full dimensions
 						// steam's g1.dat index 304 (the default palette) has this issue. 236x16 but should be 236x1 since it only has 236*3=708 bytes of data
 						break;
 					}
 
-					var b = graphicsElement.ImageData[index++];
-					var g = graphicsElement.ImageData[index++];
-					var r = graphicsElement.ImageData[index++];
+					var b = imageData[index++];
+					var g = imageData[index++];
+					var r = imageData[index++];
 					image[x, y] = new Rgba32(r, g, b);
 				}
 				else
 				{
-					var paletteIndex = graphicsElement.ImageData[index];
+					var paletteIndex = imageData[index];
 					Color? colour = null;
 
 					if (SecondaryRemap.Any(x => x.Index == paletteIndex))
@@ -437,7 +437,7 @@ public class PaletteMap
 						//Debugger.Break();
 					}
 
-					if (paletteIndex == 0 && graphicsElement.Flags.HasFlag(GraphicsElementFlags.HasTransparency))
+					if (paletteIndex == 0 && flags.HasFlag(GraphicsElementFlags.HasTransparency))
 					{
 						colour = Transparent.Color;
 					}

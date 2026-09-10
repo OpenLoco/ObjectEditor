@@ -18,7 +18,7 @@ public static class ImageConversion
 		}
 	}
 
-	/// <summary>Renders a <see cref="GraphicsImage"/> (decoding it if needed) to an Avalonia <see cref="Bitmap"/> for display.</summary>
-	public static Bitmap ToAvaloniaBitmap(this GraphicsImage image, PaletteMap paletteMap)
+	/// <summary>Renders a <see cref="GraphicsElement"/> (decoding it if needed) to an Avalonia <see cref="Bitmap"/> for display.</summary>
+	public static Bitmap ToAvaloniaBitmap(this GraphicsElement image, PaletteMap paletteMap)
 		=> image.ToRgba(paletteMap).ToAvaloniaBitmap();
 }

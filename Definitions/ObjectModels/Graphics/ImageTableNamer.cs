@@ -1833,7 +1833,7 @@ public static class ImageTableNamer
 		};
 	}
 
-	public static void NameImages(ILocoStruct obj, ObjectType objectType, List<GraphicsImage> imageList)
+	public static void NameImages(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{
 		IImageTableNameProvider imageNamer = objectType switch
 		{

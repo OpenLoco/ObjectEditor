@@ -47,7 +47,7 @@ public static class ObjectOperations
 	public static int TranslateAllOffsets(LocoObject locoObject, short deltaX, short deltaY)
 		=> ForEachImage(locoObject, x => x.TranslateOffsets(deltaX, deltaY));
 
-	public static int ForEachImage(LocoObject locoObject, Action<GraphicsImage> action)
+	public static int ForEachImage(LocoObject locoObject, Action<GraphicsElement> action)
 	{
 		ArgumentNullException.ThrowIfNull(locoObject);
 		ArgumentNullException.ThrowIfNull(action);

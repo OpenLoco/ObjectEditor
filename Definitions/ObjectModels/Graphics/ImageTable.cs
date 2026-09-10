@@ -1,13 +1,13 @@
 namespace Definitions.ObjectModels.Graphics;
 
-public record ImageTableGroup(string Name, List<GraphicsImage> GraphicsElements);
+public record ImageTableGroup(string Name, List<GraphicsElement> GraphicsElements);
 
 public class ImageTable : IHasGraphicsElements
 {
 	public void InsertAt(int index, bool insertBefore)
-		=> InsertAt(ImageTableHelpers.GetErrorGraphicsImage(index), insertBefore);
+		=> InsertAt(ImageTableHelpers.GetErrorGraphicsElement(index), insertBefore);
 
-	public void InsertAt(GraphicsImage newImage, bool insertBefore)
+	public void InsertAt(GraphicsElement newImage, bool insertBefore)
 	{
 		var index = newImage.ImageTableIndex;
 
@@ -69,7 +69,7 @@ public class ImageTable : IHasGraphicsElements
 	}
 
 	// public/old interface
-	public List<GraphicsImage> GraphicsElements
+	public List<GraphicsElement> GraphicsElements
 		=> [.. Groups
 			.SelectMany(x => x.GraphicsElements)
 			.OrderBy(x => x.ImageTableIndex)];

@@ -281,9 +281,6 @@ public static class SawyerStreamWriter
 	public static byte[] EncodeRLEImageData(GraphicsElement img)
 		=> EncodeRLEImageData((DatG1ElementFlags)img.Flags, img.ImageData, img.Width, img.Height);
 
-	public static byte[] EncodeRLEImageData(GraphicsImage img)
-		=> EncodeRLEImageData((DatG1ElementFlags)img.Flags, img.ImageData, img.Width, img.Height);
-
 	public static byte[] EncodeRLEImageData(DatG1Element32 img)
 		=> EncodeRLEImageData(img.Flags, img.ImageData, img.Width, img.Height);
 
@@ -632,7 +629,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static void WriteImageTable(Stream ms, List<GraphicsImage> graphicsImages, PaletteMap? paletteMap = null)
+	public static void WriteImageTable(Stream ms, List<GraphicsElement> graphicsImages, PaletteMap? paletteMap = null)
 	{
 		// The palette is a global service available here; a caller-supplied one (e.g. from the CLI) takes priority.
 		var palette = paletteMap ?? PaletteMapLoader.Current;

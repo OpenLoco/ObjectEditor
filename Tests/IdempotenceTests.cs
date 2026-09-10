@@ -81,23 +81,9 @@ public class IdempotenceTests
 
 					if (ac != ex)
 					{
-						// The recolor/decode routines operate on the serialisation DTO; build shims to dump debug BMPs.
-						var shimFirst = new GraphicsElement
-						{
-							Width = (short)First.Width,
-							Height = (short)First.Height,
-							Flags = First.Flags,
-							ImageData = First.ToG1Data(PaletteMap),
-						};
-						var shimSecond = new GraphicsElement
-						{
-							Width = (short)Second.Width,
-							Height = (short)Second.Height,
-							Flags = Second.Flags,
-							ImageData = Second.ToG1Data(PaletteMap),
-						};
-						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(shimFirst, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img1);
-						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(shimSecond, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img2);
+						// Dump debug BMPs using the palette-index bytes the images would serialize to.
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(First.Width, First.Height, First.Flags, First.ToG1Data(PaletteMap), ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img1);
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(Second.Width, Second.Height, Second.Flags, Second.ToG1Data(PaletteMap), ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img2);
 						img1.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-actual.bmp");
 						img2.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-expected.bmp");
 					}

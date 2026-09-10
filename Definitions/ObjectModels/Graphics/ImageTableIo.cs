@@ -29,7 +29,7 @@ public static class ImageTableIo
 
 		logger.LogInformation("Exporting images to {Directory}", directory);
 
-		var offsets = new List<GraphicsElementJson>();
+		var offsets = new List<SpriteElementJson>();
 		var invalidChars = Path.GetInvalidFileNameChars();
 
 		foreach (var item in imageTable.Groups
@@ -51,7 +51,7 @@ public static class ImageTableIo
 			}
 
 			await image.ToRgba(paletteMap).SaveAsPngAsync(Path.Combine(directory, fileName));
-			offsets.Add(new GraphicsElementJson(fileName, image));
+			offsets.Add(new SpriteElementJson(fileName, image));
 		}
 
 		var offsetsFile = Path.Combine(directory, SpritesFileName);
@@ -64,7 +64,7 @@ public static class ImageTableIo
 			=> new string([.. value.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
 	}
 
-	public static async Task<ICollection<GraphicsElementJson>?> LoadSpritesJsonAsync(string filename, ILogger logger)
+	public static async Task<ICollection<SpriteElementJson>?> LoadSpritesJsonAsync(string filename, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(logger);
 
@@ -73,12 +73,12 @@ public static class ImageTableIo
 			return null;
 		}
 
-		var offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(filename);
+		var offsets = await JsonFile.DeserializeFromFileAsync<ICollection<SpriteElementJson>>(filename);
 		logger.LogDebug("Found sprites.json file with {Count} images", offsets?.Count ?? 0);
 		return offsets;
 	}
 
-	public static async Task<List<GraphicsImage>?> LoadImagesAsync(string directory, PaletteMap paletteMap, ILogger logger, DitheringMethod? ditheringMethod = null)
+	public static async Task<List<GraphicsElement>?> LoadImagesAsync(string directory, PaletteMap paletteMap, ILogger logger, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(logger);
 
@@ -97,7 +97,7 @@ public static class ImageTableIo
 			return null;
 		}
 
-		var importedImages = new List<GraphicsImage>();
+		var importedImages = new List<GraphicsElement>();
 		foreach (var (sprite, i) in sprites.Select((x, i) => (x, i)))
 		{
 			var is1Pixel = string.IsNullOrEmpty(sprite.Path);

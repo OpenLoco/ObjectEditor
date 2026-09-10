@@ -7,9 +7,9 @@ namespace Definitions.ObjectModels.Graphics;
 
 public static class GraphicsElementOperations
 {
-	/// <summary>Mutates this <see cref="GraphicsImage"/> in-place, cropping it to the bounding box of its
+	/// <summary>Mutates this <see cref="GraphicsElement"/> in-place, cropping it to the bounding box of its
 	/// non-transparent pixels and adjusting its X/Y offsets by the crop delta (as the element crop used to).</summary>
-	public static void Crop(this GraphicsImage image, PaletteMap paletteMap)
+	public static void Crop(this GraphicsElement image, PaletteMap paletteMap)
 	{
 		ArgumentNullException.ThrowIfNull(image);
 		ArgumentNullException.ThrowIfNull(paletteMap);
@@ -31,7 +31,7 @@ public static class GraphicsElementOperations
 		image.YOffset = (short)(image.YOffset + cropRegion.Top);
 	}
 
-	public static void ZeroOffsets(this GraphicsImage image)
+	public static void ZeroOffsets(this GraphicsElement image)
 	{
 		ArgumentNullException.ThrowIfNull(image);
 
@@ -39,7 +39,7 @@ public static class GraphicsElementOperations
 		image.YOffset = 0;
 	}
 
-	public static void CenterOffsets(this GraphicsImage image)
+	public static void CenterOffsets(this GraphicsElement image)
 	{
 		ArgumentNullException.ThrowIfNull(image);
 
@@ -47,7 +47,7 @@ public static class GraphicsElementOperations
 		image.YOffset = (short)(-image.Height / 2);
 	}
 
-	public static void TranslateOffsets(this GraphicsImage image, short deltaX, short deltaY)
+	public static void TranslateOffsets(this GraphicsElement image, short deltaX, short deltaY)
 	{
 		ArgumentNullException.ThrowIfNull(image);
 
@@ -117,36 +117,13 @@ public static class GraphicsElementOperations
 		return new Rectangle(minX, minY, width, height);
 	}
 
-	/// <summary>Builds the in-memory <see cref="GraphicsImage"/> for a <see cref="GraphicsElement"/> from its serialised bytes.</summary>
-	/// <remarks>Prefers an indexed frame so reserved/company indices round-trip exactly; falls back to a decoded RGBA image for Bgr24 data.</remarks>
-	public static GraphicsImage Decode(this GraphicsElement element, PaletteMap paletteMap, ColourSwatch primary = ColourSwatch.PrimaryRemap, ColourSwatch secondary = ColourSwatch.SecondaryRemap)
-	{
-		ArgumentNullException.ThrowIfNull(element);
-		ArgumentNullException.ThrowIfNull(paletteMap);
-
-		GraphicsImage decodedImage;
-		if (paletteMap.TryConvertImageDataToIndexedImage(element, out var frame))
-		{
-			decodedImage = GraphicsImage.FromIndexed(element.Flags, frame);
-		}
-		else
-		{
-			decodedImage = GraphicsImage.FromRgba(element.Flags, paletteMap.ConvertImageDataToRgba32Bitmap(element, primary, secondary));
-		}
-
-		// Keep the raw bytes so the image round-trips exactly and can be serialised to JSON.
-		decodedImage.ImageData = [.. element.ImageData];
-
-		return decodedImage;
-	}
-
-	/// <summary>Builds the in-memory <see cref="GraphicsImage"/> for an imported PNG and its <see cref="GraphicsElementJson"/> metadata.</summary>
-	public static GraphicsImage FromImage(GraphicsElementJson json, Image<Rgba32> image, PaletteMap paletteMap, int index, DitheringMethod? ditheringMethod = null)
+	/// <summary>Builds the in-memory <see cref="GraphicsElement"/> for an imported PNG and its <see cref="SpriteElementJson"/> metadata.</summary>
+	public static GraphicsElement FromImage(SpriteElementJson json, Image<Rgba32> image, PaletteMap paletteMap, int index, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(json);
 
 		var flags = json.Flags ?? GraphicsElementFlags.None;
-		var graphicsImage = GraphicsImage.FromRgba(flags, image, json.XOffset, json.YOffset, json.ZoomOffset ?? 0, json.Name ?? string.Empty, index);
+		var graphicsImage = GraphicsElement.FromRgba(flags, image, json.XOffset, json.YOffset, json.ZoomOffset ?? 0, json.Name ?? string.Empty, index);
 
 		// Bake the palette (optionally dithered) bytes in so the import round-trips and serialises correctly.
 		graphicsImage.ImageData = graphicsImage.ToG1Data(paletteMap, ditheringMethod);

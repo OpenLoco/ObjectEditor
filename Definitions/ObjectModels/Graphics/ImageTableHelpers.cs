@@ -5,9 +5,9 @@ namespace Definitions.ObjectModels.Graphics;
 
 public static class ImageTableHelpers
 {
-	public static readonly GraphicsImage OnePixelTransparent = GraphicsImage.FromRgba(GraphicsElementFlags.None, new Image<Rgba32>(1, 1, PaletteMap.Transparent.Color.ToPixel<Rgba32>()));
+	public static readonly GraphicsElement OnePixelTransparent = GraphicsElement.FromRgba(GraphicsElementFlags.None, new Image<Rgba32>(1, 1, PaletteMap.Transparent.Color.ToPixel<Rgba32>()));
 
-	public static readonly GraphicsImage ErrorImage = GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateErrorImage());
+	public static readonly GraphicsElement ErrorImage = GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateErrorImage());
 
 	private static Image<Rgba32> CreateErrorImage()
 	{
@@ -25,6 +25,6 @@ public static class ImageTableHelpers
 		return img;
 	}
 
-	public static GraphicsImage GetErrorGraphicsImage(int index)
-		=> GraphicsImage.FromRgba(GraphicsElementFlags.None, CreateErrorImage(), 0, 0, 0, "<no-image>", index);
+	public static GraphicsElement GetErrorGraphicsElement(int index)
+		=> GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateErrorImage(), 0, 0, 0, "<no-image>", index);
 }

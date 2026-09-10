@@ -1,4 +1,4 @@
-﻿using Dat.FileParsing;
+using Dat.FileParsing;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Graphics.Dithering;
 using Microsoft.Extensions.Logging;
@@ -37,7 +37,7 @@ public class ImagePaletteConversionTests
 	}
 
 	[Test]
-	public void GraphicsImageRoundTripPreservesReservedIndices()
+	public void GraphicsElementRoundTripPreservesReservedIndices()
 	{
 		var paletteMap = PaletteMapLoader.LoadDefault();
 
@@ -51,9 +51,9 @@ public class ImagePaletteConversionTests
 		];
 
 		IndexedImageFrame<Rgba32> frame;
-		Assert.That(paletteMap.TryConvertImageDataToIndexedImage(MakeElementFromRows(rows), out frame), Is.True, "indexed frame built from raw byte data");
+		Assert.That(paletteMap.TryConvertImageDataToIndexedImage(rows[0].Length, rows.Length, GraphicsElementFlags.None, FlattenRows(rows), out frame), Is.True, "indexed frame built from raw byte data");
 
-		var image = GraphicsImage.FromIndexed(GraphicsElementFlags.None, frame);
+		var image = GraphicsElement.FromIndexed(GraphicsElementFlags.None, frame);
 		var g1 = image.ToG1Data(paletteMap);
 
 		Assert.That(g1, Is.EqualTo(FlattenRows(rows)), "byte-for-byte round trip preserves indexed data");
@@ -77,7 +77,7 @@ public class ImagePaletteConversionTests
 	[TestCase(DitheringMethod.Ordered3x3)]
 	[TestCase(DitheringMethod.BlueNoise)]
 	[TestCase(DitheringMethod.Riemersma)]
-	public void GraphicsImageDitheringPreservesCompanyColours(DitheringMethod ditheringMethod)
+	public void GraphicsElementDitheringPreservesCompanyColours(DitheringMethod ditheringMethod)
 	{
 		var paletteMap = PaletteMapLoader.LoadDefault();
 
@@ -93,7 +93,7 @@ public class ImagePaletteConversionTests
 			img[x, 1] = valid.ToPixel<Rgba32>();
 		}
 
-		var image = GraphicsImage.FromRgba(GraphicsElementFlags.None, img);
+		var image = GraphicsElement.FromRgba(GraphicsElementFlags.None, img);
 		var indexed = image.ToIndexed(paletteMap, ditheringMethod);
 		_ = indexed; // materialise the indexed frame so ToG1Data reuses it (also exercises ConvertRgba32ImageToIndexedImageDithering)
 
@@ -120,16 +120,7 @@ public class ImagePaletteConversionTests
 		image.Dispose();
 	}
 
-	/// <summary>Builds a small <see cref="GraphicsElement"/> whose raw image data is the flattened rows.</summary>
-	static GraphicsElement MakeElementFromRows(byte[][] rows)
-		=> new()
-		{
-			Width = (short)rows[0].Length,
-			Height = (short)rows.Length,
-			Flags = GraphicsElementFlags.None,
-			ImageData = FlattenRows(rows),
-		};
-
+	/// <summary>Builds raw palette-index bytes, flattened row by row, from a nested byte array.</summary>
 	static byte[] FlattenRows(byte[][] rows)
 	{
 		var flattened = new List<byte>();
@@ -192,15 +183,7 @@ public class ImagePaletteConversionTests
 		{
 			foreach (var element in g1Elements)
 			{
-				var shim = new GraphicsElement
-				{
-					Width = (short)element.Width,
-					Height = (short)element.Height,
-					Flags = element.Flags,
-					ImageData = element.ImageData,
-				};
-
-				if (paletteMap.TryConvertG1ToRgba32Bitmap(shim, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image0))
+				if (paletteMap.TryConvertG1ToRgba32Bitmap(element.Width, element.Height, element.Flags, element.ImageData, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image0))
 				{
 					var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0!, element.Flags);
 					Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i++}]");
@@ -233,15 +216,7 @@ public class ImagePaletteConversionTests
 		var paletteMap = new PaletteMap(paletteFile);
 		var g1Bytes = paletteMap.ConvertRgba32ImageToG1DataWithDithering(image, GraphicsElementFlags.None, ditheringMethod);
 
-		var ele = new GraphicsElement()
-		{
-			Flags = GraphicsElementFlags.None,
-			ImageData = g1Bytes,
-			Width = (short)image.Width,
-			Height = (short)image.Height,
-		};
-
-		var success = paletteMap.TryConvertG1ToRgba32Bitmap(ele, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image2);
+		var success = paletteMap.TryConvertG1ToRgba32Bitmap(image.Width, image.Height, GraphicsElementFlags.None, g1Bytes, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image2);
 		if (success)
 		{
 			image2!.SaveAsPng($"C:\\Users\\bigba\\OneDrive\\Pictures\\gradient_{ditheringMethod}.png");

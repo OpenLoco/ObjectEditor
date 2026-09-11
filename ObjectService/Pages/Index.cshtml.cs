@@ -46,7 +46,7 @@ public sealed class IndexModel : PageModel
 	public ObjectSource? ObjectSource { get; set; }
 
 	[BindProperty(SupportsGet = true)]
-	public ObjectAvailability? Availability { get; set; }
+	public bool? CanDownload { get; set; }
 
 	[BindProperty(SupportsGet = true)]
 	public VehicleType? VehicleType { get; set; }
@@ -62,8 +62,6 @@ public sealed class IndexModel : PageModel
 	public IReadOnlyList<ObjectType> ObjectTypes { get; } = [.. Enum.GetValues<ObjectType>().OrderBy(t => t.ToString())];
 
 	public IReadOnlyList<ObjectSource> ObjectSources { get; } = [.. Enum.GetValues<ObjectSource>()];
-
-	public IReadOnlyList<ObjectAvailability> AvailabilityStates { get; } = [.. Enum.GetValues<ObjectAvailability>()];
 
 	public IReadOnlyList<VehicleType> VehicleTypes { get; } = [.. Enum.GetValues<VehicleType>()];
 
@@ -112,7 +110,7 @@ public sealed class IndexModel : PageModel
 		{
 			case "objects":
 				Results = await _explorerService.GetObjectsAsync(
-					new ObjectBrowseQuery(Search, ObjectType, ObjectSource, Availability, VehicleType, PageNumber),
+					new ObjectBrowseQuery(Search, ObjectType, ObjectSource, CanDownload, VehicleType, PageNumber),
 					cancellationToken);
 				PageNumber = Results.Page;
 				break;

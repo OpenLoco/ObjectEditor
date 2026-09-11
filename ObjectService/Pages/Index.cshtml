@@ -140,7 +140,7 @@
 					   asp-route-category="objects"
 					   asp-route-Search="@Model.Search"
 					   asp-route-ObjectSource="@Model.ObjectSource"
-					   asp-route-Availability="@Model.Availability">
+					   asp-route-CanDownload="@Model.CanDownload">
 					   All Types
 					</a>
 				</li>
@@ -154,7 +154,7 @@
 						   asp-route-category="objects"
 						   asp-route-ObjectType="@objectType"
 						   asp-route-ObjectSource="@Model.ObjectSource"
-						   asp-route-Availability="@Model.Availability"
+						   asp-route-CanDownload="@Model.CanDownload"
 						   asp-route-Search="@Model.Search">
 						   @objectType
 						</a>
@@ -167,7 +167,7 @@
 									   asp-route-category="objects"
 									   asp-route-ObjectType="@ObjectType.Vehicle"
 									   asp-route-ObjectSource="@Model.ObjectSource"
-									   asp-route-Availability="@Model.Availability"
+									   asp-route-CanDownload="@Model.CanDownload"
 									   asp-route-Search="@Model.Search">
 									   All Vehicles
 									</a>
@@ -182,7 +182,7 @@
 										   asp-route-ObjectType="@ObjectType.Vehicle"
 										   asp-route-VehicleType="@vt"
 										   asp-route-ObjectSource="@Model.ObjectSource"
-										   asp-route-Availability="@Model.Availability"
+										   asp-route-CanDownload="@Model.CanDownload"
 										   asp-route-Search="@Model.Search">
 										   @vt
 										</a>
@@ -217,13 +217,11 @@
 				</div>
 
 				<div class="field">
-					<label asp-for="Availability">Availability</label>
-					<select asp-for="Availability">
-						<option value="">Any state</option>
-						@foreach (var state in Model.AvailabilityStates)
-						{
-							<option value="@state">@state</option>
-						}
+					<label asp-for="CanDownload">Download status</label>
+					<select asp-for="CanDownload">
+						<option value="">Any status</option>
+						<option value="true">Downloadable</option>
+						<option value="false">Not downloadable</option>
 					</select>
 				</div>
 
@@ -275,12 +273,15 @@ else
 						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="8" cy="4" rx="6" ry="2.5"/><path d="M2 4v3c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V4"/><path d="M2 7v3c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V7"/></svg>
 						<span>@item.ObjectSource</span>
 					</span>
-					<span class="card-icon" title="Availability: @item.Availability">
-						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M5 8l2 2.5 4-5"/></svg>
-						<span>@item.Availability</span>
-					</span>
-					<span class="card-icon @(item.CanDownload ? "" : "card-icon-dimmed")" title="Public file: @(item.CanDownload ? "Available" : "Unavailable")">
-						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v9M4.5 7.5L8 11l3.5-3.5M2.5 14h11"/></svg>
+					<span class="card-icon @(item.CanDownload ? "" : "card-icon-dimmed")" title="@(item.CanDownload ? "Downloadable" : "Not downloadable")">
+						@if (item.CanDownload)
+						{
+							<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v9M4.5 7.5L8 11l3.5-3.5M2.5 14h11"/></svg>
+						}
+						else
+						{
+							<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+						}
 						<span>@(item.CanDownload ? "Downloadable" : "Not downloadable")</span>
 					</span>
 				</div>
@@ -299,7 +300,7 @@ else
 					   asp-route-Search="@Model.Search"
 					   asp-route-ObjectType="@Model.ObjectType"
 					   asp-route-ObjectSource="@Model.ObjectSource"
-					   asp-route-Availability="@Model.Availability"
+					   asp-route-CanDownload="@Model.CanDownload"
 					   asp-route-VehicleType="@Model.VehicleType"
 					   asp-route-p="@(Model.Results.Page - 1)">Previous</a>
 			}
@@ -318,7 +319,7 @@ else
 				   asp-route-Search="@Model.Search"
 				   asp-route-ObjectType="@Model.ObjectType"
 				   asp-route-ObjectSource="@Model.ObjectSource"
-				   asp-route-Availability="@Model.Availability"
+				   asp-route-CanDownload="@Model.CanDownload"
 				   asp-route-VehicleType="@Model.VehicleType"
 				   asp-route-p="@(Model.Results.Page + 1)">Next</a>
 			}

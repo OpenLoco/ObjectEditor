@@ -9,7 +9,7 @@ public sealed record ObjectBrowseQuery(
 	string? Search,
 	ObjectType? ObjectType,
 	ObjectSource? ObjectSource,
-	ObjectAvailability? Availability,
+	bool? CanDownload,
 	VehicleType? VehicleType = null,
 	int Page = 1,
 	int PageSize = 48);
@@ -79,7 +79,7 @@ public sealed record ObjectDetailViewModel(
 
 	public string DownloadUrl => $"{ApiUrl}{RoutesV2.File}";
 
-	public bool CanDownloadAnyFile => Files.Any(x => x.CanDownload);
+	public bool CanDownloadAnyFile => Availability == ObjectAvailability.Available && Files.Any(x => x.CanDownload);
 
 	public bool HasImages => Images.Count > 0;
 }

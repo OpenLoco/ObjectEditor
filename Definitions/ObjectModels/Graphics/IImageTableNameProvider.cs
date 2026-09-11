@@ -4,7 +4,7 @@ namespace Definitions.ObjectModels.Graphics;
 
 public interface IHasGraphicsElements
 {
-	List<GraphicsElement> GraphicsElements { get; } // todo: probably change to IEnumerable
+	List<GraphicsElement> GraphicsElements { get; }
 }
 
 public interface IImageTableNameProvider

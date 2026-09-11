@@ -1,4 +1,3 @@
-using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Graphics.Dithering;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -8,113 +7,75 @@ namespace Definitions.ObjectModels.Graphics;
 
 public static class GraphicsElementOperations
 {
-	public static void SetImage(this GraphicsElement element, Image<Rgba32> image, PaletteMap paletteMap, DitheringMethod? ditheringMethod = null)
+	/// <summary>Mutates this <see cref="GraphicsElement"/> in-place, cropping it to the bounding box of its
+	/// non-transparent pixels and adjusting its X/Y offsets by the crop delta (as the element crop used to).</summary>
+	public static void Crop(this GraphicsElement image, PaletteMap paletteMap)
 	{
-		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(image);
 		ArgumentNullException.ThrowIfNull(paletteMap);
 
-		if (!ReferenceEquals(element.Image, image))
+		// Palette image: crop the indexed frame natively so company/remap indices are preserved losslessly
+		// (never decode to RGBA and back). TrimImage crops to the non-zero bbox, or 1x1 if fully transparent.
+		if (image.Indexed != null)
 		{
-			if (element.Image != null
- 				&& !ReferenceEquals(element.Image, ImageTableHelpers.ErrorImage)
- 				&& !ReferenceEquals(element.Image, ImageTableHelpers.OnePixelTransparent))
+			var cropRegion = FindCropRegion(image.Indexed);
+			var cropped = GraphicsElement.TrimImage(image.Indexed);
+			image.ReplaceDecoded(null, cropped);
+
+			if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
 			{
-				element.Image.Dispose();
+				image.XOffset = 0;
+				image.YOffset = 0;
+			}
+			else
+			{
+				image.XOffset = (short)(image.XOffset + cropRegion.Left);
+				image.YOffset = (short)(image.YOffset + cropRegion.Top);
 			}
 
-			element.Image = image;
-		}
-
-		element.Width = (short)image.Width;
-		element.Height = (short)image.Height;
-		element.ImageData = paletteMap.ConvertRgba32ImageToG1Data(image, element.Flags, ditheringMethod);
-	}
-
-	public static void ReplaceImage(this GraphicsElement element, string pngFileName, PaletteMap paletteMap)
-		=> element.SetImage(Image.Load<Rgba32>(pngFileName), paletteMap);
-
-	public static void SyncImageData(this GraphicsElement element, PaletteMap paletteMap, DitheringMethod? ditheringMethod = null)
-	{
-		ArgumentNullException.ThrowIfNull(element);
-
-		if (element.Image == null)
-		{
 			return;
 		}
 
-		element.SetImage(element.Image, paletteMap, ditheringMethod);
-	}
+		// Bgr24 image: crop the RGBA pixels.
+		var rgba = image.Rgba!;
+		var rgbaCropRegion = FindCropRegion(rgba);
 
-	public static void Decode(this GraphicsElement element, PaletteMap paletteMap, ColourSwatch primary = ColourSwatch.PrimaryRemap, ColourSwatch secondary = ColourSwatch.SecondaryRemap)
-	{
-		ArgumentNullException.ThrowIfNull(element);
-		ArgumentNullException.ThrowIfNull(paletteMap);
-
-		var currentImage = element.Image;
-		var decodedImage = paletteMap.TryConvertG1ToRgba32Bitmap(element, primary, secondary, out var image)
-			? image
-			: ImageTableHelpers.ErrorImage;
-
-		if (!ReferenceEquals(currentImage, decodedImage)
-			&& currentImage != null
-			&& !ReferenceEquals(currentImage, ImageTableHelpers.ErrorImage)
-			&& !ReferenceEquals(currentImage, ImageTableHelpers.OnePixelTransparent))
+		if (rgbaCropRegion.Width <= 0 || rgbaCropRegion.Height <= 0)
 		{
-			currentImage.Dispose();
-		}
-
-		element.Image = decodedImage;
-	}
-
-	public static void Crop(this GraphicsElement element, PaletteMap paletteMap)
-	{
-		ArgumentNullException.ThrowIfNull(element);
-
-		var image = element.Image;
-		if (image == null)
-		{
+			// fully transparent image - collapse to a 1x1 transparent pixel (same fallback the GUI uses)
+			image.ReplaceDecoded(rgba.Clone(i => i.Crop(new Rectangle(0, 0, 1, 1))), null);
+			image.XOffset = 0;
+			image.YOffset = 0;
 			return;
 		}
 
-		var cropRegion = FindCropRegion(image);
-
-		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
-		{
-			element.SetImage(image.Clone(i => i.Crop(new Rectangle(0, 0, 1, 1))), paletteMap);
-			element.XOffset = 0;
-			element.YOffset = 0;
-		}
-		else
-		{
-			element.SetImage(image.Clone(i => i.Crop(cropRegion)), paletteMap);
-			element.XOffset += (short)cropRegion.Left;
-			element.YOffset += (short)cropRegion.Top;
-		}
+		image.ReplaceDecoded(rgba.Clone(i => i.Crop(rgbaCropRegion)), null);
+		image.XOffset = (short)(image.XOffset + rgbaCropRegion.Left);
+		image.YOffset = (short)(image.YOffset + rgbaCropRegion.Top);
 	}
 
-	public static void ZeroOffsets(this GraphicsElement element)
+	public static void ZeroOffsets(this GraphicsElement image)
 	{
-		ArgumentNullException.ThrowIfNull(element);
+		ArgumentNullException.ThrowIfNull(image);
 
-		element.XOffset = 0;
-		element.YOffset = 0;
+		image.XOffset = 0;
+		image.YOffset = 0;
 	}
 
-	public static void CenterOffsets(this GraphicsElement element)
+	public static void CenterOffsets(this GraphicsElement image)
 	{
-		ArgumentNullException.ThrowIfNull(element);
+		ArgumentNullException.ThrowIfNull(image);
 
-		element.XOffset = (short)(-element.Width / 2);
-		element.YOffset = (short)(-element.Height / 2);
+		image.XOffset = (short)(-image.Width / 2);
+		image.YOffset = (short)(-image.Height / 2);
 	}
 
-	public static void TranslateOffsets(this GraphicsElement element, short deltaX, short deltaY)
+	public static void TranslateOffsets(this GraphicsElement image, short deltaX, short deltaY)
 	{
-		ArgumentNullException.ThrowIfNull(element);
+		ArgumentNullException.ThrowIfNull(image);
 
-		element.XOffset += deltaX;
-		element.YOffset += deltaY;
+		image.XOffset = (short)(image.XOffset + deltaX);
+		image.YOffset = (short)(image.YOffset + deltaY);
 	}
 
 	public static Rectangle FindCropRegion(Image<Rgba32> image)
@@ -148,27 +109,61 @@ public static class GraphicsElementOperations
 		return new Rectangle(minX, minY, width, height);
 	}
 
-	public static GraphicsElement FromImage(GraphicsElementJson json, Image<Rgba32> image, PaletteMap paletteMap, int index, DitheringMethod? ditheringMethod = null)
+	/// <summary>Finds the bounding rectangle of all non-transparent (non-zero) palette-index pixels in an indexed frame.</summary>
+	public static Rectangle FindCropRegion(IndexedImageFrame<Rgba32> frame)
+	{
+		ArgumentNullException.ThrowIfNull(frame);
+
+		var minX = frame.Width;
+		var maxX = 0;
+		var minY = frame.Height;
+		var maxY = 0;
+
+		for (var y = 0; y < frame.Height; y++)
+		{
+			var row = frame.DangerousGetRowSpan(y);
+			for (var x = 0; x < frame.Width; x++)
+			{
+				if (row[x] != 0)
+				{
+					minX = Math.Min(minX, x);
+					maxX = Math.Max(maxX, x);
+					minY = Math.Min(minY, y);
+					maxY = Math.Max(maxY, y);
+				}
+			}
+		}
+
+		// Calculate the crop area. Ensure it is within image bounds.
+		var width = Math.Max(0, Math.Min(maxX - minX + 1, frame.Width - minX));
+		var height = Math.Max(0, Math.Min(maxY - minY + 1, frame.Height - minY));
+		return new Rectangle(minX, minY, width, height);
+	}
+
+	/// <summary>Builds the in-memory <see cref="GraphicsElement"/> for an imported PNG and its <see cref="SpriteElementJson"/> metadata.</summary>
+	public static GraphicsElement FromImage(SpriteElementJson json, Image<Rgba32> image, PaletteMap paletteMap, int index, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(json);
+		ArgumentNullException.ThrowIfNull(image);
 
 		var flags = json.Flags ?? GraphicsElementFlags.None;
-		var element = new GraphicsElement()
+		var xOffset = json.XOffset;
+		var yOffset = json.YOffset;
+		var zoomOffset = json.ZoomOffset ?? 0;
+		var name = json.Name ?? string.Empty;
+
+		// An imported Bgr24 image stays RGBA; every other imported image is palette-format and its source
+		// of truth is an indexed frame. Convert (optionally dithered) so company colours survive.
+		if (flags.HasFlag(GraphicsElementFlags.IsBgr24))
 		{
-			Width = (int16_t)image.Width,
-			Height = (int16_t)image.Height,
-			XOffset = json.XOffset,
-			YOffset = json.YOffset,
-			Flags = flags,
-			ZoomOffset = json.ZoomOffset ?? 0,
-			ImageData = paletteMap.ConvertRgba32ImageToG1Data(image, flags, ditheringMethod),
-			Name = json.Name ?? string.Empty,
-			Image = image,
-			ImageTableIndex = index,
-		};
+			return GraphicsElement.FromRgba(flags, image, xOffset, yOffset, zoomOffset, name, index);
+		}
 
-		element.Decode(paletteMap);
+		var dither = ditheringMethod.HasValue && ditheringMethod.Value != DitheringMethod.None ? ditheringMethod.Value : (DitheringMethod?)null;
+		var frame = dither.HasValue
+			? paletteMap.ConvertRgba32ImageToIndexedImageDithering(image, flags, dither.Value)
+			: paletteMap.ConvertRgba32ImageToIndexedImage(image, flags);
 
-		return element;
+		return GraphicsElement.FromIndexed(flags, frame, xOffset, yOffset, zoomOffset, name, index);
 	}
 }

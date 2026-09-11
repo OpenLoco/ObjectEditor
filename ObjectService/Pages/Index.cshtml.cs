@@ -94,7 +94,7 @@ public sealed class IndexModel : PageModel
 			["licences"] = "Licences",
 		}),
 	];
-	
+
 	public bool IsAdmin => User.IsInRole("Admin");
 
 	// ── Data lists for database-view categories ──
@@ -156,7 +156,7 @@ public sealed class IndexModel : PageModel
 				break;
 		}
 	}
-async Task LoadObjectPacksAsync(CancellationToken ct)
+	async Task LoadObjectPacksAsync(CancellationToken ct)
 	{
 		var packs = await _db.ObjectPacks
 			.Include(p => p.Authors)
@@ -291,7 +291,9 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 	public async Task<IActionResult> OnPostCreateAsync()
 	{
 		if (!IsAdmin)
+		{
 			return Forbid();
+		}
 
 		if (string.IsNullOrWhiteSpace(CrudName))
 		{
@@ -384,7 +386,9 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 	public async Task<IActionResult> OnPostEditAsync()
 	{
 		if (!IsAdmin)
+		{
 			return Forbid();
+		}
 
 		if (string.IsNullOrWhiteSpace(CrudName))
 		{
@@ -401,7 +405,11 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 					var entry = new DtoAuthorEntry(CrudId, CrudName.Trim());
 					var updated = await _authorService.UpdateAsync(CrudId, entry, CancellationToken.None);
 					SuccessMessage = updated != null ? $"Author '{CrudName.Trim()}' updated." : "Author not found.";
-					if (updated == null) ErrorMessage = "Author not found.";
+					if (updated == null)
+					{
+						ErrorMessage = "Author not found.";
+					}
+
 					break;
 				}
 				case "tags":
@@ -409,7 +417,11 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 					var entry = new DtoTagEntry(CrudId, CrudName.Trim());
 					var updated = await _tagService.UpdateAsync(CrudId, entry, CancellationToken.None);
 					SuccessMessage = updated != null ? $"Tag '{CrudName.Trim()}' updated." : "Tag not found.";
-					if (updated == null) ErrorMessage = "Tag not found.";
+					if (updated == null)
+					{
+						ErrorMessage = "Tag not found.";
+					}
+
 					break;
 				}
 				case "licences":
@@ -417,7 +429,11 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 					var entry = new DtoLicenceEntry(CrudId, CrudName.Trim(), CrudText?.Trim() ?? string.Empty);
 					var updated = await _licenceService.UpdateAsync(CrudId, entry, CancellationToken.None);
 					SuccessMessage = updated != null ? $"Licence '{CrudName.Trim()}' updated." : "Licence not found.";
-					if (updated == null) ErrorMessage = "Licence not found.";
+					if (updated == null)
+					{
+						ErrorMessage = "Licence not found.";
+					}
+
 					break;
 				}
 				case "objectsmissing":
@@ -425,7 +441,11 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 					var entry = new DtoObjectMissingEntry(CrudId, CrudName.Trim(), CrudChecksum, CrudObjectType);
 					var updated = await _objectsMissingService.UpdateAsync(CrudId, entry, CancellationToken.None);
 					SuccessMessage = updated != null ? $"Missing object '{CrudName.Trim()}' updated." : "Missing object not found.";
-					if (updated == null) ErrorMessage = "Missing object not found.";
+					if (updated == null)
+					{
+						ErrorMessage = "Missing object not found.";
+					}
+
 					break;
 				}
 				default:
@@ -445,7 +465,9 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 	public async Task<IActionResult> OnPostDeleteAsync()
 	{
 		if (!IsAdmin)
+		{
 			return Forbid();
+		}
 
 		try
 		{
@@ -489,7 +511,10 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 						SuccessMessage = $"Object pack '{pack.Name}' deleted.";
 					}
 					else
+					{
 						ErrorMessage = "Pack not found.";
+					}
+
 					break;
 				}
 				case "sc5filepacks":
@@ -502,7 +527,10 @@ async Task LoadObjectPacksAsync(CancellationToken ct)
 						SuccessMessage = $"SC5 file pack '{pack.Name}' deleted.";
 					}
 					else
+					{
 						ErrorMessage = "Pack not found.";
+					}
+
 					break;
 				}
 				default:

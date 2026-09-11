@@ -7,8 +7,6 @@ using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using System.IO.Compression;
 
 namespace ObjectService.Services;
@@ -36,10 +34,7 @@ public class ObjectQueryService : IObjectQueryService
 		_logger = logger;
 	}
 
-	public async Task<IEnumerable<DtoObjectEntry>> ListAsync(HttpContext context, CancellationToken ct)
-	{
-		return await _db.Objects.Include(x => x.DatObjects).Select(x => x.ToDtoEntry()).ToListAsync(ct);
-	}
+	public async Task<IEnumerable<DtoObjectEntry>> ListAsync(HttpContext context, CancellationToken ct) => await _db.Objects.Include(x => x.DatObjects).Select(x => x.ToDtoEntry()).ToListAsync(ct);
 
 	public async Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct)
 	{
@@ -68,6 +63,7 @@ public class ObjectQueryService : IObjectQueryService
 		obj.CreatedDate = request.CreatedDate;
 		obj.ModifiedDate = request.ModifiedDate;
 		obj.Availability = request.Availability;
+
 		if (request.Licence == null)
 		{
 			obj.Licence = null;
@@ -154,24 +150,21 @@ public class ObjectQueryService : IObjectQueryService
 			return null;
 		}
 
-		result.LocoObject.ImageTable.PaletteMap = PaletteMapLoader.LoadDefault();
+		var palette = PaletteMapLoader.LoadDefault();
 
 		var elements = result.LocoObject.ImageTable.GraphicsElements;
 		var tempZipPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".zip");
 		using var zipStream = new FileStream(tempZipPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 		using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
 		{
-			for (int i = 0; i < elements.Count; i++)
+			for (var i = 0; i < elements.Count; i++)
 			{
 				var element = elements[i];
-				if (element.Image == null)
-				{
-					continue;
-				}
 
 				var entry = archive.CreateEntry(i + ".png", CompressionLevel.Optimal);
 				await using var entryStream = entry.Open();
-				await element.Image.SaveAsPngAsync(entryStream, ct);
+				using var rgba = element.ToRgba(palette);
+				await rgba.SaveAsPngAsync(entryStream, ct);
 			}
 		}
 		zipStream.Position = 0;
@@ -207,39 +200,21 @@ public class ObjectQueryService : IObjectQueryService
 			return null;
 		}
 
-		result.LocoObject.ImageTable.PaletteMap = PaletteMapLoader.LoadDefault();
+		var palette = PaletteMapLoader.LoadDefault();
 
 		var elements = result.LocoObject.ImageTable.GraphicsElements;
-		var first = elements.FirstOrDefault(e => e.Image != null);
+		var first = elements.FirstOrDefault(e => e != null);
 		if (first == null)
 		{
 			return null;
 		}
 
-		// Trim the image to its non-transparent bounding box,
-		// using the same FindCropRegion function used by the GUI's CropImage.
-		using var image = TrimImage(first.Image!);
+		// Trim the first image to its non-transparent bounding box in its native representation,
+		// decoding to RGBA only if it is palette-indexed (so no full-image round-trip is needed).
+		using var image = first.TrimmedToRgba(palette);
 		using var ms = new MemoryStream();
 		await image.SaveAsPngAsync(ms, ct);
 		return ms.ToArray();
-	}
-
-	/// <summary>
-	/// Returns a clone of <paramref name="image"/> cropped to the bounding box of all
-	/// non‑transparent pixels, using the same algorithm as the GUI's CropImage command.
-	/// </summary>
-	static Image<Rgba32> TrimImage(Image<Rgba32> image)
-	{
-		var cropRegion = GraphicsElementOperations.FindCropRegion(image);
-
-		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
-		{
-			// Fully transparent image – return a 1×1 transparent pixel
-			// (same fallback the GUI uses).
-			return image.Clone(i => i.Crop(new Rectangle(0, 0, 1, 1)));
-		}
-
-		return image.Clone(i => i.Crop(cropRegion));
 	}
 
 	public async Task<string?> GetFilePathAsync(UniqueObjectId id, CancellationToken ct)

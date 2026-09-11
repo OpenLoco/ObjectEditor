@@ -61,13 +61,14 @@
 			const paletteStorageKey = "object-service-theme-palette-v2";
 			const legacyPaletteStorageKey = "object-service-theme-palette";
 			const root = document.documentElement;
-			const paletteFields = ["accent", "surface", "muted", "background", "contrast", "success", "warning", "error"];
+			const paletteFields = ["accent", "surface", "muted", "text", "background", "contrast", "success", "warning", "error"];
 			const defaultPalette = {
 				accent: "#F6C945",
 				surface: "#D9D9D6",
 				muted: "#8A8D8F",
+				text: "#808080",
 				background: "#2E2F33",
-				contrast: "#FFF6E0",
+				contrast: "#9C9C9C",
 					success: "#46F65A",
 					warning: "#F6C945",
 					error: "#F64646",
@@ -242,10 +243,10 @@
 					"border-soft": rgba(v("background", 0), 0.08),
 					"field-border": rgba(v("background", 1), 0.18),
 					"field-bg": rgba(v("contrast", 3), 0.9),
-					text: v("background", 0),
-					muted: v("muted", 2),
+					text: v("text", 0),
+					muted: v("text", 2),
 					accent: v("accent", 2),
-					"accent-strong": v("background", 0),
+					"accent-strong": v("text", 0),
 					"accent-soft": rgba(v("accent", 2), 0.18),
 					"accent-soft-strong": rgba(v("accent", 2), 0.12),
 					"accent-border": rgba(v("accent", 2), 0.32),
@@ -422,7 +423,7 @@
 				if (isDevelopment && !isAuthenticated)
 				{
 				<form method="post" asp-page="/Dev/QuickLogin" style="display: inline;">
-					<button type="submit" class="button button-secondary" style="background-color: var(--warning); color: var(--button-primary-text); font-weight: 500;">
+					<button type="submit" class="button button-secondary" style="background-color: var(--accent); color: var(--button-primary-text); font-weight: 500;">
 						Dev Login
 					</button>
 				</form>
@@ -433,12 +434,17 @@
 				<span class="chip" style="background-color: var(--muted); color: var(--contrast); margin-left: 0.5rem;" title="The server is in read-only mode — browsing and downloads are available, but logins and account features are disabled.">
 					Read-only mode
 				</span>
-			}				<button type="button" class="button button-secondary theme-studio-toggle" data-theme-studio-toggle aria-controls="theme-studio-panel" aria-expanded="false" hidden>
+			}
+				<button type="button" class="button button-secondary theme-studio-toggle" data-theme-studio-toggle aria-controls="theme-studio-panel" aria-expanded="false" hidden>
 					Theme palette
 				</button>
-				<button type="button" class="button button-secondary theme-toggle" data-theme-toggle aria-label="Toggle between light and dark mode" aria-pressed="false">
-					Dark mode
-				</button>
+				<div class="theme-switch" data-theme-switch data-theme="light">
+					<span class="theme-switch-label theme-switch-label-light">Light</span>
+					<button type="button" class="theme-toggle" data-theme-toggle role="switch" aria-checked="false" aria-label="Toggle between light and dark mode">
+						<span class="theme-toggle-thumb" aria-hidden="true"></span>
+					</button>
+					<span class="theme-switch-label theme-switch-label-dark">Dark</span>
+				</div>
 			</div>
 		</header>
 

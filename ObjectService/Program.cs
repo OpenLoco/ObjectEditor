@@ -196,7 +196,7 @@ builder.Services.AddAuthorization(options =>
 	options.AddPolicy("AdminOnly", policy =>
 		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
 			.RequireRole("Admin"));
-// Curator policy – any user with at least one curator permission (or Admin)
+	// Curator policy – any user with at least one curator permission (or Admin)
 	options.AddPolicy("Curator", policy =>
 		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
 			.RequireAuthenticatedUser()

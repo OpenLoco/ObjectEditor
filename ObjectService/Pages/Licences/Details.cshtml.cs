@@ -84,7 +84,9 @@ public sealed class DetailsModel : PageModel
 	public async Task<IActionResult> OnPostEditAsync()
 	{
 		if (!IsAdmin)
+		{
 			return Forbid();
+		}
 
 		if (string.IsNullOrWhiteSpace(Name))
 		{
@@ -118,7 +120,9 @@ public sealed class DetailsModel : PageModel
 	public async Task<IActionResult> OnPostDeleteAsync(UniqueObjectId id)
 	{
 		if (!IsAdmin)
+		{
 			return Forbid();
+		}
 
 		var deleted = await _licenceService.DeleteAsync(id, CancellationToken.None);
 		if (deleted)

@@ -278,9 +278,6 @@ public static class SawyerStreamWriter
 		shift &= 7; // Ensure shift is within 0-7 for 8-bit bytes
 		return (uint8_t)((value << shift) | (value >> (8 - shift)));
 	}
-	public static byte[] EncodeRLEImageData(GraphicsElement img)
-		=> EncodeRLEImageData((DatG1ElementFlags)img.Flags, img.ImageData, img.Width, img.Height);
-
 	public static byte[] EncodeRLEImageData(DatG1Element32 img)
 		=> EncodeRLEImageData(img.Flags, img.ImageData, img.Width, img.Height);
 
@@ -629,9 +626,11 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static void WriteImageTable(Stream ms, List<GraphicsElement> graphicsElements)
+	public static void WriteImageTable(Stream ms, List<GraphicsElement> graphicsImages, PaletteMap? paletteMap = null)
 	{
-		var g1Elements = graphicsElements.Select(x => x.Convert()).ToList();
+		// The palette is a global service available here; a caller-supplied one (e.g. from the CLI) takes priority.
+		var palette = paletteMap ?? PaletteMapLoader.Current;
+		var g1Elements = graphicsImages.Select(x => x.ToDatG1Element32(palette)).ToList();
 
 		if (g1Elements != null && g1Elements.Count != 0)
 		{

@@ -60,7 +60,7 @@ public sealed class ExportImagesCommand : ICommand
 					? Path.Combine(outputRoot, Path.GetFileNameWithoutExtension(fileName))
 					: outputRoot;
 
-				var count = await ImageTableIo.ExportAsync(file.LocoObject.ImageTable, targetDir, useNames, context.Logger);
+				var count = await ImageTableIo.ExportAsync(file.LocoObject.ImageTable, targetDir, useNames, context.PaletteMap, context.Logger);
 				Console.WriteLine($"ok   {fileName}: exported {count} image(s) to \"{targetDir}\"");
 			}
 			catch (Exception ex)

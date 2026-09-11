@@ -14,7 +14,7 @@ public static class ImageTableIo
 {
 	public const string SpritesFileName = "sprites.json";
 
-	public static async Task<int> ExportAsync(ImageTable imageTable, string directory, bool prependGroupAndImageNameInFilename, ILogger logger)
+	public static async Task<int> ExportAsync(ImageTable imageTable, string directory, bool prependGroupAndImageNameInFilename, PaletteMap paletteMap, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 		ArgumentNullException.ThrowIfNull(logger);
@@ -29,19 +29,19 @@ public static class ImageTableIo
 
 		logger.LogInformation("Exporting images to {Directory}", directory);
 
-		var offsets = new List<GraphicsElementJson>();
+		var offsets = new List<SpriteElementJson>();
 		var invalidChars = Path.GetInvalidFileNameChars();
 
 		foreach (var item in imageTable.Groups
-			.SelectMany(group => group.GraphicsElements, (group, element) => new { group.Name, Element = element })
-			.OrderBy(x => x.Element.ImageTableIndex))
+			.SelectMany(group => group.GraphicsElements, (group, image) => new { group.Name, Image = image })
+			.OrderBy(x => x.Image.ImageTableIndex))
 		{
-			var element = item.Element;
+			var image = item.Image;
 
-			var fileName = $"{element.ImageTableIndex}.png";
+			var fileName = $"{image.ImageTableIndex}.png";
 			if (prependGroupAndImageNameInFilename)
 			{
-				var imageName = Sanitize(element.Name, invalidChars);
+				var imageName = Sanitize(image.Name, invalidChars);
 				var groupName = Sanitize(item.Name, invalidChars);
 
 				if (!string.IsNullOrEmpty(groupName) && !string.IsNullOrEmpty(imageName))
@@ -50,14 +50,9 @@ public static class ImageTableIo
 				}
 			}
 
-			if (element.Image == null)
-			{
-				logger.LogWarning("Image[{Index}] has no decoded image and will be skipped", element.ImageTableIndex);
-				continue;
-			}
-
-			await element.Image.SaveAsPngAsync(Path.Combine(directory, fileName));
-			offsets.Add(new GraphicsElementJson(fileName, element));
+			using var rgba = image.ToRgba(paletteMap);
+			await rgba.SaveAsPngAsync(Path.Combine(directory, fileName));
+			offsets.Add(new SpriteElementJson(fileName, image));
 		}
 
 		var offsetsFile = Path.Combine(directory, SpritesFileName);
@@ -70,7 +65,7 @@ public static class ImageTableIo
 			=> new string([.. value.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
 	}
 
-	public static async Task<ICollection<GraphicsElementJson>?> LoadSpritesJsonAsync(string filename, ILogger logger)
+	public static async Task<ICollection<SpriteElementJson>?> LoadSpritesJsonAsync(string filename, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(logger);
 
@@ -79,7 +74,7 @@ public static class ImageTableIo
 			return null;
 		}
 
-		var offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(filename);
+		var offsets = await JsonFile.DeserializeFromFileAsync<ICollection<SpriteElementJson>>(filename);
 		logger.LogDebug("Found sprites.json file with {Count} images", offsets?.Count ?? 0);
 		return offsets;
 	}
@@ -108,19 +103,19 @@ public static class ImageTableIo
 		{
 			var is1Pixel = string.IsNullOrEmpty(sprite.Path);
 			var img = is1Pixel
-				? ImageTableHelpers.OnePixelTransparent
+				? new Image<Rgba32>(1, 1, PaletteMap.Transparent.Color.ToPixel<Rgba32>())
 				: Image.Load<Rgba32>(Path.Combine(directory, sprite.Path));
 
 			var effectiveSprite = is1Pixel
 				? sprite with { Flags = GraphicsElementFlags.HasTransparency }
 				: sprite;
 
-			var graphicsElement = GraphicsElementOperations.FromImage(effectiveSprite, img, paletteMap, i, ditheringMethod);
-			graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
+			var image = GraphicsElementOperations.FromImage(effectiveSprite, img, paletteMap, i, ditheringMethod);
+			image.Name = string.IsNullOrEmpty(image.Name)
 				? DefaultImageTableNameProvider.GetImageName(i)
-				: graphicsElement.Name;
+				: image.Name;
 
-			importedImages.Add(graphicsElement);
+			importedImages.Add(image);
 		}
 
 		return importedImages;

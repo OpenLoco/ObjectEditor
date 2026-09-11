@@ -33,11 +33,6 @@ public static class ObjectFile
 			return null;
 		}
 
-		if (paletteMap != null && locoObject.ImageTable != null)
-		{
-			locoObject.ImageTable.PaletteMap = paletteMap;
-		}
-
 		return new LocoObjectFile(fileName, datInfo, locoObject);
 	}
 

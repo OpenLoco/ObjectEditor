@@ -38,6 +38,10 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 
 			await File.WriteAllBytesAsync(fullPath, bytes);
 		}
+
+		// The download endpoint resolves scenarios by their database id, so seed a
+		// DB row that points at one of the files written above.
+		await db.SC5Files.AddAsync(new TblSC5File { Id = 1, Name = Path.Combine(ServerFolderManager.CustomFolderName, "alpha.SC5") });
 	}
 
 	[Test]
@@ -85,18 +89,16 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 	}
 
 	[Test]
-	public async Task GetScenarioFileAsync_ReturnsFileMatchingSortedListOrder()
+	public async Task GetScenarioFileAsync_ReturnsFileForDatabaseId()
 	{
-		var list = (await Client.GetScenariosAsync(HttpClient!)).ToList();
-		var firstScenario = list.First();
-
-		using var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{BaseRoute}/{firstScenario.Id}{RoutesV2.File}");
+		// Scenario id 1 is seeded in SeedDataCoreAsync and points at Custom/alpha.SC5.
+		using var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{BaseRoute}/1{RoutesV2.File}");
 		var bytes = await response.Content.ReadAsByteArrayAsync();
 
 		using (Assert.EnterMultipleScope())
 		{
 			Assert.That(response.IsSuccessStatusCode, Is.True);
-			Assert.That(firstScenario.Name, Is.EqualTo(Path.Combine(ServerFolderManager.CustomFolderName, "alpha.SC5")));
+			Assert.That(response.Content.Headers.ContentType?.MediaType, Is.EqualTo("application/octet-stream"));
 			Assert.That(bytes, Is.EqualTo(new byte[] { 1, 2, 3 }));
 		}
 	}

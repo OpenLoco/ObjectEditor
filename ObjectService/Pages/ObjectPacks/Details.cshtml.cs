@@ -67,7 +67,9 @@ public sealed class DetailsModel : PageModel
 		[FromForm] List<UniqueObjectId>? SelectedObjectIds)
 	{
 		if (!CanEdit)
+		{
 			return Forbid();
+		}
 
 		if (string.IsNullOrWhiteSpace(Name))
 		{
@@ -120,7 +122,9 @@ public sealed class DetailsModel : PageModel
 			{
 				var author = await _db.Authors.FindAsync(new object[] { (object)authorId });
 				if (author != null)
+				{
 					pack.Authors.Add(author);
+				}
 			}
 
 			// Tags
@@ -129,7 +133,9 @@ public sealed class DetailsModel : PageModel
 			{
 				var tag = await _db.Tags.FindAsync(new object[] { (object)tagId });
 				if (tag != null)
+				{
 					pack.Tags.Add(tag);
+				}
 			}
 
 			// Objects
@@ -138,7 +144,9 @@ public sealed class DetailsModel : PageModel
 			{
 				var obj = await _db.Objects.FindAsync(new object[] { (object)objId });
 				if (obj != null)
+				{
 					pack.Objects.Add(obj);
+				}
 			}
 
 			await _db.SaveChangesAsync();
@@ -156,7 +164,9 @@ public sealed class DetailsModel : PageModel
 	public async Task<IActionResult> OnPostDeleteAsync(UniqueObjectId id)
 	{
 		if (!CanEdit)
+		{
 			return Forbid();
+		}
 
 		var pack = await _db.ObjectPacks.FindAsync(new object[] { (object)id });
 		if (pack is null)

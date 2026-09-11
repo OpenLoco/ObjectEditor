@@ -58,16 +58,21 @@ public sealed class EditModel : PageModel
 	{
 		await LoadUserAsync(id);
 		if (UserDetail == null)
+		{
 			return NotFound();
+		}
 
 		return Page();
 	}
-// ── POST: Update display name ──
+	// ── POST: Update display name ──
 
 	public async Task<IActionResult> OnPostUpdateDisplayNameAsync()
 	{
 		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null) return NotFound();
+		if (user == null)
+		{
+			return NotFound();
+		}
 
 		if (string.IsNullOrWhiteSpace(NewDisplayName))
 		{
@@ -95,7 +100,10 @@ public sealed class EditModel : PageModel
 	public async Task<IActionResult> OnPostToggleRoleAsync()
 	{
 		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null) return NotFound();
+		if (user == null)
+		{
+			return NotFound();
+		}
 
 		if (string.IsNullOrEmpty(RoleToToggle))
 		{
@@ -131,7 +139,10 @@ public sealed class EditModel : PageModel
 	public async Task<IActionResult> OnPostTogglePermissionAsync()
 	{
 		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null) return NotFound();
+		if (user == null)
+		{
+			return NotFound();
+		}
 
 		if (string.IsNullOrEmpty(PermissionToToggle))
 		{
@@ -164,7 +175,10 @@ public sealed class EditModel : PageModel
 	public async Task<IActionResult> OnPostForcePasswordResetAsync()
 	{
 		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null) return NotFound();
+		if (user == null)
+		{
+			return NotFound();
+		}
 
 		var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 		SuccessMessage = $"Password reset token: {token}";
@@ -178,7 +192,10 @@ public sealed class EditModel : PageModel
 	public async Task<IActionResult> OnPostToggleEmailConfirmedAsync()
 	{
 		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null) return NotFound();
+		if (user == null)
+		{
+			return NotFound();
+		}
 
 		if (user.EmailConfirmed)
 		{
@@ -209,7 +226,10 @@ public sealed class EditModel : PageModel
 	public async Task<IActionResult> OnPostToggleLockoutAsync()
 	{
 		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null) return NotFound();
+		if (user == null)
+		{
+			return NotFound();
+		}
 
 		if (await _userManager.IsLockedOutAsync(user))
 		{
@@ -231,7 +251,10 @@ public sealed class EditModel : PageModel
 	public async Task<IActionResult> OnPostDeleteUserAsync()
 	{
 		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null) return NotFound();
+		if (user == null)
+		{
+			return NotFound();
+		}
 
 		var currentUserId = _userManager.GetUserId(User);
 		if (user.Id.ToString() == currentUserId)
@@ -245,7 +268,10 @@ public sealed class EditModel : PageModel
 
 		var ownedObjects = await _db.Objects.Where(o => o.OwnerUserId == user.Id).ToListAsync();
 		foreach (var obj in ownedObjects)
+		{
 			obj.OwnerUserId = null;
+		}
+
 		await _db.SaveChangesAsync();
 
 		var result = await _userManager.DeleteAsync(user);
@@ -259,7 +285,7 @@ public sealed class EditModel : PageModel
 		await LoadUserAsync(UserId);
 		return Page();
 	}
-// ── Helpers ──
+	// ── Helpers ──
 
 	private async Task LoadUserAsync(UniqueObjectId id)
 	{
@@ -267,7 +293,10 @@ public sealed class EditModel : PageModel
 			.Include(u => u.AssociatedAuthor)
 			.FirstOrDefaultAsync(u => u.Id == id);
 
-		if (user == null) return;
+		if (user == null)
+		{
+			return;
+		}
 
 		UserId = user.Id;
 

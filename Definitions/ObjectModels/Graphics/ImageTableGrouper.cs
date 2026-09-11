@@ -20,6 +20,14 @@ public static class ImageTableGrouper
 	{
 		var originalCount = imageList.Count;
 
+		// The DAT layer has already decoded the raw bytes into GraphicsElement models; here we only assign
+		// each image's table index and name, then group them.
+		for (var i = 0; i < imageList.Count; ++i)
+		{
+			imageList[i].ImageTableIndex = i;
+		}
+
+		// Name each image from the object's naming rules, keyed by its image-table index.
 		ImageTableNamer.NameImages(obj, objectType, imageList);
 
 		var imageTable = new ImageTable();

@@ -36,8 +36,6 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
 
-	public PaletteMap PaletteMap { get; set; } = null!;
-
 	public G1Dat? G1 { get; set; }
 
 	//public Dictionary<string, byte[]> Music { get; } = [];

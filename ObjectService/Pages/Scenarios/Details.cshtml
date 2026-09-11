@@ -29,15 +29,16 @@
 		<a class="back-link" asp-page="/Index" asp-route-category="sc5files">Back to scenarios</a>
 		<div class="admin-page-header">
 			<h1>@scenario.Name</h1>
-			@if (Model.CanEdit)
-			{
-				<div class="action-buttons">
+			<div class="action-buttons">
+				<a class="button button-small button-primary" href="/v2/scenarios/@scenario.Id/file">Download</a>
+				@if (Model.CanEdit)
+				{
 					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
 					<form method="post" asp-page-handler="Delete" asp-route-id="@scenario.Id" style="display:inline" onsubmit="return confirm('Delete this scenario?')">
 						<button type="submit" class="button button-small button-danger">Delete</button>
 					</form>
-				</div>
-			}
+				}
+			</div>
 		</div>
 		<p class="muted">Source: @scenario.ObjectSource</p>
 		<p class="lede">@(string.IsNullOrWhiteSpace(scenario.Description) ? "No description is stored for this scenario yet." : scenario.Description)</p>

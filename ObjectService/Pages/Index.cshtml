@@ -1,4 +1,4 @@
-@page "/"
+@page "/loco"
 @model ObjectService.Pages.IndexModel
 @{
 	ViewData["Title"] = "Object Explorer";
@@ -15,11 +15,16 @@
 	<div class="theme-studio-header">
 		<div>
 			<p class="eyebrow">Theme Studio</p>
-			<h2>Trial a nine-colour palette</h2>
-			<p class="lede">Paste or pick nine hex colours and the page will derive the rest of the theme tokens automatically. The palette is stored only in this browser and follows the light/dark toggle.</p>
+			<h2>Nine-colour palette</h2>
+			<p class="lede">Pick one colour per type for the light palette and another nine for the dark palette. No shades are derived — what you pick is what you get. The palette is stored only in this browser.</p>
 		</div>
 	</div>
 	<form class="theme-palette-form" data-theme-palette-form>
+		<div class="theme-palette-mode" data-theme-palette-mode role="group" aria-label="Palette being edited">
+			<button type="button" class="button button-small theme-palette-mode-button" data-theme-palette-mode-button="light" aria-pressed="false">Light</button>
+			<button type="button" class="button button-small theme-palette-mode-button" data-theme-palette-mode-button="dark" aria-pressed="true">Dark</button>
+		</div>
+
 		<div class="theme-palette-grid">
 			<label class="field palette-field">
 				<span>Accent</span>
@@ -27,7 +32,6 @@
 					<input type="color" value="#F6C945" data-palette-picker="accent" aria-label="Accent colour picker" />
 					<input type="text" value="#F6C945" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="accent" aria-label="Accent hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="accent" aria-label="Accent brightness variants"></div>
 			</label>
 			<label class="field palette-field">
 				<span>Surface</span>
@@ -35,7 +39,6 @@
 					<input type="color" value="#D9D9D6" data-palette-picker="surface" aria-label="Surface colour picker" />
 					<input type="text" value="#D9D9D6" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="surface" aria-label="Surface hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="surface" aria-label="Surface brightness variants"></div>
 			</label>
 			<label class="field palette-field">
 				<span>Muted</span>
@@ -43,7 +46,6 @@
 					<input type="color" value="#8A8D8F" data-palette-picker="muted" aria-label="Muted colour picker" />
 					<input type="text" value="#8A8D8F" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="muted" aria-label="Muted hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="muted" aria-label="Muted brightness variants"></div>
 			</label>
 			<label class="field palette-field">
 				<span>Text</span>
@@ -51,7 +53,6 @@
 					<input type="color" value="#808080" data-palette-picker="text" aria-label="Text colour picker" />
 					<input type="text" value="#808080" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="text" aria-label="Text hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="text" aria-label="Text brightness variants"></div>
 			</label>
 			<label class="field palette-field">
 				<span>Background</span>
@@ -59,7 +60,6 @@
 					<input type="color" value="#2E2F33" data-palette-picker="background" aria-label="Background colour picker" />
 					<input type="text" value="#2E2F33" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="background" aria-label="Background hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="background" aria-label="Background brightness variants"></div>
 			</label>
 			<label class="field palette-field">
 				<span>Contrast</span>
@@ -67,7 +67,6 @@
 					<input type="color" value="#9C9C9C" data-palette-picker="contrast" aria-label="Contrast colour picker" />
 					<input type="text" value="#9C9C9C" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="contrast" aria-label="Contrast hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="contrast" aria-label="Contrast brightness variants"></div>
 			</label>
 			<label class="field palette-field">
 				<span>Success</span>
@@ -75,7 +74,6 @@
 					<input type="color" value="#4E8D57" data-palette-picker="success" aria-label="Success colour picker" />
 					<input type="text" value="#4E8D57" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="success" aria-label="Success hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="success" aria-label="Success brightness variants"></div>
 			</label>
 			<label class="field palette-field">
 				<span>Warning</span>
@@ -83,7 +81,6 @@
 					<input type="color" value="#B97A1F" data-palette-picker="warning" aria-label="Warning colour picker" />
 					<input type="text" value="#B97A1F" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="warning" aria-label="Warning hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="warning" aria-label="Warning brightness variants"></div>
 			</label>
 			<label class="field palette-field">
 				<span>Error</span>
@@ -91,7 +88,6 @@
 					<input type="color" value="#B44C43" data-palette-picker="error" aria-label="Error colour picker" />
 					<input type="text" value="#B44C43" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="error" aria-label="Error hex colour" />
 				</div>
-				<div class="variant-swatches" data-variant-swatches="error" aria-label="Error brightness variants"></div>
 			</label>
 		</div>
 
@@ -100,7 +96,7 @@
 			<button type="button" class="button button-secondary" data-theme-palette-reset>Use default palette</button>
 		</div>
 
-		<p class="theme-studio-status muted" data-theme-palette-status aria-live="polite">Stored locally in this browser. Light and dark mode reuse the same palette definitions.</p>
+		<p class="theme-studio-status muted" data-theme-palette-status aria-live="polite">Stored locally in this browser.</p>
 	</form>
 </section>
 

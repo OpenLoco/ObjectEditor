@@ -431,47 +431,21 @@ dt {
     box-shadow: 0 0 0 3px var(--danger-soft);
 }
 
-/* ── Variant swatch preview ── */
-.variant-swatches {
-    display: flex;
-    gap: 4px;
-    margin-top: 8px;
-    padding: 0 2px;
+/* ── Theme studio: light/dark palette mode toggle ── */
+.theme-palette-mode {
+    display: inline-flex;
+    gap: 8px;
 }
 
-.variant-swatch {
-    flex: 1;
-    height: 18px;
-    border-radius: 6px;
-    border: 1px solid var(--border-soft);
-    position: relative;
-    transition: transform 120ms ease;
-}
-
-.variant-swatch:hover {
-    transform: scaleY(1.5) translateY(-1px);
-    z-index: 1;
-}
-
-.variant-swatch-label {
-    display: none;
-    position: absolute;
-    bottom: calc(100% + 4px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--panel-strong);
-    color: var(--text);
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 5px;
-    white-space: nowrap;
-    pointer-events: none;
+.theme-palette-mode-button {
     border: 1px solid var(--border);
+    background: var(--surface-raised);
 }
 
-.variant-swatch:hover .variant-swatch-label {
-    display: block;
+.theme-palette-mode-button.theme-palette-mode-active {
+    background: var(--accent);
+    border-color: var(--accent-border-strong);
+    color: var(--button-primary-text);
 }
 
 .theme-studio-status {
@@ -713,7 +687,7 @@ dd {
     background: var(--surface-raised);
     font-weight: 700;
     font-size: 1rem;
-    color: var(--muted);
+    color: var(--text);
     transition:
         background-color 140ms ease,
         color 140ms ease,
@@ -728,13 +702,11 @@ dd {
 
 .master-tab-active {
     background: var(--accent);
-    color: var(--button-primary-text);
     border-color: transparent;
 }
 
 .master-tab-active:hover {
     background: var(--accent);
-    color: var(--button-primary-text);
 }
 
 .master-tab-separator {

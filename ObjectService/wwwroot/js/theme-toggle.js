@@ -1,6 +1,6 @@
 (() => {
     const storageKey = "object-service-theme";
-    const paletteStorageKey = "object-service-theme-palette-v2";
+    const paletteStorageKey = "object-service-theme-palette";
     const themeStudioStorageKey = "object-service-theme-studio-open";
     const root = document.documentElement;
     const toggle = document.querySelector("[data-theme-toggle]");
@@ -30,6 +30,12 @@
     const paletteResetButton = paletteForm?.querySelector(
         "[data-theme-palette-reset]",
     );
+    const paletteModeButtons = Array.from(
+        paletteForm?.querySelectorAll("[data-theme-palette-mode-button]") ?? [],
+    );
+
+    // Which palette (light or dark) the studio inputs are currently editing.
+    let paletteMode = "light";
 
     const getStoredTheme = () => {
         const storedTheme = themeTools.readStorage(storageKey);
@@ -106,44 +112,27 @@
                 continue;
             }
 
-            const value = palette[field.name];
+            const value =
+                palette?.[field.name] ?? themeTools.defaultPalette[paletteMode][field.name];
             field.input.value = value;
             field.picker.value = value;
             field.input.classList.remove("palette-input-invalid");
         }
-
-        updateVariantSwatches(palette);
     };
 
-    const updateVariantSwatches = (palette) => {
-        for (const key of themeTools.paletteFields) {
-            const container = paletteForm?.querySelector(
-                `[data-variant-swatches="${key}"]`,
-            );
-            if (!container) {
-                continue;
-            }
+    const setPaletteMode = (mode) => {
+        paletteMode = mode;
 
-            const variants = themeTools.generateVariants(palette[key]);
-
-            // Build swatch labels: [dark→bright, …, dark→dark]
-            // In light mode, positions 0=darkest, 4=lightest
-            // In dark mode, positions flip: 0=lightest (flipped from 4), 4=darkest (flipped from 0)
-            const lightLabels = ["Mid–Dk", "Mid–", "Mid", "Mid+", "Mid++"];
-            const darkLabels =  ["Mid++", "Mid+", "Mid", "Mid–", "Mid–Dk"];
-
-            container.innerHTML = variants
-                .map((hex, i) => {
-                    const lightLabel = i === 2 ? "Both" : lightLabels[i];
-                    const darkLabel  = i === 2 ? "Both" : darkLabels[i];
-                    return (
-                        `<span class="variant-swatch" style="background:${hex}" title="Light: ${lightLabel}  ·  Dark: ${darkLabel}  ·  ${hex}">` +
-                        `<span class="variant-swatch-label">Light: ${lightLabel}<br/>Dark: ${darkLabel}<br/>${hex}</span>` +
-                        `</span>`
-                    );
-                })
-                .join("");
+        for (const button of paletteModeButtons) {
+            const active = button.dataset.themePaletteModeButton === mode;
+            button.classList.toggle("theme-palette-mode-active", active);
+            button.setAttribute("aria-pressed", String(active));
         }
+
+        setPaletteInputs((getStoredPalette() ?? themeTools.defaultPalette)[mode]);
+        setPaletteStatus(
+            `Editing the ${mode} palette. Stored locally in this browser.`,
+        );
     };
 
     const readPaletteFromInputs = () => {
@@ -171,20 +160,16 @@
         return isValid ? palette : null;
     };
 
-    const applyCustomPalette = (palette, persist) => {
-        themeTools.applyPalette(
-            root,
-            root.dataset.theme || resolveTheme(),
-            palette,
-        );
+    const applyCustomPalette = (editedPalette) => {
+        const stored = getStoredPalette() ?? themeTools.defaultPalette;
+        const combined = { ...stored, [paletteMode]: editedPalette };
 
-        if (persist) {
-            storePalette(palette);
-        }
+        storePalette(combined);
 
-        setPaletteInputs(palette);
+        const theme = root.dataset.theme || resolveTheme();
+        themeTools.applyPalette(root, theme, combined);
+        setPaletteStatus(`Applied the ${paletteMode} palette.`);
     };
-
     applyTheme(root.dataset.theme || resolveTheme());
 
     if (themeStudioToggle) {
@@ -195,10 +180,8 @@
         }
     }
 
-    const storedPalette = getStoredPalette();
-    if (paletteForm) {
-        setPaletteInputs(storedPalette ?? themeTools.defaultPalette);
-    }
+    // Default the palette-mode toggle to the theme currently in use.
+    setPaletteMode(getStoredTheme() ?? resolveTheme());
 
     if (toggle) {
         toggle.addEventListener("click", () => {
@@ -226,6 +209,12 @@
         storeThemeStudioOpen(nextState);
     });
 
+    for (const button of paletteModeButtons) {
+        button.addEventListener("click", () => {
+            setPaletteMode(button.dataset.themePaletteModeButton);
+        });
+    }
+
     if (!paletteForm) {
         return;
     }
@@ -244,8 +233,7 @@
                 return;
             }
 
-            applyCustomPalette(palette, true);
-            setPaletteStatus("Applied custom palette.");
+            applyCustomPalette(palette);
         });
 
         field.input.addEventListener("change", () => {
@@ -268,8 +256,7 @@
                 return;
             }
 
-            applyCustomPalette(palette, true);
-            setPaletteStatus("Applied custom palette.");
+            applyCustomPalette(palette);
         });
     }
 
@@ -285,15 +272,14 @@
             return;
         }
 
-        applyCustomPalette(palette, true);
-        setPaletteStatus("Applied custom palette.");
+        applyCustomPalette(palette);
     });
 
     paletteResetButton?.addEventListener("click", () => {
         clearStoredPalette();
         const theme = root.dataset.theme || resolveTheme();
         themeTools.applyPalette(root, theme, themeTools.defaultPalette);
-        setPaletteInputs(themeTools.defaultPalette);
+        setPaletteMode(paletteMode);
         setPaletteStatus("Reverted to the default palette.");
     });
 })();

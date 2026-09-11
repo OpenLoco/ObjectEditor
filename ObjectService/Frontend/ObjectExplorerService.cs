@@ -39,9 +39,9 @@ public sealed class ObjectExplorerService
 			query = query.Where(x => x.ObjectSource == request.ObjectSource.Value);
 		}
 
-		if (request.Availability.HasValue)
+		if (request.CanDownload.HasValue)
 		{
-			query = query.Where(x => x.Availability == request.Availability.Value);
+			query = query.Where(x => IsDownloadable(x) == request.CanDownload.Value);
 		}
 
 		if (request.VehicleType.HasValue)
@@ -63,7 +63,8 @@ public sealed class ObjectExplorerService
 		var page = Math.Min(requestedPage, totalPages);
 
 		var rows = filtered
-			.OrderByDescending(x => x.UploadedDate)
+			.OrderByDescending(x => IsDownloadable(x))
+			.ThenByDescending(x => x.UploadedDate)
 			.ThenBy(x => x.InternalName)
 			.Skip((page - 1) * pageSize)
 			.Take(pageSize)
@@ -138,8 +139,6 @@ public sealed class ObjectExplorerService
 
 	ObjectListItemViewModel MapBrowseItem(DtoObjectEntry row)
 	{
-		var canDownload = IsDownloadAllowed(row.ObjectSource, row.Availability);
-
 		return new ObjectListItemViewModel(
 			row.Id,
 			row.InternalName,
@@ -153,7 +152,7 @@ public sealed class ObjectExplorerService
 			row.UploadedDate,
 			row.CreatedDate,
 			row.ModifiedDate,
-			canDownload,
+			IsDownloadable(row),
 			row.Description);
 	}
 
@@ -220,6 +219,11 @@ public sealed class ObjectExplorerService
 
 		return client;
 	}
+
+	static bool IsDownloadable(DtoObjectEntry row)
+		=> row.Availability == ObjectAvailability.Available
+			&& row.DatChecksum.HasValue
+			&& IsDownloadAllowed(row.ObjectSource, row.Availability);
 
 	static bool IsDownloadAllowed(ObjectSource objectSource, ObjectAvailability availability)
 		=> availability != ObjectAvailability.Unavailable

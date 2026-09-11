@@ -163,8 +163,7 @@ public class ObjectQueryService : IObjectQueryService
 
 				var entry = archive.CreateEntry(i + ".png", CompressionLevel.Optimal);
 				await using var entryStream = entry.Open();
-				using var rgba = element.ToRgba(palette);
-				await rgba.SaveAsPngAsync(entryStream, ct);
+				await element.ToRgba(palette).SaveAsPngAsync(entryStream, ct);
 			}
 		}
 		zipStream.Position = 0;

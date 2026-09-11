@@ -106,6 +106,9 @@ public class ObjectServiceClient
 	public async Task<IEnumerable<DtoScenarioEntry>> GetScenariosAsync()
 		=> await Client.GetScenariosAsync(WebClient, Logger);
 
+	public async Task<DtoScenarioDescriptor?> GetScenarioAsync(UniqueObjectId id)
+		=> await Client.GetScenarioAsync(WebClient, id, Logger);
+
 	public async Task<IEnumerable<DtoItemPackEntry>> GetSC5FilePacksAsync()
 		=> await Client.GetSC5FilePacksAsync(WebClient, Logger);
 

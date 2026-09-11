@@ -118,7 +118,7 @@ a {
 .site-nav a {
     background: var(--surface-raised);
     border-color: var(--border);
-    color: var(--muted);
+    color: var(--text);
 }
 
 .theme-studio-toggle {
@@ -271,7 +271,7 @@ a {
 }
 
 .site-header-stat span {
-    color: var(--muted);
+    color: var(--text);
     font: inherit;
 }
 
@@ -336,7 +336,7 @@ dt {
 .stat-card span {
     display: block;
     margin-bottom: 6px;
-    color: var(--muted);
+    color: var(--text);
     font-size: 0.92rem;
 }
 
@@ -497,7 +497,7 @@ dt {
 .field label {
     font-size: 0.92rem;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--text);
 }
 
 .field input,
@@ -533,7 +533,7 @@ dt {
 .button-disabled {
     background: var(--disabled-bg);
     border: 1px solid var(--disabled-border);
-    color: var(--muted);
+    color: var(--text);
     cursor: default;
     pointer-events: none;
 }
@@ -664,7 +664,7 @@ dd {
     gap: 5px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--text);
 }
 
 .card-icon svg {
@@ -689,7 +689,7 @@ dd {
 .pagination-label {
     padding: 0 8px;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--text);
 }
 /* ==========================================================================
    Master tabs (primary category navigation)
@@ -777,7 +777,7 @@ dd {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--muted);
+    color: var(--text);
 }
 
 .object-type-list {
@@ -857,7 +857,7 @@ dd {
 
 .filter-group label {
     font-size: 0.875rem;
-    color: var(--muted);
+    color: var(--text);
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
@@ -998,7 +998,7 @@ dd {
 }
 
 .image-card figcaption span {
-    color: var(--muted);
+    color: var(--text);
     font-size: 0.88rem;
 }
 
@@ -1021,7 +1021,7 @@ th {
     font-size: 0.84rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--muted);
+    color: var(--text);
 }
 
 .string-table-grid {
@@ -1061,7 +1061,6 @@ th {
     font-size: 0.84rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--muted);
 }
 
 @media (max-width: 1100px) {

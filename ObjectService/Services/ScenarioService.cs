@@ -10,6 +10,7 @@ public interface IScenarioService
 	IEnumerable<DtoScenarioEntry> ListScenarios();
 	string? GetScenarioFilePath(ulong index);
 	Task<string?> GetScenarioFilePathByIdAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoScenarioDescriptor?> GetScenarioAsync(UniqueObjectId id, CancellationToken ct);
 }
 
 public class ScenarioService : IScenarioService
@@ -54,6 +55,17 @@ public class ScenarioService : IScenarioService
 		}
 
 		return File.Exists(fullPath) ? fullPath : null;
+	}
+
+	public async Task<DtoScenarioDescriptor?> GetScenarioAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var scenario = await _db.SC5Files
+			.AsNoTracking()
+			.FirstOrDefaultAsync(s => s.Id == id, ct);
+
+		return scenario is null
+			? null
+			: new DtoScenarioDescriptor(scenario.Id, scenario.Name, scenario.Description);
 	}
 
 	private static string[] GetSortedScenarioFiles(string folder)

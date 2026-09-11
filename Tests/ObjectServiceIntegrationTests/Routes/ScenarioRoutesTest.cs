@@ -67,9 +67,14 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task GetAsync()
 	{
-		using var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{BaseRoute}/0");
+		var result = await Client.GetScenarioAsync(HttpClient!, 1);
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result!.Id, Is.EqualTo(1));
+			Assert.That(result.Name, Is.EqualTo(Path.Combine(ServerFolderManager.CustomFolderName, "alpha.SC5")));
+		}
 	}
 
 	[Test]

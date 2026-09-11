@@ -30,8 +30,18 @@ public class G1Tests
 		using (Assert.EnterMultipleScope())
 		{
 			Assert.That(g1.G1Header.NumEntries, Is.EqualTo(g1a.G1Header.NumEntries));
-			Assert.That(g1.G1Header.TotalSize, Is.EqualTo(g1a.G1Header.TotalSize));
 			Assert.That(g1.ImageTable.GraphicsElements, Has.Count.EqualTo(g1a.ImageTable.GraphicsElements.Count));
+
+			// Each element's serialised payload is canonicalised to exactly its pixel dimensions (padding the
+			// source file carried is dropped), so the total size need not be byte-identical to the source.
+			// Losslessness is asserted per element below (via ToG1Data equality) and, for a robust round-trip
+			// guarantee, re-serialising the already-canonical output must be deterministic (stable total size).
+			var tempName2 = Path.GetTempFileName();
+			SawyerStreamWriter.SaveG1(tempName2, g1a);
+			var g1b = SawyerStreamReader.LoadG1(tempName2, Logger);
+			ArgumentNullException.ThrowIfNull(g1b);
+			Assert.That(g1a.G1Header.NumEntries, Is.EqualTo(g1b.G1Header.NumEntries));
+			Assert.That(g1a.G1Header.TotalSize, Is.EqualTo(g1b.G1Header.TotalSize), "re-serialisation must be deterministic");
 		}
 
 		using (Assert.EnterMultipleScope())
@@ -62,13 +72,14 @@ public class G1Tests
 	{
 		var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
 		var d1 = g1!.ImageTable.GraphicsElements[element];
-		var e1 = SawyerStreamWriter.EncodeRLEImageData(d1);
+		var sourceBytes = d1.ToG1Data(PaletteMapLoader.Current);
+		var e1 = SawyerStreamWriter.EncodeRLEImageData((DatG1ElementFlags)d1.Flags, sourceBytes, d1.Width, d1.Height);
 		var dd1 = new DatG1Element32(0, (short)d1.Width, (short)d1.Height, d1.XOffset, d1.YOffset, (DatG1ElementFlags)d1.Flags, d1.ZoomOffset)
 		{
 			ImageData = e1
 		};
 		var d2 = SawyerStreamReader.DecodeRLEImageData(dd1);
-		Assert.That(d2, Is.EqualTo(d1.ImageData).AsCollection);
+		Assert.That(d2, Is.EqualTo(sourceBytes).AsCollection);
 	}
 
 	public static void AssertG1ElementsEqual(GraphicsElement expected, GraphicsElement actual, int i)
@@ -80,6 +91,6 @@ public class G1Tests
 		Assert.That(actual.YOffset, Is.EqualTo(expected.YOffset), $"[{i}]");
 		Assert.That(actual.Flags, Is.EqualTo(expected.Flags), $"[{i}]");
 		Assert.That(actual.ZoomOffset, Is.EqualTo(expected.ZoomOffset), $"[{i}]");
-		Assert.That(actual.ImageData, Is.EqualTo(expected.ImageData).AsCollection, $"[{i}]");
+		Assert.That(actual.ToG1Data(PaletteMapLoader.Current), Is.EqualTo(expected.ToG1Data(PaletteMapLoader.Current)).AsCollection, $"[{i}]");
 	}
 }

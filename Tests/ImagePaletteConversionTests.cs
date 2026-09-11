@@ -93,11 +93,9 @@ public class ImagePaletteConversionTests
 			img[x, 1] = valid.ToPixel<Rgba32>();
 		}
 
-		var image = GraphicsElement.FromRgba(GraphicsElementFlags.None, img);
-		var indexed = image.ToIndexed(paletteMap, ditheringMethod);
-		_ = indexed; // materialise the indexed frame so ToG1Data reuses it (also exercises ConvertRgba32ImageToIndexedImageDithering)
-
-		var g1 = image.ToG1Data(paletteMap, ditheringMethod);
+		var frame = paletteMap.ConvertRgba32ImageToIndexedImageDithering(img, GraphicsElementFlags.None, ditheringMethod);
+		var image = GraphicsElement.FromIndexed(GraphicsElementFlags.None, frame);
+		var g1 = image.ToG1Data(paletteMap);
 
 		// The 12 company-colour remap entries are all reserved, so any pixel that is NOT a valid colour
 		// after dithering must be a preserved company colour. Check the primary/secondary stripes:
@@ -183,10 +181,18 @@ public class ImagePaletteConversionTests
 		{
 			foreach (var element in g1Elements)
 			{
-				if (paletteMap.TryConvertG1ToRgba32Bitmap(element.Width, element.Height, element.Flags, element.ImageData, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image0))
+				// Bgr24 images aren't palette-indexed, so they have no indexed frame to round-trip.
+				if (element.Indexed == null)
+				{
+					continue;
+				}
+
+				// The indexed frame is the source of truth; verify decode-to-RGBA then re-encode is lossless.
+				var sourceBytes = paletteMap.ConvertIndexedImageToG1Data(element.Indexed);
+				if (paletteMap.TryConvertG1ToRgba32Bitmap(element.Width, element.Height, element.Flags, sourceBytes, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image0))
 				{
 					var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0!, element.Flags);
-					Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i++}]");
+					Assert.That(g1Bytes, Is.EqualTo(sourceBytes), $"[{i++}]");
 				}
 			}
 		}

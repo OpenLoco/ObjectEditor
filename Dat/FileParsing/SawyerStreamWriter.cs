@@ -278,9 +278,6 @@ public static class SawyerStreamWriter
 		shift &= 7; // Ensure shift is within 0-7 for 8-bit bytes
 		return (uint8_t)((value << shift) | (value >> (8 - shift)));
 	}
-	public static byte[] EncodeRLEImageData(GraphicsElement img)
-		=> EncodeRLEImageData((DatG1ElementFlags)img.Flags, img.ImageData, img.Width, img.Height);
-
 	public static byte[] EncodeRLEImageData(DatG1Element32 img)
 		=> EncodeRLEImageData(img.Flags, img.ImageData, img.Width, img.Height);
 

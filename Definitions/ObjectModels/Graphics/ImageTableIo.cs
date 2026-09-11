@@ -50,7 +50,8 @@ public static class ImageTableIo
 				}
 			}
 
-			await image.ToRgba(paletteMap).SaveAsPngAsync(Path.Combine(directory, fileName));
+			using var rgba = image.ToRgba(paletteMap);
+			await rgba.SaveAsPngAsync(Path.Combine(directory, fileName));
 			offsets.Add(new SpriteElementJson(fileName, image));
 		}
 

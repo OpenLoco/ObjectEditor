@@ -309,7 +309,7 @@ public static class MaskedDitherer
 
 				var p = source[x, y];
 				var factor = isBlueNoise
-					? noise![((y % 32) * 32) + (x % 32)] * (64f / 255f)
+					? noise![(y % 32 * 32) + (x % 32)] * (64f / 255f)
 					: spread * threshold![y % modY][x % modX];
 
 				var wantR = Math.Clamp(p.R + factor, 0, 255);

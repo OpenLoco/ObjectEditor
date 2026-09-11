@@ -82,7 +82,7 @@ public sealed class BlueNoiseDither : IDither
 				for (var x = bounds.Left; x < bounds.Right; x++)
 				{
 					var pixel = row[x];
-					var noiseVal = noiseTex[((y % noiseSize) * noiseSize) + (x % noiseSize)];
+					var noiseVal = noiseTex[(y % noiseSize * noiseSize) + (x % noiseSize)];
 					var offset = noiseVal * spread; // noiseVal = -0.5..+0.5, spread ~ 0.25
 
 					// Add blue noise in scaled-vector space [0,1]

@@ -20,5 +20,8 @@ public static class ImageConversion
 
 	/// <summary>Renders a <see cref="GraphicsElement"/> (decoding it if needed) to an Avalonia <see cref="Bitmap"/> for display.</summary>
 	public static Bitmap ToAvaloniaBitmap(this GraphicsElement image, PaletteMap paletteMap)
-		=> image.ToRgba(paletteMap).ToAvaloniaBitmap();
+	{
+		using var rgba = image.ToRgba(paletteMap);
+		return rgba.ToAvaloniaBitmap();
+	}
 }

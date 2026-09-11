@@ -151,7 +151,9 @@ public class PaletteMap
 	IndexedImageFrame<Rgba32> CreateIndexedImageFrame(Image<Rgba32> img)
 		=> CreateIndexedImageFrame(img.Width, img.Height);
 
-	IndexedImageFrame<Rgba32> CreateIndexedImageFrame(int width, int height)
+	/// <summary>Creates a zero-initialised indexed frame (all indices 0 = transparent) with the shared
+	/// 256-colour <see cref="Palette"/>. Used to build placeholder/transparent palette images.</summary>
+	public IndexedImageFrame<Rgba32> CreateIndexedImageFrame(int width, int height)
 		=> new IndexedImageFrame<Rgba32>(Configuration.Default, width, height, CreatePaletteMemory());
 
 	/// <summary>

@@ -29,19 +29,13 @@ public static class GraphicsElementConverter
 		var flags = (GraphicsElementFlags)g1Element.Flags;
 		var palette = PaletteMapLoader.Current;
 
-		GraphicsElement decodedImage;
+		// Prefer an indexed frame (preserving reserved/company indices verbatim); fall back to a decoded
+		// RGBA image for Bgr24 data. The palette is taken from the global palette service.
 		if (palette.TryConvertImageDataToIndexedImage(g1Element.Width, g1Element.Height, flags, g1Element.ImageData, out var frame))
 		{
-			decodedImage = GraphicsElement.FromIndexed(flags, frame, g1Element.XOffset, g1Element.YOffset, g1Element.ZoomOffset);
-		}
-		else
-		{
-			decodedImage = GraphicsElement.FromRgba(flags, palette.ConvertImageDataToRgba32Bitmap(g1Element.Width, g1Element.Height, flags, g1Element.ImageData), g1Element.XOffset, g1Element.YOffset, g1Element.ZoomOffset);
+			return GraphicsElement.FromIndexed(flags, frame, g1Element.XOffset, g1Element.YOffset, g1Element.ZoomOffset);
 		}
 
-		// Keep the raw bytes so the image round-trips exactly and can be serialised to JSON.
-		decodedImage.ImageData = [.. g1Element.ImageData];
-
-		return decodedImage;
+		return GraphicsElement.FromRgba(flags, palette.ConvertImageDataToRgba32Bitmap(g1Element.Width, g1Element.Height, flags, g1Element.ImageData), g1Element.XOffset, g1Element.YOffset, g1Element.ZoomOffset);
 	}
 }

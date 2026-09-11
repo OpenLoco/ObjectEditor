@@ -366,8 +366,36 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		// Operate on the image that was right-clicked (passed as the command parameter), not the
 		// animation-timer-driven SelectedImage. Load the image first so the preview/width/height update,
 		// then apply the chosen dithering method so the palette data and dithered preview reflect it.
-		image.UnderlyingImage = GraphicsElement.FromRgba(image.Flags, Image.Load<Rgba32>(filename), image.XOffset, image.YOffset, image.ZoomOffset, image.Name, image.ImageTableIndex);
+		image.UnderlyingImage = CreateReplacement(image, ditheringMethod, filename);
 		image.DitheringMethod = ditheringMethod;
+	}
+
+	/// <summary>Builds a replacement <see cref="GraphicsElement"/> for the target image from a PNG file. A
+	/// palette-format target is converted straight to an indexed frame (optionally dithered) so company
+	/// colours are preserved and its source of truth stays an <c>IndexedImageFrame</c>; a <c>Bgr24</c> target
+	/// keeps an RGBA source.</summary>
+	static GraphicsElement CreateReplacement(ImageViewModel image, DitheringMethod? ditheringMethod, string filename)
+	{
+		var flags = image.Flags;
+		var xOffset = image.XOffset;
+		var yOffset = image.YOffset;
+		var zoomOffset = image.ZoomOffset;
+		var name = image.Name;
+		var index = image.ImageTableIndex;
+
+		var img = Image.Load<Rgba32>(filename);
+		if (flags.HasFlag(GraphicsElementFlags.IsBgr24))
+		{
+			return GraphicsElement.FromRgba(flags, img, xOffset, yOffset, zoomOffset, name, index); // element owns img
+		}
+
+		var dither = ditheringMethod.HasValue && ditheringMethod.Value != DitheringMethod.None ? ditheringMethod.Value : (DitheringMethod?)null;
+		var frame = dither.HasValue
+			? PaletteMapLoader.Current.ConvertRgba32ImageToIndexedImageDithering(img, flags, dither.Value)
+			: PaletteMapLoader.Current.ConvertRgba32ImageToIndexedImage(img, flags);
+		img.Dispose();
+
+		return GraphicsElement.FromIndexed(flags, frame, xOffset, yOffset, zoomOffset, name, index);
 	}
 
 	public async Task DitherImageAsync(ImageViewModel image)

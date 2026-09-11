@@ -20,7 +20,7 @@ public class DesignImageViewModel : ImageViewModel
 {
 	public DesignImageViewModel()
 	{
-		Model = GraphicsElement.FromRgba(GraphicsElementFlags.None, new Image<Rgba32>(16, 16), 1, 2, 3, "NewImage", 0);
+		Model = GraphicsElement.FromIndexed(GraphicsElementFlags.None, PaletteMapLoader.Current.CreateIndexedImageFrame(16, 16), 1, 2, 3, "NewImage", 0);
 		UnderlyingImage = Model;
 	}
 }
@@ -104,7 +104,6 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 				// AdoptDecodedFrom transfers ownership of value's decoded frames into Model before we
 				// dispose value, so the two never double-dispose the same Image/IndexedImageFrame.
 				Model.AdoptDecodedFrom(value);
-				Model.ImageData = value.ImageData;
 				Model.Width = value.Width;
 				Model.Height = value.Height;
 				Model.XOffset = value.XOffset;
@@ -180,33 +179,15 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 		this.RaisePropertyChanged(nameof(DisplayedImage));
 	}
 
-	/// <summary>Synchronises the model's palette data with the underlying RGBA image and refreshes the
-	/// displayed preview. When a dithering method is active the preview shows the palette-converted
-	/// (dithered) result so its effect is visible in the editor rather than the un-dithered source.</summary>
+	/// <summary>Refreshes the displayed preview from the underlying element's source of truth. Dithering is
+	/// already baked into the indexed frame at import/replace time, so a palette image's preview shows the
+	/// indexed (dithered) result naturally. Nothing is written back to the element - previews never mutate it.</summary>
 	void RefreshDisplayedImage()
 	{
-		var rgba = UnderlyingImage!.ToRgba(paletteMap);
-		Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(rgba, Flags, DitheringMethod);
+		using var rgba = UnderlyingImage!.ToRgba(paletteMap);
 		Model.Width = (short)rgba.Width;
 		Model.Height = (short)rgba.Height;
-
-		var method = DitheringMethod;
-		var applyingDithering = method.HasValue
-			// fully-qualified on purpose: a property named DitheringMethod shadows the enum type name here
-			&& method.Value != Definitions.ObjectModels.Graphics.Dithering.DitheringMethod.None
-			&& !Flags.HasFlag(GraphicsElementFlags.IsBgr24);
-
-		// The dithered preview decodes the (possibly dithered) palette-index bytes into RGBA with remap applied,
-		// purely for the UI - the image table data is not modified.
-		if (applyingDithering)
-		{
-			_ = paletteMap.TryConvertG1ToRgba32Bitmap(Model.Width, Model.Height, Flags, Model.ImageData, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var dithered);
-			SetDisplayedImage(dithered!.ToAvaloniaBitmap());
-		}
-		else
-		{
-			SetDisplayedImage(rgba.ToAvaloniaBitmap());
-		}
+		SetDisplayedImage(rgba.ToAvaloniaBitmap());
 
 		this.RaisePropertyChanged(nameof(Width));
 		this.RaisePropertyChanged(nameof(Height));

@@ -14,10 +14,33 @@ public static class GraphicsElementOperations
 		ArgumentNullException.ThrowIfNull(image);
 		ArgumentNullException.ThrowIfNull(paletteMap);
 
-		var rgba = image.ToRgba(paletteMap);
-		var cropRegion = FindCropRegion(rgba);
+		// Palette image: crop the indexed frame natively so company/remap indices are preserved losslessly
+		// (never decode to RGBA and back). TrimImage crops to the non-zero bbox, or 1x1 if fully transparent.
+		if (image.Indexed != null)
+		{
+			var cropRegion = FindCropRegion(image.Indexed);
+			var cropped = GraphicsElement.TrimImage(image.Indexed);
+			image.ReplaceDecoded(null, cropped);
 
-		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
+			if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
+			{
+				image.XOffset = 0;
+				image.YOffset = 0;
+			}
+			else
+			{
+				image.XOffset = (short)(image.XOffset + cropRegion.Left);
+				image.YOffset = (short)(image.YOffset + cropRegion.Top);
+			}
+
+			return;
+		}
+
+		// Bgr24 image: crop the RGBA pixels.
+		var rgba = image.Rgba!;
+		var rgbaCropRegion = FindCropRegion(rgba);
+
+		if (rgbaCropRegion.Width <= 0 || rgbaCropRegion.Height <= 0)
 		{
 			// fully transparent image - collapse to a 1x1 transparent pixel (same fallback the GUI uses)
 			image.ReplaceDecoded(rgba.Clone(i => i.Crop(new Rectangle(0, 0, 1, 1))), null);
@@ -26,9 +49,9 @@ public static class GraphicsElementOperations
 			return;
 		}
 
-		image.ReplaceDecoded(rgba.Clone(i => i.Crop(cropRegion)), null);
-		image.XOffset = (short)(image.XOffset + cropRegion.Left);
-		image.YOffset = (short)(image.YOffset + cropRegion.Top);
+		image.ReplaceDecoded(rgba.Clone(i => i.Crop(rgbaCropRegion)), null);
+		image.XOffset = (short)(image.XOffset + rgbaCropRegion.Left);
+		image.YOffset = (short)(image.YOffset + rgbaCropRegion.Top);
 	}
 
 	public static void ZeroOffsets(this GraphicsElement image)
@@ -121,15 +144,26 @@ public static class GraphicsElementOperations
 	public static GraphicsElement FromImage(SpriteElementJson json, Image<Rgba32> image, PaletteMap paletteMap, int index, DitheringMethod? ditheringMethod = null)
 	{
 		ArgumentNullException.ThrowIfNull(json);
+		ArgumentNullException.ThrowIfNull(image);
 
 		var flags = json.Flags ?? GraphicsElementFlags.None;
-		var graphicsImage = GraphicsElement.FromRgba(flags, image, json.XOffset, json.YOffset, json.ZoomOffset ?? 0, json.Name ?? string.Empty, index);
+		var xOffset = json.XOffset;
+		var yOffset = json.YOffset;
+		var zoomOffset = json.ZoomOffset ?? 0;
+		var name = json.Name ?? string.Empty;
 
-		// Bake the palette (optionally dithered) bytes in so the import round-trips and serialises correctly.
-		graphicsImage.ImageData = graphicsImage.ToG1Data(paletteMap, ditheringMethod);
-		// Materialise the indexed (dithered) frame so previews and save both reflect the chosen dithering.
-		_ = graphicsImage.ToIndexed(paletteMap, ditheringMethod);
+		// An imported Bgr24 image stays RGBA; every other imported image is palette-format and its source
+		// of truth is an indexed frame. Convert (optionally dithered) so company colours survive.
+		if (flags.HasFlag(GraphicsElementFlags.IsBgr24))
+		{
+			return GraphicsElement.FromRgba(flags, image, xOffset, yOffset, zoomOffset, name, index);
+		}
 
-		return graphicsImage;
+		var dither = ditheringMethod.HasValue && ditheringMethod.Value != DitheringMethod.None ? ditheringMethod.Value : (DitheringMethod?)null;
+		var frame = dither.HasValue
+			? paletteMap.ConvertRgba32ImageToIndexedImageDithering(image, flags, dither.Value)
+			: paletteMap.ConvertRgba32ImageToIndexedImage(image, flags);
+
+		return GraphicsElement.FromIndexed(flags, frame, xOffset, yOffset, zoomOffset, name, index);
 	}
 }

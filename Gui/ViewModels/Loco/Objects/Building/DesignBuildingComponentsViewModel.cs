@@ -34,6 +34,15 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 		return image;
 	}
 
+	// The design placeholder images are palette-format (Flags.None), so their source of truth is an
+	// IndexedImageFrame - convert the dummy RGBA into palette indices at creation.
+	static GraphicsElement CreateDummyElement(int width, int height, string name)
+	{
+		using var dummy = CreateDummyImage(width, height);
+		var frame = PaletteMapLoader.Current.ConvertRgba32ImageToIndexedImage(dummy, GraphicsElementFlags.None);
+		return GraphicsElement.FromIndexed(GraphicsElementFlags.None, frame, 0, 0, 0, name, 0);
+	}
+
 	public DesignBuildingComponentsViewModel()
 	{
 		var width = (short)32;
@@ -45,19 +54,19 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 				new (
 					"Layer 0",
 					[
-						GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 0 - South", 0),
-						GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 0 - West ", 0),
-						GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 0 - North", 0),
-						GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 0 - East ", 0),
+						CreateDummyElement(width, height, "Layer 0 - South"),
+						CreateDummyElement(width, height, "Layer 0 - West "),
+						CreateDummyElement(width, height, "Layer 0 - North"),
+						CreateDummyElement(width, height, "Layer 0 - East "),
 					]
 				),
 				new (
 					"Layer 1",
 					[
-						GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 1 - South", 0),
-						GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 1 - West ", 0),
-						GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 1 - North", 0),
-						GraphicsElement.FromRgba(GraphicsElementFlags.None, CreateDummyImage(width, height), 0, 0, 0, "Layer 1 - East ", 0),
+						CreateDummyElement(width, height, "Layer 1 - South"),
+						CreateDummyElement(width, height, "Layer 1 - West "),
+						CreateDummyElement(width, height, "Layer 1 - North"),
+						CreateDummyElement(width, height, "Layer 1 - East "),
 					]
 				)
 			]

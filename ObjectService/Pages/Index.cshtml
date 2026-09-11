@@ -15,8 +15,8 @@
 	<div class="theme-studio-header">
 		<div>
 			<p class="eyebrow">Theme Studio</p>
-			<h2>Trial an eight-colour palette</h2>
-			<p class="lede">Paste or pick eight hex colours and the page will derive the rest of the theme tokens automatically. The palette is stored only in this browser and follows the light/dark toggle.</p>
+			<h2>Trial a nine-colour palette</h2>
+			<p class="lede">Paste or pick nine hex colours and the page will derive the rest of the theme tokens automatically. The palette is stored only in this browser and follows the light/dark toggle.</p>
 		</div>
 	</div>
 	<form class="theme-palette-form" data-theme-palette-form>
@@ -46,6 +46,14 @@
 				<div class="variant-swatches" data-variant-swatches="muted" aria-label="Muted brightness variants"></div>
 			</label>
 			<label class="field palette-field">
+				<span>Text</span>
+				<div class="palette-input-row">
+					<input type="color" value="#808080" data-palette-picker="text" aria-label="Text colour picker" />
+					<input type="text" value="#808080" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="text" aria-label="Text hex colour" />
+				</div>
+				<div class="variant-swatches" data-variant-swatches="text" aria-label="Text brightness variants"></div>
+			</label>
+			<label class="field palette-field">
 				<span>Background</span>
 				<div class="palette-input-row">
 					<input type="color" value="#2E2F33" data-palette-picker="background" aria-label="Background colour picker" />
@@ -56,8 +64,8 @@
 			<label class="field palette-field">
 				<span>Contrast</span>
 				<div class="palette-input-row">
-					<input type="color" value="#FFF6E0" data-palette-picker="contrast" aria-label="Contrast colour picker" />
-					<input type="text" value="#FFF6E0" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="contrast" aria-label="Contrast hex colour" />
+					<input type="color" value="#9C9C9C" data-palette-picker="contrast" aria-label="Contrast colour picker" />
+					<input type="text" value="#9C9C9C" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="contrast" aria-label="Contrast hex colour" />
 				</div>
 				<div class="variant-swatches" data-variant-swatches="contrast" aria-label="Contrast brightness variants"></div>
 			</label>
@@ -273,7 +281,7 @@ else
 					</span>
 					<span class="card-icon @(item.CanDownload ? "" : "card-icon-dimmed")" title="Public file: @(item.CanDownload ? "Available" : "Unavailable")">
 						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v9M4.5 7.5L8 11l3.5-3.5M2.5 14h11"/></svg>
-						<span>@(item.CanDownload ? "Available" : "Unavailable")</span>
+						<span>@(item.CanDownload ? "Downloadable" : "Not downloadable")</span>
 					</span>
 				</div>
 			</a>

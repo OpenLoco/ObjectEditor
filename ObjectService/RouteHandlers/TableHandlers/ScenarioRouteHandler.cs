@@ -25,10 +25,10 @@ public class ScenarioRouteHandler : ITableRouteHandler
 		return Task.FromResult(Results.Ok(items.ToList()));
 	}
 
-	Task<IResult> GetScenarioFileAsync([FromRoute] UniqueObjectId id, [FromServices] IScenarioService svc)
+	async Task<IResult> GetScenarioFileAsync([FromRoute] UniqueObjectId id, [FromServices] IScenarioService svc, CancellationToken ct)
 	{
-		var path = svc.GetScenarioFilePath(id);
-		return Task.FromResult(path != null ? Results.File(path, "application/octet-stream", Path.GetFileName(path)) : Results.NotFound());
+		var path = await svc.GetScenarioFilePathByIdAsync(id, ct);
+		return path != null ? Results.File(path, "application/octet-stream", Path.GetFileName(path)) : Results.NotFound();
 	}
 
 	Task<IResult> CreateAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));

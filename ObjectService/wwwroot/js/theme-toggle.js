@@ -4,6 +4,7 @@
     const themeStudioStorageKey = "object-service-theme-studio-open";
     const root = document.documentElement;
     const toggle = document.querySelector("[data-theme-toggle]");
+    const themeSwitch = document.querySelector("[data-theme-switch]");
     const themeStudioToggle = document.querySelector(
         "[data-theme-studio-toggle]",
     );
@@ -73,8 +74,8 @@
         }
 
         const isDarkTheme = theme === "dark";
-        toggle.textContent = isDarkTheme ? "Light mode" : "Dark mode";
-        toggle.setAttribute("aria-pressed", String(isDarkTheme));
+        toggle.setAttribute("aria-checked", String(isDarkTheme));
+        themeSwitch?.setAttribute("data-theme", theme);
     };
 
     const applyThemeStudioState = (isOpen) => {

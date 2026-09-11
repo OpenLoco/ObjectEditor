@@ -32,7 +32,11 @@ public class ScenarioRouteHandler : ITableRouteHandler
 	}
 
 	Task<IResult> CreateAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-	Task<IResult> ReadAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] IScenarioService svc, CancellationToken ct)
+	{
+		var scenario = await svc.GetScenarioAsync(id, ct);
+		return scenario != null ? Results.Ok(scenario) : Results.NotFound();
+	}
 	Task<IResult> UpdateAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	Task<IResult> DeleteAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 }

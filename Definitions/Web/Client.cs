@@ -143,6 +143,15 @@ public static class Client
 	public static async Task<IEnumerable<DtoScenarioEntry>> GetScenariosAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await GetListAsync<DtoScenarioEntry>(client, ScenariosEndpointGroup, logger, cancellationToken);
 
+	public static async Task<DtoScenarioDescriptor?> GetScenarioAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await ClientHelpers.GetAsync<DtoScenarioDescriptor>(
+			client,
+			ApiVersion,
+			RoutesV2.Scenarios,
+			id,
+			logger,
+			cancellationToken);
+
 	public static async Task<IEnumerable<DtoItemPackEntry>> GetSC5FilePacksAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await GetListAsync<DtoItemPackEntry>(client, SC5FilePacksEndpointGroup, logger, cancellationToken);
 

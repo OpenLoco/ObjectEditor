@@ -247,6 +247,12 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			Logger.LogDebug(cachedLocoObjDto.ToString());
 			Logger.LogInformation("Object {DisplayName} with unique id {Id} has {Count} attached DAT objects: [{Value}]", filesystemItem.DisplayName, filesystemItem.Id, cachedLocoObjDto.DatObjects.Count, string.Join(',', cachedLocoObjDto.DatObjects));
 
+			// The object descriptor's DatObjects may not carry the actual DAT bytes (the server only
+			// attaches DatBytesAsBase64 for downloadable, non-vanilla objects). When they are absent,
+			// fall back to the dedicated GET /objects/{id}/file endpoint. That endpoint serves the
+			// object's primary DAT file, so the bytes are downloaded once and reused.
+			byte[]? downloadedFileBytes = null;
+
 			foreach (var datObject in cachedLocoObjDto.DatObjects)
 			{
 				if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
@@ -257,8 +263,15 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 				if (string.IsNullOrEmpty(datObject.DatBytesAsBase64))
 				{
-					Logger.LogWarning("Unable to download object {DisplayName} with unique id {Id} from online - received no DAT object data. Any available metadata will still be shown", filesystemItem.DisplayName, filesystemItem.Id);
-					continue;
+					Logger.LogInformation("DatBytesAsBase64 is empty for object {DisplayName} with unique id {Id} - attempting download from the /file route", filesystemItem.DisplayName, filesystemItem.Id);
+					downloadedFileBytes ??= Task.Run(() => ObjectServiceClient.GetObjectFileAsync(filesystemItem.Id.Value)).GetAwaiter().GetResult();
+					if (downloadedFileBytes == null || downloadedFileBytes.Length == 0)
+					{
+						Logger.LogWarning("Unable to download object {DisplayName} with unique id {Id} from online - received no DAT object data. Any available metadata will still be shown", filesystemItem.DisplayName, filesystemItem.Id);
+						continue;
+					}
+
+					datObject.DatBytesAsBase64 = Convert.ToBase64String(downloadedFileBytes);
 				}
 
 				var datFile = Convert.FromBase64String(datObject.DatBytesAsBase64);

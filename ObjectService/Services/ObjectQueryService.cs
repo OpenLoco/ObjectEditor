@@ -1,4 +1,5 @@
 using Dat.FileParsing;
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
@@ -39,7 +40,45 @@ public class ObjectQueryService : IObjectQueryService
 	public async Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct)
 	{
 		var eObj = await _db.Objects.Where(x => x.Id == id).Include(x => x.Licence).Include(x => x.DatObjects).Include(x => x.StringTable).Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks)).SingleOrDefaultAsync(ct);
-		return eObj?.ToDtoDescriptor();
+		if (eObj == null)
+		{
+			return null;
+		}
+
+		var descriptor = eObj.ToDtoDescriptor();
+		await PopulateDatFileBytesAsync(descriptor, ct);
+		return descriptor;
+	}
+
+	/// <summary>
+	/// Attaches the raw DAT file bytes (base64-encoded) to each of the descriptor's DatObjects so
+	/// clients can download the object in one round-trip. Vanilla (Locomotion Steam/GoG) and
+	/// unavailable objects never get their bytes attached - distributing the copyrighted originals
+	/// is not permitted - so their DatBytesAsBase64 stays null and clients fall back to metadata-only.
+	/// </summary>
+	async Task PopulateDatFileBytesAsync(DtoObjectPostResponse descriptor, CancellationToken ct)
+	{
+		if (descriptor.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG || descriptor.Availability == ObjectAvailability.Unavailable)
+		{
+			return;
+		}
+
+		foreach (var datObject in descriptor.DatObjects)
+		{
+			if (!_sfm.ObjectIndex.TryFind((datObject.DatName, datObject.DatChecksum), out var indexEntry) || indexEntry == null || string.IsNullOrEmpty(indexEntry.FileName))
+			{
+				continue;
+			}
+
+			var objectFilePath = Path.Combine(_sfm.ObjectsFolder, indexEntry.FileName);
+			if (!File.Exists(objectFilePath))
+			{
+				continue;
+			}
+
+			var datBytes = await File.ReadAllBytesAsync(objectFilePath, ct);
+			datObject.DatBytesAsBase64 = Convert.ToBase64String(datBytes);
+		}
 	}
 
 	public async Task<DtoObjectPostResponse?> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct)

@@ -17,7 +17,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 	{
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumCompatible = 7;
-		public const int var_6E_Length = 16;
+		public const int DiagonalCargoOffsetBytesLength = 16;
 		public const int CargoOffsetBytesSize = 16;
 		public const int MaxStationCargoDensity = 15;
 	}
@@ -47,9 +47,9 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
-			model.var_0B = br.ReadByte();
+			model.PlatformType = br.ReadByte(); // 0 = terminus, 1 = always uses the middle platform image, 2+ = only uses it when connected at both ends
 			model.Flags = (TrackStationObjectFlags)br.ReadByte();
-			model.var_0D = br.ReadByte();
+			br.SkipByte(); // pad_0D, not part of object definition
 			br.SkipImageId(); // Image, not part of object definition
 			br.SkipImageId(Constants.MaxImageOffsets);
 			var compatibleTrackObjectCount = br.ReadByte();
@@ -57,7 +57,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
 			br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
-			br.SkipPointer(Constants.var_6E_Length); // CargoOffsetBytes, not part of object definition
+			br.SkipPointer(Constants.DiagonalCargoOffsetBytesLength); // DiagonalCargoOffsetBytes, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -87,8 +87,8 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		model.CargoOffsets = br.ReadCargoOffsets();
 
 		// very similar to cargo offset bytes
-		model.var_6E = new byte[Constants.var_6E_Length][];
-		for (var i = 0; i < Constants.var_6E_Length; ++i)
+		model.DiagonalCargoOffsetBytes = new byte[Constants.DiagonalCargoOffsetBytesLength][];
+		for (var i = 0; i < Constants.DiagonalCargoOffsetBytesLength; ++i)
 		{
 			var length = 1;
 			while (br.PeekByte(length) != LocoConstants.Terminator)
@@ -97,7 +97,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			}
 
 			length += 4;
-			model.var_6E[i] = br.ReadBytes(length);
+			model.DiagonalCargoOffsetBytes[i] = br.ReadBytes(length);
 		}
 	}
 
@@ -115,9 +115,9 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
-			bw.Write(model.var_0B);
+			bw.Write(model.PlatformType);
 			bw.Write((uint8_t)model.Flags);
-			bw.Write(model.var_0D);
+			bw.WriteEmptyBytes(1); // pad_0D, not part of object definition
 			bw.WriteEmptyImageId(); // Image, not part of object definition
 			bw.WriteEmptyImageId(Constants.MaxImageOffsets); // uint32_t
 			bw.Write((uint8_t)model.CompatibleTrackObjects.Count);
@@ -125,7 +125,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
 			bw.WriteEmptyPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
-			bw.WriteEmptyPointer(Constants.var_6E_Length); // var_6E, not part of object definition
+			bw.WriteEmptyPointer(Constants.DiagonalCargoOffsetBytesLength); // DiagonalCargoOffsetBytes, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -149,10 +149,10 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		// cargo offsets
 		bw.WriteCargoOffsets(model.CargoOffsets);
 
-		// var_6E offsets
-		for (var i = 0; i < Constants.var_6E_Length; ++i)
+		// DiagonalCargoOffsetBytes offsets
+		for (var i = 0; i < Constants.DiagonalCargoOffsetBytesLength; ++i)
 		{
-			bw.Write(model.var_6E[i]);
+			bw.Write(model.DiagonalCargoOffsetBytes[i]);
 		}
 	}
 

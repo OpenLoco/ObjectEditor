@@ -11,7 +11,7 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 	public BuildingComponents BuildingComponents { get; set; } = new();
 	[Length(4, 4)]
 	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
-	public List<IndustryObjectUnk38> var_38 { get; set; } = []; // Access with getUnk38 helper method
+	public List<IndustryObjectRandomAnimation> RandomAnimations { get; set; } = []; // Access with getRandomAnimations helper method
 	public uint8_t MinNumBuildings { get; set; }
 	public uint8_t MaxNumBuildings { get; set; }
 	public uint32_t Colours { get; set; }  // bitset
@@ -36,7 +36,7 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 
 	public Colour MapColour { get; set; }
 	public IndustryObjectFlags Flags { get; set; }
-	public uint8_t var_E8 { get; set; } // Unused, but must be 0 or 1
+	public uint8_t NumFarmTileImages { get; set; } // maximum of 8 images per farm tile
 	public uint8_t FarmTileNumImageAngles { get; set; } // How many viewing angles the farm tiles have
 	public uint8_t FarmGrowthStageWithNoProduction { get; set; } // At this stage of growth (except 0) { get; set; } a field tile produces nothing
 	public uint8_t FarmNumFields { get; set; } // Max production is reached at farmIdealSize * 25 tiles
@@ -83,9 +83,9 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 			yield return new ValidationResult($"-{nameof(SellCostFactor)} must be at least -90% of {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
-		if (var_E8 > 8)
+		if (NumFarmTileImages > 8)
 		{
-			yield return new ValidationResult("var_E8 must be between 0 and 8", [nameof(var_E8)]);
+			yield return new ValidationResult("NumFarmTileImages must be between 0 and 8", [nameof(NumFarmTileImages)]);
 		}
 
 		if (FarmTileNumImageAngles is not (1 or 2 or 4))

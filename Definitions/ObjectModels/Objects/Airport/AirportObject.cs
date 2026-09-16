@@ -14,7 +14,6 @@ public class AirportObject : ILocoStruct, IHasBuildingComponents
 	[Range(0, Constants.CurrencyMultiplicationFactorArraySize - 1, ErrorMessage = "CostIndex must be less than {1}")]
 	public uint8_t CostIndex { get; set; }
 
-	public uint8_t var_07 { get; set; }
 	public AirportObjectFlags Flags { get; set; }
 	public BuildingComponents BuildingComponents { get; set; } = new();
 	public List<AirportBuilding> BuildingPositions { get; set; } = [];
@@ -27,7 +26,7 @@ public class AirportObject : ILocoStruct, IHasBuildingComponents
 	public uint16_t ObsoleteYear { get; set; }
 	public List<MovementNode> MovementNodes { get; set; } = [];
 	public List<MovementEdge> MovementEdges { get; set; } = [];
-	public uint32_t var_B6 { get; set; }
+	public uint32_t RequiredClearEdges { get; set; } // bitfield of edges that must be clear for the airport to be built
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

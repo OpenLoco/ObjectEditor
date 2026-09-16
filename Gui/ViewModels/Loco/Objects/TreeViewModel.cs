@@ -100,24 +100,24 @@ public class TreeViewModel(TreeObject model)
 		set => Model.DemolishRatingReduction = value;
 	}
 
-	[Category("<unknown>")]
-	public uint8_t var_04
+	[Category("Building")]
+	public uint8_t MinHeight
 	{
-		get => Model.var_04;
-		set => Model.var_04 = value;
+		get => Model.MinHeight;
+		set => Model.MinHeight = value;
 	}
 
-	[Category("<unknown>")]
-	public uint8_t var_05
+	[Category("Building")]
+	public uint8_t MaxHeight
 	{
-		get => Model.var_05;
-		set => Model.var_05 = value;
+		get => Model.MaxHeight;
+		set => Model.MaxHeight = value;
 	}
 
-	[Category("<unknown>")]
-	public TreeObjectSeasonalVariantFlags SeasonalVariants
+	[Category("Building")]
+	public TreeObjectVariantFlags VariantFlags
 	{
-		get => Model.SeasonalVariants;
-		set => Model.SeasonalVariants = value;
+		get => Model.VariantFlags;
+		set => Model.VariantFlags = value;
 	}
 }

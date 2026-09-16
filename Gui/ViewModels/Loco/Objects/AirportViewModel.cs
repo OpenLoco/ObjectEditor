@@ -110,17 +110,10 @@ public class AirportViewModel(AirportObject model)
 	[Category("Movement")]
 	public BindingList<MovementEdge> MovementEdges { get; init; } = model.MovementEdges.ToBindingList();
 
-	[Category("<unknown>")]
-	public uint8_t var_07
+	[Category("Movement")]
+	public uint32_t RequiredClearEdges
 	{
-		get => Model.var_07;
-		set => Model.var_07 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint32_t var_B6
-	{
-		get => Model.var_B6;
-		set => Model.var_B6 = value;
+		get => Model.RequiredClearEdges;
+		set => Model.RequiredClearEdges = value;
 	}
 }

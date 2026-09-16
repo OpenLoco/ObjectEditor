@@ -44,7 +44,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			br.SkipByte(); // SpriteHeightNegative
 			br.SkipByte(); // SpriteHeightPositive
 			model.Flags = ((DatSteamObjectFlags)br.ReadUInt16()).Convert();
-			model.var_0A = br.ReadUInt32();
+			model.ImageOffset = br.ReadUInt32();
 			br.SkipImageId(); // BaseImageId, not used
 			br.SkipUInt16(); // _TotalNumFramesType0, not used
 			br.SkipUInt16(); // _TotalNumFramesType1, not used
@@ -106,7 +106,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)0); // SpriteHeightNegative, not used
 			bw.Write((uint8_t)0); // SpriteHeightPositive, not used
 			bw.Write((uint16_t)model.Flags.Convert());
-			bw.Write(model.var_0A);
+			bw.Write(model.ImageOffset);
 			bw.WriteEmptyImageId(); // BaseImageId, not used
 			bw.Write((uint16_t)0); // _TotalNumFramesType0, not used
 			bw.Write((uint16_t)0); // _TotalNumFramesType1, not used

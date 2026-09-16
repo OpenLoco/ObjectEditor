@@ -7,4 +7,5 @@ public enum TrackObjectFlags : uint16_t
 	HasRackRail = 1 << 0,   // if set road can have rack rail added (not used)
 	NoSlipSurface = 1 << 1, // if set vehicles can't start slipping
 	IsRoad = 1 << 2,        // controls if the object appears in the roads menu instead of the track menu
+	RestrictsAiPathfinding = 1 << 4, // causes the AI to use a more restrictive track/road weighting limit when pathfinding
 }

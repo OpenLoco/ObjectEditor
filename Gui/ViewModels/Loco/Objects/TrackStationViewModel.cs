@@ -76,24 +76,24 @@ public class TrackStationViewModel(TrackStationObject model)
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("<unknown>")]
-	public uint8_t var_0B
+	[Category("Station")]
+	public uint8_t PlatformType
 	{
-		get => Model.var_0B;
-		set => Model.var_0B = value;
+		get => Model.PlatformType;
+		set => Model.PlatformType = value;
 	}
 
 	// unused in loco
 	//[Category("<unused>")]
-	//public uint8_t var_0D
+	//public uint8_t pad_0D
 	//{
-	//	get => Model.var_0D;
-	//	set => Model.var_0D = value;
+	//	get => Model.pad_0D;
+	//	set => Model.pad_0D = value;
 	//}
 
 	// unused in loco
 	//[Category("<unused>")]
-	//public uint8_t[][] var_6E { get; set; } = model.var_6E;
+	//public uint8_t[][] DiagonalCargoOffsetBytes { get; set; } = model.DiagonalCargoOffsetBytes;
 
 	[Category("Cargo")]
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;

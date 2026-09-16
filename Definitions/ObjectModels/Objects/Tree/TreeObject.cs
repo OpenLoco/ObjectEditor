@@ -6,13 +6,13 @@ public class TreeObject : ILocoStruct
 {
 	public uint8_t InitialHeight { get; set; }
 	public uint8_t Height { get; set; }
-	public uint8_t var_04 { get; set; }
-	public uint8_t var_05 { get; set; }
+	public uint8_t MinHeight { get; set; }
+	public uint8_t MaxHeight { get; set; } // trees taller than 34 are checked for nearby obstructions
 	public uint8_t NumRotations { get; set; }
 	public uint8_t NumGrowthStages { get; set; }
 	public TreeObjectFlags Flags { get; set; }
 	public uint16_t ShadowImageOffset { get; set; }
-	public TreeObjectSeasonalVariantFlags SeasonalVariants { get; set; } // something with images
+	public TreeObjectVariantFlags VariantFlags { get; set; } // bitset of which of the six sprites[] variants have their own images
 	public uint8_t SeasonState { get; set; }
 	public uint8_t CurrentSeason { get; set; } // i don't think this is part of definition, its game state
 	public uint8_t CostIndex { get; set; }
@@ -50,9 +50,9 @@ public class TreeObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(Height)} must be greater than or equal to {nameof(InitialHeight)}.", [nameof(Height), nameof(InitialHeight)]);
 		}
 
-		if (var_05 < var_04)
+		if (MaxHeight < MinHeight)
 		{
-			yield return new ValidationResult($"{nameof(var_05)} must be greater than or equal to {nameof(var_04)}.", [nameof(var_05), nameof(var_04)]);
+			yield return new ValidationResult($"{nameof(MaxHeight)} must be greater than or equal to {nameof(MinHeight)}.", [nameof(MaxHeight), nameof(MinHeight)]);
 		}
 	}
 }

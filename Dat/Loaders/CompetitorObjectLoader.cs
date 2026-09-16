@@ -38,7 +38,7 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			model.Intelligence = br.ReadByte();
 			model.Aggressiveness = br.ReadByte();
 			model.Competitiveness = br.ReadByte();
-			br.SkipByte(); // var_37 is unused
+			br.SkipByte(); // pad_37 is unused
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -75,7 +75,7 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			bw.Write(model.Intelligence);
 			bw.Write(model.Aggressiveness);
 			bw.Write(model.Competitiveness);
-			bw.Write((byte)0); // var_37 is unused
+			bw.Write((byte)0); // pad_37 is unused
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

@@ -44,7 +44,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
-			model.var_07 = br.ReadByte();
+			br.SkipByte(); // pad_07, not part of object definition
 			br.SkipImageId(); // Image, not part of object definition
 			br.SkipImageId(); // Image offset, not part of object definition
 			model.Flags = ((DatAirportObjectFlags)br.ReadUInt16()).Convert();
@@ -65,7 +65,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			var numMovementEdges = br.ReadByte();
 			br.SkipPointer(); // MovementNodes
 			br.SkipPointer(); // MovementEdges
-			model.var_B6 = br.ReadUInt32();
+			model.RequiredClearEdges = br.ReadUInt32();
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -128,10 +128,10 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		{
 			var me = new MovementEdge()
 			{
-				var_00 = br.ReadByte(),
+				CurrNodeType = br.ReadByte(),
 				CurrNode = br.ReadByte(),
 				NextNode = br.ReadByte(),
-				var_03 = br.ReadByte(),
+				NextNodeType = br.ReadByte(),
 				MustBeClearEdges = br.ReadUInt32(),
 				AtLeastOneClearEdges = br.ReadUInt32(),
 			};
@@ -150,7 +150,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
-			bw.Write(model.var_07);
+			bw.WriteEmptyBytes(1); // pad_07, not part of object definition
 			bw.WriteEmptyImageId(); // Image, not part of object definition
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write((uint16_t)model.Flags);
@@ -171,7 +171,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.MovementEdges.Count);
 			bw.WriteEmptyPointer(); // MovementNodes
 			bw.WriteEmptyPointer(); // MovementEdges
-			bw.Write(model.var_B6);
+			bw.Write(model.RequiredClearEdges);
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -216,10 +216,10 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		// movement edges
 		foreach (var x in model.MovementEdges)
 		{
-			bw.Write(x.var_00);
+			bw.Write(x.CurrNodeType);
 			bw.Write(x.CurrNode);
 			bw.Write(x.NextNode);
-			bw.Write(x.var_03);
+			bw.Write(x.NextNodeType);
 			bw.Write(x.MustBeClearEdges);
 			bw.Write(x.AtLeastOneClearEdges);
 		}

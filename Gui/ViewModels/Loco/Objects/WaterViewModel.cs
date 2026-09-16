@@ -25,10 +25,4 @@ public class WaterViewModel(WaterObject model)
 		get => Model.CostFactor;
 		set => Model.CostFactor = value;
 	}
-	public uint8_t var_03
-	{
-		get => Model.var_03;
-		set => Model.var_03 = value;
-	}
-
 }

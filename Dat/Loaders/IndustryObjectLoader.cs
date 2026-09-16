@@ -29,7 +29,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 	{
 		public const int Dat = 0xF4;
 		public const int IndustryObjectProductionRateRange = 0x04;
-		public const int IndustryObjectUnk38 = 0x02;
+		public const int IndustryObjectRandomAnimation = 0x02;
 	}
 
 	public static ObjectType ObjectType => ObjectType.Industry;
@@ -45,7 +45,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
-			br.SkipStringId(); // var_02, not part of object definition
+			br.SkipStringId(); // DefaultName, not part of object definition
 			br.SkipStringId(); // NameClosingDown, not part of object definition
 			br.SkipStringId(); // NameUpProduction, not part of object definition
 			br.SkipStringId(); // NameDownProduction, not part of object definition
@@ -60,7 +60,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			br.SkipPointer(); // BuildingHeights, not part of object definition
 			br.SkipPointer(); // BuildingAnimations, not part of object definition
 			br.SkipPointer(Constants.AnimationSequencesCount); // AnimationSequences, not part of object definition
-			br.SkipPointer(); // var_38, not part of object definition
+			br.SkipPointer(); // RandomAnimations, not part of object definition
 			br.SkipPointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
 			model.MinNumBuildings = br.ReadByte();
 			model.MaxNumBuildings = br.ReadByte();
@@ -84,7 +84,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			br.SkipBytes(Constants.MaxRequiredCargoType); // RequiredCargo, not part of object definition
 			model.MapColour = (Colour)br.ReadByte();
 			model.Flags = ((DatIndustryObjectFlags)br.ReadUInt32()).Convert();
-			model.var_E8 = br.ReadByte(); // Unused, but must be 0 or 1
+			model.NumFarmTileImages = br.ReadByte(); // maximum of 8 images per farm tile
 			model.FarmTileNumImageAngles = br.ReadByte(); // How many viewing angles the farm tiles have
 			model.FarmGrowthStageWithNoProduction = br.ReadByte(); // At this stage of growth (except 0), a field tile produces nothing
 			model.FarmNumFields = br.ReadByte(); // Max production is reached at farmIdealSize * 25 tiles
@@ -126,10 +126,10 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			model.AnimationSequences.Add([.. seq]);
 		}
 
-		// unk
+		// random animations
 		while (br.PeekByte() != LocoConstants.Terminator)
 		{
-			model.var_38.Add(new() { var_00 = br.ReadByte(), var_01 = br.ReadByte() });
+			model.RandomAnimations.Add(new() { BuildingPart = br.ReadByte(), AnimationIndex = br.ReadByte() });
 		}
 
 		br.SkipTerminator();
@@ -151,7 +151,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
-			bw.WriteEmptyStringId(); // var_02, not part of object definition
+			bw.WriteEmptyStringId(); // DefaultName, not part of object definition
 			bw.WriteEmptyStringId(); // NameClosingDown, not part of object definition
 			bw.WriteEmptyStringId(); // NameUpProduction, not part of object definition
 			bw.WriteEmptyStringId(); // NameDownProduction, not part of object definition
@@ -166,7 +166,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.WriteEmptyPointer(); // BuildingHeights, not part of object definition
 			bw.WriteEmptyPointer(); // BuildingAnimations, not part of object definition
 			bw.WriteEmptyPointer(Constants.AnimationSequencesCount); // AnimationSequences, not part of object definition
-			bw.WriteEmptyPointer(); // var_38, not part of object definition
+			bw.WriteEmptyPointer(); // RandomAnimations, not part of object definition
 			bw.WriteEmptyPointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
 			bw.Write(model.MinNumBuildings);
 			bw.Write(model.MaxNumBuildings);
@@ -191,7 +191,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.WriteEmptyBytes(Constants.MaxRequiredCargoType);
 			bw.Write((uint8_t)model.MapColour);
 			bw.Write((uint32_t)model.Flags.Convert());
-			bw.Write(model.var_E8); // Unused, but must be 0 or 1
+			bw.Write(model.NumFarmTileImages); // maximum of 8 images per farm tile
 			bw.Write(model.FarmTileNumImageAngles); // How many viewing angles the farm tiles have
 			bw.Write(model.FarmGrowthStageWithNoProduction); // At this stage of growth (except 0), a field tile produces nothing
 			bw.Write(model.FarmNumFields); // Max production is reached at farmIdealSize * 25 tiles
@@ -227,11 +227,11 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.Write(x.ToArray());
 		}
 
-		// unk animation related
-		foreach (var x in model.var_38)
+		// random animations
+		foreach (var x in model.RandomAnimations)
 		{
-			bw.Write(x.var_00);
-			bw.Write(x.var_01);
+			bw.Write(x.BuildingPart);
+			bw.Write(x.AnimationIndex);
 		}
 
 		bw.WriteTerminator();

@@ -41,7 +41,7 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
-			model.var_07 = br.ReadByte(); // probably padding
+			br.SkipByte(); // pad_07, not part of object definition
 			br.SkipImageId(); // Image, not part of object definition
 			br.SkipImageId(); // UnkImage, not part of object definition
 			model.Flags = ((DatDockObjectFlags)br.ReadUInt16()).Convert();
@@ -90,7 +90,7 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
-			bw.Write(model.var_07); // probably padding
+			bw.WriteEmptyBytes(1); // pad_07, not part of object definition
 			bw.WriteEmptyImageId(); // Image, not part of object definition
 			bw.WriteEmptyImageId(); // UnkImage, not part of object definition
 			bw.Write((uint16_t)model.Flags.Convert());

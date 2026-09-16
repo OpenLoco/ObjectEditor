@@ -13,14 +13,13 @@ public class TrackStationObject : ILocoStruct
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public uint8_t var_0B { get; set; }
+	public uint8_t PlatformType { get; set; } // 0 = terminus, 1 = always uses the middle platform image, 2+ = only uses it when connected at both ends
 	public TrackStationObjectFlags Flags { get; set; }
-	public uint8_t var_0D { get; set; }
 	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 	public CargoOffset[][][] CargoOffsets { get; set; } = [];
-	public uint8_t[][] var_6E { get; set; } = [];
+	public uint8_t[][] DiagonalCargoOffsetBytes { get; set; } = []; // parsed in the same way as CargoOffsets but never read
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

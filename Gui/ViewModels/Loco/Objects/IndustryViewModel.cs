@@ -200,13 +200,13 @@ public class IndustryViewModel(IndustryObject model)
 		set => Model.BuildingWallEntrance = value;
 	}
 
-	[Category("<unknown>")]
-	public BindingList<IndustryObjectUnk38> var_38 { get; init; } = model.var_38.ToBindingList();
+	[Category("Building")]
+	public BindingList<IndustryObjectRandomAnimation> RandomAnimations { get; init; } = model.RandomAnimations.ToBindingList();
 
-	[Category("<unknown>")]
-	public uint8_t var_E8
+	[Category("Farm")]
+	public uint8_t NumFarmTileImages
 	{
-		get => Model.var_E8;
-		set => Model.var_E8 = value;
+		get => Model.NumFarmTileImages;
+		set => Model.NumFarmTileImages = value;
 	}
 }

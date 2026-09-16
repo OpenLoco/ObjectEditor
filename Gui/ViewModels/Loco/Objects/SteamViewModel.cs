@@ -21,10 +21,10 @@ public class SteamViewModel(SteamObject model)
 		set => Model.Flags = value;
 	}
 
-	public uint32_t var_0A
+	public uint32_t ImageOffset
 	{
-		get => Model.var_0A;
-		set => Model.var_0A = value;
+		get => Model.ImageOffset;
+		set => Model.ImageOffset = value;
 	}
 
 	public BindingList<ObjectModelHeader> SoundEffects { get; init; } = [with(model.SoundEffects)];

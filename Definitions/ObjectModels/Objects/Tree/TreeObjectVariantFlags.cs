@@ -1,7 +1,7 @@
 namespace Definitions.ObjectModels.Objects.Tree;
 
 [Flags]
-public enum TreeObjectSeasonalVariantFlags : uint8_t
+public enum TreeObjectVariantFlags : uint8_t
 {
 	Variant0 = 1 << 0,
 	Variant1 = 1 << 1,

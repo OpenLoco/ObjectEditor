@@ -38,15 +38,15 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			br.SkipStringId(); // Name offset, not part of object definition
 			model.InitialHeight = br.ReadByte();
 			model.Height = br.ReadByte();
-			model.var_04 = br.ReadByte();
-			model.var_05 = br.ReadByte();
+			model.MinHeight = br.ReadByte();
+			model.MaxHeight = br.ReadByte();
 			model.NumRotations = br.ReadByte();
 			model.NumGrowthStages = br.ReadByte();
 			model.Flags = ((DatTreeObjectFlags)br.ReadUInt16()).Convert();
 			br.SkipImageId(Constants.ImageCount); // Image sprites, not part of object definition
 			br.SkipImageId(Constants.ImageCount); // Snow sprites, not part of object definition
 			model.ShadowImageOffset = br.ReadUInt16();
-			model.SeasonalVariants = ((DatTreeFlagsUnk)br.ReadByte()).Convert();
+			model.VariantFlags = ((DatTreeVariantFlags)br.ReadByte()).Convert();
 			model.SeasonState = br.ReadByte();
 			model.CurrentSeason = br.ReadByte();
 			model.CostIndex = br.ReadByte();
@@ -85,15 +85,15 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.InitialHeight);
 			bw.Write(model.Height);
-			bw.Write(model.var_04);
-			bw.Write(model.var_05);
+			bw.Write(model.MinHeight);
+			bw.Write(model.MaxHeight);
 			bw.Write(model.NumRotations);
 			bw.Write(model.NumGrowthStages);
 			bw.Write((uint16_t)model.Flags.Convert()); // Convert to DatTreeObjectFlags
 			bw.WriteEmptyImageId(Constants.ImageCount); // Image sprites, not part
 			bw.WriteEmptyImageId(Constants.ImageCount); // Snow sprites, not part of object definition
 			bw.Write(model.ShadowImageOffset);
-			bw.Write((uint8_t)model.SeasonalVariants.Convert()); // Convert to Dat
+			bw.Write((uint8_t)model.VariantFlags.Convert()); // Convert to Dat
 			bw.Write(model.SeasonState);
 			bw.Write(model.CurrentSeason);
 			bw.Write(model.CostIndex);
@@ -132,7 +132,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 	}
 
 	[Flags]
-	internal enum DatTreeFlagsUnk : uint8_t
+	internal enum DatTreeVariantFlags : uint8_t
 	{
 		unk_00 = 1 << 0,
 		unk_01 = 1 << 1,
@@ -152,11 +152,11 @@ internal static class TreeObjectFlagsConverter
 		=> (DatTreeObjectFlags)treeObjectFlags;
 }
 
-internal static class TreeFlagsUnkConverter
+internal static class TreeVariantFlagsConverter
 {
-	public static TreeObjectSeasonalVariantFlags Convert(this DatTreeFlagsUnk datTreeFlagsUnk)
-		=> (TreeObjectSeasonalVariantFlags)datTreeFlagsUnk;
+	public static TreeObjectVariantFlags Convert(this DatTreeVariantFlags datTreeVariantFlags)
+		=> (TreeObjectVariantFlags)datTreeVariantFlags;
 
-	public static DatTreeFlagsUnk Convert(this TreeObjectSeasonalVariantFlags treeFlagsUnk)
-		=> (DatTreeFlagsUnk)treeFlagsUnk;
+	public static DatTreeVariantFlags Convert(this TreeObjectVariantFlags treeVariantFlags)
+		=> (DatTreeVariantFlags)treeVariantFlags;
 }

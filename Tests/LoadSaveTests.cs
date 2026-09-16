@@ -176,7 +176,7 @@ public class LoadSaveTests
 				//Assert.That(struc.MovementNodes, Is.EqualTo(0), nameof(struc.MovementNodes));
 				//Assert.That(struc.MovementEdges, Is.EqualTo(0), nameof(struc.MovementEdges));
 
-				Assert.That(struc.var_B6, Is.EqualTo(4864), nameof(struc.var_B6));
+				Assert.That(struc.RequiredClearEdges, Is.EqualTo(4864), nameof(struc.RequiredClearEdges));
 
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(377));
 			}
@@ -425,7 +425,7 @@ public class LoadSaveTests
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(38), nameof(struc.BuildCostFactor));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-35), nameof(struc.SellCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
-				Assert.That(struc.var_07, Is.Zero, nameof(struc.var_07));
+				//Assert.That(struc.var_07, Is.Zero, nameof(struc.var_07)); // pad_07, not part of object definition
 				//Assert.That(struc.UnkImage, Is.Zero, nameof(struc.UnkImage));
 				Assert.That(struc.Flags, Is.EqualTo(DockObjectFlags.None), nameof(struc.Flags));
 				Assert.That(struc.BuildingComponents.BuildingAnimations, Has.Count.EqualTo(2), nameof(struc.BuildingComponents.BuildingAnimations));
@@ -549,7 +549,7 @@ public class LoadSaveTests
 				//Assert.That(struc.var_12, Is.Zero, nameof(struc.var_12));
 				//Assert.That(struc.var_16, Is.EqualTo(40), nameof(struc.var_16));
 				//Assert.That(struc.var_1A, Is.EqualTo(21), nameof(struc.var_1A));
-				Assert.That(struc.var_E8, Is.EqualTo(1), nameof(struc.var_E8));
+				Assert.That(struc.NumFarmTileImages, Is.EqualTo(1), nameof(struc.NumFarmTileImages));
 				Assert.That(struc.FarmTileNumImageAngles, Is.EqualTo(1), nameof(struc.FarmTileNumImageAngles));
 				Assert.That(struc.FarmGrowthStageWithNoProduction, Is.Zero, nameof(struc.FarmGrowthStageWithNoProduction));
 				Assert.That(struc.FarmNumFields, Is.Zero, nameof(struc.FarmNumFields));
@@ -637,7 +637,7 @@ public class LoadSaveTests
 				//Assert.That(struc.var_12, Is.Zero, nameof(struc.var_12));
 				//Assert.That(struc.var_16, Is.EqualTo(16), nameof(struc.var_16));
 				//Assert.That(struc.var_1A, Is.EqualTo(21), nameof(struc.var_1A));
-				Assert.That(struc.var_E8, Is.EqualTo(1), nameof(struc.var_E8));
+				Assert.That(struc.NumFarmTileImages, Is.EqualTo(1), nameof(struc.NumFarmTileImages));
 				Assert.That(struc.FarmTileNumImageAngles, Is.EqualTo(1), nameof(struc.FarmTileNumImageAngles));
 				Assert.That(struc.FarmGrowthStageWithNoProduction, Is.Zero, nameof(struc.FarmGrowthStageWithNoProduction));
 				Assert.That(struc.FarmNumFields, Is.Zero, nameof(struc.FarmNumFields));
@@ -997,7 +997,7 @@ public class LoadSaveTests
 
 				Assert.That(struc.FrameInfoType0, Has.Count.EqualTo(47), nameof(struc.FrameInfoType0));
 				Assert.That(struc.FrameInfoType1, Has.Count.EqualTo(30), nameof(struc.FrameInfoType1));
-				Assert.That(struc.var_0A, Is.Zero, nameof(struc.var_0A));
+				Assert.That(struc.ImageOffset, Is.Zero, nameof(struc.ImageOffset));
 				// SoundEffects
 
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(57));
@@ -1156,7 +1156,7 @@ public class LoadSaveTests
 				Assert.That(struc.NumFrames, Is.EqualTo(7), nameof(struc.NumFrames));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(1955), nameof(struc.ObsoleteYear));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-3), nameof(struc.SellCostFactor));
-				Assert.That(struc.var_0B, Is.Zero, nameof(struc.var_0B));
+				//Assert.That(struc.var_0B, Is.Zero, nameof(struc.var_0B)); // pad_0B, not part of object definition
 
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(56));
 			}
@@ -1185,8 +1185,8 @@ public class LoadSaveTests
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-7), nameof(struc.SellCostFactor));
 				Assert.That(struc.TrackPieces, Is.EqualTo(TrackTraitFlags.None), nameof(struc.TrackPieces));
-				Assert.That(struc.var_0B, Is.EqualTo(2), nameof(struc.var_0B));
-				Assert.That(struc.var_0D, Is.Zero, nameof(struc.var_0D));
+				Assert.That(struc.PlatformType, Is.EqualTo(2), nameof(struc.PlatformType));
+				//Assert.That(struc.var_0D, Is.Zero, nameof(struc.var_0D)); // pad_0D, not part of object definition
 
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(36));
 			}
@@ -1204,15 +1204,15 @@ public class LoadSaveTests
 			{
 				//Assert.That(struc.var_02, Is.EqualTo(40), nameof(struc.var_02));
 				Assert.That(struc.Height, Is.EqualTo(131), nameof(struc.Height));
-				Assert.That(struc.var_04, Is.EqualTo(27), nameof(struc.var_04));
-				Assert.That(struc.var_05, Is.EqualTo(83), nameof(struc.var_05));
+				Assert.That(struc.MinHeight, Is.EqualTo(27), nameof(struc.MinHeight));
+				Assert.That(struc.MaxHeight, Is.EqualTo(83), nameof(struc.MaxHeight));
 				Assert.That(struc.NumRotations, Is.EqualTo(1), nameof(struc.NumRotations));
 				Assert.That(struc.NumGrowthStages, Is.EqualTo(4), nameof(struc.NumGrowthStages));
 				Assert.That(struc.Flags, Is.EqualTo(TreeObjectFlags.LowAltitude | TreeObjectFlags.RequiresWater | TreeObjectFlags.HasShadow), nameof(struc.Flags));
 				//Assert.That(struc.Sprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.Sprites));
 				//Assert.That(struc.SnowSprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.SnowSprites));
 				Assert.That(struc.ShadowImageOffset, Is.Zero, nameof(struc.ShadowImageOffset));
-				Assert.That(struc.SeasonalVariants, Is.EqualTo(TreeObjectSeasonalVariantFlags.Variant0 | TreeObjectSeasonalVariantFlags.Variant1 | TreeObjectSeasonalVariantFlags.Variant2 | TreeObjectSeasonalVariantFlags.Variant3), nameof(struc.SeasonalVariants));
+				Assert.That(struc.VariantFlags, Is.EqualTo(TreeObjectVariantFlags.Variant0 | TreeObjectVariantFlags.Variant1 | TreeObjectVariantFlags.Variant2 | TreeObjectVariantFlags.Variant3), nameof(struc.VariantFlags));
 				Assert.That(struc.SeasonState, Is.EqualTo(3), nameof(struc.SeasonState));
 				Assert.That(struc.CurrentSeason, Is.EqualTo(2), nameof(struc.CurrentSeason));
 				Assert.That(struc.CostIndex, Is.EqualTo(3), nameof(struc.CostIndex));
@@ -1337,7 +1337,7 @@ public class LoadSaveTests
 			using (Assert.EnterMultipleScope())
 			{
 				Assert.That(struc.CostIndex, Is.EqualTo(2), nameof(struc.CostIndex));
-				Assert.That(struc.var_03, Is.Zero, nameof(struc.var_03));
+				//Assert.That(struc.var_03, Is.Zero, nameof(struc.var_03)); // pad_03, not part of object definition
 				Assert.That(struc.CostFactor, Is.EqualTo(51), nameof(struc.CostFactor));
 				//Assert.That(struc.var_0A, Is.EqualTo(0), nameof(struc.var_0A));
 

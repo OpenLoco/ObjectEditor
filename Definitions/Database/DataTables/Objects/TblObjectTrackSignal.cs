@@ -14,7 +14,7 @@ public class TblObjectTrackSignal : DbSubObject, IConvertibleToTable<TblObjectTr
 	public uint16_t ObsoleteYear { get; set; }
 
 	//public ICollection<UniqueObjectId> CompatibleTrack { get; set; }
-	//public uint8_t var_0B { get; set; }
+	//public uint8_t pad_0B { get; set; } // unused
 
 	public static TblObjectTrackSignal FromObject(TblObject tbl, TrackSignalObject obj)
 		=> new()

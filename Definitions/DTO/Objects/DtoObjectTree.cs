@@ -12,7 +12,7 @@ public class DtoObjectTree : IDtoSubObject
 	public TreeObjectFlags Flags { get; set; }
 	public uint16_t ShadowImageOffset { get; set; }
 	public uint8_t SeasonState { get; set; }
-	public uint8_t Season { get; set; }
+	public uint8_t CurrentSeason { get; set; }
 	public uint8_t CostIndex { get; set; }
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t ClearCostFactor { get; set; }

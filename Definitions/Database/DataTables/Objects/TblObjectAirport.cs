@@ -16,7 +16,7 @@ public class TblObjectAirport : DbSubObject, IConvertibleToTable<TblObjectAirpor
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 
-	//public uint8_t var_07 { get; set; }
+	//public uint8_t pad_07 { get; set; } // unused
 	//public List<uint8_t> BuildingHeights { get; set; }
 	//public uint8_t NumBuildingParts { get; set; }
 	//public List<BuildingPartAnimation> BuildingAnimations { get; set; }
@@ -27,7 +27,7 @@ public class TblObjectAirport : DbSubObject, IConvertibleToTable<TblObjectAirpor
 	//public List<MovementNode> MovementNodes { get; set; }
 	//public uint8_t NumMovementEdges { get; set; }
 	//public List<MovementEdge> MovementEdges { get; set; }
-	//public uint8_t[] var_B6 { get; set; }
+	//public uint8_t[] RequiredClearEdges { get; set; }
 
 	public static TblObjectAirport FromObject(TblObject tbl, AirportObject obj)
 		=> new()

@@ -23,7 +23,7 @@ public class DtoObjectIndustry : IDtoSubObject
 	public IndustryObjectFlags Flags { get; set; }
 	public uint8_t FarmTileNumImageAngles { get; set; }
 	public uint8_t FarmGrowthStageWithNoProduction { get; set; }
-	public uint8_t FarmIdealSize { get; set; }
+	public uint8_t FarmNumFields { get; set; }
 	public uint8_t FarmNumStagesOfGrowth { get; set; }
 	public uint8_t MonthlyClosureChance { get; set; }
 	public UniqueObjectId Id { get; set; }

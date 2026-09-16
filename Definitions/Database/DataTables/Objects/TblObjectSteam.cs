@@ -10,7 +10,7 @@ public class TblObjectSteam : DbSubObject, IConvertibleToTable<TblObjectSteam, S
 	public uint8_t SpriteHeightPositive { get; set; }
 	public SteamObjectFlags Flags { get; set; }
 
-	//public uint32_t var_0A {get; set; }
+	//public uint32_t ImageOffset {get; set; }
 	//public ICollection<object_id> SoundEffects {get; set; }
 
 	public static TblObjectSteam FromObject(TblObject tbl, SteamObject obj)

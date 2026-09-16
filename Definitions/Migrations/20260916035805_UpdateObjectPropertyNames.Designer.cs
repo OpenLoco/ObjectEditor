@@ -3,6 +3,7 @@ using System;
 using Definitions.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Definitions.Database.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
-    partial class LocoDbModelSnapshot : ModelSnapshot
+    [Migration("20260916035805_UpdateObjectPropertyNames")]
+    partial class UpdateObjectPropertyNames
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
@@ -586,10 +589,10 @@ namespace Definitions.Database.Migrations
                     b.Property<byte>("FarmGrowthStageWithNoProduction")
                         .HasColumnType("INTEGER");
 
-                    b.Property<uint>("FarmImagesPerGrowthStage")
+                    b.Property<byte>("FarmIdealSize")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("FarmNumFields")
+                    b.Property<uint>("FarmImagesPerGrowthStage")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("FarmNumStagesOfGrowth")
@@ -766,13 +769,13 @@ namespace Definitions.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<short>("BuildCostFactor")
-                        .HasColumnType("INTEGER");
-
                     b.Property<byte>("ClosedAnimationFrameCount")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("ClosedAnimationFrameInterval")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<short>("CostFactor")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("CostIndex")
@@ -903,7 +906,7 @@ namespace Definitions.Database.Migrations
                     b.Property<ushort>("Flags")
                         .HasColumnType("INTEGER");
 
-                    b.Property<short>("MaxCurveSpeed")
+                    b.Property<short>("MaxSpeed")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("PaintStyle")
@@ -1186,10 +1189,10 @@ namespace Definitions.Database.Migrations
                     b.Property<byte>("CostIndex")
                         .HasColumnType("INTEGER");
 
-                    b.Property<ushort>("Flags")
+                    b.Property<short>("CurveSpeed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<short>("MaxCurveSpeed")
+                    b.Property<ushort>("Flags")
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("ParentId")
@@ -1327,9 +1330,6 @@ namespace Definitions.Database.Migrations
                     b.Property<ulong>("ParentId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("PlatformType")
-                        .HasColumnType("INTEGER");
-
                     b.Property<short>("SellCostFactor")
                         .HasColumnType("INTEGER");
 
@@ -1364,9 +1364,6 @@ namespace Definitions.Database.Migrations
                     b.Property<byte>("CostIndex")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("CurrentSeason")
-                        .HasColumnType("INTEGER");
-
                     b.Property<short>("DemolishRatingReduction")
                         .HasColumnType("INTEGER");
 
@@ -1395,6 +1392,9 @@ namespace Definitions.Database.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<short>("Rating")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte>("Season")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("SeasonState")

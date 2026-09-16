@@ -9,7 +9,7 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 	public int16_t SellCostFactor { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public Speed16 MaxSpeed { get; set; }
+	public Speed16 MaxCurveSpeed { get; set; }
 	public RoadObjectFlags Flags { get; set; }
 	public uint8_t PaintStyle { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
@@ -32,7 +32,7 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 			SellCostFactor = obj.SellCostFactor,
 			TunnelCostFactor = obj.TunnelCostFactor,
 			CostIndex = obj.CostIndex,
-			MaxSpeed = obj.MaxCurveSpeed,
+			MaxCurveSpeed = obj.MaxCurveSpeed,
 			Flags = obj.Flags,
 			PaintStyle = obj.PaintStyle,
 			VehicleDisplayListVerticalOffset = obj.VehicleDisplayListVerticalOffset,

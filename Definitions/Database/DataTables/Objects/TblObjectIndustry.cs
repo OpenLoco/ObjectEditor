@@ -22,7 +22,7 @@ public class TblObjectIndustry : DbSubObject, IConvertibleToTable<TblObjectIndus
 	public IndustryObjectFlags Flags { get; set; }
 	public uint8_t FarmTileNumImageAngles { get; set; } // How many viewing angles the farm tiles have
 	public uint8_t FarmGrowthStageWithNoProduction { get; set; } // At this stage of growth (except 0) { get; set; } a field tile produces nothing
-	public uint8_t FarmIdealSize { get; set; } // Max production is reached at farmIdealSize * 25 tiles
+	public uint8_t FarmNumFields { get; set; } // Max production is reached at farmIdealSize * 25 tiles
 	public uint8_t FarmNumStagesOfGrowth { get; set; } // How many growth stages there are sprites for
 	public uint8_t MonthlyClosureChance { get; set; }
 
@@ -35,13 +35,13 @@ public class TblObjectIndustry : DbSubObject, IConvertibleToTable<TblObjectIndus
 	//public List<uint8_t> BuildingHeights { get; set; }    // This is the height of a building image
 	//public List<BuildingPartAnimation> BuildingAnimations { get; set; }
 	//public List<List<uint8_t>> AnimationSequences { get; set; } // Access with getAnimationSequence helper method
-	//public List<IndustryObjectUnk38> var_38 { get; set; }    // Access with getUnk38 helper method
+	//public List<IndustryObjectRandomAnimation> RandomAnimations { get; set; }    // Access with getRandomAnimations helper method
 	//public List<List<uint8_t>> BuildingVariations { get; set; }  // Access with getBuildingParts helper method
 	//public List<uint8_t> Buildings { get; set; }
 	//public IndustryObjectProductionRateRange[] InitialProductionRate { get; set; }
 	//public List<S5Header> ProducedCargo { get; set; } // (0xFF = null)
 	//public List<S5Header> RequiredCargo { get; set; } // (0xFF = null)
-	//public uint8_t var_E8 { get; set; }
+	//public uint8_t NumFarmTileImages { get; set; } // maximum of 8 images per farm tile
 	//public List<S5Header> WallTypes { get; set; } // There can be up to 4 different wall types for an industry
 
 	public static TblObjectIndustry FromObject(TblObject tbl, IndustryObject obj)
@@ -65,7 +65,7 @@ public class TblObjectIndustry : DbSubObject, IConvertibleToTable<TblObjectIndus
 			Flags = obj.Flags,
 			FarmTileNumImageAngles = obj.FarmTileNumImageAngles,
 			FarmGrowthStageWithNoProduction = obj.FarmGrowthStageWithNoProduction,
-			FarmIdealSize = obj.FarmNumFields,
+			FarmNumFields = obj.FarmNumFields,
 			FarmNumStagesOfGrowth = obj.FarmNumStagesOfGrowth,
 			MonthlyClosureChance = obj.MonthlyClosureChance,
 			//BuildingWall = obj.BuildingWall, ?? how to do ?? needs to look up the object in DB from the dat name+checksum

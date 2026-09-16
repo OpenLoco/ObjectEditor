@@ -34,7 +34,7 @@ public class TreeViewModel(TreeObject model)
 		set => Model.SeasonState = value;
 	}
 
-	public uint8_t Season
+	public uint8_t CurrentSeason
 	{
 		get => Model.CurrentSeason;
 		set => Model.CurrentSeason = value;

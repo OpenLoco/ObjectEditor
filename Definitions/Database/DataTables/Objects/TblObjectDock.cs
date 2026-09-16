@@ -17,7 +17,7 @@ public class TblObjectDock : DbSubObject, IConvertibleToTable<TblObjectDock, Doc
 	public coord_t BoatPositionX { get; set; }
 	public coord_t BoatPositionY { get; set; }
 
-	// public uint8_t var_07 { get; set; } // probably padding
+	// public uint8_t pad_07 { get; set; } // unused
 	// public List<uint8_t> BuildingPartHeights { get; set; }
 	// public List<uint16_t> BuildingPartAnimations { get; set; }
 	// public List<uint8_t> BuildingVariationParts { get; set; }

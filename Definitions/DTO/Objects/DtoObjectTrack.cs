@@ -11,7 +11,7 @@ public class DtoObjectTrack : IDtoSubObject
 	public int16_t SellCostFactor { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public Speed16 CurveSpeed { get; set; }
+	public Speed16 MaxCurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public UniqueObjectId Id { get; set; }

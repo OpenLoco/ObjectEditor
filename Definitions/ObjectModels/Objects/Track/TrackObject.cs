@@ -56,7 +56,7 @@ public class TrackObject : ILocoStruct
 
 		if ((TrackPieces.HasFlag(TrackTraitFlags.Diagonal) || TrackPieces.HasFlag(TrackTraitFlags.LargeCurve)) && (TrackPieces.HasFlag(TrackTraitFlags.OneSided) || TrackPieces.HasFlag(TrackTraitFlags.VerySmallCurve))
 		{
-			yield return new ValidationResult($"{nameof(TrackPieces)} cannot include {TrackTraitFlags.Diagonal} or {TrackTraitFlags.LargeCurve} if it has {TrackTraitFlags.OneSided} or {TrackTraitFlags.VerySmallCurve}.", [nameof(TrackPieces)]);
+			yield return new ValidationResult($"{nameof(TrackPieces)} cannot include {TrackTraitFlags.Diagonal} or {TrackTraitFlags.LargeCurve} if it also includes {TrackTraitFlags.OneSided} or {TrackTraitFlags.VerySmallCurve}.", [nameof(TrackPieces)]);
 		}
 
 		if (Bridges.Count > 7)

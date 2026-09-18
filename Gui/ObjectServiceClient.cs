@@ -64,6 +64,9 @@ public class ObjectServiceClient
 	public async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync()
 		=> await Client.GetObjectListAsync(WebClient, Logger);
 
+	public async Task<DtoServerStatus?> GetServerStatusAsync()
+		=> await Client.GetServerStatusAsync(WebClient, Logger);
+
 	public async Task<DtoObjectPostResponse?> GetObjectAsync(UniqueObjectId id)
 		=> await Client.GetObjectAsync(WebClient, id, Logger);
 

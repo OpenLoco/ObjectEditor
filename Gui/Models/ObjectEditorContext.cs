@@ -36,6 +36,9 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
 
+	// Cached read-only state of the object service; refreshed at the start of each upload batch.
+	bool? isServerReadOnly;
+
 	public G1Dat? G1 { get; set; }
 
 	//public Dictionary<string, byte[]> Music { get; } = [];
@@ -522,6 +525,31 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		}
 	}
 
+	/// <summary>
+	/// Determines whether the object service is currently in read-only mode, caching the result so
+	/// that a batch of uploads only queries the server once. Returns false when the status can't be
+	/// determined (e.g. the server is unreachable), leaving the result uncached so it is retried.
+	/// </summary>
+	public async Task<bool> IsServerReadOnlyAsync(bool forceRefresh = false)
+	{
+		if (!forceRefresh && isServerReadOnly.HasValue)
+		{
+			return isServerReadOnly.Value;
+		}
+
+		var status = await ObjectServiceClient.GetServerStatusAsync();
+		if (status == null)
+		{
+			// Unknown (e.g. the server is unreachable): don't claim read-only, and clear any stale
+			// value so the next check retries rather than reusing a previous result.
+			isServerReadOnly = null;
+			return false;
+		}
+
+		isServerReadOnly = status.IsReadOnly;
+		return isServerReadOnly.Value;
+	}
+
 	public async Task CheckForDatFilesNotOnServer()
 	{
 		if (ObjectIndex == null || ObjectIndexOnline == null || ObjectIndexOnline.Objects.Count == 0)
@@ -544,6 +572,14 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			Logger.LogInformation("Automatic object discovery and upload to master service is {IsEnabledString}", isEnabledString);
 			if (Settings.AutoObjectDiscoveryAndUpload)
 			{
+				// Check read-only mode once up front (and refresh any cached value) so a batch of
+				// uploads doesn't repeatedly query the server.
+				if (await IsServerReadOnlyAsync(forceRefresh: true))
+				{
+					Logger.LogWarning("The object service is in read-only mode; skipping upload of {Count} new object(s).", localButNotOnline.Count);
+					return;
+				}
+
 				foreach (var dat in localButNotOnline)
 				{
 					await UploadDatToServer(dat);
@@ -558,6 +594,12 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public async Task UploadDatToServer(ObjectIndexEntry dat)
 	{
+		if (await IsServerReadOnlyAsync())
+		{
+			Logger.LogInformation("Skipping upload of {FileName}: the object service is in read-only mode.", dat.FileName);
+			return;
+		}
+
 		Logger.LogInformation("Uploading {FileName} to object repository", dat.FileName);
 		var filename = Path.Combine(Settings.ObjDataDirectory, dat.FileName ?? string.Empty);
 		var creationDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(filename));

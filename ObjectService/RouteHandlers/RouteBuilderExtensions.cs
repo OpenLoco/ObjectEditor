@@ -1,3 +1,4 @@
+using Definitions.DTO;
 using Definitions.Web;
 using ObjectService.RouteHandlers.TableHandlers;
 
@@ -21,6 +22,13 @@ public static class RouteBuilderExtensions
 		MapHandler(new SC5FileRouteHandler(), publicGroup, config);
 		MapHandler(new SC5FilePackRouteHandler(), publicGroup, config);
 		MapHandler(new ObjectPackRouteHandler(), publicGroup, config);
+
+		// Public capability route. Clients (e.g. the Object Editor) query this to discover whether
+		// the server is in read-only mode before attempting writes that would otherwise be rejected.
+		_ = publicGroup.MapGet(Routes.Server + Routes.Status, (IConfiguration config) =>
+			Results.Ok(new DtoServerStatus(
+				config.GetValue<bool?>("ObjectService:FrontendReadOnly") ?? false,
+				config.GetValue<bool?>("ObjectService:BackendReadOnly") ?? false)));
 
 		// Authenticated write routes for general data (any authenticated user)
 		var authGroup = v2.MapGroup(string.Empty).RequireAuthorization();

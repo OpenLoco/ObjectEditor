@@ -27,6 +27,10 @@ public static class Routes
 	// descriptor routes returned by the reference-data handlers
 	public const string Descriptor = "/descriptor";
 
+	// server capability/status routes
+	public const string Server = "/server";
+	public const string Status = "/status";
+
 	// Identity
 	public const string Users = "/users";
 	public const string Roles = "/roles";

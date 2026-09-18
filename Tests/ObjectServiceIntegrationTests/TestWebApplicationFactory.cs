@@ -12,6 +12,12 @@ namespace ObjectService.Tests.Integration;
 public class TestWebApplicationFactory<TProgram>
 : WebApplicationFactory<TProgram> where TProgram : class
 {
+	/// <summary>Overridden by tests that need to start the app with write routes disabled.</summary>
+	protected virtual bool BackendReadOnly => false;
+
+	/// <summary>Overridden by tests that need to start the app with the frontend in read-only mode.</summary>
+	protected virtual bool FrontendReadOnly => false;
+
 	static DirectoryInfo? MakeServerFolderManagerTestDirectories()
 	{
 		var testDirectory = Directory.CreateTempSubdirectory("ObjectServiceTest");
@@ -56,7 +62,8 @@ public class TestWebApplicationFactory<TProgram>
 				new("ObjectService:PaletteMapFile", dummyPaletteFile),
 				new("ObjectService:ShowScalar", "False"),
 				new("ObjectService:DisableAuthentication", "True"),
-				new("ObjectService:BackendReadOnly", "False"),
+				new("ObjectService:FrontendReadOnly", FrontendReadOnly.ToString()),
+				new("ObjectService:BackendReadOnly", BackendReadOnly.ToString()),
 			])
 			.Build();
 

@@ -21,6 +21,7 @@ public static class Client
 	public static ApiEndpointGroup SC5FilesEndpointGroup { get; } = new(Routes.SC5Files);
 	public static ApiEndpointGroup UsersEndpointGroup { get; } = new(Routes.Users);
 	public static ApiEndpointGroup RolesEndpointGroup { get; } = new(Routes.Roles);
+	public static ApiEndpointGroup ServerEndpointGroup { get; } = new(Routes.Server);
 
 	public static async Task<IEnumerable<T>> GetListAsync<T>(HttpClient client, ApiEndpointGroup endpointGroup, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.GetAsync<IEnumerable<T>>(
@@ -33,6 +34,18 @@ public static class Client
 
 	public static async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await GetListAsync<DtoObjectEntry>(client, ObjectsEndpointGroup, logger, cancellationToken);
+
+	/// <summary>
+	/// Queries the server's read-only state (public, unauthenticated route). Returns null when the
+	/// status could not be retrieved (e.g. the server is unreachable).
+	/// </summary>
+	public static async Task<DtoServerStatus?> GetServerStatusAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await ClientHelpers.GetAsync<DtoServerStatus>(
+			client,
+			ApiVersion,
+			Routes.Server + Routes.Status,
+			logger: logger,
+			cancellationToken: cancellationToken);
 
 	public static async Task<DtoObjectPostResponse?> GetObjectAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.GetAsync<DtoObjectPostResponse>(

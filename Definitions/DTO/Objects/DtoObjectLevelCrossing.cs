@@ -11,5 +11,6 @@ public class DtoObjectLevelCrossing : IDtoSubObject
 	public uint8_t ClosedAnimationFrameCount { get; set; }
 	public uint8_t TransitionAnimationFrameCount { get; set; }
 	public uint16_t DesignedYear { get; set; }
+	public uint8_t TransitionAnimationDelayBitmask { get; set; }
 	public UniqueObjectId Id { get; set; }
 }

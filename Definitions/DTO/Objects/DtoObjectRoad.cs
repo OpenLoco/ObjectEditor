@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
@@ -15,5 +16,10 @@ public class DtoObjectRoad : IDtoSubObject
 	public uint8_t PaintStyle { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public TownSize TargetTownSize { get; set; }
+	public ObjectModelHeader Tunnel { get; set; } = null!;
+	public List<ObjectModelHeader> Bridges { get; set; } = [];
+	public List<ObjectModelHeader> Stations { get; set; } = [];
+	public List<ObjectModelHeader> RoadMods { get; set; } = [];
+	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
 	public UniqueObjectId Id { get; set; }
 }

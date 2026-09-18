@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Objects.TrackSignal;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
@@ -13,5 +14,6 @@ public class DtoObjectTrackSignal : IDtoSubObject
 	public uint8_t CostIndex { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
+	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 	public UniqueObjectId Id { get; set; }
 }

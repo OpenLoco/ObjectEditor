@@ -8,6 +8,8 @@ public static class DtoObjectWallMapper
 	{
 		Height = tblobjectwall.Height,
 		Flags1 = tblobjectwall.Flags1,
+		ToolId = tblobjectwall.ToolId,
+		Flags2 = tblobjectwall.Flags2,
 		Id = tblobjectwall.Id,
 	};
 
@@ -16,6 +18,8 @@ public static class DtoObjectWallMapper
 		Parent = parent,
 		Height = model.Height,
 		Flags1 = model.Flags1,
+		ToolId = model.ToolId,
+		Flags2 = model.Flags2,
 		Id = model.Id,
 	};
 

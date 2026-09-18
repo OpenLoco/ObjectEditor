@@ -127,6 +127,18 @@
 	</section>
 
 	<section class="panel panel-span">
+		<h2>Object properties</h2>
+		@if (item.HasSubObjectProperties)
+		{
+			<pre class="json-view">@item.SubObjectJson</pre>
+		}
+		else
+		{
+			<p class="muted">No object-specific properties are stored for this object.</p>
+		}
+	</section>
+
+	<section class="panel panel-span">
 		<h2>Image table</h2>
 		@if (item.HasImages)
 		{

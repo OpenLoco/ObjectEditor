@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Objects.Track;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
@@ -14,5 +15,12 @@ public class DtoObjectTrack : IDtoSubObject
 	public Speed16 MaxCurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
+	public uint8_t var_06 { get; set; }
+	public ObjectModelHeader Tunnel { get; set; } = null!;
+	public List<ObjectModelHeader> TrackMods { get; set; } = [];
+	public List<ObjectModelHeader> Signals { get; set; } = [];
+	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
+	public List<ObjectModelHeader> Bridges { get; set; } = [];
+	public List<ObjectModelHeader> Stations { get; set; } = [];
 	public UniqueObjectId Id { get; set; }
 }

@@ -7,7 +7,7 @@ public static class DtoObjectCompetitorMapper
 	public static DtoObjectCompetitor ToDto(this TblObjectCompetitor tblobjectcompetitor) => new()
 	{
 		AvailableNamePrefixes = tblobjectcompetitor.AvailableNamePrefixes,
-		AvailablePlaystyles = tblobjectcompetitor.AvailableNameSuffixes,
+		AvailableNameSuffixes = tblobjectcompetitor.AvailableNameSuffixes,
 		Emotions = tblobjectcompetitor.Emotions,
 		Intelligence = tblobjectcompetitor.Intelligence,
 		Aggressiveness = tblobjectcompetitor.Aggressiveness,
@@ -19,7 +19,7 @@ public static class DtoObjectCompetitorMapper
 	{
 		Parent = parent,
 		AvailableNamePrefixes = model.AvailableNamePrefixes,
-		AvailableNameSuffixes = model.AvailablePlaystyles,
+		AvailableNameSuffixes = model.AvailableNameSuffixes,
 		Emotions = model.Emotions,
 		Intelligence = model.Intelligence,
 		Aggressiveness = model.Aggressiveness,

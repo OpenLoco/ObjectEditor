@@ -1253,3 +1253,19 @@ th {
     color: var(--text);
     margin: 0;
 }
+
+.json-view {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    white-space: pre;
+    tab-size: 2;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--text);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+

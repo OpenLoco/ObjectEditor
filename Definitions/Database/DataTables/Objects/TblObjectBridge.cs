@@ -6,7 +6,6 @@ namespace Definitions.Database;
 public class TblObjectBridge : DbSubObject, IConvertibleToTable<TblObjectBridge, BridgeObject>
 {
 	public BridgeObjectFlags Flags { get; set; }
-	public uint8_t var_03 { get; set; } // unknown - padding?
 	public uint16_t ClearHeight { get; set; }
 	public int16_t DeckDepth { get; set; }
 	public uint8_t SpanLength { get; set; }
@@ -28,7 +27,6 @@ public class TblObjectBridge : DbSubObject, IConvertibleToTable<TblObjectBridge,
 		{
 			Parent = tbl,
 			Flags = obj.Flags,
-			var_03 = obj.var_03,
 			ClearHeight = obj.ClearHeight,
 			DeckDepth = obj.DeckDepth,
 			SpanLength = obj.SpanLength,

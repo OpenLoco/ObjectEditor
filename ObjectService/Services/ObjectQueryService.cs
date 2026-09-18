@@ -79,7 +79,8 @@ public class ObjectQueryService : IObjectQueryService
 			return null;
 		}
 
-		var descriptor = eObj.ToDtoDescriptor();
+		var subObject = DbSubObjectHelper.GetDbSubForType(_db, eObj.Object.ObjectType, eObj.Object.Id);
+		var descriptor = eObj.ToDtoDescriptor(subObject);
 		await PopulateDatFileBytesAsync(descriptor, ct);
 		return descriptor;
 	}
@@ -193,7 +194,8 @@ public class ObjectQueryService : IObjectQueryService
 
 		_ = await _db.SaveChangesAsync(ct);
 		var expandedObj = new ExpandedTbl<TblObject, TblObjectPack>(obj, obj.Authors, obj.Tags, obj.ObjectPacks);
-		return expandedObj.ToDtoDescriptor();
+		var subObject = DbSubObjectHelper.GetDbSubForType(_db, obj.ObjectType, obj.Id);
+		return expandedObj.ToDtoDescriptor(subObject);
 	}
 
 	public async Task<byte[]?> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct)
@@ -447,7 +449,8 @@ public class ObjectQueryService : IObjectQueryService
 		_sfm.ObjectIndex.AddEntry(new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 		_ = _sfm.ObjectIndex.SaveIndexAsync(_sfm.IndexFile);
 
-		var response = new ExpandedTbl<TblObject, TblObjectPack>(tblObject, [], [], []).ToDtoDescriptor();
+		var subObject = DbSubObjectHelper.GetDbSubForType(_db, tblObject.ObjectType, tblObject.Id);
+		var response = new ExpandedTbl<TblObject, TblObjectPack>(tblObject, [], [], []).ToDtoDescriptor(subObject);
 		return new UploadResult(true, response, null, 201);
 	}
 }

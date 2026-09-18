@@ -15,6 +15,13 @@ public static class DtoObjectTrackMapper
 		MaxCurveSpeed = tblobjecttrack.MaxCurveSpeed,
 		Flags = tblobjecttrack.Flags,
 		VehicleDisplayListVerticalOffset = tblobjecttrack.VehicleDisplayListVerticalOffset,
+		var_06 = tblobjecttrack.var_06,
+		Tunnel = tblobjecttrack.Tunnel,
+		TrackMods = tblobjecttrack.TrackMods,
+		Signals = tblobjecttrack.Signals,
+		TracksAndRoads = tblobjecttrack.TracksAndRoads,
+		Bridges = tblobjecttrack.Bridges,
+		Stations = tblobjecttrack.Stations,
 		Id = tblobjecttrack.Id,
 	};
 
@@ -30,6 +37,13 @@ public static class DtoObjectTrackMapper
 		MaxCurveSpeed = model.MaxCurveSpeed,
 		Flags = model.Flags,
 		VehicleDisplayListVerticalOffset = model.VehicleDisplayListVerticalOffset,
+		var_06 = model.var_06,
+		Tunnel = model.Tunnel,
+		TrackMods = model.TrackMods,
+		Signals = model.Signals,
+		TracksAndRoads = model.TracksAndRoads,
+		Bridges = model.Bridges,
+		Stations = model.Stations,
 		Id = model.Id,
 	};
 

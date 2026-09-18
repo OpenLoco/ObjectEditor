@@ -82,8 +82,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 				[.. row.Tags.Select(x => x.ToDtoEntry())],
 				[],
 				[],
-				row.StringTable.ToDtoDescriptor(row.Id)
-				//SubObject
+				row.StringTable.ToDtoDescriptor(row.Id),
+				null // SubObject
 				);
 
 	static void AssertDtoObjectDescriptorsAreEqual(DtoObjectPostResponse? expected, DtoObjectPostResponse? actual)
@@ -229,7 +229,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			[], // tags
 			[], // object packs
 			[new DtoDatObjectEntry(1, "AZVOG15C", 3072098364, 7051740550869341430, 3)], // dat objects
-			new DtoStringTableDescriptor(expectedStringTable, 3));
+			new DtoStringTableDescriptor(expectedStringTable, 3),
+			null); // SubObject
 
 		AssertDtoObjectDescriptorsAreEqual(results, expected);
 	}
@@ -262,7 +263,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Tags: [],
 			ObjectPacks: [],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], id)
+			StringTable: new DtoStringTableDescriptor([], id),
+			SubObject: null
 		);
 
 		// act
@@ -313,7 +315,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Tags: [],
 			ObjectPacks: [],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], objectId)
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null
 		);
 
 		// act
@@ -367,7 +370,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Tags: [],
 			ObjectPacks: [],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], objectId)
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null
 		);
 
 		// act
@@ -422,7 +426,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			],
 			ObjectPacks: [],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], objectId)
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null
 		);
 
 		// act
@@ -477,7 +482,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 				new DtoItemPackEntry(pack2.Id, pack2.Name, pack2.Description, null, null, DateOnly.UtcToday, null)
 			],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], objectId)
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null
 		);
 
 		// act

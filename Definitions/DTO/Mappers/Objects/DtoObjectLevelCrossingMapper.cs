@@ -13,6 +13,7 @@ public static class DtoObjectLevelCrossingMapper
 		ClosedAnimationFrameCount = tblobjectlevelcrossing.ClosedAnimationFrameCount,
 		TransitionAnimationFrameCount = tblobjectlevelcrossing.TransitionAnimationFrameCount,
 		DesignedYear = tblobjectlevelcrossing.DesignedYear,
+		TransitionAnimationDelayBitmask = tblobjectlevelcrossing.TransitionAnimationDelayBitmask,
 		Id = tblobjectlevelcrossing.Id,
 	};
 
@@ -26,6 +27,7 @@ public static class DtoObjectLevelCrossingMapper
 		ClosedAnimationFrameCount = model.ClosedAnimationFrameCount,
 		TransitionAnimationFrameCount = model.TransitionAnimationFrameCount,
 		DesignedYear = model.DesignedYear,
+		TransitionAnimationDelayBitmask = model.TransitionAnimationDelayBitmask,
 		Id = model.Id,
 	};
 

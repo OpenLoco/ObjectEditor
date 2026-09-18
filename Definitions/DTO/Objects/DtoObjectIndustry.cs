@@ -1,6 +1,8 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Industry;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
@@ -26,5 +28,16 @@ public class DtoObjectIndustry : IDtoSubObject
 	public uint8_t FarmNumFields { get; set; }
 	public uint8_t FarmNumStagesOfGrowth { get; set; }
 	public uint8_t MonthlyClosureChance { get; set; }
+	public BuildingComponents BuildingComponents { get; set; } = new();
+	public List<List<uint8_t>> AnimationSequences { get; set; } = [];
+	public List<IndustryObjectRandomAnimation> RandomAnimations { get; set; } = [];
+	public List<IndustryObjectProductionRateRange> InitialProductionRate { get; set; } = [];
+	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
+	public List<ObjectModelHeader> RequiredCargo { get; set; } = [];
+	public uint8_t NumFarmTileImages { get; set; }
+	public List<ObjectModelHeader> WallTypes { get; set; } = [];
+	public ObjectModelHeader? BuildingWall { get; set; }
+	public ObjectModelHeader? BuildingWallEntrance { get; set; }
+	public List<uint8_t> Buildings { get; set; } = [];
 	public UniqueObjectId Id { get; set; }
 }

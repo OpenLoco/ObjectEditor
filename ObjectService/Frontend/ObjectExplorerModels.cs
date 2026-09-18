@@ -73,7 +73,8 @@ public sealed record ObjectDetailViewModel(
 	IReadOnlyList<ObjectFileEntryViewModel> Files,
 	IReadOnlyList<StringTableGroupViewModel> StringTableGroups,
 	IReadOnlyList<ObjectImageViewModel> Images,
-	string? ImageTableMessage)
+	string? ImageTableMessage,
+	string? SubObjectJson)
 {
 	public string ApiUrl => $"{Routes.Prefix}{Routes.Objects}/{Id}";
 
@@ -82,6 +83,8 @@ public sealed record ObjectDetailViewModel(
 	public bool CanDownloadAnyFile => Availability == ObjectAvailability.Available && Files.Any(x => x.CanDownload);
 
 	public bool HasImages => Images.Count > 0;
+
+	public bool HasSubObjectProperties => !string.IsNullOrWhiteSpace(SubObjectJson);
 }
 
 public sealed record ObjectImageViewModel(

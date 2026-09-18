@@ -20,6 +20,9 @@ public static class DtoObjectTreeMapper
 		Colours = tblobjecttree.Colours,
 		Rating = tblobjecttree.Rating,
 		DemolishRatingReduction = tblobjecttree.DemolishRatingReduction,
+		MinHeight = tblobjecttree.MinHeight,
+		MaxHeight = tblobjecttree.MaxHeight,
+		VariantFlags = tblobjecttree.VariantFlags,
 		Id = tblobjecttree.Id,
 	};
 
@@ -40,6 +43,9 @@ public static class DtoObjectTreeMapper
 		Colours = model.Colours,
 		Rating = model.Rating,
 		DemolishRatingReduction = model.DemolishRatingReduction,
+		MinHeight = model.MinHeight,
+		MaxHeight = model.MaxHeight,
+		VariantFlags = model.VariantFlags,
 		Id = model.Id,
 	};
 

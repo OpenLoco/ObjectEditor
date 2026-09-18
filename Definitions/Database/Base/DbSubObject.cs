@@ -1,3 +1,4 @@
+using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
@@ -36,6 +37,7 @@ using Definitions.ObjectModels.Objects.Wall;
 using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace Definitions.Database;
 
@@ -44,6 +46,46 @@ public interface IConvertibleToTable<TTable, TDat>
 	static abstract TTable FromObject(TblObject tblObj, TDat datObo);
 }
 
+/// <summary>
+/// Marker interface for the per-object-type DTOs that carry every object property. Implementations are
+/// declared to System.Text.Json as polymorphic derived types so that a single sub-object property can
+/// round-trip the concrete object data (with a <c>$type</c> discriminator) over the API.
+/// </summary>
+[JsonPolymorphic]
+[JsonDerivedType(typeof(DtoObjectAirport), "airport")]
+[JsonDerivedType(typeof(DtoObjectBridge), "bridge")]
+[JsonDerivedType(typeof(DtoObjectBuilding), "building")]
+[JsonDerivedType(typeof(DtoObjectCargo), "cargo")]
+[JsonDerivedType(typeof(DtoObjectCliffEdge), "cliffEdge")]
+[JsonDerivedType(typeof(DtoObjectClimate), "climate")]
+[JsonDerivedType(typeof(DtoObjectCompetitor), "competitor")]
+[JsonDerivedType(typeof(DtoObjectCurrency), "currency")]
+[JsonDerivedType(typeof(DtoObjectDock), "dock")]
+[JsonDerivedType(typeof(DtoObjectHillShapes), "hillShapes")]
+[JsonDerivedType(typeof(DtoObjectIndustry), "industry")]
+[JsonDerivedType(typeof(DtoObjectInterface), "interface")]
+[JsonDerivedType(typeof(DtoObjectLand), "land")]
+[JsonDerivedType(typeof(DtoObjectLevelCrossing), "levelCrossing")]
+[JsonDerivedType(typeof(DtoObjectRegion), "region")]
+[JsonDerivedType(typeof(DtoObjectRoad), "road")]
+[JsonDerivedType(typeof(DtoObjectRoadExtra), "roadExtra")]
+[JsonDerivedType(typeof(DtoObjectRoadStation), "roadStation")]
+[JsonDerivedType(typeof(DtoObjectScaffolding), "scaffolding")]
+[JsonDerivedType(typeof(DtoObjectScenarioText), "scenarioText")]
+[JsonDerivedType(typeof(DtoObjectSnow), "snow")]
+[JsonDerivedType(typeof(DtoObjectSound), "sound")]
+[JsonDerivedType(typeof(DtoObjectSteam), "steam")]
+[JsonDerivedType(typeof(DtoObjectStreetLight), "streetLight")]
+[JsonDerivedType(typeof(DtoObjectTownNames), "townNames")]
+[JsonDerivedType(typeof(DtoObjectTrack), "track")]
+[JsonDerivedType(typeof(DtoObjectTrackExtra), "trackExtra")]
+[JsonDerivedType(typeof(DtoObjectTrackSignal), "trackSignal")]
+[JsonDerivedType(typeof(DtoObjectTrackStation), "trackStation")]
+[JsonDerivedType(typeof(DtoObjectTree), "tree")]
+[JsonDerivedType(typeof(DtoObjectTunnel), "tunnel")]
+[JsonDerivedType(typeof(DtoObjectVehicle), "vehicle")]
+[JsonDerivedType(typeof(DtoObjectWall), "wall")]
+[JsonDerivedType(typeof(DtoObjectWater), "water")]
 public interface IDtoSubObject : IHasId
 {
 	//IDbSubObject ToTbl();

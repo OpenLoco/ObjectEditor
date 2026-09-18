@@ -126,7 +126,8 @@ public sealed class EditModel : PageModel
 			[.. SelectedTagIds.Select(t => new DtoTagEntry(t, string.Empty))],
 			[.. SelectedObjectPackIds.Select(p => new DtoItemPackEntry(p, string.Empty, null, null, null, UploadedDate, null))],
 			existing.DatObjects,
-			existing.StringTable);
+			existing.StringTable,
+			existing.SubObject);
 
 		var updated = await Client.UpdateObjectAsync(client, Id, updateRequest, cancellationToken: ct);
 		if (updated != null)

@@ -398,7 +398,8 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				Tags: metadataModel.Tags,
 				ObjectPacks: metadataModel.ObjectPacks,
 				DatObjects: metadataModel.DatObjects,
-				StringTable: new DtoStringTableDescriptor([], objectId)
+				StringTable: new DtoStringTableDescriptor([], objectId),
+				SubObject: metadataModel.SubObject
 			);
 
 			var result = await EditorContext.ObjectServiceClient.UpdateObjectAsync(objectId, dtoRequest);

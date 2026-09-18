@@ -16,6 +16,11 @@ public static class DtoObjectRoadMapper
 		PaintStyle = tblobjectroad.PaintStyle,
 		VehicleDisplayListVerticalOffset = tblobjectroad.VehicleDisplayListVerticalOffset,
 		TargetTownSize = tblobjectroad.TargetTownSize,
+		Tunnel = tblobjectroad.Tunnel,
+		Bridges = tblobjectroad.Bridges,
+		Stations = tblobjectroad.Stations,
+		RoadMods = tblobjectroad.RoadMods,
+		TracksAndRoads = tblobjectroad.TracksAndRoads,
 		Id = tblobjectroad.Id,
 	};
 
@@ -32,6 +37,11 @@ public static class DtoObjectRoadMapper
 		PaintStyle = model.PaintStyle,
 		VehicleDisplayListVerticalOffset = model.VehicleDisplayListVerticalOffset,
 		TargetTownSize = model.TargetTownSize,
+		Tunnel = model.Tunnel,
+		Bridges = model.Bridges,
+		Stations = model.Stations,
+		RoadMods = model.RoadMods,
+		TracksAndRoads = model.TracksAndRoads,
 		Id = model.Id,
 	};
 

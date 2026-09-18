@@ -6,7 +6,7 @@ namespace Definitions.DTO.Mappers;
 
 public static class DtoExtensions
 {
-	public static DtoObjectPostResponse ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x /*, IDtoSubObject SubObject*/)
+	public static DtoObjectPostResponse ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x, IDtoSubObject? subObject)
 	{
 		var firstDatObject = x.Object.DatObjects.FirstOrDefault();
 		return new(
@@ -27,8 +27,8 @@ public static class DtoExtensions
 			[.. x.Tags.Select(x => x.ToDtoEntry())],
 			[.. x.Packs.Select(x => x.ToDtoEntry())],
 			[.. x.Object.DatObjects.Select(x => x.ToDtoEntry())],
-			x.Object.StringTable.ToDtoDescriptor(x.Object.Id)
-			//SubObject
+			x.Object.StringTable.ToDtoDescriptor(x.Object.Id),
+			subObject
 			);
 	}
 

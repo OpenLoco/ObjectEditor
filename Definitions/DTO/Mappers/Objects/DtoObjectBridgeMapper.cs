@@ -19,6 +19,8 @@ public static class DtoObjectBridgeMapper
 		SellCostFactor = tblobjectbridge.SellCostFactor,
 		DesignedYear = tblobjectbridge.DesignedYear,
 		DisabledTrackFlags = tblobjectbridge.DisabledTrackFlags,
+		CompatibleTrackObjects = tblobjectbridge.CompatibleTrackObjects,
+		CompatibleRoadObjects = tblobjectbridge.CompatibleRoadObjects,
 		Id = tblobjectbridge.Id,
 	};
 
@@ -38,6 +40,8 @@ public static class DtoObjectBridgeMapper
 		SellCostFactor = model.SellCostFactor,
 		DesignedYear = model.DesignedYear,
 		DisabledTrackFlags = model.DisabledTrackFlags,
+		CompatibleTrackObjects = model.CompatibleTrackObjects,
+		CompatibleRoadObjects = model.CompatibleRoadObjects,
 		Id = model.Id,
 	};
 }

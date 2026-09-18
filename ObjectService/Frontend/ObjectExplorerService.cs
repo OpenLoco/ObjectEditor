@@ -4,11 +4,14 @@ using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
+using System.Text.Json;
 
 namespace ObjectService.Frontend;
 
 public sealed class ObjectExplorerService
 {
+	static readonly JsonSerializerOptions s_subObjectJsonOptions = new() { WriteIndented = true };
+
 	readonly FrontendApiClient _apiClient;
 
 	public ObjectExplorerService(FrontendApiClient apiClient)
@@ -112,6 +115,12 @@ public sealed class ObjectExplorerService
 				? "No renderable images were returned by the public API for this object."
 				: "Images are not available for vanilla or unavailable objects.";
 
+		// The full object-specific property data (the sub-object) is returned by the public API as part of
+		// the descriptor. The frontend only formats it for display; it never reads DAT files itself.
+		var subObjectJson = obj.SubObject is null
+			? null
+			: JsonSerializer.Serialize(obj.SubObject, s_subObjectJsonOptions);
+
 		return new ObjectDetailViewModel(
 			obj.Id,
 			obj.Name,
@@ -132,7 +141,8 @@ public sealed class ObjectExplorerService
 			files,
 			stringTableGroups,
 			images,
-			imageTableMessage);
+			imageTableMessage,
+			subObjectJson);
 	}
 
 	ObjectListItemViewModel MapBrowseItem(DtoObjectEntry row)

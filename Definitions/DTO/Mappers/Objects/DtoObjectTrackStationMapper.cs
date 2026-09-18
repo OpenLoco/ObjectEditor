@@ -14,6 +14,11 @@ public static class DtoObjectTrackStationMapper
 		Flags = tblobjecttrackstation.Flags,
 		DesignedYear = tblobjecttrackstation.DesignedYear,
 		ObsoleteYear = tblobjecttrackstation.ObsoleteYear,
+		TrackPieces = tblobjecttrackstation.TrackPieces,
+		PlatformType = tblobjecttrackstation.PlatformType,
+		CompatibleTrackObjects = tblobjecttrackstation.CompatibleTrackObjects,
+		CargoOffsets = tblobjecttrackstation.CargoOffsets,
+		DiagonalCargoOffsetBytes = tblobjecttrackstation.DiagonalCargoOffsetBytes,
 		Id = tblobjecttrackstation.Id,
 	};
 
@@ -28,6 +33,11 @@ public static class DtoObjectTrackStationMapper
 		Flags = model.Flags,
 		DesignedYear = model.DesignedYear,
 		ObsoleteYear = model.ObsoleteYear,
+		TrackPieces = model.TrackPieces,
+		PlatformType = model.PlatformType,
+		CompatibleTrackObjects = model.CompatibleTrackObjects,
+		CargoOffsets = model.CargoOffsets,
+		DiagonalCargoOffsetBytes = model.DiagonalCargoOffsetBytes,
 		Id = model.Id,
 	};
 

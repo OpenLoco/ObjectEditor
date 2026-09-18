@@ -17,6 +17,14 @@ public static class DtoObjectBuildingMapper
 		Colours = tblobjectbuilding.Colours,
 		GeneratorFunction = tblobjectbuilding.GeneratorFunction,
 		AverageNumberOnMap = tblobjectbuilding.AverageNumberOnMap,
+		BuildingComponents = tblobjectbuilding.BuildingComponents,
+		ProducedQuantity = tblobjectbuilding.ProducedQuantity,
+		ProducedCargoType = tblobjectbuilding.ProducedCargoType,
+		ConsumedCargoType = tblobjectbuilding.ConsumedCargoType,
+		ProducedCargoQuantity = tblobjectbuilding.ProducedCargoQuantity,
+		ConsumedCargoQuantity = tblobjectbuilding.ConsumedCargoQuantity,
+		TownAmenityCategory = tblobjectbuilding.TownAmenityCategory,
+		ElevatorHeightSequences = tblobjectbuilding.ElevatorHeightSequences,
 		Id = tblobjectbuilding.Id,
 	};
 
@@ -34,6 +42,14 @@ public static class DtoObjectBuildingMapper
 		Colours = model.Colours,
 		GeneratorFunction = model.GeneratorFunction,
 		AverageNumberOnMap = model.AverageNumberOnMap,
+		BuildingComponents = model.BuildingComponents,
+		ProducedQuantity = model.ProducedQuantity,
+		ProducedCargoType = model.ProducedCargoType,
+		ConsumedCargoType = model.ConsumedCargoType,
+		ProducedCargoQuantity = model.ProducedCargoQuantity,
+		ConsumedCargoQuantity = model.ConsumedCargoQuantity,
+		TownAmenityCategory = model.TownAmenityCategory,
+		ElevatorHeightSequences = model.ElevatorHeightSequences,
 		Id = model.Id,
 	};
 

@@ -37,7 +37,7 @@ public class TagRoutesTest : BaseReferenceDataTableTestFixture<
 		=> new(1, "Rough");
 
 	public override string BaseRoute
-		=> RoutesV2.Tags;
+		=> Definitions.Web.Routes.Tags;
 
 	protected override DbSet<TblTag> GetTable(LocoDbContext context)
 		=> context.Tags;

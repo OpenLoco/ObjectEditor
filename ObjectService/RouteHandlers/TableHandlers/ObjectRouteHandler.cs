@@ -9,7 +9,7 @@ namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class ObjectRouteHandler : ITableRouteHandler
 {
-	public string BaseRoute => RoutesV2.Objects;
+	public string BaseRoute => Routes.Objects;
 	public Delegate ListDelegate => ListAsync;
 	public Delegate CreateDelegate => CreateDatAsync;
 	public Delegate ReadDelegate => ReadAsync;
@@ -24,10 +24,10 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	public void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 	{
-		var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
-		_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
-		_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
-		_ = resourceRoute.MapGet(RoutesV2.FirstImage, GetObjectFirstImageAsync);
+		var resourceRoute = parentRoute.MapGroup(Routes.ResourceRoute);
+		_ = resourceRoute.MapGet(Routes.File, GetObjectFileAsync);
+		_ = resourceRoute.MapGet(Routes.Images, GetObjectImagesAsync);
+		_ = resourceRoute.MapGet(Routes.FirstImage, GetObjectFirstImageAsync);
 	}
 
 	async Task<IResult> CreateDatAsync([FromBody] DtoObjectPost request, [FromServices] IObjectUploadService upload, CancellationToken ct)

@@ -1,6 +1,6 @@
 namespace Definitions.Web;
 
-public static class RoutesV2
+public static class Routes
 {
 	public const string Prefix = "/v2";
 

@@ -25,7 +25,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 	const UniqueObjectId AlphaPackId = 1;
 
 	public override string BaseRoute
-		=> RoutesV2.ObjectPacks;
+		=> Definitions.Web.Routes.ObjectPacks;
 
 	protected override async Task SeedDataCoreAsync(LocoDbContext db)
 	{
@@ -129,7 +129,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 			[],
 			null);
 
-		using var response = await HttpClient!.PostAsJsonAsync($"{RoutesV2.Prefix}{BaseRoute}", request);
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", request);
 
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 	}
@@ -165,7 +165,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 			[],
 			null);
 
-		using var response = await HttpClient!.PutAsJsonAsync($"{RoutesV2.Prefix}{BaseRoute}/{AlphaPackId}", request);
+		using var response = await HttpClient!.PutAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}", request);
 
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
 	}
@@ -173,7 +173,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task DeleteAsync()
 	{
-		using var response = await HttpClient!.DeleteAsync($"{RoutesV2.Prefix}{BaseRoute}/{AlphaPackId}");
+		using var response = await HttpClient!.DeleteAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}");
 
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
 	}
@@ -181,7 +181,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public async Task GetObjectPackFileAsync_ReturnsZipWithOnlySafeIndexedObjectEntries()
 	{
-		using var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{BaseRoute}/{AlphaPackId}{RoutesV2.File}");
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}{Definitions.Web.Routes.File}");
 		var bytes = await response.Content.ReadAsByteArrayAsync();
 		using var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read);
 

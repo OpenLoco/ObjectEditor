@@ -20,7 +20,7 @@ public class ObjectMissingRoutesTest
 		TblObjectMissing>
 {
 	public override string BaseRoute
-	=> RoutesV2.Objects + RoutesV2.Missing;
+	=> Definitions.Web.Routes.Objects + Definitions.Web.Routes.Missing;
 
 	protected override DbSet<TblObjectMissing> GetTable(LocoDbContext db)
 		=> db.ObjectsMissing;

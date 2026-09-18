@@ -46,11 +46,11 @@ public sealed record ObjectListItemViewModel(
 {
 	public string ResolvedTitle => string.IsNullOrWhiteSpace(DisplayName) ? DatName ?? InternalName : DisplayName;
 
-	public string ApiUrl => $"{RoutesV2.Prefix}{RoutesV2.Objects}/{Id}";
+	public string ApiUrl => $"{Routes.Prefix}{Routes.Objects}/{Id}";
 
-	public string DownloadUrl => $"{ApiUrl}{RoutesV2.File}";
+	public string DownloadUrl => $"{ApiUrl}{Routes.File}";
 
-	public string PreviewImageUrl => $"{ApiUrl}{RoutesV2.FirstImage}";
+	public string PreviewImageUrl => $"{ApiUrl}{Routes.FirstImage}";
 }
 
 public sealed record ObjectDetailViewModel(
@@ -75,9 +75,9 @@ public sealed record ObjectDetailViewModel(
 	IReadOnlyList<ObjectImageViewModel> Images,
 	string? ImageTableMessage)
 {
-	public string ApiUrl => $"{RoutesV2.Prefix}{RoutesV2.Objects}/{Id}";
+	public string ApiUrl => $"{Routes.Prefix}{Routes.Objects}/{Id}";
 
-	public string DownloadUrl => $"{ApiUrl}{RoutesV2.File}";
+	public string DownloadUrl => $"{ApiUrl}{Routes.File}";
 
 	public bool CanDownloadAnyFile => Availability == ObjectAvailability.Available && Files.Any(x => x.CanDownload);
 

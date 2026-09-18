@@ -140,7 +140,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	public async Task Users_WithoutAuthentication_ShouldReturnUnauthorized()
 	{
 		// act
-		var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{RoutesV2.Users}");
+		var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.Users}");
 
 		// assert
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
@@ -150,7 +150,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	public async Task Roles_WithoutAuthentication_ShouldReturnUnauthorized()
 	{
 		// act
-		var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{RoutesV2.Roles}");
+		var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.Roles}");
 
 		// assert
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
@@ -185,7 +185,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 			new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
 		// act - Call protected endpoint with valid bearer token
-		var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{RoutesV2.Users}");
+		var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.Users}");
 
 		// assert - Should succeed with valid authentication
 		Assert.That(response.IsSuccessStatusCode, Is.True);

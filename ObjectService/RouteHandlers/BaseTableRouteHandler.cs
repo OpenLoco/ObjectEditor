@@ -19,7 +19,7 @@ public static class BaseTableRouteHandler
 
 		_ = baseRoute.MapGet(string.Empty, handler.ListDelegate);
 
-		var resourceRoute = baseRoute.MapGroup(RoutesV2.ResourceRoute);
+		var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
 		_ = resourceRoute.MapGet(string.Empty, handler.ReadDelegate);
 
 		handler.MapAdditionalRoutes(baseRoute);
@@ -47,7 +47,7 @@ public static class BaseTableRouteHandler
 
 		_ = baseRoute.MapPost(string.Empty, handler.CreateDelegate);
 
-		var resourceRoute = baseRoute.MapGroup(RoutesV2.ResourceRoute);
+		var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
 		_ = resourceRoute.MapPut(string.Empty, handler.UpdateDelegate);
 		_ = resourceRoute.MapDelete(string.Empty, handler.DeleteDelegate);
 	}

@@ -109,7 +109,7 @@ public abstract class BaseReferenceDataTableTestFixture<
 	public override async Task ListAsync()
 	{
 		// act
-		var results = await ClientHelpers.GetAsync<IEnumerable<TGetDto>>(HttpClient!, RoutesV2.Prefix, BaseRoute);
+		var results = await ClientHelpers.GetAsync<IEnumerable<TGetDto>>(HttpClient!, Routes.Prefix, BaseRoute);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -124,7 +124,7 @@ public abstract class BaseReferenceDataTableTestFixture<
 	{
 		// act
 		const int id = 2;
-		var results = await ClientHelpers.GetAsync<TGetDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		var results = await ClientHelpers.GetAsync<TGetDto>(HttpClient!, Routes.Prefix, BaseRoute, id);
 
 		// assert
 		Assert.That(results, Is.EqualTo(ToDtoEntryFunc(DbSeedData.ToList()[id - 1])));
@@ -135,12 +135,12 @@ public abstract class BaseReferenceDataTableTestFixture<
 	{
 		// act
 		const int id = 1;
-		_ = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		_ = await ClientHelpers.DeleteAsync(HttpClient!, Routes.Prefix, BaseRoute, id);
 
 		// assert
 		using (Assert.EnterMultipleScope())
 		{
-			var results = await ClientHelpers.GetAsync<IEnumerable<TGetDto>>(HttpClient!, RoutesV2.Prefix, BaseRoute);
+			var results = await ClientHelpers.GetAsync<IEnumerable<TGetDto>>(HttpClient!, Routes.Prefix, BaseRoute);
 			Assert.That(results!.First(), Is.EqualTo(ToDtoEntryFunc(DbSeedData.ToList()[id])));
 		}
 	}
@@ -149,7 +149,7 @@ public abstract class BaseReferenceDataTableTestFixture<
 	public override async Task PostAsync()
 	{
 		// act
-		var results = await ClientHelpers.PostAsync<TPostRequestDto, TPostResponseDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, PostRequestDto);
+		var results = await ClientHelpers.PostAsync<TPostRequestDto, TPostResponseDto>(HttpClient!, Routes.Prefix, BaseRoute, PostRequestDto);
 
 		// assert
 		Assert.That(results, Is.EqualTo(PostResponseDto));
@@ -160,7 +160,7 @@ public abstract class BaseReferenceDataTableTestFixture<
 	{
 		// act
 		const int id = 1;
-		var results = await ClientHelpers.PutAsync<TPutRequestDto, TPutResponseDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, id, PutRequestDto);
+		var results = await ClientHelpers.PutAsync<TPutRequestDto, TPutResponseDto>(HttpClient!, Routes.Prefix, BaseRoute, id, PutRequestDto);
 
 		// assert
 		Assert.That(results, Is.EqualTo(PutResponseDto));

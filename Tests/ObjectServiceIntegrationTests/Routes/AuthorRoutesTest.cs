@@ -37,7 +37,7 @@ public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<
 		=> new(1, "Charles");
 
 	public override string BaseRoute
-		=> RoutesV2.Authors;
+		=> Definitions.Web.Routes.Authors;
 
 	protected override DbSet<TblAuthor> GetTable(LocoDbContext context)
 		=> context.Authors;

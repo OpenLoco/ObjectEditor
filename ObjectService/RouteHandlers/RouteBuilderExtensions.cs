@@ -7,7 +7,7 @@ public static class RouteBuilderExtensions
 {
 	public static IEndpointConventionBuilder MapApiRoutes(this IEndpointRouteBuilder endpoints)
 	{
-		var v2 = endpoints.MapGroup(RoutesV2.Prefix);
+		var v2 = endpoints.MapGroup(Routes.Prefix);
 		var config = endpoints.ServiceProvider.GetRequiredService<IConfiguration>();
 
 		// Public read-only routes (guest + authenticated can read)

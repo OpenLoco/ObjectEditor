@@ -20,7 +20,7 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 	];
 
 	public override string BaseRoute
-		=> RoutesV2.Scenarios;
+		=> Definitions.Web.Routes.Scenarios;
 
 	protected override async Task SeedDataCoreAsync(LocoDbContext db)
 	{
@@ -59,7 +59,7 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task PostAsync()
 	{
-		using var response = await HttpClient!.PostAsJsonAsync($"{RoutesV2.Prefix}{BaseRoute}", new DtoScenarioEntry(0, "new-scenario.SC5"));
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", new DtoScenarioEntry(0, "new-scenario.SC5"));
 
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
 	}
@@ -80,7 +80,7 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task PutAsync()
 	{
-		using var response = await HttpClient!.PutAsJsonAsync($"{RoutesV2.Prefix}{BaseRoute}/0", new DtoScenarioEntry(0, "updated-scenario.SC5"));
+		using var response = await HttpClient!.PutAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/0", new DtoScenarioEntry(0, "updated-scenario.SC5"));
 
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
 	}
@@ -88,7 +88,7 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task DeleteAsync()
 	{
-		using var response = await HttpClient!.DeleteAsync($"{RoutesV2.Prefix}{BaseRoute}/0");
+		using var response = await HttpClient!.DeleteAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/0");
 
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
 	}
@@ -97,7 +97,7 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 	public async Task GetScenarioFileAsync_ReturnsFileForDatabaseId()
 	{
 		// Scenario id 1 is seeded in SeedDataCoreAsync and points at Custom/alpha.SC5.
-		using var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{BaseRoute}/1{RoutesV2.File}");
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/1{Definitions.Web.Routes.File}");
 		var bytes = await response.Content.ReadAsByteArrayAsync();
 
 		using (Assert.EnterMultipleScope())

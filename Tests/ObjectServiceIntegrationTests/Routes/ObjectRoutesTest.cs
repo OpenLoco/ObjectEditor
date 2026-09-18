@@ -25,7 +25,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	TblObject>
 {
 	public override string BaseRoute
-		=> RoutesV2.Objects;
+		=> Definitions.Web.Routes.Objects;
 
 	protected override IEnumerable<TblObject> DbSeedData =>
 	[
@@ -143,7 +143,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	{
 		// act
 		const int id = 2;
-		var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
 		var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
 
 		// assert
@@ -154,12 +154,12 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	{
 		// act
 		const int id = 1;
-		_ = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		_ = await ClientHelpers.DeleteAsync(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
 
 		// assert
 		using (Assert.EnterMultipleScope())
 		{
-			var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+			var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
 			var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
 
 			// assert
@@ -183,7 +183,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 		// act
 		var dtoUploadDat = new DtoObjectPost(base64Bytes, xxHash3, ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
-		var results = await ClientHelpers.PostAsync<DtoObjectPost, DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
+		var results = await ClientHelpers.PostAsync<DtoObjectPost, DtoObjectPostResponse>(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, dtoUploadDat);
 
 		// assert
 		var expectedStringTable = new Dictionary<string, Dictionary<LanguageId, string>>()
@@ -266,7 +266,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, id, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -317,7 +317,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -371,7 +371,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -426,7 +426,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -481,7 +481,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())

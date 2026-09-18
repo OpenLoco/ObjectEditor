@@ -33,9 +33,9 @@ public class DevAuthenticationHandler : AuthenticationHandler<AuthenticationSche
 	protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
 	{
 		var path = Request.Path;
-		if (!path.StartsWithSegments(RoutesV2.Prefix, StringComparison.OrdinalIgnoreCase)
-			|| path.StartsWithSegments($"{RoutesV2.Prefix}{RoutesV2.Users}", StringComparison.OrdinalIgnoreCase)
-			|| path.StartsWithSegments($"{RoutesV2.Prefix}{RoutesV2.Roles}", StringComparison.OrdinalIgnoreCase))
+		if (!path.StartsWithSegments(Routes.Prefix, StringComparison.OrdinalIgnoreCase)
+			|| path.StartsWithSegments($"{Routes.Prefix}{Routes.Users}", StringComparison.OrdinalIgnoreCase)
+			|| path.StartsWithSegments($"{Routes.Prefix}{Routes.Roles}", StringComparison.OrdinalIgnoreCase))
 		{
 			return AuthenticateResult.NoResult();
 		}

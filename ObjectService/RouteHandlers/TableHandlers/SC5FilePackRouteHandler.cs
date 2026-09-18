@@ -8,14 +8,14 @@ namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class SC5FilePackRouteHandler : ITableRouteHandler
 {
-	public string BaseRoute => RoutesV2.SC5FilePacks;
+	public string BaseRoute => Routes.SC5FilePacks;
 	public Delegate ListDelegate => ListAsync;
 	public Delegate CreateDelegate => CreateAsync;
 	public Delegate ReadDelegate => ReadAsync;
 	public Delegate UpdateDelegate => UpdateAsync;
 	public Delegate DeleteDelegate => DeleteAsync;
 	public void MapRoutes(IEndpointRouteBuilder e) => BaseTableRouteHandler.MapRoutes(this, e, e.ServiceProvider.GetRequiredService<IConfiguration>());
-	public void MapAdditionalRoutes(IEndpointRouteBuilder p) => p.MapGroup(RoutesV2.ResourceRoute).MapGet(RoutesV2.File, GetPackFileAsync);
+	public void MapAdditionalRoutes(IEndpointRouteBuilder p) => p.MapGroup(Routes.ResourceRoute).MapGet(Routes.File, GetPackFileAsync);
 
 	async Task<IResult> ListAsync([FromServices] ISC5FilePackService svc, CancellationToken ct) => Results.Ok(await svc.ListPacksAsync(ct));
 	async Task<IResult> ReadAsync(UniqueObjectId id, [FromServices] ISC5FilePackService svc, CancellationToken ct) => Results.Ok(await svc.GetPackAsync(id, ct));
@@ -38,7 +38,7 @@ public class SC5FilePackRouteHandler : ITableRouteHandler
 		}
 
 		var created = await svc.CreatePackAsync(request, userId, ct);
-		return Results.Created($"{RoutesV2.Prefix}{BaseRoute}/{created.Id}", created);
+		return Results.Created($"{Routes.Prefix}{BaseRoute}/{created.Id}", created);
 	}
 
 	Task<IResult> UpdateAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));

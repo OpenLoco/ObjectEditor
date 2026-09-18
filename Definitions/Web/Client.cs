@@ -6,16 +6,16 @@ namespace Definitions.Web;
 
 public static class Client
 {
-	public const string ApiVersion = RoutesV2.Prefix;
+	public const string ApiVersion = Routes.Prefix;
 
-	public static ApiEndpointGroup ObjectsEndpointGroup { get; } = new(RoutesV2.Objects);
-	public static ApiEndpointGroup ObjectPacksEndpointGroup { get; } = new(RoutesV2.ObjectPacks);
-	public static ApiEndpointGroup ScenariosEndpointGroup { get; } = new(RoutesV2.Scenarios);
-	public static ApiEndpointGroup SC5FilePacksEndpointGroup { get; } = new(RoutesV2.SC5FilePacks);
-	public static ApiEndpointGroup AuthorsEndpointGroup { get; } = new(RoutesV2.Authors);
-	public static ApiEndpointGroup TagsEndpointGroup { get; } = new(RoutesV2.Tags);
-	public static ApiEndpointGroup LicencesEndpointGroup { get; } = new(RoutesV2.Licences);
-	public static ApiEndpointGroup MissingObjectsEndpointGroup { get; } = new(RoutesV2.Objects + RoutesV2.Missing);
+	public static ApiEndpointGroup ObjectsEndpointGroup { get; } = new(Routes.Objects);
+	public static ApiEndpointGroup ObjectPacksEndpointGroup { get; } = new(Routes.ObjectPacks);
+	public static ApiEndpointGroup ScenariosEndpointGroup { get; } = new(Routes.Scenarios);
+	public static ApiEndpointGroup SC5FilePacksEndpointGroup { get; } = new(Routes.SC5FilePacks);
+	public static ApiEndpointGroup AuthorsEndpointGroup { get; } = new(Routes.Authors);
+	public static ApiEndpointGroup TagsEndpointGroup { get; } = new(Routes.Tags);
+	public static ApiEndpointGroup LicencesEndpointGroup { get; } = new(Routes.Licences);
+	public static ApiEndpointGroup MissingObjectsEndpointGroup { get; } = new(Routes.Objects + Routes.Missing);
 
 	public static async Task<IEnumerable<T>> GetListAsync<T>(HttpClient client, ApiEndpointGroup endpointGroup, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.GetAsync<IEnumerable<T>>(
@@ -33,7 +33,7 @@ public static class Client
 		=> await ClientHelpers.GetAsync<DtoObjectPostResponse>(
 			client,
 			ApiVersion,
-			RoutesV2.Objects,
+			Routes.Objects,
 			id,
 			logger,
 			cancellationToken);
@@ -42,7 +42,7 @@ public static class Client
 		=> await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
 			client,
 			ApiVersion,
-			RoutesV2.Objects,
+			Routes.Objects,
 			id,
 			request,
 			logger,
@@ -51,8 +51,8 @@ public static class Client
 	public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.SendRequestAsync(
 			client,
-			ApiVersion + RoutesV2.Objects + $"/{id}/file",
-			ct => client.GetAsync(ApiVersion + RoutesV2.Objects + $"/{id}/file", ct),
+			ApiVersion + Routes.Objects + $"/{id}/file",
+			ct => client.GetAsync(ApiVersion + Routes.Objects + $"/{id}/file", ct),
 			ClientHelpers.ReadBinaryContentAsync,
 			logger,
 			cancellationToken) ?? default;
@@ -60,8 +60,8 @@ public static class Client
 	public static async Task<byte[]?> GetObjectImagesAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.SendRequestAsync(
 			client,
-			ApiVersion + RoutesV2.Objects + $"/{id}{RoutesV2.Images}",
-			ct => client.GetAsync(ApiVersion + RoutesV2.Objects + $"/{id}{RoutesV2.Images}", ct),
+			ApiVersion + Routes.Objects + $"/{id}{Routes.Images}",
+			ct => client.GetAsync(ApiVersion + Routes.Objects + $"/{id}{Routes.Images}", ct),
 			ClientHelpers.ReadBinaryContentAsync,
 			logger,
 			cancellationToken) ?? default;
@@ -69,8 +69,8 @@ public static class Client
 	public static async Task<byte[]?> GetScenarioFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.SendRequestAsync(
 			client,
-			ApiVersion + RoutesV2.Scenarios + $"/{id}/file",
-			ct => client.GetAsync(ApiVersion + RoutesV2.Scenarios + $"/{id}/file", ct),
+			ApiVersion + Routes.Scenarios + $"/{id}/file",
+			ct => client.GetAsync(ApiVersion + Routes.Scenarios + $"/{id}/file", ct),
 			ClientHelpers.ReadBinaryContentAsync,
 			logger,
 			cancellationToken) ?? default;
@@ -78,8 +78,8 @@ public static class Client
 	public static async Task<byte[]?> GetSC5FilePackFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.SendRequestAsync(
 			client,
-			ApiVersion + RoutesV2.SC5FilePacks + $"/{id}/file",
-			ct => client.GetAsync(ApiVersion + RoutesV2.SC5FilePacks + $"/{id}/file", ct),
+			ApiVersion + Routes.SC5FilePacks + $"/{id}/file",
+			ct => client.GetAsync(ApiVersion + Routes.SC5FilePacks + $"/{id}/file", ct),
 			ClientHelpers.ReadBinaryContentAsync,
 			logger,
 			cancellationToken) ?? default;
@@ -87,8 +87,8 @@ public static class Client
 	public static async Task<byte[]?> GetObjectPackFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.SendRequestAsync(
 			client,
-			ApiVersion + RoutesV2.ObjectPacks + $"/{id}/file",
-			ct => client.GetAsync(ApiVersion + RoutesV2.ObjectPacks + $"/{id}/file", ct),
+			ApiVersion + Routes.ObjectPacks + $"/{id}/file",
+			ct => client.GetAsync(ApiVersion + Routes.ObjectPacks + $"/{id}/file", ct),
 			ClientHelpers.ReadBinaryContentAsync,
 			logger,
 			cancellationToken) ?? default;
@@ -96,12 +96,12 @@ public static class Client
 	public static async Task<DtoObjectPostResponse?> UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger, CancellationToken cancellationToken = default)
 	{
 		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-		logger.LogDebug("Posting {Filename} to {OriginalString}{Objects}", filename, client.BaseAddress?.OriginalString, RoutesV2.Objects);
+		logger.LogDebug("Posting {Filename} to {OriginalString}{Objects}", filename, client.BaseAddress?.OriginalString, Routes.Objects);
 		var request = new DtoObjectPost(Convert.ToBase64String(datFileBytes), xxHash3, ObjectAvailability.Available, creationDate, modifiedDate);
 		return await ClientHelpers.PostAsync<DtoObjectPost, DtoObjectPostResponse>(
 			client,
 			ApiVersion,
-			RoutesV2.Objects,
+			Routes.Objects,
 			request,
 			logger,
 			cancellationToken);
@@ -109,11 +109,11 @@ public static class Client
 
 	public static async Task<DtoObjectMissingEntry?> AddMissingObjectAsync(HttpClient client, DtoObjectMissingPost entry, ILogger? logger = null, CancellationToken cancellationToken = default)
 	{
-		logger?.LogDebug("Posting missing object {DatName} with checksum {DatChecksum} to {OriginalString}{Objects}{Missing}", entry.DatName, entry.DatChecksum, client.BaseAddress?.OriginalString, RoutesV2.Objects, RoutesV2.Missing);
+		logger?.LogDebug("Posting missing object {DatName} with checksum {DatChecksum} to {OriginalString}{Objects}{Missing}", entry.DatName, entry.DatChecksum, client.BaseAddress?.OriginalString, Routes.Objects, Routes.Missing);
 		return await ClientHelpers.PostAsync<DtoObjectMissingPost, DtoObjectMissingEntry>(
 			client,
 			ApiVersion,
-			RoutesV2.Objects + RoutesV2.Missing,
+			Routes.Objects + Routes.Missing,
 			entry,
 			logger,
 			cancellationToken);
@@ -135,7 +135,7 @@ public static class Client
 		=> (await ClientHelpers.GetAsync<IEnumerable<DtoItemPackDescriptor<DtoObjectEntry>>>(
 			client,
 			ApiVersion,
-			RoutesV2.ObjectPacks,
+			Routes.ObjectPacks,
 			id,
 			logger,
 			cancellationToken))?.FirstOrDefault();
@@ -147,7 +147,7 @@ public static class Client
 		=> await ClientHelpers.GetAsync<DtoScenarioDescriptor>(
 			client,
 			ApiVersion,
-			RoutesV2.Scenarios,
+			Routes.Scenarios,
 			id,
 			logger,
 			cancellationToken);
@@ -159,7 +159,7 @@ public static class Client
 		=> (await ClientHelpers.GetAsync<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>>(
 			client,
 			ApiVersion,
-			RoutesV2.SC5FilePacks,
+			Routes.SC5FilePacks,
 			id,
 			logger,
 			cancellationToken))?.FirstOrDefault();

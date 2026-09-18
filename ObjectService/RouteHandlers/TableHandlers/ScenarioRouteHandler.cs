@@ -6,7 +6,7 @@ namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class ScenarioRouteHandler : ITableRouteHandler
 {
-	public string BaseRoute => RoutesV2.Scenarios;
+	public string BaseRoute => Routes.Scenarios;
 	public Delegate ListDelegate => ListAsync;
 	public Delegate CreateDelegate => CreateAsync;
 	public Delegate ReadDelegate => ReadAsync;
@@ -17,7 +17,7 @@ public class ScenarioRouteHandler : ITableRouteHandler
 		=> BaseTableRouteHandler.MapRoutes(this, endpoints, endpoints.ServiceProvider.GetRequiredService<IConfiguration>());
 
 	public void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
-		=> parentRoute.MapGroup(RoutesV2.ResourceRoute).MapGet(RoutesV2.File, GetScenarioFileAsync);
+		=> parentRoute.MapGroup(Routes.ResourceRoute).MapGet(Routes.File, GetScenarioFileAsync);
 
 	Task<IResult> ListAsync([FromServices] IScenarioService svc)
 	{

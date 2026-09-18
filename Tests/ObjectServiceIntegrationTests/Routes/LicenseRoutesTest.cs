@@ -37,7 +37,7 @@ public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<
 		=> new(1, "Constitution", "Do no evil");
 
 	public override string BaseRoute
-		=> RoutesV2.Licences;
+		=> Definitions.Web.Routes.Licences;
 
 	protected override DbSet<TblLicence> GetTable(LocoDbContext context)
 		=> context.Licences;

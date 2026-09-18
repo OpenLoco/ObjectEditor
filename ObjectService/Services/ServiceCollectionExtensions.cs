@@ -82,13 +82,13 @@ public static class ServiceCollectionExtensions
 		_ = services.AddScoped<ICrudService<DtoObjectMissingEntry, TblObjectMissing>>(p => p.GetRequiredService<CrudService<DtoObjectMissingEntry, TblObjectMissing>>());
 
 		// Domain services for Category B handlers
-		_ = services.AddScoped<IObjectUploadService, ObjectUploadService>();
 		_ = services.AddScoped<IObjectQueryService, ObjectQueryService>();
 		_ = services.AddScoped<IScenarioService, ScenarioService>();
 		_ = services.AddScoped<IObjectPackService, ObjectPackService>();
 		_ = services.AddScoped<ISC5FilePackService, SC5FilePackService>();
 		_ = services.AddScoped<ISC5FileService, SC5FileService>();
 		_ = services.AddScoped<IReferenceDataService, ReferenceDataService>();
+		_ = services.AddScoped<IUserService, UserService>();
 
 		// Route handlers
 		_ = services.AddScoped<AuthorRouteHandler>();

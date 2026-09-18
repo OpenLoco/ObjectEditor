@@ -35,9 +35,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 		_ = imagesRoute.MapGet(Routes.ImageId, GetObjectImageAsync);
 	}
 
-	async Task<IResult> CreateDatAsync([FromBody] DtoObjectPost request, [FromServices] IObjectUploadService upload, CancellationToken ct)
+	async Task<IResult> CreateDatAsync([FromBody] DtoObjectPost request, [FromServices] IObjectQueryService query, CancellationToken ct)
 	{
-		var result = await upload.UploadDatAsync(request, ct);
+		var result = await query.UploadDatAsync(request, ct);
 		return result.Success ? Results.Created($"{BaseRoute}/{result.Descriptor!.Id}", result.Descriptor) : Results.Problem(result.ErrorMessage, statusCode: result.StatusCode);
 	}
 

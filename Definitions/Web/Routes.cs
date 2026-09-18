@@ -7,7 +7,6 @@ public static class Routes
 	public const string Objects = "/objects";
 	public const string ObjectPacks = "/objectpacks";
 	public const string Scenarios = "/scenarios";
-	public const string SC5FilePacks = "/sc5filepacks";
 	public const string Authors = "/authors";
 	public const string Tags = "/tags";
 	public const string Licences = "/licences";
@@ -21,6 +20,7 @@ public static class Routes
 
 	// scenario (SC5) files stored in the database
 	public const string SC5Files = "/sc5files";
+	public const string SC5FilePacks = "/sc5filepacks";
 
 	public const string ResourceRoute = "/{id:int}";
 

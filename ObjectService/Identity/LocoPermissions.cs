@@ -30,4 +30,17 @@ public static class LocoPermissions
 
 	/// <summary>Allowed to change own display name.</summary>
 	public const string DisplayNameChange = "displayname:change";
+
+	/// <summary>
+	/// All permissions surfaced as toggles in the user-management UI. Admin users
+	/// implicitly hold every permission without needing an explicit claim.
+	/// </summary>
+	public static readonly string[] All =
+	[
+		ObjectPacksCreate,
+		TagsManage,
+		LicenceManage,
+		AuthorManage,
+		DisplayNameChange,
+	];
 }

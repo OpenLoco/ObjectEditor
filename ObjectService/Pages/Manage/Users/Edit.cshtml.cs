@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ObjectService.Frontend;
-using ObjectService.RouteHandlers.TableHandlers;
+using ObjectService.Identity;
 using System.Security.Claims;
 
 namespace ObjectService.Pages.Manage.Users;
@@ -279,7 +279,7 @@ public sealed class EditModel : PageModel
 			.OrderBy(r => r.Name)
 			.Select(r => new RoleViewModel(r.Id, r.Name))];
 
-		PermissionClaims = [.. UserRouteHandler.KnownPermissions.Select(p =>
+		PermissionClaims = [.. LocoPermissions.All.Select(p =>
 			new UserClaimViewModel(
 				Permission: p,
 				HasClaim: detail.PermissionClaims.Contains(p)))];

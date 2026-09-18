@@ -20,26 +20,10 @@ public class TestWebApplicationFactory<TProgram>
 
 	static DirectoryInfo? MakeServerFolderManagerTestDirectories()
 	{
-		var testDirectory = Directory.CreateTempSubdirectory("ObjectServiceTest");
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original//GoG"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original//Steam"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Landscapes"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Graphics//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Graphics//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Music//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Music//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//SoundEffects//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//SoundEffects//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Tutorials//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Tutorials//Original"));
-		return testDirectory;
+		// The ServerFolderManager now creates the full
+		// GameData/<category>/{Original,Custom,OpenLoco} structure on construction,
+		// so tests only need a writable root directory.
+		return Directory.CreateTempSubdirectory("ObjectServiceTest");
 	}
 
 	static void CreateDummyPaletteFile(string path)

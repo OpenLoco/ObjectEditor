@@ -22,7 +22,7 @@ public sealed class ObjectExplorerService
 		var pageSize = Math.Clamp(request.PageSize, 12, 100);
 		var requestedPage = Math.Max(request.Page, 1);
 		var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
-		var objects = (await Client.GetObjectListAsync(client)).ToList();
+		var objects = (await Client.GetObjectListAsync(client, cancellationToken: cancellationToken)).ToList();
 
 		var totalCount = objects.Count;
 		IEnumerable<DtoObjectEntry> query = objects;
@@ -75,7 +75,7 @@ public sealed class ObjectExplorerService
 	public async Task<ObjectDetailViewModel?> GetObjectAsync(UniqueObjectId id, CancellationToken cancellationToken = default)
 	{
 		using var client = _apiClient.CreateClient();
-		var obj = await Client.GetObjectAsync(client, id);
+		var obj = await Client.GetObjectAsync(client, id, cancellationToken: cancellationToken);
 
 		if (obj == null)
 		{
@@ -167,7 +167,7 @@ public sealed class ObjectExplorerService
 
 	async Task<IReadOnlyList<ObjectImageViewModel>> GetImagesFromApiAsync(HttpClient client, UniqueObjectId id, CancellationToken cancellationToken)
 	{
-		var zipBytes = await Client.GetObjectImagesAsync(client, id);
+		var zipBytes = await Client.GetObjectImagesAsync(client, id, cancellationToken: cancellationToken);
 		if (zipBytes == null || zipBytes.Length == 0)
 		{
 			return [];

@@ -277,7 +277,7 @@ public static class Client
 	#region Objects
 
 	public static async Task<IEnumerable<DtoObjectEntry>> GetMyObjectsAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await ClientHelpers.GetAsync<IEnumerable<DtoObjectEntry>>(client, ApiVersion, Routes.Objects + Routes.Mine, logger: logger) ?? [];
+		=> await ClientHelpers.GetAsync<IEnumerable<DtoObjectEntry>>(client, ApiVersion, Routes.Objects + Routes.Mine, logger: logger, cancellationToken: cancellationToken) ?? [];
 
 	#endregion
 
@@ -287,10 +287,10 @@ public static class Client
 		=> await GetListAsync<DtoRoleEntry>(client, RolesEndpointGroup, logger, cancellationToken);
 
 	public static async Task<IEnumerable<DtoUserListEntry>> GetUsersAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await ClientHelpers.GetAsync<IEnumerable<DtoUserListEntry>>(client, ApiVersion, Routes.Users, logger: logger) ?? [];
+		=> await ClientHelpers.GetAsync<IEnumerable<DtoUserListEntry>>(client, ApiVersion, Routes.Users, logger: logger, cancellationToken: cancellationToken) ?? [];
 
 	public static async Task<DtoUserDetailDescriptor?> GetUserDetailAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await ClientHelpers.GetAsync<DtoUserDetailDescriptor>(client, ApiVersion, Routes.Users + $"/{id}" + Routes.Detail, logger: logger);
+		=> await ClientHelpers.GetAsync<DtoUserDetailDescriptor>(client, ApiVersion, Routes.Users + $"/{id}" + Routes.Detail, logger: logger, cancellationToken: cancellationToken);
 
 	public static Task<DtoUserDetailDescriptor?> ToggleUserRoleAsync(HttpClient client, UniqueObjectId id, string role, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> ClientHelpers.PostAsync<DtoUserRoleRequest, DtoUserDetailDescriptor>(

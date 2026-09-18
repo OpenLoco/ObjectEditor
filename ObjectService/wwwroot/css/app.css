@@ -1,0 +1,691 @@
+/* Application stylesheet.
+   The UI is built with Beer CSS (https://beercss.com). This file only contains
+   structural/page-layout helpers that Beer CSS has no primitive for. All colours
+   are resolved from Beer CSS theme tokens so light/dark and dynamic-colour
+   switching work automatically. */
+
+/* ── Cards / panels ── */
+.panel {
+    background: var(--surface-container);
+    border: 1px solid var(--outline);
+    border-radius: 12px;
+}
+
+.panel-danger {
+    border-color: var(--error);
+}
+
+.panel-danger h2 {
+    color: var(--error);
+}
+
+.panel-span {
+    grid-column: 1 / -1;
+}
+
+/* ── Typography helpers ── */
+.eyebrow {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.lede {
+    font-size: 1.05rem;
+    color: var(--on-surface);
+}
+
+.muted {
+    color: var(--on-surface-variant);
+}
+
+.note-block {
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* ── Empty state ── */
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: var(--on-surface-variant);
+}
+
+/* ── Alerts ── */
+.alert {
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-success {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+    border: 1px solid var(--primary);
+}
+
+.alert-error {
+    background: var(--error-container);
+    color: var(--error);
+    border: 1px solid var(--error);
+}
+
+.validation-summary {
+    background: var(--error-container);
+    color: var(--error);
+    border: 1px solid var(--error);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.validation-summary ul {
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.success-message {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.success-message p {
+    margin: 0 0 1rem;
+}
+
+/* ── Master tab bar (primary navigation) ── */
+.master-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.master-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    color: var(--on-surface);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.master-tab-active {
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+.master-tab-separator {
+    width: 1px;
+    height: 1.25rem;
+    background: var(--outline);
+}
+
+/* ── Master-detail layout (object explorer) ── */
+.master-detail-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 0;
+    align-items: start;
+}
+
+.object-type-sidebar {
+    padding: 1rem;
+    height: 100%;
+}
+
+.sidebar-title {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--on-surface-variant);
+    margin-bottom: 0.5rem;
+}
+
+.object-type-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.object-type-link {
+    display: block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    color: var(--on-surface);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.object-type-link-active {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+}
+
+.object-type-sub-list {
+    list-style: none;
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.detail-area {
+    padding: 1rem;
+    min-width: 0;
+}
+
+/* ── Filter panel ── */
+.filter-panel {
+    margin-bottom: 1rem;
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-summary {
+    margin-top: 1rem;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.stat-card {
+    background: var(--surface-container-high);
+    border: 1px solid var(--outline-variant);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+.stat-card span {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--on-surface-variant);
+}
+
+.stat-card strong {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* ── Object explorer grid ── */
+.object-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.object-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-container);
+    border: 1px solid var(--outline);
+    border-radius: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--on-surface);
+}
+
+.card-img-wrap {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--surface-container-lowest);
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    display: block;
+    border-radius: 0;
+}
+
+.card-header {
+    padding: 0.6rem 0.9rem;
+}
+
+.card-header .eyebrow {
+    font-size: 0.72rem;
+}
+
+.card-header h2 {
+    margin: 0 0 0.15rem;
+    font-size: 1.1rem;
+}
+
+.card-header .muted {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.82rem;
+}
+
+.card-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+}
+
+.card-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--on-surface-variant);
+}
+
+.card-icon-dimmed {
+    opacity: 0.55;
+}
+
+/* ── Pagination ── */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.pagination-label {
+    color: var(--on-surface-variant);
+    font-weight: 600;
+}
+
+/* ── Detail pages ── */
+.detail-hero {
+    margin-bottom: 1rem;
+}
+
+.detail-hero h1 {
+    margin: 0.25rem 0;
+}
+
+.detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--on-surface-variant);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.detail-grid,
+.detail-grid-4col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.detail-grid-4col {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.meta-grid div {
+    padding: 0.6rem 0.9rem;
+    background: var(--surface-container-lowest);
+    border-radius: 10px;
+}
+
+.meta-grid dt {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.2rem;
+}
+
+.meta-grid dd {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--on-surface);
+    margin: 0;
+}
+
+.stacked-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.stacked-list h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--on-surface);
+}
+
+/* ── Tables ── */
+.table-container,
+.table-wrap {
+    overflow-x: auto;
+}
+
+.actions-column {
+    white-space: nowrap;
+}
+
+/* ── Admin pages ── */
+.admin-page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.admin-page-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.admin-page-header h1 {
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+/* ── Forms ── */
+.form-section {
+    border: 1px solid var(--outline-variant);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.form-section legend {
+    font-weight: 600;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.form-group label {
+    font-weight: 500;
+}
+
+.form-row > .form-group,
+.form-group + .form-group {
+    flex: 1;
+}
+
+.form-input,
+.form-group input,
+.form-group select,
+.form-group textarea {
+    background: var(--surface-container-lowest);
+    color: var(--on-surface);
+    border: 1px solid var(--outline);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font: inherit;
+    width: 100%;
+}
+
+.form-inline {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.multi-select {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--outline);
+    border-radius: 8px;
+    padding: 0.5rem;
+    background: var(--surface-container-lowest);
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ── Badges & role toggles (user management) ── */
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+}
+
+.badge-warning {
+    background: var(--surface-container-high);
+    color: var(--on-surface-variant);
+}
+
+.badge-error {
+    background: var(--error-container);
+    color: var(--error);
+}
+
+.toggle-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.toggle-form {
+    display: inline;
+}
+
+.toggle-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--outline);
+    border-radius: 2rem;
+    background: var(--surface-container-lowest);
+    color: var(--on-surface);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+}
+
+.toggle-on {
+    background: var(--primary-container);
+    border-color: var(--primary);
+    color: var(--on-primary-container);
+}
+
+.toggle-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.toggle-on .toggle-indicator {
+    background: var(--primary);
+}
+
+.toggle-off .toggle-indicator {
+    background: var(--outline);
+}
+
+.toggle-label {
+    font-weight: 500;
+}
+
+/* ── Image gallery & string table (object detail) ── */
+.image-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+}
+
+.image-card .image-frame {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--surface-container-lowest);
+    border-radius: 10px;
+}
+
+.image-card img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.image-card figcaption {
+    font-size: 0.78rem;
+    color: var(--on-surface-variant);
+    display: flex;
+    flex-direction: column;
+}
+
+.string-table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.string-group {
+    border: 1px solid var(--outline-variant);
+    border-radius: 10px;
+    padding: 0.75rem;
+}
+
+.string-group ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.string-group li {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.string-group li strong {
+    flex: 0 0 auto;
+    width: 90px;
+    color: var(--on-surface-variant);
+}
+
+/* ── Auth pages ── */
+.auth-panel {
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.auth-alt {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+/* ── Buttons (fallbacks for rare variants Beer CSS does not style) ── */
+.button-disabled {
+    background: var(--surface-container-high);
+    color: var(--on-surface-variant);
+    cursor: not-allowed;
+}
+
+.button-warning {
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+/* ── Forms: action row & landing container ── */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+/* ── Header stat rendered via HeaderContent (Index page) ── */
+.site-header-stat {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+}
+
+.site-header-stat span {
+    font-size: 0.72rem;
+    color: var(--on-surface-variant);
+}
+
+.site-header-stat strong {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--on-surface);
+}

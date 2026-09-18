@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using ObjectService.Tests.Integration;
 using System.IO.Hashing;
+using System.Net;
 
 namespace Tests.ObjectServiceIntegrationTests.Routes;
 
@@ -492,5 +493,60 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Assert.That(result.ObjectPacks.Any(p => p.Id == pack1.Id), Is.True);
 			Assert.That(result.ObjectPacks.Any(p => p.Id == pack2.Id), Is.True);
 		}
+	}
+
+	[Test]
+	public async Task GetObjectImageAsync_ReturnsForbidden_ForRestrictedObjectSource()
+	{
+		// arrange - a GoG-sourced object cannot expose its images
+		using (var db = GetDbContext())
+		{
+			_ = await db.Objects.AddAsync(new TblObject
+			{
+				Id = 3,
+				Name = "restricted-name-3",
+				SubObjectId = 3,
+				ObjectType = ObjectType.Vehicle,
+				ObjectSource = ObjectSource.LocomotionGoG,
+				Availability = ObjectAvailability.Available,
+			});
+			_ = await db.SaveChangesAsync();
+		}
+
+		// act
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/3{Definitions.Web.Routes.Images}/0");
+
+		// assert - Forbid proves the generic /images/{imageId} route reached the handler
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+	}
+
+	[Test]
+	public async Task GetObjectImageAsync_ReturnsNotFound_WhenImageIndexDoesNotExist()
+	{
+		// act - object 1 exists but has no DatObjects, so it has no images
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/1{Definitions.Web.Routes.Images}/0");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
+
+	[Test]
+	public async Task GetObjectImageAsync_ReturnsNotFound_WhenObjectDoesNotExist()
+	{
+		// act
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/9999{Definitions.Web.Routes.Images}/0");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
+
+	[Test]
+	public async Task GetObjectImageAsync_ReturnsNotFound_ForNonNumericImageId()
+	{
+		// act - the {imageId:int} route constraint rejects non-numeric ids
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/1{Definitions.Web.Routes.Images}/not-a-number");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
 	}
 }

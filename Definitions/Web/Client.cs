@@ -66,6 +66,15 @@ public static class Client
 			logger,
 			cancellationToken) ?? default;
 
+	public static async Task<byte[]?> GetObjectImageAsync(HttpClient client, UniqueObjectId id, int imageId, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			ApiVersion + Routes.Objects + $"/{id}{Routes.Images}/{imageId}",
+			ct => client.GetAsync(ApiVersion + Routes.Objects + $"/{id}{Routes.Images}/{imageId}", ct),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger,
+			cancellationToken) ?? default;
+
 	public static async Task<byte[]?> GetScenarioFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.SendRequestAsync(
 			client,

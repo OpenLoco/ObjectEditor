@@ -18,7 +18,7 @@ public interface IObjectQueryService
 	Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoObjectPostResponse?> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct);
 	Task<byte[]?> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct);
-	Task<byte[]?> GetFirstImagePngAsync(UniqueObjectId id, CancellationToken ct);
+	Task<byte[]?> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct);
 	Task<string?> GetFilePathAsync(UniqueObjectId id, CancellationToken ct);
 }
 
@@ -211,7 +211,7 @@ public class ObjectQueryService : IObjectQueryService
 		return ms.ToArray();
 	}
 
-	public async Task<byte[]?> GetFirstImagePngAsync(UniqueObjectId id, CancellationToken ct)
+	public async Task<byte[]?> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct)
 	{
 		var obj = await _db.Objects.AsNoTracking().Include(x => x.DatObjects).SingleOrDefaultAsync(x => x.Id == id, ct);
 		if (obj == null)
@@ -241,15 +241,20 @@ public class ObjectQueryService : IObjectQueryService
 		var palette = PaletteMapLoader.LoadDefault();
 
 		var elements = result.LocoObject.ImageTable.GraphicsElements;
-		var first = elements.FirstOrDefault(e => e != null);
-		if (first == null)
+		if (imageId < 0 || imageId >= elements.Count)
 		{
 			return null;
 		}
 
-		// Trim the first image to its non-transparent bounding box in its native representation,
+		var element = elements[imageId];
+		if (element == null)
+		{
+			return null;
+		}
+
+		// Trim the image to its non-transparent bounding box in its native representation,
 		// decoding to RGBA only if it is palette-indexed (so no full-image round-trip is needed).
-		using var image = first.TrimmedToRgba(palette);
+		using var image = element.TrimmedToRgba(palette);
 		using var ms = new MemoryStream();
 		await image.SaveAsPngAsync(ms, ct);
 		return ms.ToArray();

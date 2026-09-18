@@ -50,7 +50,7 @@ public sealed record ObjectListItemViewModel(
 
 	public string DownloadUrl => $"{ApiUrl}{Routes.File}";
 
-	public string PreviewImageUrl => $"{ApiUrl}{Routes.FirstImage}";
+	public string PreviewImageUrl => $"{ApiUrl}{Routes.Images}/0";
 }
 
 public sealed record ObjectDetailViewModel(

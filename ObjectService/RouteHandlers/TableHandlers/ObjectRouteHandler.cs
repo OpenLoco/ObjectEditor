@@ -27,7 +27,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 		var resourceRoute = parentRoute.MapGroup(Routes.ResourceRoute);
 		_ = resourceRoute.MapGet(Routes.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(Routes.Images, GetObjectImagesAsync);
-		_ = resourceRoute.MapGet(Routes.FirstImage, GetObjectFirstImageAsync);
+
+		var imagesRoute = resourceRoute.MapGroup(Routes.Images);
+		_ = imagesRoute.MapGet(Routes.ImageId, GetObjectImageAsync);
 	}
 
 	async Task<IResult> CreateDatAsync([FromBody] DtoObjectPost request, [FromServices] IObjectUploadService upload, CancellationToken ct)
@@ -80,7 +82,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return zip != null ? Results.File(zip, "application/zip", $"{id}_images.zip") : Results.NotFound();
 	}
 
-	async Task<IResult> GetObjectFirstImageAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
+	async Task<IResult> GetObjectImageAsync([FromRoute] UniqueObjectId id, [FromRoute] int imageId, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
 		var descriptor = await query.GetByIdAsync(id, ct);
 		if (descriptor == null)
@@ -94,7 +96,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			return Results.Forbid();
 		}
 
-		var png = await query.GetFirstImagePngAsync(id, ct);
+		var png = await query.GetImagePngAsync(id, imageId, ct);
 		return png != null ? Results.File(png, "image/png") : Results.NotFound();
 	}
 

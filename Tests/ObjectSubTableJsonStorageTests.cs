@@ -4,7 +4,6 @@ using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Region;
 using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.TownNames;
-using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;

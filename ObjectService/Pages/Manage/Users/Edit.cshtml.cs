@@ -1,4 +1,3 @@
-using Definitions;
 using Definitions.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

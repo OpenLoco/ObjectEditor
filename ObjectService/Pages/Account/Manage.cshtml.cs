@@ -1,4 +1,3 @@
-using Definitions;
 using Definitions.DTO.Identity;
 using Definitions.ObjectModels.Types;
 using Definitions.Web;
@@ -6,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ObjectService.Frontend;
-using System.Net.Http.Json;
 
 namespace ObjectService.Pages.Account;
 

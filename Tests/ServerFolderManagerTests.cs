@@ -1,6 +1,5 @@
 using Index;
 using NUnit.Framework;
-using ObjectService;
 
 namespace ObjectService.Tests;
 

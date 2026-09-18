@@ -5,8 +5,6 @@ using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.ComponentModel;

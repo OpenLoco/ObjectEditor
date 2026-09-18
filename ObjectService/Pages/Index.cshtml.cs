@@ -1,4 +1,3 @@
-using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;

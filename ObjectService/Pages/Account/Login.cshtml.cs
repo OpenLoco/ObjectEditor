@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ObjectService.Frontend;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 
 namespace ObjectService.Pages.Account;
 

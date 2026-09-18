@@ -1,6 +1,5 @@
 using Definitions.Database;
 using Definitions.DTO.Identity;
-using Definitions.Web;
 using NUnit.Framework;
 using ObjectService.Tests.Integration;
 using System.Net;

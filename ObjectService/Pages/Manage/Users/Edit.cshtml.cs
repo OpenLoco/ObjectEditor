@@ -1,29 +1,22 @@
-using System.Security.Claims;
+using Definitions;
+using Definitions.Web;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Definitions.Database;
-using ObjectService.Identity;
+using ObjectService.Frontend;
+using ObjectService.RouteHandlers.TableHandlers;
+using System.Security.Claims;
 
 namespace ObjectService.Pages.Manage.Users;
 
 [Authorize(Policy = "AdminOnly")]
 public sealed class EditModel : PageModel
 {
-	private readonly LocoDbContext _db;
-	private readonly UserManager<TblUser> _userManager;
-	private readonly RoleManager<TblUserRole> _roleManager;
+	readonly FrontendApiClient _api;
 
-	public EditModel(
-		LocoDbContext db,
-		UserManager<TblUser> userManager,
-		RoleManager<TblUserRole> roleManager)
+	public EditModel(FrontendApiClient api)
 	{
-		_db = db;
-		_userManager = userManager;
-		_roleManager = roleManager;
+		_api = api;
 	}
 
 	// ── View data ──
@@ -57,19 +50,15 @@ public sealed class EditModel : PageModel
 	public async Task<IActionResult> OnGetAsync(UniqueObjectId id)
 	{
 		await LoadUserAsync(id);
-		if (UserDetail == null)
-		{
-			return NotFound();
-		}
-
-		return Page();
+		return UserDetail == null ? NotFound() : Page();
 	}
+
 	// ── POST: Update display name ──
 
 	public async Task<IActionResult> OnPostUpdateDisplayNameAsync()
 	{
-		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null)
+		using var client = _api.CreateClient();
+		if (await Client.GetUserDetailAsync(client, UserId) == null)
 		{
 			return NotFound();
 		}
@@ -81,14 +70,14 @@ public sealed class EditModel : PageModel
 			return Page();
 		}
 
-		var result = await _userManager.SetUserNameAsync(user, NewDisplayName.Trim());
-		if (result.Succeeded)
+		var result = await Client.SetUserDisplayNameAsync(client, UserId, NewDisplayName.Trim());
+		if (result != null)
 		{
 			SuccessMessage = $"Display name updated to \"{NewDisplayName.Trim()}\".";
 		}
 		else
 		{
-			ErrorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
+			ErrorMessage = "Failed to update display name.";
 		}
 
 		await LoadUserAsync(UserId);
@@ -99,8 +88,9 @@ public sealed class EditModel : PageModel
 
 	public async Task<IActionResult> OnPostToggleRoleAsync()
 	{
-		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null)
+		using var client = _api.CreateClient();
+		var detail = await Client.GetUserDetailAsync(client, UserId);
+		if (detail == null)
 		{
 			return NotFound();
 		}
@@ -111,35 +101,38 @@ public sealed class EditModel : PageModel
 			return Page();
 		}
 
-		if (await _userManager.IsInRoleAsync(user, RoleToToggle))
+		var isInRole = detail.Roles.Contains(RoleToToggle);
+		var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		if (isInRole && RoleToToggle == "Admin" && UserId.ToString() == currentUserId)
 		{
-			var currentUserId = _userManager.GetUserId(User);
-			if (RoleToToggle == "Admin" && user.Id.ToString() == currentUserId)
-			{
-				ErrorMessage = "You cannot remove yourself from the Admin role.";
-				await LoadUserAsync(UserId);
-				return Page();
-			}
+			ErrorMessage = "You cannot remove yourself from the Admin role.";
+			await LoadUserAsync(UserId);
+			return Page();
+		}
 
-			await _userManager.RemoveFromRoleAsync(user, RoleToToggle);
-			SuccessMessage = $"Removed \"{user.UserName}\" from role \"{RoleToToggle}\".";
+		var updated = await Client.ToggleUserRoleAsync(client, UserId, RoleToToggle);
+		if (updated != null)
+		{
+			SuccessMessage = isInRole
+				? $"Removed \"{detail.UserName}\" from role \"{RoleToToggle}\"."
+				: $"Added \"{detail.UserName}\" to role \"{RoleToToggle}\".";
 		}
 		else
 		{
-			await _userManager.AddToRoleAsync(user, RoleToToggle);
-			SuccessMessage = $"Added \"{user.UserName}\" to role \"{RoleToToggle}\".";
+			ErrorMessage = "Failed to toggle role.";
 		}
 
 		await LoadUserAsync(UserId);
 		return Page();
 	}
 
-	// ── POST: Toggle user permission claim ──
+	// ── POST: Toggle permission claim ──
 
 	public async Task<IActionResult> OnPostTogglePermissionAsync()
 	{
-		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null)
+		using var client = _api.CreateClient();
+		var detail = await Client.GetUserDetailAsync(client, UserId);
+		if (detail == null)
 		{
 			return NotFound();
 		}
@@ -150,20 +143,17 @@ public sealed class EditModel : PageModel
 			return Page();
 		}
 
-		var existingClaims = await _userManager.GetClaimsAsync(user);
-		var existing = existingClaims.FirstOrDefault(c =>
-			c.Type == LocoPermissions.ClaimType && c.Value == PermissionToToggle);
-
-		if (existing != null)
+		var hasClaim = detail.PermissionClaims.Contains(PermissionToToggle);
+		var updated = await Client.ToggleUserClaimAsync(client, UserId, PermissionToToggle);
+		if (updated != null)
 		{
-			await _userManager.RemoveClaimAsync(user, existing);
-			SuccessMessage = $"Revoked \"{PermissionToToggle}\" from \"{user.UserName}\".";
+			SuccessMessage = hasClaim
+				? $"Revoked permission \"{PermissionToToggle}\"."
+				: $"Granted permission \"{PermissionToToggle}\".";
 		}
 		else
 		{
-			await _userManager.AddClaimAsync(user,
-				new Claim(LocoPermissions.ClaimType, PermissionToToggle));
-			SuccessMessage = $"Granted \"{PermissionToToggle}\" to \"{user.UserName}\".";
+			ErrorMessage = "Failed to toggle permission.";
 		}
 
 		await LoadUserAsync(UserId);
@@ -174,14 +164,16 @@ public sealed class EditModel : PageModel
 
 	public async Task<IActionResult> OnPostForcePasswordResetAsync()
 	{
-		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null)
+		using var client = _api.CreateClient();
+		var result = await Client.ForceUserPasswordResetAsync(client, UserId);
+		if (result != null)
 		{
-			return NotFound();
+			SuccessMessage = $"Password reset token generated: {result.Token}";
 		}
-
-		var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-		SuccessMessage = $"Password reset token: {token}";
+		else
+		{
+			ErrorMessage = "Failed to generate a password reset token.";
+		}
 
 		await LoadUserAsync(UserId);
 		return Page();
@@ -191,30 +183,17 @@ public sealed class EditModel : PageModel
 
 	public async Task<IActionResult> OnPostToggleEmailConfirmedAsync()
 	{
-		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null)
+		using var client = _api.CreateClient();
+		var updated = await Client.ToggleUserEmailConfirmedAsync(client, UserId);
+		if (updated != null)
 		{
-			return NotFound();
-		}
-
-		if (user.EmailConfirmed)
-		{
-			user.EmailConfirmed = false;
-			await _userManager.UpdateAsync(user);
-			SuccessMessage = $"Email confirmation revoked for \"{user.UserName}\".";
+			SuccessMessage = updated.EmailConfirmed
+				? $"Email for \"{updated.UserName}\" has been confirmed."
+				: $"Email confirmation for \"{updated.UserName}\" has been revoked.";
 		}
 		else
 		{
-			var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-			var result = await _userManager.ConfirmEmailAsync(user, token);
-			if (result.Succeeded)
-			{
-				SuccessMessage = $"Email confirmed for \"{user.UserName}\".";
-			}
-			else
-			{
-				ErrorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
-			}
+			ErrorMessage = "Failed to toggle email confirmation.";
 		}
 
 		await LoadUserAsync(UserId);
@@ -225,21 +204,17 @@ public sealed class EditModel : PageModel
 
 	public async Task<IActionResult> OnPostToggleLockoutAsync()
 	{
-		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null)
+		using var client = _api.CreateClient();
+		var updated = await Client.ToggleUserLockoutAsync(client, UserId);
+		if (updated != null)
 		{
-			return NotFound();
-		}
-
-		if (await _userManager.IsLockedOutAsync(user))
-		{
-			await _userManager.SetLockoutEndDateAsync(user, null);
-			SuccessMessage = $"\"{user.UserName}\" has been unlocked.";
+			SuccessMessage = updated.IsLockedOut
+				? $"\"{updated.UserName}\" has been locked out."
+				: $"\"{updated.UserName}\" has been unlocked.";
 		}
 		else
 		{
-			await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
-			SuccessMessage = $"\"{user.UserName}\" has been locked out.";
+			ErrorMessage = "Failed to toggle lockout.";
 		}
 
 		await LoadUserAsync(UserId);
@@ -250,89 +225,64 @@ public sealed class EditModel : PageModel
 
 	public async Task<IActionResult> OnPostDeleteUserAsync()
 	{
-		var user = await _userManager.FindByIdAsync(UserId.ToString());
-		if (user == null)
+		using var client = _api.CreateClient();
+		var detail = await Client.GetUserDetailAsync(client, UserId);
+		if (detail == null)
 		{
 			return NotFound();
 		}
 
-		var currentUserId = _userManager.GetUserId(User);
-		if (user.Id.ToString() == currentUserId)
+		var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		if (UserId.ToString() == currentUserId)
 		{
 			ErrorMessage = "You cannot delete your own account.";
 			await LoadUserAsync(UserId);
 			return Page();
 		}
 
-		var userName = user.UserName;
-
-		var ownedObjects = await _db.Objects.Where(o => o.OwnerUserId == user.Id).ToListAsync();
-		foreach (var obj in ownedObjects)
+		var deleted = await Client.DeleteUserAsync(client, UserId);
+		if (deleted)
 		{
-			obj.OwnerUserId = null;
-		}
-
-		await _db.SaveChangesAsync();
-
-		var result = await _userManager.DeleteAsync(user);
-		if (result.Succeeded)
-		{
-			SuccessMessage = $"User \"{userName}\" has been deleted.";
+			SuccessMessage = $"User \"{detail.UserName}\" has been deleted.";
 			return RedirectToPage("/Manage/Users/Index");
 		}
 
-		ErrorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
+		ErrorMessage = "Failed to delete user.";
 		await LoadUserAsync(UserId);
 		return Page();
 	}
+
 	// ── Helpers ──
 
-	private async Task LoadUserAsync(UniqueObjectId id)
+	async Task LoadUserAsync(UniqueObjectId id)
 	{
-		var user = await _db.Users
-			.Include(u => u.AssociatedAuthor)
-			.FirstOrDefaultAsync(u => u.Id == id);
-
-		if (user == null)
+		using var client = _api.CreateClient();
+		var detail = await Client.GetUserDetailAsync(client, id);
+		if (detail == null)
 		{
 			return;
 		}
 
-		UserId = user.Id;
-
-		var roles = await _userManager.GetRolesAsync(user);
-		var claims = await _userManager.GetClaimsAsync(user);
-		var isLockedOut = await _userManager.IsLockedOutAsync(user);
+		UserId = detail.Id;
 
 		UserDetail = new UserDetailViewModel(
-			user.Id,
-			user.UserName ?? string.Empty,
-			user.Email ?? string.Empty,
-			user.EmailConfirmed,
-			isLockedOut,
-			roles.ToList(),
-			user.AssociatedAuthorId,
-			user.AssociatedAuthor?.Name);
+			detail.Id,
+			detail.UserName,
+			detail.Email,
+			detail.EmailConfirmed,
+			detail.IsLockedOut,
+			[.. detail.Roles],
+			detail.AssociatedAuthorId,
+			detail.AssociatedAuthorName);
 
-		AllRoles = await _roleManager.Roles
+		AllRoles = [.. (await Client.GetRolesAsync(client))
 			.OrderBy(r => r.Name)
-			.Select(r => new RoleViewModel(r.Id, r.Name ?? string.Empty))
-			.ToListAsync();
+			.Select(r => new RoleViewModel(r.Id, r.Name))];
 
-		var knownPermissions = new[]
-		{
-			LocoPermissions.ObjectPacksCreate,
-			LocoPermissions.TagsManage,
-			LocoPermissions.LicenceManage,
-			LocoPermissions.AuthorManage,
-			LocoPermissions.DisplayNameChange,
-		};
-
-		PermissionClaims = knownPermissions.Select(p =>
+		PermissionClaims = [.. UserRouteHandler.KnownPermissions.Select(p =>
 			new UserClaimViewModel(
 				Permission: p,
-				HasClaim: claims.Any(c => c.Type == LocoPermissions.ClaimType && c.Value == p)))
-			.ToList();
+				HasClaim: detail.PermissionClaims.Contains(p)))];
 	}
 
 	// ── View models ──

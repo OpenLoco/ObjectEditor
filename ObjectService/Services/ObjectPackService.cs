@@ -14,9 +14,13 @@ namespace ObjectService.Services;
 public interface IObjectPackService
 {
 	Task<IEnumerable<DtoItemPackEntry>> ListPacksAsync(CancellationToken ct);
+	Task<IEnumerable<DtoObjectPackListEntry>> ListEntriesAsync(CancellationToken ct);
 	Task<IEnumerable<DtoItemPackDescriptor<DtoObjectEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoObjectPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct);
 	Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoItemPackEntry> CreatePackAsync(DtoItemPackDescriptor<DtoObjectEntry> request, UniqueObjectId ownerUserId, CancellationToken ct);
+	Task<DtoObjectPackDescriptor?> UpdateAsync(UniqueObjectId id, DtoObjectPackDescriptor request, CancellationToken ct);
+	Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct);
 }
 
 public class ObjectPackService : IObjectPackService
@@ -36,11 +40,134 @@ public class ObjectPackService : IObjectPackService
 		return packs.Select(x => x.ToDtoEntry()).OrderBy(x => x.Name);
 	}
 
+	public async Task<IEnumerable<DtoObjectPackListEntry>> ListEntriesAsync(CancellationToken ct)
+	{
+		var packs = await _db.ObjectPacks
+			.Include(p => p.Licence)
+			.Include(p => p.Authors)
+			.Include(p => p.Tags)
+			.Include(p => p.Objects)
+			.AsSplitQuery()
+			.ToListAsync(ct);
+
+		return packs
+			.Select(p => new DtoObjectPackListEntry(
+				p.Id,
+				p.Name,
+				p.Description,
+				p.UploadedDate,
+				p.Licence?.ToDtoEntry(),
+				p.Authors.Count,
+				p.Tags.Count,
+				p.Objects.Count))
+			.OrderBy(p => p.Name);
+	}
+
 	public async Task<IEnumerable<DtoItemPackDescriptor<DtoObjectEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct)
 	{
 		var packs = await _db.ObjectPacks.Where(x => x.Id == id).Include(l => l.Licence).Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags)).ToListAsync(ct);
 		return packs.Select(x => x.ToDtoDescriptor()).OrderBy(x => x.Name);
 	}
+
+	public async Task<DtoObjectPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var pack = await _db.ObjectPacks
+			.Where(x => x.Id == id)
+			.Include(x => x.Licence)
+			.Include(x => x.Authors)
+			.Include(x => x.Tags)
+			.Include(x => x.Objects)
+			.AsSplitQuery()
+			.FirstOrDefaultAsync(ct);
+
+		return pack is null ? null : ToDescriptor(pack);
+	}
+
+	public async Task<DtoObjectPackDescriptor?> UpdateAsync(UniqueObjectId id, DtoObjectPackDescriptor request, CancellationToken ct)
+	{
+		var pack = await _db.ObjectPacks
+			.Where(x => x.Id == id)
+			.Include(x => x.Licence)
+			.Include(x => x.Authors)
+			.Include(x => x.Tags)
+			.Include(x => x.Objects)
+			.AsSplitQuery()
+			.FirstOrDefaultAsync(ct);
+
+		if (pack is null)
+		{
+			return null;
+		}
+
+		pack.Name = request.Name;
+		pack.Description = request.Description;
+		pack.CreatedDate = request.CreatedDate;
+		pack.ModifiedDate = request.ModifiedDate;
+
+		pack.Licence = request.Licence is null ? null : await _db.Licences.FindAsync([request.Licence.Id], ct);
+
+		pack.Authors.Clear();
+		var authorIds = request.Authors.Select(a => a.Id).ToList();
+		if (authorIds.Count > 0)
+		{
+			var authors = await _db.Authors.Where(a => authorIds.Contains(a.Id)).ToListAsync(ct);
+			foreach (var author in authors)
+			{
+				pack.Authors.Add(author);
+			}
+		}
+
+		pack.Tags.Clear();
+		var tagIds = request.Tags.Select(t => t.Id).ToList();
+		if (tagIds.Count > 0)
+		{
+			var tags = await _db.Tags.Where(t => tagIds.Contains(t.Id)).ToListAsync(ct);
+			foreach (var tag in tags)
+			{
+				pack.Tags.Add(tag);
+			}
+		}
+
+		pack.Objects.Clear();
+		var objectIds = request.Objects.Select(o => o.Id).ToList();
+		if (objectIds.Count > 0)
+		{
+			var objects = await _db.Objects.Where(o => objectIds.Contains(o.Id)).ToListAsync(ct);
+			foreach (var obj in objects)
+			{
+				pack.Objects.Add(obj);
+			}
+		}
+
+		_ = await _db.SaveChangesAsync(ct);
+		return ToDescriptor(pack);
+	}
+
+	public async Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var pack = await _db.ObjectPacks.FindAsync([id], ct);
+		if (pack is null)
+		{
+			return false;
+		}
+
+		_ = _db.ObjectPacks.Remove(pack);
+		_ = await _db.SaveChangesAsync(ct);
+		return true;
+	}
+
+	static DtoObjectPackDescriptor ToDescriptor(TblObjectPack pack)
+		=> new(
+			pack.Id,
+			pack.Name,
+			pack.Description,
+			pack.CreatedDate,
+			pack.ModifiedDate,
+			pack.UploadedDate,
+			pack.Licence?.ToDtoEntry(),
+			[.. pack.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())],
+			[.. pack.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())],
+			[.. pack.Objects.OrderBy(o => o.Name).Select(o => new DtoItemRef(o.Id, o.Name))]);
 
 	public async Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct)
 	{

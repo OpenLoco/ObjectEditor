@@ -1,28 +1,23 @@
+using Definitions;
+using Definitions.DTO.Identity;
+using Definitions.ObjectModels.Types;
+using Definitions.Web;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Definitions.Database;
-using Definitions.ObjectModels.Types;
+using ObjectService.Frontend;
+using System.Net.Http.Json;
 
 namespace ObjectService.Pages.Account;
 
 [Authorize]
 public sealed class ManageModel : PageModel
 {
-	private readonly UserManager<TblUser> _userManager;
-	private readonly SignInManager<TblUser> _signInManager;
-	private readonly LocoDbContext _db;
+	private readonly FrontendApiClient _api;
 
-	public ManageModel(
-		UserManager<TblUser> userManager,
-		SignInManager<TblUser> signInManager,
-		LocoDbContext db)
+	public ManageModel(FrontendApiClient api)
 	{
-		_userManager = userManager;
-		_signInManager = signInManager;
-		_db = db;
+		_api = api;
 	}
 
 	public string Username { get; set; } = string.Empty;
@@ -32,52 +27,34 @@ public sealed class ManageModel : PageModel
 
 	public async Task<IActionResult> OnGetAsync()
 	{
-		var user = await _userManager.GetUserAsync(User);
-		if (user == null)
+		using var client = _api.CreateClient();
+		var info = await GetInfoAsync(client);
+		if (info == null)
 		{
 			return RedirectToPage("/Account/Login");
 		}
 
-		Username = user.UserName ?? string.Empty;
-		Email = user.Email ?? string.Empty;
+		Username = info.UserName;
+		Email = info.Email;
 
-		OwnedObjects = await _db.Objects
-			.Where(x => x.OwnerUserId == user.Id)
-			.Include(x => x.DatObjects)
+		OwnedObjects = [.. (await Client.GetMyObjectsAsync(client))
 			.OrderByDescending(x => x.UploadedDate)
 			.Select(x => new OwnedObjectViewModel(
 				x.Id,
-				x.Name,
+				x.InternalName,
 				x.ObjectType,
 				x.ObjectSource,
 				x.UploadedDate,
-				x.DatObjects.OrderBy(d => d.DatName).Select(d => d.DatName).FirstOrDefault() ?? x.Name))
-			.ToListAsync();
+				string.IsNullOrWhiteSpace(x.DisplayName) ? x.InternalName : x.DisplayName))];
 
 		return Page();
 	}
 
 	public async Task<IActionResult> OnPostDeleteAccountAsync()
 	{
-		var user = await _userManager.GetUserAsync(User);
-		if (user == null)
-		{
-			return RedirectToPage("/Index");
-		}
-
-		// Clear ownership references so objects remain but are no longer associated
-		var ownedObjects = await _db.Objects.Where(x => x.OwnerUserId == user.Id).ToListAsync();
-		foreach (var obj in ownedObjects)
-		{
-			obj.OwnerUserId = null;
-		}
-
-		await _db.SaveChangesAsync();
-
-		// Delete the user
-		await _userManager.DeleteAsync(user);
-		await _signInManager.SignOutAsync();
-		Response.Cookies.Delete("access_token");
+		using var client = _api.CreateClient();
+		_ = await Client.DeleteCurrentUserAsync(client);
+		await LogoutAsync(client);
 
 		AccountDeleted = true;
 		return Page();
@@ -85,9 +62,35 @@ public sealed class ManageModel : PageModel
 
 	public async Task<IActionResult> OnPostLogoutAsync()
 	{
-		await _signInManager.SignOutAsync();
-		Response.Cookies.Delete("access_token");
+		using var client = _api.CreateClient();
+		await LogoutAsync(client);
 		return RedirectToPage("/Index");
+	}
+
+	static async Task<DtoInfoResponse?> GetInfoAsync(HttpClient client)
+	{
+		try
+		{
+			return await client.GetFromJsonAsync<DtoInfoResponse>("/manage/info");
+		}
+		catch (HttpRequestException)
+		{
+			return null;
+		}
+	}
+
+	async Task LogoutAsync(HttpClient client)
+	{
+		try
+		{
+			using var response = await client.PostAsync("/logout", null);
+		}
+		catch (HttpRequestException)
+		{
+			// ignore - we clear local state regardless
+		}
+
+		Response.Cookies.Delete("access_token");
 	}
 
 	public sealed record OwnedObjectViewModel(

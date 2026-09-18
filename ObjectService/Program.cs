@@ -66,7 +66,7 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 	}
 });
 
-builder.Services.AddScoped<ObjectExplorerService>(); builder.Services.AddObjectEditorServices();
+builder.Services.AddScoped<FrontendApiClient>(); builder.Services.AddScoped<ObjectExplorerService>(); builder.Services.AddObjectEditorServices();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -275,6 +275,48 @@ _ = app
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapRazorPages();
+
+// Development-only bootstrap endpoint used by the quick-login page. It ensures the
+// local dev admin exists and has the Admin role, then the page signs in via the
+// standard Identity /login endpoint.
+if (app.Environment.IsDevelopment())
+{
+	_ = app.MapPost("/dev/quick-login", async (UserManager<TblUser> userManager, RoleManager<TblUserRole> roleManager) =>
+	{
+		const string devUserEmail = "dev@localhost";
+		const string devUserName = "DevAdmin";
+		const string devPassword = "DevPassword123!@#";
+
+		var user = await userManager.FindByEmailAsync(devUserEmail);
+		if (user == null)
+		{
+			user = new TblUser
+			{
+				UserName = devUserName,
+				Email = devUserEmail,
+				EmailConfirmed = true,
+			};
+
+			var createResult = await userManager.CreateAsync(user, devPassword);
+			if (!createResult.Succeeded)
+			{
+				return Results.Problem(string.Join("; ", createResult.Errors.Select(e => e.Description)), statusCode: StatusCodes.Status400BadRequest);
+			}
+		}
+
+		if (!await roleManager.RoleExistsAsync("Admin"))
+		{
+			_ = await roleManager.CreateAsync(new TblUserRole { Name = "Admin" });
+		}
+
+		if (!await userManager.IsInRoleAsync(user, "Admin"))
+		{
+			_ = await userManager.AddToRoleAsync(user, "Admin");
+		}
+
+		return Results.Ok();
+	}).AllowAnonymous();
+}
 
 _ = app.MapApiRoutes()
 	.RequireRateLimiting(tokenPolicy);

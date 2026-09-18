@@ -47,4 +47,19 @@ public class TagRoutesTest : BaseReferenceDataTableTestFixture<
 
 	protected override DtoTagEntry ToDtoEntryFunc(TblTag row)
 		=> row.ToDtoEntry();
+
+	[Test]
+	public async Task Descriptor_ReturnsTagWithRelationships()
+	{
+		var descriptor = await Client.GetTagDescriptorAsync(HttpClient!, 1);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(descriptor, Is.Not.Null);
+			Assert.That(descriptor!.Id, Is.EqualTo(1));
+			Assert.That(descriptor.Name, Is.EqualTo("Wet"));
+			Assert.That(descriptor.Objects, Is.Empty);
+			Assert.That(descriptor.ObjectPacks, Is.Empty);
+		}
+	}
 }

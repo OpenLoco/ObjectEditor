@@ -29,13 +29,17 @@ public static class ClientHelpers
 			cancellationToken).ConfigureAwait(false) ?? default;
 
 	public static async Task<bool> DeleteAsync(HttpClient client, string apiRoute, string route, UniqueObjectId resourceId, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await SendRequestAsync<bool?>(
+	{
+		var requestRoute = FormRoute(apiRoute, route, resourceId);
+		var result = await SendRequestAsync(
 			client,
-			FormRoute(apiRoute, route, resourceId),
-			ct => client.DeleteAsync(FormRoute(apiRoute, route, resourceId), ct),
-			null,
+			requestRoute,
+			ct => client.DeleteAsync(requestRoute, ct),
+			static (_, _) => Task.FromResult<object?>(true),
 			logger,
-			cancellationToken).ConfigureAwait(false) != null;
+			cancellationToken).ConfigureAwait(false);
+		return result != null;
+	}
 
 	public static async Task<TResponse?> PostAsync<TRequest, TResponse>(HttpClient client, string apiRoute, string route, TRequest request, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await SendRequestAsync(

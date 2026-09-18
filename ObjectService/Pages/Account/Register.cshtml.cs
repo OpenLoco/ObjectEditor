@@ -1,27 +1,22 @@
-using Microsoft.AspNetCore.Identity;
+using Definitions.DTO.Identity;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ObjectService.Frontend;
 using System.ComponentModel.DataAnnotations;
-using Definitions.Database;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace ObjectService.Pages.Account;
 
 public sealed class RegisterModel : PageModel
 {
-	private readonly UserManager<TblUser> _userManager;
-	private readonly SignInManager<TblUser> _signInManager;
-	private readonly IHttpClientFactory _httpClientFactory;
+	private readonly FrontendApiClient _api;
 	private readonly ILogger<RegisterModel> _logger;
 
-	public RegisterModel(
-		UserManager<TblUser> userManager,
-		SignInManager<TblUser> signInManager,
-		IHttpClientFactory httpClientFactory,
-		ILogger<RegisterModel> logger)
+	public RegisterModel(FrontendApiClient api, ILogger<RegisterModel> logger)
 	{
-		_userManager = userManager;
-		_signInManager = signInManager;
-		_httpClientFactory = httpClientFactory;
+		_api = api;
 		_logger = logger;
 	}
 
@@ -56,66 +51,85 @@ public sealed class RegisterModel : PageModel
 			return Page();
 		}
 
-		var user = new TblUser
+		using var client = _api.CreateClient();
+
+		// Register through the Identity API.
+		var registerPayload = new DtoRegisterRequest(Email.Trim(), UserName.Trim(), Password);
+		using var registerResponse = await client.PostAsJsonAsync("/register", registerPayload);
+		if (!registerResponse.IsSuccessStatusCode)
 		{
-			UserName = UserName.Trim(),
-			Email = Email.Trim(),
-		};
-
-		var result = await _userManager.CreateAsync(user, Password);
-
-		if (!result.Succeeded)
-		{
-			foreach (var error in result.Errors)
-			{
-				ModelState.AddModelError(string.Empty, error.Description);
-			}
-
+			var error = await registerResponse.Content.ReadAsStringAsync();
+			ModelState.AddModelError(string.Empty, string.IsNullOrWhiteSpace(error) ? "Registration failed." : error);
 			return Page();
 		}
 
 		_logger.LogInformation("User {UserName} registered successfully", UserName);
 
-		// Sign the user in after registration
-		await _signInManager.SignInAsync(user, isPersistent: false);
+		// Sign the new user in (+ bearer token for subsequent API calls).
+		var loginPayload = new DtoLoginRequest(Email.Trim(), Password);
+		using var cookieResponse = await client.PostAsJsonAsync("/login?useCookies=true", loginPayload);
+		if (cookieResponse.IsSuccessStatusCode)
+		{
+			ForwardSetCookieHeaders(cookieResponse);
+		}
 
-		// Obtain a bearer token for API calls
-		await StoreBearerTokenAsync();
+		var accessToken = await StoreBearerTokenAsync(client, loginPayload);
+
+		// The framework /register endpoint uses the email as the username, so set the
+		// chosen username explicitly for the newly signed-in user.
+		if (accessToken != null)
+		{
+			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+			_ = await Client.SetCurrentUserDisplayNameAsync(client, UserName.Trim());
+		}
 
 		RegistrationSuccess = true;
 		return Page();
 	}
 
-	private async Task StoreBearerTokenAsync()
+	void ForwardSetCookieHeaders(HttpResponseMessage response)
+	{
+		if (response.Headers.TryGetValues("Set-Cookie", out var values))
+		{
+			foreach (var value in values)
+			{
+				Response.Headers.Append("Set-Cookie", value);
+			}
+		}
+	}
+
+	async Task<string?> StoreBearerTokenAsync(HttpClient client, DtoLoginRequest payload)
 	{
 		try
 		{
-			var client = _httpClientFactory.CreateClient();
-			client.BaseAddress = new Uri($"{Request.Scheme}://{Request.Host}");
-
-			var loginPayload = new { Email = Email.Trim(), Password };
-			var response = await client.PostAsJsonAsync("/login?useCookies=false", loginPayload);
-
-			if (response.IsSuccessStatusCode)
+			using var response = await client.PostAsJsonAsync("/login?useCookies=false", payload);
+			if (!response.IsSuccessStatusCode)
 			{
-				var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
-				if (tokenResponse?.AccessToken != null)
-				{
-					Response.Cookies.Append("access_token", tokenResponse.AccessToken, new CookieOptions
-					{
-						HttpOnly = true,
-						Secure = Request.IsHttps,
-						SameSite = SameSiteMode.Lax,
-						MaxAge = TimeSpan.FromHours(1),
-					});
-				}
+				return null;
 			}
+
+			var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+			if (tokenResponse?.AccessToken == null)
+			{
+				return null;
+			}
+
+			Response.Cookies.Append("access_token", tokenResponse.AccessToken, new CookieOptions
+			{
+				HttpOnly = true,
+				Secure = Request.IsHttps,
+				SameSite = SameSiteMode.Lax,
+				MaxAge = TimeSpan.FromHours(1),
+			});
+
+			return tokenResponse.AccessToken;
 		}
 		catch (Exception ex)
 		{
 			_logger.LogWarning(ex, "Failed to obtain bearer token after registration for user {Email}", Email);
+			return null;
 		}
 	}
 
-	private sealed record TokenResponse(string TokenType, string AccessToken, long ExpiresIn, string RefreshToken);
+	sealed record TokenResponse(string TokenType, string AccessToken, long ExpiresIn, string RefreshToken);
 }

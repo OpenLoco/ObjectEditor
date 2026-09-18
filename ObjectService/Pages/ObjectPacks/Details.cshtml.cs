@@ -1,26 +1,24 @@
-using Definitions.Database;
+using Definitions;
 using Definitions.DTO;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+using ObjectService.Frontend;
 using ObjectService.Identity;
 
 namespace ObjectService.Pages.ObjectPacks;
 
 public sealed class DetailsModel : PageModel
 {
-	readonly LocoDbContext _db;
+	readonly FrontendApiClient _api;
 
-	public DetailsModel(LocoDbContext db)
+	public DetailsModel(FrontendApiClient api)
 	{
-		_db = db;
+		_api = api;
 	}
 
-	public TblObjectPack? ObjectPack { get; private set; }
+	public DtoObjectPackDescriptor? ObjectPack { get; private set; }
 
-	public List<ListItem> Objects { get; private set; } = [];
-
-	// ── Edit form available values ──
 	public List<DtoAuthorEntry> AvailableAuthors { get; private set; } = [];
 	public List<DtoTagEntry> AvailableTags { get; private set; } = [];
 	public List<DtoLicenceEntry> AvailableLicences { get; private set; } = [];
@@ -37,22 +35,8 @@ public sealed class DetailsModel : PageModel
 
 	public async Task<IActionResult> OnGetAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		ObjectPack = await _db.ObjectPacks
-			.Include(p => p.Licence)
-			.Include(p => p.Authors)
-			.Include(p => p.Tags)
-			.Include(p => p.Objects)
-			.AsSplitQuery()
-			.FirstOrDefaultAsync(p => p.Id == id, ct);
-
-		if (ObjectPack is null)
-		{
-			return NotFound();
-		}
-
-		await LoadRelatedDataAsync(ct);
-
-		return Page();
+		await LoadAsync(id, ct);
+		return ObjectPack is null ? NotFound() : Page();
 	}
 
 	public async Task<IActionResult> OnPostEditAsync(
@@ -74,7 +58,7 @@ public sealed class DetailsModel : PageModel
 		if (string.IsNullOrWhiteSpace(Name))
 		{
 			ErrorMessage = "Object pack name is required.";
-			await ReloadAsync(Id);
+			await LoadAsync(Id, CancellationToken.None);
 			return Page();
 		}
 
@@ -82,82 +66,30 @@ public sealed class DetailsModel : PageModel
 		SelectedTagIds ??= [];
 		SelectedObjectIds ??= [];
 
-		try
+		var request = new DtoObjectPackDescriptor(
+			Id,
+			Name.Trim(),
+			Description?.Trim(),
+			CreatedDate,
+			ModifiedDate,
+			DateOnly.FromDateTime(DateTime.UtcNow),
+			LicenceId.HasValue ? new DtoLicenceEntry(LicenceId.Value, string.Empty, string.Empty) : null,
+			[.. SelectedAuthorIds.Select(a => new DtoAuthorEntry(a, string.Empty))],
+			[.. SelectedTagIds.Select(t => new DtoTagEntry(t, string.Empty))],
+			[.. SelectedObjectIds.Select(o => new DtoItemRef(o, string.Empty))]);
+
+		using var client = _api.CreateClient();
+		var updated = await Client.UpdateObjectPackAsync(client, request);
+		if (updated != null)
 		{
-			var pack = await _db.ObjectPacks
-				.Include(p => p.Licence)
-				.Include(p => p.Authors)
-				.Include(p => p.Tags)
-				.Include(p => p.Objects)
-				.AsSplitQuery()
-				.FirstOrDefaultAsync(p => p.Id == Id);
-
-			if (pack is null)
-			{
-				ErrorMessage = "Object pack not found.";
-				return Page();
-			}
-
-			// Basic properties
-			pack.Name = Name.Trim();
-			pack.Description = Description?.Trim();
-			pack.CreatedDate = CreatedDate;
-			pack.ModifiedDate = ModifiedDate;
-			// UploadedDate is a database-generated computed column — do not set it
-
-			// Licence
-			if (LicenceId.HasValue)
-			{
-				var licence = await _db.Licences.FindAsync(new object[] { (object)LicenceId.Value });
-				pack.Licence = licence;
-			}
-			else
-			{
-				pack.Licence = null;
-			}
-
-			// Authors
-			pack.Authors.Clear();
-			foreach (var authorId in SelectedAuthorIds)
-			{
-				var author = await _db.Authors.FindAsync(new object[] { (object)authorId });
-				if (author != null)
-				{
-					pack.Authors.Add(author);
-				}
-			}
-
-			// Tags
-			pack.Tags.Clear();
-			foreach (var tagId in SelectedTagIds)
-			{
-				var tag = await _db.Tags.FindAsync(new object[] { (object)tagId });
-				if (tag != null)
-				{
-					pack.Tags.Add(tag);
-				}
-			}
-
-			// Objects
-			pack.Objects.Clear();
-			foreach (var objId in SelectedObjectIds)
-			{
-				var obj = await _db.Objects.FindAsync(new object[] { (object)objId });
-				if (obj != null)
-				{
-					pack.Objects.Add(obj);
-				}
-			}
-
-			await _db.SaveChangesAsync();
 			SuccessMessage = $"Object pack '{Name.Trim()}' updated.";
 		}
-		catch (Exception ex)
+		else
 		{
-			ErrorMessage = $"Error updating object pack: {ex.Message}";
+			ErrorMessage = "Object pack not found.";
 		}
 
-		await ReloadAsync(Id);
+		await LoadAsync(Id, CancellationToken.None);
 		return Page();
 	}
 
@@ -168,69 +100,26 @@ public sealed class DetailsModel : PageModel
 			return Forbid();
 		}
 
-		var pack = await _db.ObjectPacks.FindAsync(new object[] { (object)id });
-		if (pack is null)
+		using var client = _api.CreateClient();
+		var deleted = await Client.DeleteObjectPackAsync(client, id);
+		if (deleted)
 		{
-			await ReloadAsync(id);
-			ErrorMessage = "Failed to delete object pack.";
-			return Page();
+			SuccessMessage = "Object pack deleted.";
+			return RedirectToPage("/Index", new { category = "objectpacks" });
 		}
 
-		_db.ObjectPacks.Remove(pack);
-		await _db.SaveChangesAsync();
-
-		SuccessMessage = "Object pack deleted.";
-		return RedirectToPage("/Index", new { category = "objectpacks" });
+		await LoadAsync(id, CancellationToken.None);
+		ErrorMessage = "Failed to delete object pack.";
+		return Page();
 	}
 
-	private async Task ReloadAsync(UniqueObjectId id)
+	async Task LoadAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		ObjectPack = await _db.ObjectPacks
-			.Include(p => p.Licence)
-			.Include(p => p.Authors)
-			.Include(p => p.Tags)
-			.Include(p => p.Objects)
-			.AsSplitQuery()
-			.FirstOrDefaultAsync(p => p.Id == id);
-
-		await LoadRelatedDataAsync(CancellationToken.None);
+		using var client = _api.CreateClient();
+		ObjectPack = await Client.GetObjectPackDescriptorAsync(client, id, cancellationToken: ct);
+		AvailableAuthors = [.. (await Client.GetAuthorsAsync(client, cancellationToken: ct)).OrderBy(a => a.Name)];
+		AvailableTags = [.. (await Client.GetTagsAsync(client, cancellationToken: ct)).OrderBy(t => t.Name)];
+		AvailableLicences = [.. (await Client.GetLicencesAsync(client, cancellationToken: ct)).OrderBy(l => l.Name)];
+		AvailableObjects = [.. (await Client.GetObjectListAsync(client, cancellationToken: ct)).OrderBy(o => o.DisplayName)];
 	}
-
-	private async Task LoadRelatedDataAsync(CancellationToken ct)
-	{
-		if (ObjectPack is not null)
-		{
-			Objects = ObjectPack.Objects
-				.OrderBy(o => o.Name)
-				.Select(o => new ListItem(o.Id, o.Name, "Objects", null))
-				.ToList();
-		}
-
-		AvailableAuthors = await _db.Authors
-			.OrderBy(a => a.Name)
-			.Select(a => new DtoAuthorEntry(a.Id, a.Name))
-			.ToListAsync(ct);
-
-		AvailableTags = await _db.Tags
-			.OrderBy(t => t.Name)
-			.Select(t => new DtoTagEntry(t.Id, t.Name))
-			.ToListAsync(ct);
-
-		AvailableLicences = await _db.Licences
-			.OrderBy(l => l.Name)
-			.Select(l => new DtoLicenceEntry(l.Id, l.Name, l.Text))
-			.ToListAsync(ct);
-
-		AvailableObjects = await _db.Objects
-			.OrderBy(o => o.Name)
-			.Select(o => new DtoObjectEntry(o.Id, o.Name, o.Name, null, null,
-				o.ObjectSource,
-				o.ObjectType,
-				null,
-				o.Availability,
-				null, null, o.UploadedDate))
-			.ToListAsync(ct);
-	}
-
-	public record ListItem(UniqueObjectId Id, string Name, string Kind, string? Extra);
 }

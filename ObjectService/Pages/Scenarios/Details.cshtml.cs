@@ -1,38 +1,34 @@
-using Definitions.Database;
+using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels.Types;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+using ObjectService.Frontend;
 
 namespace ObjectService.Pages.Scenarios;
 
 public sealed class DetailsModel : PageModel
 {
-	readonly LocoDbContext _db;
+	readonly FrontendApiClient _api;
 
-	public DetailsModel(LocoDbContext db)
+	public DetailsModel(FrontendApiClient api)
 	{
-		_db = db;
+		_api = api;
 	}
 
-	public TblSC5File? Scenario { get; private set; }
+	public DtoSC5FileDescriptor? Scenario { get; private set; }
 
-	public List<ListItem> SC5FilePacks { get; private set; } = [];
-
-	// ── Edit form available values ──
 	public List<DtoAuthorEntry> AvailableAuthors { get; private set; } = [];
 	public List<DtoTagEntry> AvailableTags { get; private set; } = [];
 	public List<DtoLicenceEntry> AvailableLicences { get; private set; } = [];
-	public List<DtoScenarioEntry> AvailablePacks { get; private set; } = [];
+	public List<DtoItemRef> AvailablePacks { get; private set; } = [];
 
 	[TempData]
 	public string? SuccessMessage { get; set; }
 
 	[TempData]
 	public string? ErrorMessage { get; set; }
-
-	// ── Edit form bindings ──
 
 	[BindProperty]
 	public UniqueObjectId Id { get; set; }
@@ -71,22 +67,8 @@ public sealed class DetailsModel : PageModel
 
 	public async Task<IActionResult> OnGetAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Scenario = await _db.SC5Files
-			.Include(s => s.Licence)
-			.Include(s => s.Authors)
-			.Include(s => s.Tags)
-			.Include(s => s.SC5FilePacks)
-			.AsSplitQuery()
-			.FirstOrDefaultAsync(s => s.Id == id, ct);
-
-		if (Scenario is null)
-		{
-			return NotFound();
-		}
-
-		await LoadRelatedDataAsync(ct);
-
-		return Page();
+		await LoadAsync(id, ct);
+		return Scenario is null ? NotFound() : Page();
 	}
 
 	public async Task<IActionResult> OnPostEditAsync()
@@ -99,92 +81,39 @@ public sealed class DetailsModel : PageModel
 		if (string.IsNullOrWhiteSpace(Name))
 		{
 			ErrorMessage = "Scenario name is required.";
-			await ReloadAsync(Id);
+			await LoadAsync(Id, CancellationToken.None);
 			return Page();
 		}
 
-		try
+		SelectedAuthorIds ??= [];
+		SelectedTagIds ??= [];
+		SelectedPackIds ??= [];
+
+		var request = new DtoSC5FileDescriptor(
+			Id,
+			Name.Trim(),
+			Description?.Trim(),
+			ObjectSource,
+			CreatedDate,
+			ModifiedDate,
+			UploadedDate,
+			LicenceId.HasValue ? new DtoLicenceEntry(LicenceId.Value, string.Empty, string.Empty) : null,
+			[.. SelectedAuthorIds.Select(a => new DtoAuthorEntry(a, string.Empty))],
+			[.. SelectedTagIds.Select(t => new DtoTagEntry(t, string.Empty))],
+			[.. SelectedPackIds.Select(p => new DtoItemRef(p, string.Empty))]);
+
+		using var client = _api.CreateClient();
+		var updated = await Client.UpdateSC5FileAsync(client, request);
+		if (updated != null)
 		{
-			var scenario = await _db.SC5Files
-				.Include(s => s.Licence)
-				.Include(s => s.Authors)
-				.Include(s => s.Tags)
-				.Include(s => s.SC5FilePacks)
-				.AsSplitQuery()
-				.FirstOrDefaultAsync(s => s.Id == Id);
-
-			if (scenario is null)
-			{
-				ErrorMessage = "Scenario not found.";
-				return Page();
-			}
-
-			// Basic properties
-			scenario.Name = Name.Trim();
-			scenario.Description = Description?.Trim();
-			scenario.ObjectSource = ObjectSource;
-			scenario.CreatedDate = CreatedDate;
-			scenario.ModifiedDate = ModifiedDate;
-
-			// Licence
-			if (LicenceId.HasValue)
-			{
-				var licence = await _db.Licences.FindAsync(new object[] { (object)LicenceId.Value });
-				scenario.Licence = licence;
-			}
-			else
-			{
-				scenario.Licence = null;
-			}
-
-			// Authors
-			scenario.Authors.Clear();
-			if (SelectedAuthorIds.Count > 0)
-			{
-				var authors = await _db.Authors
-					.Where(a => SelectedAuthorIds.Contains(a.Id))
-					.ToListAsync();
-				foreach (var author in authors)
-				{
-					scenario.Authors.Add(author);
-				}
-			}
-
-			// Tags
-			scenario.Tags.Clear();
-			if (SelectedTagIds.Count > 0)
-			{
-				var tags = await _db.Tags
-					.Where(t => SelectedTagIds.Contains(t.Id))
-					.ToListAsync();
-				foreach (var tag in tags)
-				{
-					scenario.Tags.Add(tag);
-				}
-			}
-
-			// SC5 File Packs
-			scenario.SC5FilePacks.Clear();
-			if (SelectedPackIds.Count > 0)
-			{
-				var packs = await _db.SC5FilePacks
-					.Where(p => SelectedPackIds.Contains(p.Id))
-					.ToListAsync();
-				foreach (var pack in packs)
-				{
-					scenario.SC5FilePacks.Add(pack);
-				}
-			}
-
-			await _db.SaveChangesAsync();
 			SuccessMessage = $"Scenario '{Name.Trim()}' updated.";
 		}
-		catch (Exception ex)
+		else
 		{
-			ErrorMessage = $"Error updating scenario: {ex.Message}";
+			ErrorMessage = "Scenario not found.";
 		}
 
-		await ReloadAsync(Id);
+		await LoadAsync(Id, CancellationToken.None);
 		return Page();
 	}
 
@@ -195,64 +124,26 @@ public sealed class DetailsModel : PageModel
 			return Forbid();
 		}
 
-		var scenario = await _db.SC5Files.FindAsync(new object[] { (object)id });
-		if (scenario is null)
+		using var client = _api.CreateClient();
+		var deleted = await Client.DeleteSC5FileAsync(client, id);
+		if (deleted)
 		{
-			await ReloadAsync(id);
-			ErrorMessage = "Failed to delete scenario.";
-			return Page();
+			SuccessMessage = "Scenario deleted.";
+			return RedirectToPage("/Index", new { category = "sc5files" });
 		}
 
-		_db.SC5Files.Remove(scenario);
-		await _db.SaveChangesAsync();
-
-		SuccessMessage = "Scenario deleted.";
-		return RedirectToPage("/Index", new { category = "sc5files" });
+		await LoadAsync(id, CancellationToken.None);
+		ErrorMessage = "Failed to delete scenario.";
+		return Page();
 	}
 
-	private async Task ReloadAsync(UniqueObjectId id)
+	async Task LoadAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Scenario = await _db.SC5Files
-			.Include(s => s.Licence)
-			.Include(s => s.Authors)
-			.Include(s => s.Tags)
-			.Include(s => s.SC5FilePacks)
-			.AsSplitQuery()
-			.FirstOrDefaultAsync(s => s.Id == id);
-
-		await LoadRelatedDataAsync(CancellationToken.None);
+		using var client = _api.CreateClient();
+		Scenario = await Client.GetSC5FileDescriptorAsync(client, id, cancellationToken: ct);
+		AvailableAuthors = [.. (await Client.GetAuthorsAsync(client, cancellationToken: ct)).OrderBy(a => a.Name)];
+		AvailableTags = [.. (await Client.GetTagsAsync(client, cancellationToken: ct)).OrderBy(t => t.Name)];
+		AvailableLicences = [.. (await Client.GetLicencesAsync(client, cancellationToken: ct)).OrderBy(l => l.Name)];
+		AvailablePacks = [.. (await Client.GetSC5FilePackListEntriesAsync(client, cancellationToken: ct)).OrderBy(p => p.Name).Select(p => new DtoItemRef(p.Id, p.Name))];
 	}
-
-	private async Task LoadRelatedDataAsync(CancellationToken ct)
-	{
-		if (Scenario is not null)
-		{
-			SC5FilePacks = Scenario.SC5FilePacks
-				.OrderBy(p => p.Name)
-				.Select(p => new ListItem(p.Id, p.Name, "SC5FilePacks", null))
-				.ToList();
-		}
-
-		AvailableAuthors = await _db.Authors
-			.OrderBy(a => a.Name)
-			.Select(a => new DtoAuthorEntry(a.Id, a.Name))
-			.ToListAsync(ct);
-
-		AvailableTags = await _db.Tags
-			.OrderBy(t => t.Name)
-			.Select(t => new DtoTagEntry(t.Id, t.Name))
-			.ToListAsync(ct);
-
-		AvailableLicences = await _db.Licences
-			.OrderBy(l => l.Name)
-			.Select(l => new DtoLicenceEntry(l.Id, l.Name, l.Text))
-			.ToListAsync(ct);
-
-		AvailablePacks = await _db.SC5FilePacks
-			.OrderBy(p => p.Name)
-			.Select(p => new DtoScenarioEntry(p.Id, p.Name))
-			.ToListAsync(ct);
-	}
-
-	public record ListItem(UniqueObjectId Id, string Name, string Kind, string? Extra);
 }

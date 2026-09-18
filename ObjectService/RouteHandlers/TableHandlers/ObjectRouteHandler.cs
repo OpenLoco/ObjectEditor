@@ -4,6 +4,7 @@ using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using ObjectService.Services;
+using System.Security.Claims;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
@@ -24,6 +25,8 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	public void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 	{
+		_ = parentRoute.MapGet(Routes.Mine, ListMineAsync).RequireAuthorization();
+
 		var resourceRoute = parentRoute.MapGroup(Routes.ResourceRoute);
 		_ = resourceRoute.MapGet(Routes.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(Routes.Images, GetObjectImagesAsync);
@@ -62,6 +65,17 @@ public class ObjectRouteHandler : ITableRouteHandler
 	{
 		logger.LogInformation("[List] Objects");
 		return Results.Ok(await query.ListAsync(context, ct));
+	}
+
+	async Task<IResult> ListMineAsync(HttpContext context, [FromServices] IObjectQueryService query, CancellationToken ct)
+	{
+		var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		if (string.IsNullOrEmpty(userIdClaim) || !ulong.TryParse(userIdClaim, out var userId))
+		{
+			return Results.Unauthorized();
+		}
+
+		return Results.Ok(await query.ListMineAsync(userId, ct));
 	}
 
 	async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)

@@ -1,36 +1,22 @@
+using Definitions;
+using Definitions.DTO;
+using Definitions.ObjectModels.Types;
+using Definitions.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Definitions;
-using Definitions.Database;
-using Definitions.DTO;
-using Definitions.ObjectModels.Types;
-using ObjectService.Services;
+using ObjectService.Frontend;
 
 namespace ObjectService.Pages.Objects;
 
 [Authorize(Policy = "AdminOnly")]
 public sealed class EditModel : PageModel
 {
-	private readonly IObjectQueryService _objectService;
-	private readonly LocoDbContext _db;
-	private readonly ICrudService<DtoAuthorEntry, TblAuthor> _authorService;
-	private readonly ICrudService<DtoTagEntry, TblTag> _tagService;
-	private readonly ICrudService<DtoLicenceEntry, TblLicence> _licenceService;
+	readonly FrontendApiClient _api;
 
-	public EditModel(
-		IObjectQueryService objectService,
-		LocoDbContext db,
-		ICrudService<DtoAuthorEntry, TblAuthor> authorService,
-		ICrudService<DtoTagEntry, TblTag> tagService,
-		ICrudService<DtoLicenceEntry, TblLicence> licenceService)
+	public EditModel(FrontendApiClient api)
 	{
-		_objectService = objectService;
-		_db = db;
-		_authorService = authorService;
-		_tagService = tagService;
-		_licenceService = licenceService;
+		_api = api;
 	}
 
 	[BindProperty]
@@ -74,22 +60,21 @@ public sealed class EditModel : PageModel
 
 	public string? ErrorMessage { get; set; }
 
-	public async Task<IActionResult> OnGetAsync(UniqueObjectId id)
+	public async Task<IActionResult> OnGetAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Object = await _objectService.GetByIdAsync(id, CancellationToken.None);
+		using var client = _api.CreateClient();
+		Object = await Client.GetObjectAsync(client, id, cancellationToken: ct);
 		if (Object == null)
 		{
 			return NotFound();
 		}
 
-		// Check if object is vanilla (not editable)
 		if (Object.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
 			ErrorMessage = "Vanilla game objects cannot be edited.";
 			return Page();
 		}
 
-		// Load current values
 		Id = Object.Id;
 		Name = Object.Name;
 		Description = Object.Description;
@@ -98,71 +83,67 @@ public sealed class EditModel : PageModel
 		UploadedDate = Object.UploadedDate;
 		LicenceId = Object.Licence?.Id;
 		Availability = Object.Availability;
-		SelectedAuthorIds = Object.Authors.Select(a => a.Id).ToList();
-		SelectedTagIds = Object.Tags.Select(t => t.Id).ToList();
-		SelectedObjectPackIds = Object.ObjectPacks.Select(p => p.Id).ToList();
+		SelectedAuthorIds = [.. Object.Authors.Select(a => a.Id)];
+		SelectedTagIds = [.. Object.Tags.Select(t => t.Id)];
+		SelectedObjectPackIds = [.. Object.ObjectPacks.Select(p => p.Id)];
 
-		// Load available values for dropdowns
-		AvailableAuthors = (await _authorService.ListAsync(HttpContext, CancellationToken.None)).OrderBy(a => a.Name).ToList();
-		AvailableTags = (await _tagService.ListAsync(HttpContext, CancellationToken.None)).OrderBy(t => t.Name).ToList();
-		AvailableLicences = (await _licenceService.ListAsync(HttpContext, CancellationToken.None)).OrderBy(l => l.Name).ToList();
-		AvailableObjectPacks = (await _db.ObjectPacks.ToListAsync()).Select(p => new DtoItemPackEntry(p.Id, p.Name, p.Description, p.CreatedDate, p.ModifiedDate, p.UploadedDate, null)).OrderBy(p => p.Name).ToList();
-
+		await LoadListsAsync(client, ct);
 		return Page();
 	}
 
-	public async Task<IActionResult> OnPostAsync()
+	public async Task<IActionResult> OnPostAsync(CancellationToken ct)
 	{
-		try
+		using var client = _api.CreateClient();
+		var existing = await Client.GetObjectAsync(client, Id, cancellationToken: ct);
+		if (existing == null)
 		{
-			var licence = LicenceId.HasValue && Object != null ? Object.Licence : null;
-			var licenceEntry = licence != null ? new DtoLicenceEntry(licence.Id, licence.Name, licence.Text) : null;
-
-			var authors = await _authorService.ListAsync(HttpContext, CancellationToken.None);
-			var authorEntries = authors.Where(a => SelectedAuthorIds.Contains(a.Id)).ToList();
-
-			var tags = await _tagService.ListAsync(HttpContext, CancellationToken.None);
-			var tagEntries = tags.Where(t => SelectedTagIds.Contains(t.Id)).ToList();
-
-			var packItems = (await _db.ObjectPacks
-				.Where(p => SelectedObjectPackIds.Contains(p.Id))
-				.ToListAsync())
-				.Select(p => new DtoItemPackEntry(p.Id, p.Name, p.Description, p.CreatedDate, p.ModifiedDate, p.UploadedDate, null))
-				.ToList();
-
-			var updateRequest = new DtoObjectPostResponse(
-				Id,
-				Name,
-				Name, // DisplayName
-				Object?.DatChecksum,
-				Description,
-				Object?.ObjectSource ?? ObjectSource.Custom,
-				Object?.ObjectType ?? ObjectType.Bridge,
-				Object?.VehicleType,
-				Availability,
-				CreatedDate,
-				ModifiedDate,
-				UploadedDate,
-				licenceEntry,
-				authorEntries,
-				tagEntries,
-				packItems,
-				Object?.DatObjects ?? [],
-				Object?.StringTable ?? new DtoStringTableDescriptor([], 0));
-
-			var updated = await _objectService.UpdateAsync(Id, updateRequest, CancellationToken.None);
-			if (updated != null)
-			{
-				return RedirectToPage("/Objects/Details", new { id = Id.ToString() });
-			}
-
-			ErrorMessage = "Failed to update object. It may no longer exist.";
+			ErrorMessage = "Object not found.";
+			await LoadListsAsync(client, ct);
 			return Page();
 		}
-		catch (Exception ex)
+
+		Object = existing;
+
+		var licenceEntry = LicenceId.HasValue && existing.Licence != null
+			? new DtoLicenceEntry(existing.Licence.Id, existing.Licence.Name, existing.Licence.Text)
+			: null;
+
+		var updateRequest = new DtoObjectPostResponse(
+			Id,
+			Name,
+			Name, // DisplayName
+			existing.DatChecksum,
+			Description,
+			existing.ObjectSource,
+			existing.ObjectType,
+			existing.VehicleType,
+			Availability,
+			CreatedDate,
+			ModifiedDate,
+			UploadedDate,
+			licenceEntry,
+			[.. SelectedAuthorIds.Select(a => new DtoAuthorEntry(a, string.Empty))],
+			[.. SelectedTagIds.Select(t => new DtoTagEntry(t, string.Empty))],
+			[.. SelectedObjectPackIds.Select(p => new DtoItemPackEntry(p, string.Empty, null, null, null, UploadedDate, null))],
+			existing.DatObjects,
+			existing.StringTable);
+
+		var updated = await Client.UpdateObjectAsync(client, Id, updateRequest, cancellationToken: ct);
+		if (updated != null)
 		{
-			ErrorMessage = $"Error updating object: {ex.Message}";
-			return Page();
+			return RedirectToPage("/Objects/Details", new { id = Id.ToString() });
 		}
+
+		ErrorMessage = "Failed to update object. It may no longer exist.";
+		await LoadListsAsync(client, ct);
+		return Page();
+	}
+
+	async Task LoadListsAsync(HttpClient client, CancellationToken ct)
+	{
+		AvailableAuthors = [.. await Client.GetAuthorsAsync(client, cancellationToken: ct)];
+		AvailableTags = [.. await Client.GetTagsAsync(client, cancellationToken: ct)];
+		AvailableLicences = [.. await Client.GetLicencesAsync(client, cancellationToken: ct)];
+		AvailableObjectPacks = [.. await Client.GetObjectPacksAsync(client, cancellationToken: ct)];
 	}
 }

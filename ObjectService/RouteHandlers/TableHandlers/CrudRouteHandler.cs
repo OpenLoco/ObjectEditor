@@ -28,7 +28,7 @@ public class CrudRouteHandler<TDto, TRow> : ITableRouteHandler
 		=> BaseTableRouteHandler.MapRoutes(this, endpoints,
 			endpoints.ServiceProvider.GetRequiredService<IConfiguration>());
 
-	public void MapAdditionalRoutes(IEndpointRouteBuilder endpoints) { }
+	public virtual void MapAdditionalRoutes(IEndpointRouteBuilder endpoints) { }
 
 	async Task<IResult> ListAsync(HttpContext context, [FromServices] ICrudService<TDto, TRow> service, CancellationToken ct)
 	{

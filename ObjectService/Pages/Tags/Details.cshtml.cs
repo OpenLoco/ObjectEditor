@@ -1,29 +1,27 @@
-using Definitions.Database;
+using Definitions;
 using Definitions.DTO;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using ObjectService.Services;
+using ObjectService.Frontend;
 
 namespace ObjectService.Pages.Tags;
 
 public sealed class DetailsModel : PageModel
 {
-	readonly LocoDbContext _db;
-	readonly ICrudService<DtoTagEntry, TblTag> _tagService;
+	readonly FrontendApiClient _api;
 
-	public DetailsModel(LocoDbContext db, ICrudService<DtoTagEntry, TblTag> tagService)
+	public DetailsModel(FrontendApiClient api)
 	{
-		_db = db;
-		_tagService = tagService;
+		_api = api;
 	}
 
-	public TblTag? Tag { get; private set; }
+	public DtoTagDescriptor? Tag { get; private set; }
 
-	public List<ListItem> Objects { get; private set; } = [];
-	public List<ListItem> ObjectPacks { get; private set; } = [];
-	public List<ListItem> SC5Files { get; private set; } = [];
-	public List<ListItem> SC5FilePacks { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> Objects { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> ObjectPacks { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> SC5Files { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> SC5FilePacks { get; private set; } = [];
 
 	[TempData]
 	public string? SuccessMessage { get; set; }
@@ -41,40 +39,8 @@ public sealed class DetailsModel : PageModel
 
 	public async Task<IActionResult> OnGetAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Tag = await _db.Tags
-			.Include(t => t.Objects)
-			.Include(t => t.ObjectPacks)
-			.Include(t => t.SC5Files)
-			.Include(t => t.SC5FilePacks)
-			.AsSplitQuery()
-			.FirstOrDefaultAsync(t => t.Id == id, ct);
-
-		if (Tag is null)
-		{
-			return NotFound();
-		}
-
-		Objects = Tag.Objects
-			.OrderBy(o => o.Name)
-			.Select(o => new ListItem(o.Id, o.Description ?? o.Name, "Objects", null))
-			.ToList();
-
-		ObjectPacks = Tag.ObjectPacks
-			.OrderBy(p => p.Name)
-			.Select(p => new ListItem(p.Id, p.Name, "ObjectPacks", null))
-			.ToList();
-
-		SC5Files = Tag.SC5Files
-			.OrderBy(f => f.Name)
-			.Select(f => new ListItem(f.Id, f.Name, "SC5Files", null))
-			.ToList();
-
-		SC5FilePacks = Tag.SC5FilePacks
-			.OrderBy(p => p.Name)
-			.Select(p => new ListItem(p.Id, p.Name, "SC5FilePacks", null))
-			.ToList();
-
-		return Page();
+		await LoadAsync(id, ct);
+		return Tag is null ? NotFound() : Page();
 	}
 
 	public async Task<IActionResult> OnPostEditAsync()
@@ -87,29 +53,24 @@ public sealed class DetailsModel : PageModel
 		if (string.IsNullOrWhiteSpace(Name))
 		{
 			ErrorMessage = "Tag name is required.";
-			await ReloadAsync(Id);
+			await LoadAsync(Id, CancellationToken.None);
 			return Page();
 		}
 
-		try
+		using var client = _api.CreateClient();
+		var updated = await Client.UpdateResourceAsync<DtoTagEntry, DtoTagEntry>(
+			client, Client.TagsEndpointGroup, Id, new DtoTagEntry(Id, Name.Trim()));
+
+		if (updated != null)
 		{
-			var entry = new DtoTagEntry(Id, Name.Trim());
-			var updated = await _tagService.UpdateAsync(Id, entry, CancellationToken.None);
-			if (updated != null)
-			{
-				SuccessMessage = $"Tag '{Name.Trim()}' updated.";
-			}
-			else
-			{
-				ErrorMessage = "Tag not found.";
-			}
+			SuccessMessage = $"Tag '{Name.Trim()}' updated.";
 		}
-		catch (Exception ex)
+		else
 		{
-			ErrorMessage = $"Error updating tag: {ex.Message}";
+			ErrorMessage = "Tag not found.";
 		}
 
-		await ReloadAsync(Id);
+		await LoadAsync(Id, CancellationToken.None);
 		return Page();
 	}
 
@@ -120,36 +81,31 @@ public sealed class DetailsModel : PageModel
 			return Forbid();
 		}
 
-		var deleted = await _tagService.DeleteAsync(id, CancellationToken.None);
+		using var client = _api.CreateClient();
+		var deleted = await Client.DeleteResourceAsync(client, Client.TagsEndpointGroup, id);
 		if (deleted)
 		{
 			SuccessMessage = "Tag deleted.";
 			return RedirectToPage("/Index", new { category = "tags" });
 		}
 
-		await ReloadAsync(id);
+		await LoadAsync(id, CancellationToken.None);
 		ErrorMessage = "Failed to delete tag.";
 		return Page();
 	}
 
-	private async Task ReloadAsync(UniqueObjectId id)
+	async Task LoadAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Tag = await _db.Tags
-			.Include(t => t.Objects)
-			.Include(t => t.ObjectPacks)
-			.Include(t => t.SC5Files)
-			.Include(t => t.SC5FilePacks)
-			.AsSplitQuery()
-			.FirstOrDefaultAsync(t => t.Id == id);
+		using var client = _api.CreateClient();
+		var tag = await Client.GetTagDescriptorAsync(client, id, cancellationToken: ct);
+		Tag = tag;
 
-		if (Tag != null)
+		if (tag != null)
 		{
-			Objects = Tag.Objects.OrderBy(o => o.Name).Select(o => new ListItem(o.Id, o.Description ?? o.Name, "Objects", null)).ToList();
-			ObjectPacks = Tag.ObjectPacks.OrderBy(p => p.Name).Select(p => new ListItem(p.Id, p.Name, "ObjectPacks", null)).ToList();
-			SC5Files = Tag.SC5Files.OrderBy(f => f.Name).Select(f => new ListItem(f.Id, f.Name, "SC5Files", null)).ToList();
-			SC5FilePacks = Tag.SC5FilePacks.OrderBy(p => p.Name).Select(p => new ListItem(p.Id, p.Name, "SC5FilePacks", null)).ToList();
+			Objects = [.. tag.Objects];
+			ObjectPacks = [.. tag.ObjectPacks];
+			SC5Files = [.. tag.SC5Files];
+			SC5FilePacks = [.. tag.SC5FilePacks];
 		}
 	}
-
-	public record ListItem(UniqueObjectId Id, string Name, string Kind, string? Extra);
 }

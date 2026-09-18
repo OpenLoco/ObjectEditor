@@ -1,30 +1,28 @@
-using Definitions.Database;
+using Definitions;
 using Definitions.DTO;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+using ObjectService.Frontend;
 using ObjectService.Identity;
 
 namespace ObjectService.Pages.SC5FilePacks;
 
 public sealed class DetailsModel : PageModel
 {
-	readonly LocoDbContext _db;
+	readonly FrontendApiClient _api;
 
-	public DetailsModel(LocoDbContext db)
+	public DetailsModel(FrontendApiClient api)
 	{
-		_db = db;
+		_api = api;
 	}
 
-	public TblSC5FilePack? Pack { get; private set; }
+	public DtoSC5FilePackDescriptor? Pack { get; private set; }
 
-	public List<ListItem> SC5Files { get; private set; } = [];
-
-	// ── Edit form available values ──
 	public List<DtoAuthorEntry> AvailableAuthors { get; private set; } = [];
 	public List<DtoTagEntry> AvailableTags { get; private set; } = [];
 	public List<DtoLicenceEntry> AvailableLicences { get; private set; } = [];
-	public List<DtoScenarioEntry> AvailableScenarios { get; private set; } = [];
+	public List<DtoItemRef> AvailableScenarios { get; private set; } = [];
 
 	[TempData]
 	public string? SuccessMessage { get; set; }
@@ -37,22 +35,8 @@ public sealed class DetailsModel : PageModel
 
 	public async Task<IActionResult> OnGetAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Pack = await _db.SC5FilePacks
-			.Include(p => p.Licence)
-			.Include(p => p.Authors)
-			.Include(p => p.Tags)
-			.Include(p => p.SC5Files)
-			.AsSplitQuery()
-			.FirstOrDefaultAsync(p => p.Id == id, ct);
-
-		if (Pack is null)
-		{
-			return NotFound();
-		}
-
-		await LoadRelatedDataAsync(ct);
-
-		return Page();
+		await LoadAsync(id, ct);
+		return Pack is null ? NotFound() : Page();
 	}
 
 	public async Task<IActionResult> OnPostEditAsync(
@@ -74,7 +58,7 @@ public sealed class DetailsModel : PageModel
 		if (string.IsNullOrWhiteSpace(Name))
 		{
 			ErrorMessage = "Scenario pack name is required.";
-			await ReloadAsync(Id);
+			await LoadAsync(Id, CancellationToken.None);
 			return Page();
 		}
 
@@ -82,82 +66,30 @@ public sealed class DetailsModel : PageModel
 		SelectedTagIds ??= [];
 		SelectedSC5FileIds ??= [];
 
-		try
+		var request = new DtoSC5FilePackDescriptor(
+			Id,
+			Name.Trim(),
+			Description?.Trim(),
+			CreatedDate,
+			ModifiedDate,
+			DateOnly.FromDateTime(DateTime.UtcNow),
+			LicenceId.HasValue ? new DtoLicenceEntry(LicenceId.Value, string.Empty, string.Empty) : null,
+			[.. SelectedAuthorIds.Select(a => new DtoAuthorEntry(a, string.Empty))],
+			[.. SelectedTagIds.Select(t => new DtoTagEntry(t, string.Empty))],
+			[.. SelectedSC5FileIds.Select(f => new DtoItemRef(f, string.Empty))]);
+
+		using var client = _api.CreateClient();
+		var updated = await Client.UpdateSC5FilePackAsync(client, request);
+		if (updated != null)
 		{
-			var pack = await _db.SC5FilePacks
-				.Include(p => p.Licence)
-				.Include(p => p.Authors)
-				.Include(p => p.Tags)
-				.Include(p => p.SC5Files)
-				.AsSplitQuery()
-				.FirstOrDefaultAsync(p => p.Id == Id);
-
-			if (pack is null)
-			{
-				ErrorMessage = "Scenario pack not found.";
-				return Page();
-			}
-
-			// Basic properties
-			pack.Name = Name.Trim();
-			pack.Description = Description?.Trim();
-			pack.CreatedDate = CreatedDate;
-			pack.ModifiedDate = ModifiedDate;
-			// UploadedDate is a database-generated computed column — do not set it
-
-			// Licence
-			if (LicenceId.HasValue)
-			{
-				var licence = await _db.Licences.FindAsync(new object[] { (object)LicenceId.Value });
-				pack.Licence = licence;
-			}
-			else
-			{
-				pack.Licence = null;
-			}
-
-			// Authors
-			pack.Authors.Clear();
-			foreach (var authorId in SelectedAuthorIds)
-			{
-				var author = await _db.Authors.FindAsync(new object[] { (object)authorId });
-				if (author != null)
-				{
-					pack.Authors.Add(author);
-				}
-			}
-
-			// Tags
-			pack.Tags.Clear();
-			foreach (var tagId in SelectedTagIds)
-			{
-				var tag = await _db.Tags.FindAsync(new object[] { (object)tagId });
-				if (tag != null)
-				{
-					pack.Tags.Add(tag);
-				}
-			}
-
-			// SC5 Files (scenarios)
-			pack.SC5Files.Clear();
-			foreach (var fileId in SelectedSC5FileIds)
-			{
-				var file = await _db.SC5Files.FindAsync(new object[] { (object)fileId });
-				if (file != null)
-				{
-					pack.SC5Files.Add(file);
-				}
-			}
-
-			await _db.SaveChangesAsync();
 			SuccessMessage = $"Scenario pack '{Name.Trim()}' updated.";
 		}
-		catch (Exception ex)
+		else
 		{
-			ErrorMessage = $"Error updating scenario pack: {ex.Message}";
+			ErrorMessage = "Scenario pack not found.";
 		}
 
-		await ReloadAsync(Id);
+		await LoadAsync(Id, CancellationToken.None);
 		return Page();
 	}
 
@@ -168,64 +100,26 @@ public sealed class DetailsModel : PageModel
 			return Forbid();
 		}
 
-		var pack = await _db.SC5FilePacks.FindAsync(new object[] { (object)id });
-		if (pack is null)
+		using var client = _api.CreateClient();
+		var deleted = await Client.DeleteSC5FilePackAsync(client, id);
+		if (deleted)
 		{
-			await ReloadAsync(id);
-			ErrorMessage = "Failed to delete scenario pack.";
-			return Page();
+			SuccessMessage = "Scenario pack deleted.";
+			return RedirectToPage("/Index", new { category = "sc5filepacks" });
 		}
 
-		_db.SC5FilePacks.Remove(pack);
-		await _db.SaveChangesAsync();
-
-		SuccessMessage = "Scenario pack deleted.";
-		return RedirectToPage("/Index", new { category = "sc5filepacks" });
+		await LoadAsync(id, CancellationToken.None);
+		ErrorMessage = "Failed to delete scenario pack.";
+		return Page();
 	}
 
-	private async Task ReloadAsync(UniqueObjectId id)
+	async Task LoadAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Pack = await _db.SC5FilePacks
-			.Include(p => p.Licence)
-			.Include(p => p.Authors)
-			.Include(p => p.Tags)
-			.Include(p => p.SC5Files)
-			.AsSplitQuery()
-			.FirstOrDefaultAsync(p => p.Id == id);
-
-		await LoadRelatedDataAsync(CancellationToken.None);
+		using var client = _api.CreateClient();
+		Pack = await Client.GetSC5FilePackDescriptorAsync(client, id, cancellationToken: ct);
+		AvailableAuthors = [.. (await Client.GetAuthorsAsync(client, cancellationToken: ct)).OrderBy(a => a.Name)];
+		AvailableTags = [.. (await Client.GetTagsAsync(client, cancellationToken: ct)).OrderBy(t => t.Name)];
+		AvailableLicences = [.. (await Client.GetLicencesAsync(client, cancellationToken: ct)).OrderBy(l => l.Name)];
+		AvailableScenarios = [.. (await Client.GetSC5FilesAsync(client, cancellationToken: ct)).OrderBy(s => s.Name).Select(s => new DtoItemRef(s.Id, s.Name))];
 	}
-
-	private async Task LoadRelatedDataAsync(CancellationToken ct)
-	{
-		if (Pack is not null)
-		{
-			SC5Files = Pack.SC5Files
-				.OrderBy(f => f.Name)
-				.Select(f => new ListItem(f.Id, f.Name, "SC5Files", null))
-				.ToList();
-		}
-
-		AvailableAuthors = await _db.Authors
-			.OrderBy(a => a.Name)
-			.Select(a => new DtoAuthorEntry(a.Id, a.Name))
-			.ToListAsync(ct);
-
-		AvailableTags = await _db.Tags
-			.OrderBy(t => t.Name)
-			.Select(t => new DtoTagEntry(t.Id, t.Name))
-			.ToListAsync(ct);
-
-		AvailableLicences = await _db.Licences
-			.OrderBy(l => l.Name)
-			.Select(l => new DtoLicenceEntry(l.Id, l.Name, l.Text))
-			.ToListAsync(ct);
-
-		AvailableScenarios = await _db.SC5Files
-			.OrderBy(s => s.Name)
-			.Select(s => new DtoScenarioEntry(s.Id, s.Name))
-			.ToListAsync(ct);
-	}
-
-	public record ListItem(UniqueObjectId Id, string Name, string Kind, string? Extra);
 }

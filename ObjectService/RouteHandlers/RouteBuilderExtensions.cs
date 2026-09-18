@@ -18,6 +18,7 @@ public static class RouteBuilderExtensions
 		MapHandler(new ObjectRouteHandler(), publicGroup, config);
 		MapHandler(new ObjectMissingRouteHandler(), publicGroup, config);
 		MapHandler(new ScenarioRouteHandler(), publicGroup, config);
+		MapHandler(new SC5FileRouteHandler(), publicGroup, config);
 		MapHandler(new SC5FilePackRouteHandler(), publicGroup, config);
 		MapHandler(new ObjectPackRouteHandler(), publicGroup, config);
 
@@ -25,6 +26,7 @@ public static class RouteBuilderExtensions
 		var authGroup = v2.MapGroup(string.Empty).RequireAuthorization();
 		MapWriteHandler(new ObjectMissingRouteHandler(), authGroup, config);
 		MapWriteHandler(new ScenarioRouteHandler(), authGroup, config);
+		MapWriteHandler(new SC5FileRouteHandler(), authGroup, config);
 		MapWriteHandler(new SC5FilePackRouteHandler(), authGroup, config);
 		MapWriteHandler(new ObjectPackRouteHandler(), authGroup, config);
 		// Curator write routes for metadata (requires Curator policy or Admin)

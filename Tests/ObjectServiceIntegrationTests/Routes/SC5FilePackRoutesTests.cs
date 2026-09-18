@@ -123,21 +123,29 @@ public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task PutAsync()
 	{
-		var request = new DtoItemPackDescriptor<DtoScenarioEntry>(
+		var request = new DtoSC5FilePackDescriptor(
 			AlphaPackId,
 			"Updated scenario pack",
 			"Updated description",
 			null,
 			null,
 			DateOnly.UtcToday,
+			null,
 			[],
 			[],
-			[],
-			null);
+			[]);
 
 		using var response = await HttpClient!.PutAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}", request);
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+			using var db = GetDbContext();
+			var updated = await db.SC5FilePacks.SingleAsync(x => x.Id == AlphaPackId);
+			Assert.That(updated.Name, Is.EqualTo("Updated scenario pack"));
+			Assert.That(updated.Description, Is.EqualTo("Updated description"));
+		}
 	}
 
 	[Test]
@@ -145,7 +153,13 @@ public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
 	{
 		using var response = await HttpClient!.DeleteAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}");
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+			using var db = GetDbContext();
+			Assert.That(await db.SC5FilePacks.AnyAsync(x => x.Id == AlphaPackId), Is.False);
+		}
 	}
 
 	[Test]

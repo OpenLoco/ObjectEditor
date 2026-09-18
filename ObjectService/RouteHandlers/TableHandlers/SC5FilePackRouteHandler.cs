@@ -15,10 +15,21 @@ public class SC5FilePackRouteHandler : ITableRouteHandler
 	public Delegate UpdateDelegate => UpdateAsync;
 	public Delegate DeleteDelegate => DeleteAsync;
 	public void MapRoutes(IEndpointRouteBuilder e) => BaseTableRouteHandler.MapRoutes(this, e, e.ServiceProvider.GetRequiredService<IConfiguration>());
-	public void MapAdditionalRoutes(IEndpointRouteBuilder p) => p.MapGroup(Routes.ResourceRoute).MapGet(Routes.File, GetPackFileAsync);
+	public void MapAdditionalRoutes(IEndpointRouteBuilder p)
+	{
+		var resourceRoute = p.MapGroup(Routes.ResourceRoute);
+		_ = resourceRoute.MapGet(Routes.File, GetPackFileAsync);
+		_ = resourceRoute.MapGet(Routes.Descriptor, GetDescriptorAsync);
+	}
 
-	async Task<IResult> ListAsync([FromServices] ISC5FilePackService svc, CancellationToken ct) => Results.Ok(await svc.ListPacksAsync(ct));
+	async Task<IResult> ListAsync([FromServices] ISC5FilePackService svc, CancellationToken ct) => Results.Ok(await svc.ListEntriesAsync(ct));
 	async Task<IResult> ReadAsync(UniqueObjectId id, [FromServices] ISC5FilePackService svc, CancellationToken ct) => Results.Ok(await svc.GetPackAsync(id, ct));
+	async Task<IResult> GetDescriptorAsync([FromRoute] UniqueObjectId id, [FromServices] ISC5FilePackService svc, CancellationToken ct)
+	{
+		var descriptor = await svc.GetDescriptorAsync(id, ct);
+		return descriptor != null ? Results.Ok(descriptor) : Results.NotFound();
+	}
+
 	async Task<IResult> GetPackFileAsync([FromRoute] UniqueObjectId id, [FromServices] ISC5FilePackService svc, CancellationToken ct)
 	{
 		var (stream, name) = await svc.GetPackFileAsync(id, ct);
@@ -41,6 +52,15 @@ public class SC5FilePackRouteHandler : ITableRouteHandler
 		return Results.Created($"{Routes.Prefix}{BaseRoute}/{created.Id}", created);
 	}
 
-	Task<IResult> UpdateAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-	Task<IResult> DeleteAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoSC5FilePackDescriptor request, [FromServices] ISC5FilePackService svc, CancellationToken ct)
+	{
+		var updated = await svc.UpdateAsync(id, request, ct);
+		return updated != null ? Results.Ok(updated) : Results.NotFound();
+	}
+
+	async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] ISC5FilePackService svc, CancellationToken ct)
+	{
+		var deleted = await svc.DeleteAsync(id, ct);
+		return deleted ? Results.Ok() : Results.NotFound();
+	}
 }

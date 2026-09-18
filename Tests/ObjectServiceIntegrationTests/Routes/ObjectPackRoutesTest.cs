@@ -153,21 +153,29 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task PutAsync()
 	{
-		var request = new DtoItemPackDescriptor<DtoObjectEntry>(
+		var request = new DtoObjectPackDescriptor(
 			AlphaPackId,
 			"Updated object pack",
 			"Updated description",
 			null,
 			null,
 			DateOnly.UtcToday,
+			null,
 			[],
 			[],
-			[],
-			null);
+			[]);
 
 		using var response = await HttpClient!.PutAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}", request);
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+			using var db = GetDbContext();
+			var updated = await db.ObjectPacks.SingleAsync(x => x.Id == AlphaPackId);
+			Assert.That(updated.Name, Is.EqualTo("Updated object pack"));
+			Assert.That(updated.Description, Is.EqualTo("Updated description"));
+		}
 	}
 
 	[Test]
@@ -175,7 +183,13 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 	{
 		using var response = await HttpClient!.DeleteAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}");
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+			using var db = GetDbContext();
+			Assert.That(await db.ObjectPacks.AnyAsync(x => x.Id == AlphaPackId), Is.False);
+		}
 	}
 
 	[Test]

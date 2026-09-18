@@ -9,18 +9,16 @@ namespace ObjectService.Frontend;
 
 public sealed class ObjectExplorerService
 {
-	readonly IHttpClientFactory _httpClientFactory;
-	readonly IHttpContextAccessor _httpContextAccessor;
+	readonly FrontendApiClient _apiClient;
 
-	public ObjectExplorerService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+	public ObjectExplorerService(FrontendApiClient apiClient)
 	{
-		_httpClientFactory = httpClientFactory;
-		_httpContextAccessor = httpContextAccessor;
+		_apiClient = apiClient;
 	}
 
 	public async Task<ObjectBrowsePageViewModel> GetObjectsAsync(ObjectBrowseQuery request, CancellationToken cancellationToken = default)
 	{
-		using var client = CreateApiClient();
+		using var client = _apiClient.CreateClient();
 		var pageSize = Math.Clamp(request.PageSize, 12, 100);
 		var requestedPage = Math.Max(request.Page, 1);
 		var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
@@ -76,7 +74,7 @@ public sealed class ObjectExplorerService
 
 	public async Task<ObjectDetailViewModel?> GetObjectAsync(UniqueObjectId id, CancellationToken cancellationToken = default)
 	{
-		using var client = CreateApiClient();
+		using var client = _apiClient.CreateClient();
 		var obj = await Client.GetObjectAsync(client, id);
 
 		if (obj == null)
@@ -202,22 +200,6 @@ public sealed class ObjectExplorerService
 		}
 
 		return [.. images.OrderBy(x => x.Index)];
-	}
-
-	HttpClient CreateApiClient()
-	{
-		var httpContext = _httpContextAccessor.HttpContext ?? throw new InvalidOperationException("An active HTTP request is required to create the ObjectService API client.");
-		var client = _httpClientFactory.CreateClient();
-		client.BaseAddress = new Uri($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}/");
-
-		// Forward the bearer token from the access_token cookie to API calls
-		var accessToken = httpContext.Request.Cookies["access_token"];
-		if (!string.IsNullOrEmpty(accessToken))
-		{
-			client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-		}
-
-		return client;
 	}
 
 	static bool IsDownloadable(DtoObjectEntry row)

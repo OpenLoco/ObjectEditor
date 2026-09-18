@@ -12,9 +12,13 @@ namespace ObjectService.Services;
 public interface ISC5FilePackService
 {
 	Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> ListPacksAsync(CancellationToken ct);
+	Task<IEnumerable<DtoSC5FilePackListEntry>> ListEntriesAsync(CancellationToken ct);
 	Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoSC5FilePackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct);
 	Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoItemPackDescriptor<DtoScenarioEntry>> CreatePackAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, UniqueObjectId ownerUserId, CancellationToken ct);
+	Task<DtoSC5FilePackDescriptor?> UpdateAsync(UniqueObjectId id, DtoSC5FilePackDescriptor request, CancellationToken ct);
+	Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct);
 }
 
 public class SC5FilePackService : ISC5FilePackService
@@ -33,12 +37,135 @@ public class SC5FilePackService : ISC5FilePackService
 		return packs.Select(x => x.ToDtoEntry()).OrderBy(x => x.Name);
 	}
 
+	public async Task<IEnumerable<DtoSC5FilePackListEntry>> ListEntriesAsync(CancellationToken ct)
+	{
+		var packs = await _db.SC5FilePacks
+			.Include(p => p.Licence)
+			.Include(p => p.Authors)
+			.Include(p => p.Tags)
+			.Include(p => p.SC5Files)
+			.AsSplitQuery()
+			.ToListAsync(ct);
+
+		return packs
+			.Select(p => new DtoSC5FilePackListEntry(
+				p.Id,
+				p.Name,
+				p.Description,
+				p.UploadedDate,
+				p.Licence?.ToDtoEntry(),
+				p.Authors.Count,
+				p.Tags.Count,
+				p.SC5Files.Count))
+			.OrderBy(p => p.Name);
+	}
+
 	public async Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct)
 	{
 		var packs = await _db.SC5FilePacks.Where(x => x.Id == id).Include(l => l.Licence)
 		.Select(x => new ExpandedTblPack<TblSC5FilePack, TblSC5File>(x, x.SC5Files, x.Authors, x.Tags)).ToListAsync(ct);
 		return packs.Select(x => x.ToDtoDescriptor()).OrderBy(x => x.Name);
 	}
+
+	public async Task<DtoSC5FilePackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var pack = await _db.SC5FilePacks
+			.Where(x => x.Id == id)
+			.Include(x => x.Licence)
+			.Include(x => x.Authors)
+			.Include(x => x.Tags)
+			.Include(x => x.SC5Files)
+			.AsSplitQuery()
+			.FirstOrDefaultAsync(ct);
+
+		return pack is null ? null : ToDescriptor(pack);
+	}
+
+	public async Task<DtoSC5FilePackDescriptor?> UpdateAsync(UniqueObjectId id, DtoSC5FilePackDescriptor request, CancellationToken ct)
+	{
+		var pack = await _db.SC5FilePacks
+			.Where(x => x.Id == id)
+			.Include(x => x.Licence)
+			.Include(x => x.Authors)
+			.Include(x => x.Tags)
+			.Include(x => x.SC5Files)
+			.AsSplitQuery()
+			.FirstOrDefaultAsync(ct);
+
+		if (pack is null)
+		{
+			return null;
+		}
+
+		pack.Name = request.Name;
+		pack.Description = request.Description;
+		pack.CreatedDate = request.CreatedDate;
+		pack.ModifiedDate = request.ModifiedDate;
+
+		pack.Licence = request.Licence is null ? null : await _db.Licences.FindAsync([request.Licence.Id], ct);
+
+		pack.Authors.Clear();
+		var authorIds = request.Authors.Select(a => a.Id).ToList();
+		if (authorIds.Count > 0)
+		{
+			var authors = await _db.Authors.Where(a => authorIds.Contains(a.Id)).ToListAsync(ct);
+			foreach (var author in authors)
+			{
+				pack.Authors.Add(author);
+			}
+		}
+
+		pack.Tags.Clear();
+		var tagIds = request.Tags.Select(t => t.Id).ToList();
+		if (tagIds.Count > 0)
+		{
+			var tags = await _db.Tags.Where(t => tagIds.Contains(t.Id)).ToListAsync(ct);
+			foreach (var tag in tags)
+			{
+				pack.Tags.Add(tag);
+			}
+		}
+
+		pack.SC5Files.Clear();
+		var fileIds = request.SC5Files.Select(f => f.Id).ToList();
+		if (fileIds.Count > 0)
+		{
+			var files = await _db.SC5Files.Where(f => fileIds.Contains(f.Id)).ToListAsync(ct);
+			foreach (var file in files)
+			{
+				pack.SC5Files.Add(file);
+			}
+		}
+
+		_ = await _db.SaveChangesAsync(ct);
+		return ToDescriptor(pack);
+	}
+
+	public async Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var pack = await _db.SC5FilePacks.FindAsync([id], ct);
+		if (pack is null)
+		{
+			return false;
+		}
+
+		_ = _db.SC5FilePacks.Remove(pack);
+		_ = await _db.SaveChangesAsync(ct);
+		return true;
+	}
+
+	static DtoSC5FilePackDescriptor ToDescriptor(TblSC5FilePack pack)
+		=> new(
+			pack.Id,
+			pack.Name,
+			pack.Description,
+			pack.CreatedDate,
+			pack.ModifiedDate,
+			pack.UploadedDate,
+			pack.Licence?.ToDtoEntry(),
+			[.. pack.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())],
+			[.. pack.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())],
+			[.. pack.SC5Files.OrderBy(f => f.Name).Select(f => new DtoItemRef(f.Id, f.Name))]);
 
 	public async Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct)
 	{

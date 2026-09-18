@@ -1,24 +1,21 @@
-using Microsoft.AspNetCore.Identity;
+using Definitions.DTO.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ObjectService.Frontend;
 using System.ComponentModel.DataAnnotations;
-using Definitions.Database;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace ObjectService.Pages.Account;
 
 public sealed class LoginModel : PageModel
 {
-	private readonly SignInManager<TblUser> _signInManager;
-	private readonly IHttpClientFactory _httpClientFactory;
+	private readonly FrontendApiClient _api;
 	private readonly ILogger<LoginModel> _logger;
 
-	public LoginModel(
-		SignInManager<TblUser> signInManager,
-		IHttpClientFactory httpClientFactory,
-		ILogger<LoginModel> logger)
+	public LoginModel(FrontendApiClient api, ILogger<LoginModel> logger)
 	{
-		_signInManager = signInManager;
-		_httpClientFactory = httpClientFactory;
+		_api = api;
 		_logger = logger;
 	}
 
@@ -42,32 +39,23 @@ public sealed class LoginModel : PageModel
 			return Page();
 		}
 
-		// Find user by email first
-		var user = await _signInManager.UserManager.FindByEmailAsync(Email.Trim());
-		if (user == null)
+		using var client = _api.CreateClient();
+		var payload = new DtoLoginRequest(Email.Trim(), Password);
+
+		// Sign in via the Identity API using cookies so the Razor frontend stays authenticated.
+		using var cookieResponse = await client.PostAsJsonAsync("/login?useCookies=true", payload);
+		if (!cookieResponse.IsSuccessStatusCode)
 		{
 			ModelState.AddModelError(string.Empty, "Invalid email or password.");
 			return Page();
 		}
 
-		var result = await _signInManager.PasswordSignInAsync(user, Password, isPersistent: false, lockoutOnFailure: true);
+		ForwardSetCookieHeaders(cookieResponse);
 
-		if (!result.Succeeded)
-		{
-			if (result.IsLockedOut)
-			{
-				ModelState.AddModelError(string.Empty, "This account has been locked out due to too many failed login attempts. Please try again later.");
-				return Page();
-			}
-
-			ModelState.AddModelError(string.Empty, "Invalid email or password.");
-			return Page();
-		}
+		// Also obtain a bearer token for the API calls the frontend makes on the user's behalf.
+		_ = await StoreBearerTokenAsync(client, payload);
 
 		_logger.LogInformation("User {Email} logged in", Email);
-
-		// Also obtain a bearer token from the Identity API for API calls
-		await StoreBearerTokenAsync();
 
 		if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
 		{
@@ -77,36 +65,49 @@ public sealed class LoginModel : PageModel
 		return RedirectToPage("/Account/Manage");
 	}
 
-	private async Task StoreBearerTokenAsync()
+	void ForwardSetCookieHeaders(HttpResponseMessage response)
+	{
+		if (response.Headers.TryGetValues("Set-Cookie", out var values))
+		{
+			foreach (var value in values)
+			{
+				Response.Headers.Append("Set-Cookie", value);
+			}
+		}
+	}
+
+	async Task<string?> StoreBearerTokenAsync(HttpClient client, DtoLoginRequest payload)
 	{
 		try
 		{
-			var client = _httpClientFactory.CreateClient();
-			client.BaseAddress = new Uri($"{Request.Scheme}://{Request.Host}");
-
-			var loginPayload = new { Email = Email.Trim(), Password };
-			var response = await client.PostAsJsonAsync("/login?useCookies=false", loginPayload);
-
-			if (response.IsSuccessStatusCode)
+			using var response = await client.PostAsJsonAsync("/login?useCookies=false", payload);
+			if (!response.IsSuccessStatusCode)
 			{
-				var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
-				if (tokenResponse?.AccessToken != null)
-				{
-					Response.Cookies.Append("access_token", tokenResponse.AccessToken, new CookieOptions
-					{
-						HttpOnly = true,
-						Secure = Request.IsHttps,
-						SameSite = SameSiteMode.Lax,
-						MaxAge = TimeSpan.FromHours(1),
-					});
-				}
+				return null;
 			}
+
+			var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+			if (tokenResponse?.AccessToken == null)
+			{
+				return null;
+			}
+
+			Response.Cookies.Append("access_token", tokenResponse.AccessToken, new CookieOptions
+			{
+				HttpOnly = true,
+				Secure = Request.IsHttps,
+				SameSite = SameSiteMode.Lax,
+				MaxAge = TimeSpan.FromHours(1),
+			});
+
+			return tokenResponse.AccessToken;
 		}
 		catch (Exception ex)
 		{
 			_logger.LogWarning(ex, "Failed to obtain bearer token for user {Email}", Email);
+			return null;
 		}
 	}
 
-	private sealed record TokenResponse(string TokenType, string AccessToken, long ExpiresIn, string RefreshToken);
+	sealed record TokenResponse(string TokenType, string AccessToken, long ExpiresIn, string RefreshToken);
 }

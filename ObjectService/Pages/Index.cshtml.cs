@@ -1,39 +1,23 @@
 using Definitions;
-using Definitions.Database;
 using Definitions.DTO;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using ObjectService.Frontend;
-using ObjectService.Services;
 
 namespace ObjectService.Pages;
 
 public sealed class IndexModel : PageModel
 {
+	readonly FrontendApiClient _api;
 	readonly ObjectExplorerService _explorerService;
-	readonly LocoDbContext _db;
-	readonly ICrudService<DtoAuthorEntry, TblAuthor> _authorService;
-	readonly ICrudService<DtoTagEntry, TblTag> _tagService;
-	readonly ICrudService<DtoLicenceEntry, TblLicence> _licenceService;
-	readonly ICrudService<DtoObjectMissingEntry, TblObjectMissing> _objectsMissingService;
 
-	public IndexModel(
-		ObjectExplorerService explorerService,
-		LocoDbContext db,
-		ICrudService<DtoAuthorEntry, TblAuthor> authorService,
-		ICrudService<DtoTagEntry, TblTag> tagService,
-		ICrudService<DtoLicenceEntry, TblLicence> licenceService,
-		ICrudService<DtoObjectMissingEntry, TblObjectMissing> objectsMissingService)
+	public IndexModel(FrontendApiClient api, ObjectExplorerService explorerService)
 	{
+		_api = api;
 		_explorerService = explorerService;
-		_db = db;
-		_authorService = authorService;
-		_tagService = tagService;
-		_licenceService = licenceService;
-		_objectsMissingService = objectsMissingService;
 	}
 
 	[BindProperty(SupportsGet = true)]
@@ -154,105 +138,91 @@ public sealed class IndexModel : PageModel
 				break;
 		}
 	}
+
 	async Task LoadObjectPacksAsync(CancellationToken ct)
 	{
-		var packs = await _db.ObjectPacks
-			.Include(p => p.Authors)
-			.Include(p => p.Tags)
-			.Include(p => p.Licence)
-			.Include(p => p.Objects)
-			.OrderByDescending(p => p.UploadedDate)
-			.ToListAsync(ct);
+		using var client = _api.CreateClient();
+		var packs = await Client.GetObjectPackListEntriesAsync(client, cancellationToken: ct);
 
-		ObjectPackList = packs.Select(p => new ObjectPackListViewModel(
-			p.Id,
-			p.Name,
-			p.Description ?? "",
-			p.UploadedDate,
-			p.Authors.Count,
-			p.Tags.Count,
-			p.Licence?.Name ?? "None",
-			p.Objects.Count)).ToList();
+		ObjectPackList = [.. packs
+			.OrderByDescending(p => p.UploadedDate)
+			.Select(p => new ObjectPackListViewModel(
+				p.Id,
+				p.Name,
+				p.Description ?? string.Empty,
+				p.UploadedDate,
+				p.AuthorCount,
+				p.TagCount,
+				p.Licence?.Name ?? "None",
+				p.ObjectCount))];
 	}
 
 	async Task LoadSC5FilesAsync(CancellationToken ct)
 	{
-		var files = await _db.SC5Files
-			.Include(f => f.Authors)
-			.Include(f => f.Tags)
-			.Include(f => f.Licence)
-			.Include(f => f.SC5FilePacks)
-			.OrderByDescending(f => f.UploadedDate)
-			.ToListAsync(ct);
+		using var client = _api.CreateClient();
+		var files = await Client.GetSC5FilesAsync(client, cancellationToken: ct);
 
-		SC5FileList = files.Select(f => new SC5FileListViewModel(
-			f.Id,
-			f.Name,
-			f.Description ?? "",
-			f.UploadedDate,
-			f.ObjectSource,
-			f.Authors.Count,
-			f.Tags.Count,
-			f.Licence?.Name ?? "None",
-			f.SC5FilePacks.Count)).ToList();
+		SC5FileList = [.. files
+			.OrderByDescending(f => f.UploadedDate)
+			.Select(f => new SC5FileListViewModel(
+				f.Id,
+				f.Name,
+				f.Description ?? string.Empty,
+				f.UploadedDate,
+				f.ObjectSource,
+				f.AuthorCount,
+				f.TagCount,
+				f.Licence?.Name ?? "None",
+				f.PackCount))];
 	}
 
 	async Task LoadSC5FilePacksAsync(CancellationToken ct)
 	{
-		var packs = await _db.SC5FilePacks
-			.Include(p => p.Authors)
-			.Include(p => p.Tags)
-			.Include(p => p.Licence)
-			.Include(p => p.SC5Files)
-			.OrderByDescending(p => p.UploadedDate)
-			.ToListAsync(ct);
+		using var client = _api.CreateClient();
+		var packs = await Client.GetSC5FilePackListEntriesAsync(client, cancellationToken: ct);
 
-		SC5FilePackList = packs.Select(p => new SC5FilePackListViewModel(
-			p.Id,
-			p.Name,
-			p.Description ?? "",
-			p.UploadedDate,
-			p.Authors.Count,
-			p.Tags.Count,
-			p.Licence?.Name ?? "None",
-			p.SC5Files.Count)).ToList();
+		SC5FilePackList = [.. packs
+			.OrderByDescending(p => p.UploadedDate)
+			.Select(p => new SC5FilePackListViewModel(
+				p.Id,
+				p.Name,
+				p.Description ?? string.Empty,
+				p.UploadedDate,
+				p.AuthorCount,
+				p.TagCount,
+				p.Licence?.Name ?? "None",
+				p.FileCount))];
 	}
 
 	async Task LoadAuthorsAsync(CancellationToken ct)
 	{
-		var authors = await _db.Authors
-			.OrderBy(a => a.Name)
-			.ToListAsync(ct);
-
-		AuthorList = authors.Select(a => new AuthorListViewModel(a.Id, a.Name)).ToList();
+		using var client = _api.CreateClient();
+		var authors = await Client.GetAuthorsAsync(client, cancellationToken: ct);
+		AuthorList = [.. authors.OrderBy(a => a.Name).Select(a => new AuthorListViewModel(a.Id, a.Name))];
 	}
 
 	async Task LoadTagsAsync(CancellationToken ct)
 	{
-		var tags = await _db.Tags
-			.OrderBy(t => t.Name)
-			.ToListAsync(ct);
-
-		TagList = tags.Select(t => new TagListViewModel(t.Id, t.Name)).ToList();
+		using var client = _api.CreateClient();
+		var tags = await Client.GetTagsAsync(client, cancellationToken: ct);
+		TagList = [.. tags.OrderBy(t => t.Name).Select(t => new TagListViewModel(t.Id, t.Name))];
 	}
 
 	async Task LoadLicencesAsync(CancellationToken ct)
 	{
-		var licences = await _db.Licences
-			.OrderBy(l => l.Name)
-			.ToListAsync(ct);
-
-		LicenceList = licences.Select(l => new LicenceListViewModel(l.Id, l.Name, l.Text)).ToList();
+		using var client = _api.CreateClient();
+		var licences = await Client.GetLicencesAsync(client, cancellationToken: ct);
+		LicenceList = [.. licences.OrderBy(l => l.Name).Select(l => new LicenceListViewModel(l.Id, l.Name, l.Text))];
 	}
 
 	async Task LoadObjectsMissingAsync(CancellationToken ct)
 	{
-		var missing = await _db.ObjectsMissing
+		using var client = _api.CreateClient();
+		var missing = await Client.GetMissingObjectsAsync(client);
+		ObjectsMissingList = [.. missing
 			.OrderBy(m => m.DatName)
 			.ThenBy(m => m.DatChecksum)
-			.ToListAsync(ct);
-
-		ObjectsMissingList = missing.Select(m => new ObjectsMissingListViewModel(m.Id, m.DatName, m.DatChecksum, m.ObjectType)).ToList();
+			.Select(m => new ObjectsMissingListViewModel(m.Id, m.DatName, m.DatChecksum, m.ObjectType))];
 	}
 
 	// ── CRUD form bindings ──
@@ -284,7 +254,7 @@ public sealed class IndexModel : PageModel
 	[TempData]
 	public string? ErrorMessage { get; set; }
 
-	// ── POST: Create author/tag/licence ──
+	// ── POST: Create author/tag/licence/objectpack/sc5filepack/missing object ──
 
 	public async Task<IActionResult> OnPostCreateAsync()
 	{
@@ -299,87 +269,62 @@ public sealed class IndexModel : PageModel
 			return RedirectToPage(new { category = CrudCategory });
 		}
 
-		try
+		using var client = _api.CreateClient();
+		switch (CrudCategory)
 		{
-			switch (CrudCategory)
+			case "authors":
 			{
-				case "authors":
-				{
-					var entry = new DtoAuthorEntry(0, CrudName.Trim());
-					if (!_authorService.TryValidateCreate(entry, out var err))
-					{
-						ErrorMessage = err;
-						return RedirectToPage(new { category = CrudCategory });
-					}
-					await _authorService.CreateAsync(entry, CancellationToken.None);
-					SuccessMessage = $"Author '{CrudName.Trim()}' created.";
-					break;
-				}
-				case "tags":
-				{
-					var entry = new DtoTagEntry(0, CrudName.Trim());
-					if (!_tagService.TryValidateCreate(entry, out var err))
-					{
-						ErrorMessage = err;
-						return RedirectToPage(new { category = CrudCategory });
-					}
-					await _tagService.CreateAsync(entry, CancellationToken.None);
-					SuccessMessage = $"Tag '{CrudName.Trim()}' created.";
-					break;
-				}
-				case "licences":
-				{
-					var entry = new DtoLicenceEntry(0, CrudName.Trim(), CrudText?.Trim() ?? string.Empty);
-					if (!_licenceService.TryValidateCreate(entry, out var err))
-					{
-						ErrorMessage = err;
-						return RedirectToPage(new { category = CrudCategory });
-					}
-					await _licenceService.CreateAsync(entry, CancellationToken.None);
-					SuccessMessage = $"Licence '{CrudName.Trim()}' created.";
-					break;
-				}
-				case "objectsmissing":
-				{
-					var entry = new DtoObjectMissingEntry(0, CrudName.Trim(), CrudChecksum, CrudObjectType);
-					if (!_objectsMissingService.TryValidateCreate(entry, out var err))
-					{
-						ErrorMessage = err;
-						return RedirectToPage(new { category = CrudCategory });
-					}
-					await _objectsMissingService.CreateAsync(entry, CancellationToken.None);
-					SuccessMessage = $"Missing object '{CrudName.Trim()}' created.";
-					break;
-				}
-				case "objectpacks":
-				{
-					var newPack = new TblObjectPack { Name = CrudName.Trim(), Description = CrudDescription?.Trim() };
-					_ = _db.ObjectPacks.Add(newPack);
-					_ = await _db.SaveChangesAsync();
-					SuccessMessage = $"Object pack '{CrudName.Trim()}' created.";
-					break;
-				}
-				case "sc5filepacks":
-				{
-					var newPack = new TblSC5FilePack { Name = CrudName.Trim(), Description = CrudDescription?.Trim() };
-					_ = _db.SC5FilePacks.Add(newPack);
-					_ = await _db.SaveChangesAsync();
-					SuccessMessage = $"Scenario pack '{CrudName.Trim()}' created.";
-					break;
-				}
-				default:
-					break;
+				var author = await Client.CreateResourceAsync<DtoAuthorEntry, DtoAuthorEntry>(client, Client.AuthorsEndpointGroup, new DtoAuthorEntry(0, CrudName.Trim()));
+				SuccessMessage = author != null ? $"Author '{CrudName.Trim()}' created." : null;
+				ErrorMessage = author != null ? null : "Failed to create author.";
+				break;
 			}
-		}
-		catch (Exception ex)
-		{
-			ErrorMessage = $"Error creating: {ex.Message}";
+			case "tags":
+			{
+				var tag = await Client.CreateResourceAsync<DtoTagEntry, DtoTagEntry>(client, Client.TagsEndpointGroup, new DtoTagEntry(0, CrudName.Trim()));
+				SuccessMessage = tag != null ? $"Tag '{CrudName.Trim()}' created." : null;
+				ErrorMessage = tag != null ? null : "Failed to create tag.";
+				break;
+			}
+			case "licences":
+			{
+				var licence = await Client.CreateResourceAsync<DtoLicenceEntry, DtoLicenceEntry>(client, Client.LicencesEndpointGroup, new DtoLicenceEntry(0, CrudName.Trim(), CrudText?.Trim() ?? string.Empty));
+				SuccessMessage = licence != null ? $"Licence '{CrudName.Trim()}' created." : null;
+				ErrorMessage = licence != null ? null : "Failed to create licence.";
+				break;
+			}
+			case "objectsmissing":
+			{
+				var missing = await Client.AddMissingObjectAsync(client, new DtoObjectMissingPost(CrudName.Trim(), CrudChecksum, CrudObjectType));
+				SuccessMessage = missing != null ? $"Missing object '{CrudName.Trim()}' created." : null;
+				ErrorMessage = missing != null ? null : "Failed to create missing object.";
+				break;
+			}
+			case "objectpacks":
+			{
+				var request = new DtoItemPackDescriptor<DtoObjectEntry>(0, CrudName.Trim(), CrudDescription?.Trim(), null, null, DateOnly.FromDateTime(DateTime.UtcNow), [], [], [], null);
+				var pack = await Client.CreateResourceAsync<DtoItemPackDescriptor<DtoObjectEntry>, DtoItemPackEntry>(client, Client.ObjectPacksEndpointGroup, request);
+				SuccessMessage = pack != null ? $"Object pack '{CrudName.Trim()}' created." : null;
+				ErrorMessage = pack != null ? null : "Failed to create object pack.";
+				break;
+			}
+			case "sc5filepacks":
+			{
+				var request = new DtoItemPackDescriptor<DtoScenarioEntry>(0, CrudName.Trim(), CrudDescription?.Trim(), null, null, DateOnly.FromDateTime(DateTime.UtcNow), [], [], [], null);
+				var pack = await Client.CreateResourceAsync<DtoItemPackDescriptor<DtoScenarioEntry>, DtoItemPackDescriptor<DtoScenarioEntry>>(client, Client.SC5FilePacksEndpointGroup, request);
+				SuccessMessage = pack != null ? $"Scenario pack '{CrudName.Trim()}' created." : null;
+				ErrorMessage = pack != null ? null : "Failed to create scenario pack.";
+				break;
+			}
+			default:
+				ErrorMessage = "Unknown category.";
+				break;
 		}
 
 		return RedirectToPage(new { category = CrudCategory });
 	}
 
-	// ── POST: Edit author/tag/licence ──
+	// ── POST: Edit author/tag/licence/missing object ──
 
 	public async Task<IActionResult> OnPostEditAsync()
 	{
@@ -394,71 +339,46 @@ public sealed class IndexModel : PageModel
 			return RedirectToPage(new { category = CrudCategory });
 		}
 
-		try
+		using var client = _api.CreateClient();
+		switch (CrudCategory)
 		{
-			switch (CrudCategory)
+			case "authors":
 			{
-				case "authors":
-				{
-					var entry = new DtoAuthorEntry(CrudId, CrudName.Trim());
-					var updated = await _authorService.UpdateAsync(CrudId, entry, CancellationToken.None);
-					SuccessMessage = updated != null ? $"Author '{CrudName.Trim()}' updated." : "Author not found.";
-					if (updated == null)
-					{
-						ErrorMessage = "Author not found.";
-					}
-
-					break;
-				}
-				case "tags":
-				{
-					var entry = new DtoTagEntry(CrudId, CrudName.Trim());
-					var updated = await _tagService.UpdateAsync(CrudId, entry, CancellationToken.None);
-					SuccessMessage = updated != null ? $"Tag '{CrudName.Trim()}' updated." : "Tag not found.";
-					if (updated == null)
-					{
-						ErrorMessage = "Tag not found.";
-					}
-
-					break;
-				}
-				case "licences":
-				{
-					var entry = new DtoLicenceEntry(CrudId, CrudName.Trim(), CrudText?.Trim() ?? string.Empty);
-					var updated = await _licenceService.UpdateAsync(CrudId, entry, CancellationToken.None);
-					SuccessMessage = updated != null ? $"Licence '{CrudName.Trim()}' updated." : "Licence not found.";
-					if (updated == null)
-					{
-						ErrorMessage = "Licence not found.";
-					}
-
-					break;
-				}
-				case "objectsmissing":
-				{
-					var entry = new DtoObjectMissingEntry(CrudId, CrudName.Trim(), CrudChecksum, CrudObjectType);
-					var updated = await _objectsMissingService.UpdateAsync(CrudId, entry, CancellationToken.None);
-					SuccessMessage = updated != null ? $"Missing object '{CrudName.Trim()}' updated." : "Missing object not found.";
-					if (updated == null)
-					{
-						ErrorMessage = "Missing object not found.";
-					}
-
-					break;
-				}
-				default:
-					break;
+				var updated = await Client.UpdateResourceAsync<DtoAuthorEntry, DtoAuthorEntry>(client, Client.AuthorsEndpointGroup, CrudId, new DtoAuthorEntry(CrudId, CrudName.Trim()));
+				SuccessMessage = updated != null ? $"Author '{CrudName.Trim()}' updated." : null;
+				ErrorMessage = updated != null ? null : "Author not found.";
+				break;
 			}
-		}
-		catch (Exception ex)
-		{
-			ErrorMessage = $"Error updating: {ex.Message}";
+			case "tags":
+			{
+				var updated = await Client.UpdateResourceAsync<DtoTagEntry, DtoTagEntry>(client, Client.TagsEndpointGroup, CrudId, new DtoTagEntry(CrudId, CrudName.Trim()));
+				SuccessMessage = updated != null ? $"Tag '{CrudName.Trim()}' updated." : null;
+				ErrorMessage = updated != null ? null : "Tag not found.";
+				break;
+			}
+			case "licences":
+			{
+				var updated = await Client.UpdateResourceAsync<DtoLicenceEntry, DtoLicenceEntry>(client, Client.LicencesEndpointGroup, CrudId, new DtoLicenceEntry(CrudId, CrudName.Trim(), CrudText?.Trim() ?? string.Empty));
+				SuccessMessage = updated != null ? $"Licence '{CrudName.Trim()}' updated." : null;
+				ErrorMessage = updated != null ? null : "Licence not found.";
+				break;
+			}
+			case "objectsmissing":
+			{
+				var updated = await Client.UpdateResourceAsync<DtoObjectMissingEntry, DtoObjectMissingEntry>(client, Client.MissingObjectsEndpointGroup, CrudId, new DtoObjectMissingEntry(CrudId, CrudName.Trim(), CrudChecksum, CrudObjectType));
+				SuccessMessage = updated != null ? $"Missing object '{CrudName.Trim()}' updated." : null;
+				ErrorMessage = updated != null ? null : "Missing object not found.";
+				break;
+			}
+			default:
+				ErrorMessage = "Unknown category.";
+				break;
 		}
 
 		return RedirectToPage(new { category = CrudCategory });
 	}
 
-	// ── POST: Delete author/tag/licence/objectpacks/sc5filepacks ──
+	// ── POST: Delete author/tag/licence/objectpack/sc5filepack/missing object ──
 
 	public async Task<IActionResult> OnPostDeleteAsync()
 	{
@@ -467,78 +387,43 @@ public sealed class IndexModel : PageModel
 			return Forbid();
 		}
 
-		try
+		using var client = _api.CreateClient();
+		bool deleted;
+		switch (CrudCategory)
 		{
-			switch (CrudCategory)
-			{
-				case "authors":
-				{
-					var deleted = await _authorService.DeleteAsync(CrudId, CancellationToken.None);
-					SuccessMessage = deleted ? "Author deleted." : null;
-					ErrorMessage = deleted ? null : "Failed to delete author.";
-					break;
-				}
-				case "tags":
-				{
-					var deleted = await _tagService.DeleteAsync(CrudId, CancellationToken.None);
-					SuccessMessage = deleted ? "Tag deleted." : null;
-					ErrorMessage = deleted ? null : "Failed to delete tag.";
-					break;
-				}
-				case "licences":
-				{
-					var deleted = await _licenceService.DeleteAsync(CrudId, CancellationToken.None);
-					SuccessMessage = deleted ? "Licence deleted." : null;
-					ErrorMessage = deleted ? null : "Failed to delete licence.";
-					break;
-				}
-				case "objectsmissing":
-				{
-					var deleted = await _objectsMissingService.DeleteAsync(CrudId, CancellationToken.None);
-					SuccessMessage = deleted ? "Missing object deleted." : null;
-					ErrorMessage = deleted ? null : "Failed to delete missing object.";
-					break;
-				}
-				case "objectpacks":
-				{
-					var pack = await _db.ObjectPacks.FindAsync(new object[] { (object)CrudId }, CancellationToken.None);
-					if (pack != null)
-					{
-						_db.ObjectPacks.Remove(pack);
-						await _db.SaveChangesAsync();
-						SuccessMessage = $"Object pack '{pack.Name}' deleted.";
-					}
-					else
-					{
-						ErrorMessage = "Pack not found.";
-					}
-
-					break;
-				}
-				case "sc5filepacks":
-				{
-					var pack = await _db.SC5FilePacks.FindAsync(new object[] { (object)CrudId }, CancellationToken.None);
-					if (pack != null)
-					{
-						_db.SC5FilePacks.Remove(pack);
-						await _db.SaveChangesAsync();
-						SuccessMessage = $"SC5 file pack '{pack.Name}' deleted.";
-					}
-					else
-					{
-						ErrorMessage = "Pack not found.";
-					}
-
-					break;
-				}
-				default:
-					ErrorMessage = "Unknown category.";
-					break;
-			}
-		}
-		catch (Exception ex)
-		{
-			ErrorMessage = $"Error deleting: {ex.Message}";
+			case "authors":
+				deleted = await Client.DeleteResourceAsync(client, Client.AuthorsEndpointGroup, CrudId);
+				SuccessMessage = deleted ? "Author deleted." : null;
+				ErrorMessage = deleted ? null : "Failed to delete author.";
+				break;
+			case "tags":
+				deleted = await Client.DeleteResourceAsync(client, Client.TagsEndpointGroup, CrudId);
+				SuccessMessage = deleted ? "Tag deleted." : null;
+				ErrorMessage = deleted ? null : "Failed to delete tag.";
+				break;
+			case "licences":
+				deleted = await Client.DeleteResourceAsync(client, Client.LicencesEndpointGroup, CrudId);
+				SuccessMessage = deleted ? "Licence deleted." : null;
+				ErrorMessage = deleted ? null : "Failed to delete licence.";
+				break;
+			case "objectsmissing":
+				deleted = await Client.DeleteResourceAsync(client, Client.MissingObjectsEndpointGroup, CrudId);
+				SuccessMessage = deleted ? "Missing object deleted." : null;
+				ErrorMessage = deleted ? null : "Failed to delete missing object.";
+				break;
+			case "objectpacks":
+				deleted = await Client.DeleteObjectPackAsync(client, CrudId);
+				SuccessMessage = deleted ? "Object pack deleted." : null;
+				ErrorMessage = deleted ? null : "Failed to delete object pack.";
+				break;
+			case "sc5filepacks":
+				deleted = await Client.DeleteSC5FilePackAsync(client, CrudId);
+				SuccessMessage = deleted ? "Scenario pack deleted." : null;
+				ErrorMessage = deleted ? null : "Failed to delete scenario pack.";
+				break;
+			default:
+				ErrorMessage = "Unknown category.";
+				break;
 		}
 
 		return RedirectToPage(new { category = CrudCategory });

@@ -1,19 +1,20 @@
+using Definitions;
+using Definitions.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Definitions.Database;
+using ObjectService.Frontend;
 
 namespace ObjectService.Pages.Manage.Users;
 
 [Authorize(Policy = "AdminOnly")]
 public sealed class IndexModel : PageModel
 {
-	private readonly LocoDbContext _db;
+	readonly FrontendApiClient _api;
 
-	public IndexModel(LocoDbContext db)
+	public IndexModel(FrontendApiClient api)
 	{
-		_db = db;
+		_api = api;
 	}
 
 	public List<UserViewModel> Users { get; set; } = [];
@@ -29,28 +30,24 @@ public sealed class IndexModel : PageModel
 
 	public async Task OnGetAsync()
 	{
-		var allRoles = await _db.Roles.ToDictionaryAsync(r => r.Id, r => r.Name);
-		var userRolesData = await _db.UserRoles.ToListAsync();
-		var userQuery = _db.Users.AsQueryable();
+		using var client = _api.CreateClient();
+		var users = (await Client.GetUsersAsync(client)).AsEnumerable();
 
 		if (!string.IsNullOrWhiteSpace(Search))
 		{
 			var s = Search.Trim();
-			userQuery = userQuery.Where(u => (u.UserName != null && u.UserName.Contains(s)) || (u.Email != null && u.Email.Contains(s)));
+			users = users.Where(u =>
+				(u.UserName?.Contains(s, StringComparison.OrdinalIgnoreCase) ?? false)
+				|| (u.Email?.Contains(s, StringComparison.OrdinalIgnoreCase) ?? false));
 		}
 
-		var userList = await userQuery.OrderBy(u => u.UserName).ToListAsync();
-
-		Users = userList.Select(u =>
-		{
-			var userRoles = userRolesData.Where(ur => ur.UserId == u.Id);
-			var roleNames = userRoles.Where(ur => allRoles.ContainsKey(ur.RoleId)).Select(ur => allRoles[ur.RoleId] ?? "").ToList();
-			return new UserViewModel(
+		Users = [.. users
+			.OrderBy(u => u.UserName)
+			.Select(u => new UserViewModel(
 				u.Id,
-				u.UserName ?? "Unknown",
-				u.Email ?? "",
-				string.Join(", ", roleNames));
-		}).ToList();
+				u.UserName,
+				u.Email,
+				string.Join(", ", u.Roles)))];
 	}
 
 	public record UserViewModel(

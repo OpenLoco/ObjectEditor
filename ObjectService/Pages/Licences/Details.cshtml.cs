@@ -1,29 +1,27 @@
-using Definitions.Database;
+using Definitions;
 using Definitions.DTO;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using ObjectService.Services;
+using ObjectService.Frontend;
 
 namespace ObjectService.Pages.Licences;
 
 public sealed class DetailsModel : PageModel
 {
-	readonly LocoDbContext _db;
-	readonly ICrudService<DtoLicenceEntry, TblLicence> _licenceService;
+	readonly FrontendApiClient _api;
 
-	public DetailsModel(LocoDbContext db, ICrudService<DtoLicenceEntry, TblLicence> licenceService)
+	public DetailsModel(FrontendApiClient api)
 	{
-		_db = db;
-		_licenceService = licenceService;
+		_api = api;
 	}
 
-	public TblLicence? Licence { get; private set; }
+	public DtoLicenceDescriptor? Licence { get; private set; }
 
-	public List<ListItem> Objects { get; private set; } = [];
-	public List<ListItem> ObjectPacks { get; private set; } = [];
-	public List<ListItem> SC5Files { get; private set; } = [];
-	public List<ListItem> SC5FilePacks { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> Objects { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> ObjectPacks { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> SC5Files { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> SC5FilePacks { get; private set; } = [];
 
 	[TempData]
 	public string? SuccessMessage { get; set; }
@@ -44,41 +42,8 @@ public sealed class DetailsModel : PageModel
 
 	public async Task<IActionResult> OnGetAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Licence = await _db.Licences
-			.FirstOrDefaultAsync(l => l.Id == id, ct);
-
-		if (Licence is null)
-		{
-			return NotFound();
-		}
-
-		var licenceId = Licence.Id;
-
-		Objects = await _db.Objects
-			.Where(o => o.Licence != null && o.Licence.Id == licenceId)
-			.OrderBy(o => o.Name)
-			.Select(o => new ListItem(o.Id, o.Description ?? o.Name, "Objects", null))
-			.ToListAsync(ct);
-
-		ObjectPacks = await _db.ObjectPacks
-			.Where(p => p.Licence != null && p.Licence.Id == licenceId)
-			.OrderBy(p => p.Name)
-			.Select(p => new ListItem(p.Id, p.Name, "ObjectPacks", null))
-			.ToListAsync(ct);
-
-		SC5Files = await _db.SC5Files
-			.Where(f => f.Licence != null && f.Licence.Id == licenceId)
-			.OrderBy(f => f.Name)
-			.Select(f => new ListItem(f.Id, f.Name, "SC5Files", null))
-			.ToListAsync(ct);
-
-		SC5FilePacks = await _db.SC5FilePacks
-			.Where(p => p.Licence != null && p.Licence.Id == licenceId)
-			.OrderBy(p => p.Name)
-			.Select(p => new ListItem(p.Id, p.Name, "SC5FilePacks", null))
-			.ToListAsync(ct);
-
-		return Page();
+		await LoadAsync(id, ct);
+		return Licence is null ? NotFound() : Page();
 	}
 
 	public async Task<IActionResult> OnPostEditAsync()
@@ -91,29 +56,24 @@ public sealed class DetailsModel : PageModel
 		if (string.IsNullOrWhiteSpace(Name))
 		{
 			ErrorMessage = "Licence name is required.";
-			await ReloadAsync(Id);
+			await LoadAsync(Id, CancellationToken.None);
 			return Page();
 		}
 
-		try
+		using var client = _api.CreateClient();
+		var updated = await Client.UpdateResourceAsync<DtoLicenceEntry, DtoLicenceEntry>(
+			client, Client.LicencesEndpointGroup, Id, new DtoLicenceEntry(Id, Name.Trim(), Text?.Trim() ?? string.Empty));
+
+		if (updated != null)
 		{
-			var entry = new DtoLicenceEntry(Id, Name.Trim(), Text?.Trim() ?? string.Empty);
-			var updated = await _licenceService.UpdateAsync(Id, entry, CancellationToken.None);
-			if (updated != null)
-			{
-				SuccessMessage = $"Licence '{Name.Trim()}' updated.";
-			}
-			else
-			{
-				ErrorMessage = "Licence not found.";
-			}
+			SuccessMessage = $"Licence '{Name.Trim()}' updated.";
 		}
-		catch (Exception ex)
+		else
 		{
-			ErrorMessage = $"Error updating licence: {ex.Message}";
+			ErrorMessage = "Licence not found.";
 		}
 
-		await ReloadAsync(Id);
+		await LoadAsync(Id, CancellationToken.None);
 		return Page();
 	}
 
@@ -124,30 +84,31 @@ public sealed class DetailsModel : PageModel
 			return Forbid();
 		}
 
-		var deleted = await _licenceService.DeleteAsync(id, CancellationToken.None);
+		using var client = _api.CreateClient();
+		var deleted = await Client.DeleteResourceAsync(client, Client.LicencesEndpointGroup, id);
 		if (deleted)
 		{
 			SuccessMessage = "Licence deleted.";
 			return RedirectToPage("/Index", new { category = "licences" });
 		}
 
-		await ReloadAsync(id);
+		await LoadAsync(id, CancellationToken.None);
 		ErrorMessage = "Failed to delete licence.";
 		return Page();
 	}
 
-	private async Task ReloadAsync(UniqueObjectId id)
+	async Task LoadAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		Licence = await _db.Licences.FirstOrDefaultAsync(l => l.Id == id);
-		if (Licence != null)
+		using var client = _api.CreateClient();
+		var licence = await Client.GetLicenceDescriptorAsync(client, id, cancellationToken: ct);
+		Licence = licence;
+
+		if (licence != null)
 		{
-			var licenceId = Licence.Id;
-			Objects = await _db.Objects.Where(o => o.Licence != null && o.Licence.Id == licenceId).OrderBy(o => o.Name).Select(o => new ListItem(o.Id, o.Description ?? o.Name, "Objects", null)).ToListAsync();
-			ObjectPacks = await _db.ObjectPacks.Where(p => p.Licence != null && p.Licence.Id == licenceId).OrderBy(p => p.Name).Select(p => new ListItem(p.Id, p.Name, "ObjectPacks", null)).ToListAsync();
-			SC5Files = await _db.SC5Files.Where(f => f.Licence != null && f.Licence.Id == licenceId).OrderBy(f => f.Name).Select(f => new ListItem(f.Id, f.Name, "SC5Files", null)).ToListAsync();
-			SC5FilePacks = await _db.SC5FilePacks.Where(p => p.Licence != null && p.Licence.Id == licenceId).OrderBy(p => p.Name).Select(p => new ListItem(p.Id, p.Name, "SC5FilePacks", null)).ToListAsync();
+			Objects = [.. licence.Objects];
+			ObjectPacks = [.. licence.ObjectPacks];
+			SC5Files = [.. licence.SC5Files];
+			SC5FilePacks = [.. licence.SC5FilePacks];
 		}
 	}
-
-	public record ListItem(UniqueObjectId Id, string Name, string Kind, string? Extra);
 }

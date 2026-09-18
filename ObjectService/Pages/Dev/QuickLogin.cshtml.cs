@@ -1,29 +1,27 @@
+using Definitions.DTO.Identity;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Definitions.Database;
+using ObjectService.Frontend;
+using System.Net.Http.Json;
 
 namespace ObjectService.Pages.Dev;
 
 [AllowAnonymous]
 public class QuickLoginModel : PageModel
 {
-	private readonly SignInManager<TblUser> _signInManager;
-	private readonly UserManager<TblUser> _userManager;
-	private readonly RoleManager<TblUserRole> _roleManager;
-	private readonly IWebHostEnvironment _environment;
+	private const string DevUserEmail = "dev@localhost";
+	private const string DevPassword = "DevPassword123!@#";
 
-	public QuickLoginModel(
-		SignInManager<TblUser> signInManager,
-		UserManager<TblUser> userManager,
-		RoleManager<TblUserRole> roleManager,
-		IWebHostEnvironment environment)
+	private readonly FrontendApiClient _api;
+	private readonly IWebHostEnvironment _environment;
+	private readonly ILogger<QuickLoginModel> _logger;
+
+	public QuickLoginModel(FrontendApiClient api, IWebHostEnvironment environment, ILogger<QuickLoginModel> logger)
 	{
-		_signInManager = signInManager;
-		_userManager = userManager;
-		_roleManager = roleManager;
+		_api = api;
 		_environment = environment;
+		_logger = logger;
 	}
 
 	public async Task<IActionResult> OnPostAsync()
@@ -33,42 +31,27 @@ public class QuickLoginModel : PageModel
 			return Forbid();
 		}
 
-		const string devUserEmail = "dev@localhost";
-		const string devUserName = "DevAdmin";
-		const string devPassword = "DevPassword123!@#";
+		using var client = _api.CreateClient();
 
-		var user = await _userManager.FindByEmailAsync(devUserEmail);
-		if (user == null)
+		// Ensure the dev admin user/role exists (development-only API endpoint).
+		using var bootstrapResponse = await client.PostAsync("/dev/quick-login", null);
+		if (!bootstrapResponse.IsSuccessStatusCode)
 		{
-			user = new TblUser
-			{
-				UserName = devUserName,
-				Email = devUserEmail,
-				EmailConfirmed = true,
-			};
-
-			var result = await _userManager.CreateAsync(user, devPassword);
-			if (!result.Succeeded)
-			{
-				return BadRequest("Failed to create dev user");
-			}
+			return BadRequest("Failed to create dev user");
 		}
 
-		// Ensure Admin role exists and user has it
-		if (!await _roleManager.RoleExistsAsync("Admin"))
+		// Sign in via the Identity API.
+		var loginPayload = new DtoLoginRequest(DevUserEmail, DevPassword);
+		using var cookieResponse = await client.PostAsJsonAsync("/login?useCookies=true", loginPayload);
+		if (!cookieResponse.IsSuccessStatusCode)
 		{
-			await _roleManager.CreateAsync(new TblUserRole { Name = "Admin" });
+			return BadRequest("Failed to sign in dev user");
 		}
 
-		if (!await _userManager.IsInRoleAsync(user, "Admin"))
-		{
-			await _userManager.AddToRoleAsync(user, "Admin");
-		}
+		ForwardSetCookieHeaders(cookieResponse);
+		await StoreBearerTokenAsync(client, loginPayload);
 
-		// Sign in the user
-		await _signInManager.SignInAsync(user, isPersistent: true);
-
-		// Redirect back to the referring page, or to the admin dashboard
+		// Redirect back to the referring page, or to the admin dashboard.
 		var returnUrl = Request.Headers.Referer.ToString();
 		if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
 		{
@@ -77,4 +60,47 @@ public class QuickLoginModel : PageModel
 
 		return Redirect(returnUrl);
 	}
+
+	void ForwardSetCookieHeaders(HttpResponseMessage response)
+	{
+		if (response.Headers.TryGetValues("Set-Cookie", out var values))
+		{
+			foreach (var value in values)
+			{
+				Response.Headers.Append("Set-Cookie", value);
+			}
+		}
+	}
+
+	async Task StoreBearerTokenAsync(HttpClient client, DtoLoginRequest payload)
+	{
+		try
+		{
+			using var response = await client.PostAsJsonAsync("/login?useCookies=false", payload);
+			if (!response.IsSuccessStatusCode)
+			{
+				return;
+			}
+
+			var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+			if (tokenResponse?.AccessToken == null)
+			{
+				return;
+			}
+
+			Response.Cookies.Append("access_token", tokenResponse.AccessToken, new CookieOptions
+			{
+				HttpOnly = true,
+				Secure = Request.IsHttps,
+				SameSite = SameSiteMode.Lax,
+				MaxAge = TimeSpan.FromHours(1),
+			});
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "Failed to obtain bearer token for dev user");
+		}
+	}
+
+	sealed record TokenResponse(string TokenType, string AccessToken, long ExpiresIn, string RefreshToken);
 }

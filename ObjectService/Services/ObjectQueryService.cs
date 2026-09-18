@@ -15,6 +15,7 @@ namespace ObjectService.Services;
 public interface IObjectQueryService
 {
 	Task<IEnumerable<DtoObjectEntry>> ListAsync(HttpContext context, CancellationToken ct);
+	Task<IEnumerable<DtoObjectEntry>> ListMineAsync(UniqueObjectId ownerUserId, CancellationToken ct);
 	Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoObjectPostResponse?> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct);
 	Task<byte[]?> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct);
@@ -36,6 +37,13 @@ public class ObjectQueryService : IObjectQueryService
 	}
 
 	public async Task<IEnumerable<DtoObjectEntry>> ListAsync(HttpContext context, CancellationToken ct) => await _db.Objects.Include(x => x.DatObjects).Select(x => x.ToDtoEntry()).ToListAsync(ct);
+
+	public async Task<IEnumerable<DtoObjectEntry>> ListMineAsync(UniqueObjectId ownerUserId, CancellationToken ct)
+		=> await _db.Objects
+			.Where(x => x.OwnerUserId == ownerUserId)
+			.Include(x => x.DatObjects)
+			.Select(x => x.ToDtoEntry())
+			.ToListAsync(ct);
 
 	public async Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct)
 	{

@@ -1,5 +1,7 @@
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadStation;
+using Definitions.ObjectModels.Objects.Shared;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
@@ -12,14 +14,11 @@ public class TblObjectRoadStation : DbSubObject, IConvertibleToTable<TblObjectRo
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
 	public RoadStationObjectFlags Flags { get; set; }
-	public uint8_t CompatibleRoadObjectCount { get; set; }
+	public List<ObjectModelHeader> CompatibleRoadObjects { get; set; } = [];
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-
-	//public TblObjectCargo CargoTypeId { get; set; }
-	//public ICollection<uint32_t> ImageOffsets { get; set; }
-	//public ICollection<uint8_t> CargoOffsets { get; set; }
-	//public ICollection<UniqueObjectId> CompatibleRoads { get; set; }
+	public ObjectModelHeader? CargoType { get; set; }
+	public CargoOffset[][][] CargoOffsets { get; set; } = [];
 
 	public static TblObjectRoadStation FromObject(TblObject tbl, RoadStationObject obj)
 		=> new()
@@ -32,9 +31,10 @@ public class TblObjectRoadStation : DbSubObject, IConvertibleToTable<TblObjectRo
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
 			Flags = obj.Flags,
-			CompatibleRoadObjectCount = (uint8_t)obj.CompatibleRoadObjects.Count,
+			CompatibleRoadObjects = obj.CompatibleRoadObjects,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
-			//CargoTypeId = obj.CargoTypeId,
+			CargoType = obj.CargoType,
+			CargoOffsets = obj.CargoOffsets,
 		};
 }

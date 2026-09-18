@@ -1,5 +1,7 @@
+using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Objects.TrackStation;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
@@ -16,10 +18,9 @@ public class TblObjectTrackStation : DbSubObject, IConvertibleToTable<TblObjectT
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 
-	//public ICollection<UniqueObjectId> CompatibleTrack { get; set; } // only used for runtime loco { get; set; } this isn't part of object 'definition'
-	//public ICollection<uint8_t> CargoOffsetBytes { get; set; }
-	//public ICollection<uint8_t> ManualPower { get; set; }
-	//public uint8_t pad_0D { get; set; } // unused
+	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
+	public CargoOffset[][][] CargoOffsets { get; set; } = [];
+	public uint8_t[][] DiagonalCargoOffsetBytes { get; set; } = []; // parsed in the same way as CargoOffsets but never read
 
 	public static TblObjectTrackStation FromObject(TblObject tbl, TrackStationObject obj)
 		=> new()
@@ -34,5 +35,8 @@ public class TblObjectTrackStation : DbSubObject, IConvertibleToTable<TblObjectT
 			Flags = obj.Flags,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
+			CompatibleTrackObjects = obj.CompatibleTrackObjects,
+			CargoOffsets = obj.CargoOffsets,
+			DiagonalCargoOffsetBytes = obj.DiagonalCargoOffsetBytes,
 		};
 }

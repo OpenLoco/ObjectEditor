@@ -130,9 +130,19 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		return null;
 	}
 
+	protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+	{
+		base.ConfigureConventions(configurationBuilder);
+
+		JsonColumnConvention.Configure(configurationBuilder);
+	}
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
+
+		// Complex object-model properties (lists, nested objects, dictionaries, jagged arrays) are stored as JSON.
+		JsonColumnConvention.Apply(modelBuilder);
 
 		//_ = modelBuilder.Entity<TblObject>()
 		//	.HasAlternateKey(o => new { o.SubObjectId, o.ObjectType });

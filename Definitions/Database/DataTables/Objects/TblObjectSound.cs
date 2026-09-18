@@ -6,6 +6,7 @@ public class TblObjectSound : DbSubObject, IConvertibleToTable<TblObjectSound, S
 {
 	public uint8_t ShouldLoop { get; set; }
 	public uint32_t Volume { get; set; }
+	public SoundObjectData SoundObjectData { get; set; } = null!;
 
 	public static TblObjectSound FromObject(TblObject tbl, SoundObject obj)
 		=> new()
@@ -13,5 +14,6 @@ public class TblObjectSound : DbSubObject, IConvertibleToTable<TblObjectSound, S
 			Parent = tbl,
 			ShouldLoop = obj.ShouldLoop,
 			Volume = obj.Volume,
+			SoundObjectData = obj.SoundObjectData,
 		};
 }

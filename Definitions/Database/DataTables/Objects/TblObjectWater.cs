@@ -6,7 +6,6 @@ public class TblObjectWater : DbSubObject, IConvertibleToTable<TblObjectWater, W
 {
 	public uint8_t CostIndex { get; set; }
 	public int16_t CostFactor { get; set; }
-	//public uint8_t pad_03 { get; set; } // unused
 
 	public static TblObjectWater FromObject(TblObject tbl, WaterObject obj)
 		=> new()

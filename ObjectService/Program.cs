@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Graphics;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -16,7 +17,6 @@ using ObjectService.Identity;
 using ObjectService.Services;
 using ObjectService.RouteHandlers;
 using Scalar.AspNetCore;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -162,7 +162,25 @@ builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, o
 	options.BearerTokenExpiration = TimeSpan.FromMinutes(durationInMinutes);
 });
 
-builder.Services.AddAuthentication()
+// Dev-mode authentication bypass: when enabled, API requests are authenticated as a local admin.
+// Set "ObjectService:DisableAuthentication": true in appsettings.Development.json.
+var disableAuth = builder.Configuration.GetValue<bool?>("ObjectService:DisableAuthentication") ?? false;
+
+// The schemes used by the API authorization policies. The dev scheme is added last so that real
+// credentials (cookies / bearer tokens) still take precedence when they are supplied.
+var apiAuthenticationSchemes = new List<string>
+{
+	IdentityConstants.ApplicationScheme,
+	IdentityConstants.BearerScheme,
+	JwtBearerDefaults.AuthenticationScheme,
+};
+
+if (disableAuth)
+{
+	apiAuthenticationSchemes.Add(DevAuthenticationHandler.SchemeName);
+}
+
+var authenticationBuilder = builder.Services.AddAuthentication()
 .AddJwtBearer(options =>
 {
 	options.TokenValidationParameters = new TokenValidationParameters
@@ -177,28 +195,34 @@ builder.Services.AddAuthentication()
 	};
 });
 
+if (disableAuth)
+{
+	_ = authenticationBuilder.AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>(DevAuthenticationHandler.SchemeName, null);
+}
+
 builder.Services.AddAuthorization(options =>
 {
 	// Configure the default policy to accept Identity cookies, Identity Bearer tokens, and JWT tokens.
 	// This allows both page-based cookie auth (from SignInManager) and API bearer token auth.
 	options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-		.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+		.AddAuthenticationSchemes([.. apiAuthenticationSchemes])
 		.RequireAuthenticatedUser()
 		.Build();
 
 	// Policy: user must own the object (id from route) or be an Admin
 	options.AddPolicy("CanEditObject", policy =>
-		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+		policy.AddAuthenticationSchemes([.. apiAuthenticationSchemes])
 			.RequireAuthenticatedUser()
 			.AddRequirements(new ObjectOwnershipRequirement()));
 
-	// Admin-only policy (for user/role management)
+	// Admin-only policy (for user/role management). The dev bypass scheme is intentionally excluded so
+	// identity management always requires a real admin login.
 	options.AddPolicy("AdminOnly", policy =>
 		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
 			.RequireRole("Admin"));
 	// Curator policy – any user with at least one curator permission (or Admin)
 	options.AddPolicy("Curator", policy =>
-		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+		policy.AddAuthenticationSchemes([.. apiAuthenticationSchemes])
 			.RequireAuthenticatedUser()
 			.RequireAssertion(context =>
 				context.User.IsInRole("Admin") ||
@@ -239,36 +263,6 @@ app.UseForwardedHeaders();
 app.UseHttpLogging();
 app.UseRateLimiter();
 app.UseStaticFiles();
-
-// Dev-mode authentication bypass: when enabled, every API request runs as an authenticated admin.
-// Set "ObjectService:DisableAuthentication": true in appsettings.Development.json.
-// UI pages (Razor Pages) are excluded so the login/logout flow works normally;
-// developers can use the "Dev Login" button in the header for quick authentication.
-var disableAuth = builder.Configuration.GetValue<bool?>("ObjectService:DisableAuthentication") ?? false;
-if (disableAuth)
-{
-	app.Use((context, next) =>
-	{
-		// Only inject the fake identity for API endpoints.  UI pages (/Account/*,
-		// /Manage/*, etc.) should go through the normal cookie-based auth flow so
-		// that login, logout, and the header's "Log in"/user-name display all work correctly.
-		if (context.Request.Path.StartsWithSegments("/v2", StringComparison.OrdinalIgnoreCase))
-		{
-			// Inject a fake admin ClaimsPrincipal before the auth middleware runs.
-			// ASP.NET Core's UseAuthentication skips when context.User is already set.
-			var claims = new[]
-			{
-				new Claim(ClaimTypes.NameIdentifier, "0"),
-				new Claim(ClaimTypes.Name, "devadmin"),
-				new Claim(ClaimTypes.Role, "Admin"),
-			};
-			var identity = new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme);
-			context.User = new ClaimsPrincipal(identity);
-		}
-
-		return next();
-	});
-}
 
 app.UseAuthentication();
 app.UseAuthorization();

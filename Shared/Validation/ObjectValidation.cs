@@ -254,18 +254,29 @@ public static class ObjectValidation
 		static string GetPrintableName(ObjectModelHeader omh)
 			=> $"[{omh.Name} | {omh.ObjectType} | 0x{omh.DatChecksum:X8}]";
 
+		// Original/vanilla objects are matched by name only, because a scenario records the checksum of the
+		// specific original release (Steam vs GoG) which may differ from the dependency's checksum. Custom and
+		// OpenLoco objects must match on both name and checksum, otherwise a different object with the same
+		// name would incorrectly satisfy the dependency.
+		static bool IsSatisfiedBy(ObjectModelHeader dependency, ObjectModelHeader candidate)
+		{
+			var isVanilla = dependency.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG;
+			return isVanilla || candidate.DatChecksum == dependency.DatChecksum;
+		}
+
 		static void ValidateDependentObjects(IEnumerable<ObjectModelHeader> fileObjects, Func<ObjectModelHeader, IEnumerable<ObjectModelHeader>> objectDependencyResolver, List<string> validationErrors)
 		{
 			// Unique objects that are actually included in the file (dedupe and skip empty placeholders).
 			var includedObjects = fileObjects
 				.Where(x => x is not null && !string.IsNullOrWhiteSpace(x.Name))
-				.GroupBy(x => x.Name)
+				.GroupBy(x => (x.Name, x.DatChecksum))
 				.Select(x => x.First())
 				.ToList();
 
-			var includedKeys = includedObjects
-				.Select(x => x.Name)
-				.ToHashSet();
+			// Grouped by name so a dependency can be matched against any included object sharing its name.
+			var includedByName = includedObjects
+				.GroupBy(x => x.Name)
+				.ToDictionary(x => x.Key, x => x.ToList());
 
 			foreach (var obj in includedObjects)
 			{
@@ -282,7 +293,8 @@ public static class ObjectValidation
 
 				foreach (var dependency in dependencies.Where(x => x is not null && !string.IsNullOrWhiteSpace(x.Name)))
 				{
-					if (includedKeys.Contains(dependency.Name))
+					if (includedByName.TryGetValue(dependency.Name, out var candidates)
+						&& candidates.Any(candidate => IsSatisfiedBy(dependency, candidate)))
 					{
 						continue;
 					}

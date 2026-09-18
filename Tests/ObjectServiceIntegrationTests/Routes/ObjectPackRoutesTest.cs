@@ -131,7 +131,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 
 		using var response = await HttpClient!.PostAsJsonAsync($"{RoutesV2.Prefix}{BaseRoute}", request);
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 	}
 
 	[Test]

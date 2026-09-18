@@ -8,13 +8,16 @@ public static class DtoObjectRoadStationMapper
 	{
 		PaintStyle = tblobjectroadstation.PaintStyle,
 		Height = tblobjectroadstation.Height,
+		RoadPieces = tblobjectroadstation.RoadPieces,
 		BuildCostFactor = tblobjectroadstation.BuildCostFactor,
 		SellCostFactor = tblobjectroadstation.SellCostFactor,
 		CostIndex = tblobjectroadstation.CostIndex,
 		Flags = tblobjectroadstation.Flags,
-		CompatibleRoadObjectCount = tblobjectroadstation.CompatibleRoadObjectCount,
+		CompatibleRoadObjects = tblobjectroadstation.CompatibleRoadObjects,
 		DesignedYear = tblobjectroadstation.DesignedYear,
 		ObsoleteYear = tblobjectroadstation.ObsoleteYear,
+		CargoType = tblobjectroadstation.CargoType,
+		CargoOffsets = tblobjectroadstation.CargoOffsets,
 		Id = tblobjectroadstation.Id,
 	};
 
@@ -23,13 +26,16 @@ public static class DtoObjectRoadStationMapper
 		Parent = parent,
 		PaintStyle = model.PaintStyle,
 		Height = model.Height,
+		RoadPieces = model.RoadPieces,
 		BuildCostFactor = model.BuildCostFactor,
 		SellCostFactor = model.SellCostFactor,
 		CostIndex = model.CostIndex,
 		Flags = model.Flags,
-		CompatibleRoadObjectCount = model.CompatibleRoadObjectCount,
+		CompatibleRoadObjects = model.CompatibleRoadObjects,
 		DesignedYear = model.DesignedYear,
 		ObsoleteYear = model.ObsoleteYear,
+		CargoType = model.CargoType,
+		CargoOffsets = model.CargoOffsets,
 		Id = model.Id,
 	};
 

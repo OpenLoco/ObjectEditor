@@ -10,12 +10,10 @@ public static class DtoObjectDockMapper
 		SellCostFactor = tblobjectdock.SellCostFactor,
 		CostIndex = tblobjectdock.CostIndex,
 		Flags = tblobjectdock.Flags,
-		NumBuildingPartAnimations = tblobjectdock.NumBuildingPartAnimations,
-		NumBuildingVariationParts = tblobjectdock.NumBuildingVariationParts,
+		BuildingComponents = tblobjectdock.BuildingComponents,
 		DesignedYear = tblobjectdock.DesignedYear,
 		ObsoleteYear = tblobjectdock.ObsoleteYear,
-		BoatPositionX = tblobjectdock.BoatPositionX,
-		BoatPositionY = tblobjectdock.BoatPositionY,
+		BoatPosition = tblobjectdock.BoatPosition,
 		Id = tblobjectdock.Id,
 	};
 
@@ -26,12 +24,10 @@ public static class DtoObjectDockMapper
 		SellCostFactor = model.SellCostFactor,
 		CostIndex = model.CostIndex,
 		Flags = model.Flags,
-		NumBuildingPartAnimations = model.NumBuildingPartAnimations,
-		NumBuildingVariationParts = model.NumBuildingVariationParts,
+		BuildingComponents = model.BuildingComponents,
 		DesignedYear = model.DesignedYear,
 		ObsoleteYear = model.ObsoleteYear,
-		BoatPositionX = model.BoatPositionX,
-		BoatPositionY = model.BoatPositionY,
+		BoatPosition = model.BoatPosition,
 		Id = model.Id,
 	};
 

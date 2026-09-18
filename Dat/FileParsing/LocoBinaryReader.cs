@@ -255,10 +255,14 @@ public class LocoBinaryReader : BinaryReader
 				Type = (EmitterAnimationType)ReadByte(),
 			};
 
-			if (emitterAnimation.Type != EmitterAnimationType.None)
+			// Emitter slots are always returned so the fixed-size struct round-trips exactly. Slots without an
+			// animation have no animation object; the loader reads the object header for the active slots.
+			if (emitterAnimation.Type == EmitterAnimationType.None)
 			{
-				yield return emitterAnimation;
+				emitterAnimation.AnimationObject = null!;
 			}
+
+			yield return emitterAnimation;
 		}
 	}
 

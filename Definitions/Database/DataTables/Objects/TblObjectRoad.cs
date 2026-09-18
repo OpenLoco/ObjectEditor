@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
@@ -15,13 +16,11 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public TownSize TargetTownSize { get; set; }
 
-	//public TblObjectTunnel Tunnel { get; set; }
-	//public uint16_t _CompatibleRoads { get; set; } // bitset
-	//public uint16_t _CompatibleTracks { get; set; } // bitset
-	//public ICollection<TblBridgeObject> Bridges { get; set; }
-	//public ICollection<TblRoadExtraObject> Mods { get; set; }
-	//public ICollection<TblRoadObject> RoadsAndTracks { get; set; }
-	//public ICollection<TblRoadStationObject> Stations { get; set; }
+	public ObjectModelHeader Tunnel { get; set; } = null!;
+	public List<ObjectModelHeader> Bridges { get; set; } = [];
+	public List<ObjectModelHeader> Stations { get; set; } = [];
+	public List<ObjectModelHeader> RoadMods { get; set; } = [];
+	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
 
 	public static TblObjectRoad FromObject(TblObject tbl, RoadObject obj)
 		=> new()
@@ -37,6 +36,10 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 			PaintStyle = obj.PaintStyle,
 			VehicleDisplayListVerticalOffset = obj.VehicleDisplayListVerticalOffset,
 			TargetTownSize = obj.TargetTownSize,
-			//Tunnel = obj.Tunnel,
+			Tunnel = obj.Tunnel,
+			Bridges = obj.Bridges,
+			Stations = obj.Stations,
+			RoadMods = obj.RoadMods,
+			TracksAndRoads = obj.TracksAndRoads,
 		};
 }

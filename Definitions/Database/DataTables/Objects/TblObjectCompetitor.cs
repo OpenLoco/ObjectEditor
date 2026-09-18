@@ -11,8 +11,6 @@ public class TblObjectCompetitor : DbSubObject, IConvertibleToTable<TblObjectCom
 	public uint8_t Aggressiveness { get; set; }
 	public uint8_t Competitiveness { get; set; }
 
-	//public uint8_t pad_37 { get; set; } // unused
-
 	public static TblObjectCompetitor FromObject(TblObject tbl, CompetitorObject obj)
 		=> new()
 		{

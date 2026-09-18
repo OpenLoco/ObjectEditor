@@ -11,7 +11,7 @@ namespace ObjectService.Identity;
 public static class DatabaseInitializer
 {
 	private const string DefaultAdminEmail = "leftofzen@openloco.io";
-	private const string DefaultAdminUsername = "LeftofZen";
+	public const string DefaultAdminUsername = "LeftofZen";
 	private const string DefaultAdminPassword = "3!D:Gy681%&y(HCg";
 
 	public static async Task InitializeAsync(WebApplication app)

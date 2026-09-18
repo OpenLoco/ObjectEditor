@@ -37,10 +37,12 @@ public static class RouteBuilderExtensions
 		var ownerGroup = v2.MapGroup(string.Empty).RequireAuthorization("CanEditObject");
 		MapWriteHandler(new ObjectRouteHandler(), ownerGroup, config);
 
-		// Admin-only routes (both read and write)
+		// Identity routes: reads need any authenticated user, writes are admin-only
+		MapHandler(new UserRouteHandler(), authGroup, config);
+		MapHandler(new RoleRouteHandler(), authGroup, config);
 		var adminGroup = v2.MapGroup(string.Empty).RequireAuthorization("AdminOnly");
-		MapAllHandler(new UserRouteHandler(), adminGroup, config);
-		MapAllHandler(new RoleRouteHandler(), adminGroup, config);
+		MapWriteHandler(new UserRouteHandler(), adminGroup, config);
+		MapWriteHandler(new RoleRouteHandler(), adminGroup, config);
 
 		return v2;
 	}
@@ -50,7 +52,4 @@ public static class RouteBuilderExtensions
 
 	private static void MapWriteHandler(ITableRouteHandler handler, IEndpointRouteBuilder group, IConfiguration config)
 		=> BaseTableRouteHandler.MapWriteRoutes(handler, group, config);
-
-	private static void MapAllHandler(ITableRouteHandler handler, IEndpointRouteBuilder group, IConfiguration config)
-		=> BaseTableRouteHandler.MapAllRoutes(handler, group, config);
 }

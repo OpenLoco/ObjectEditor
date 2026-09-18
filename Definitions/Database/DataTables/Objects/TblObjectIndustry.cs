@@ -1,5 +1,7 @@
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Industry;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
@@ -26,23 +28,17 @@ public class TblObjectIndustry : DbSubObject, IConvertibleToTable<TblObjectIndus
 	public uint8_t FarmNumStagesOfGrowth { get; set; } // How many growth stages there are sprites for
 	public uint8_t MonthlyClosureChance { get; set; }
 
-	// FK to linked objects
-	//public TblObjectWall BuildingWall { get; set; } // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
-	//public TblObjectWall BuildingWallEntrance { get; set; } // An alternative wall type that looks like a gate placed at random places in building perimeter
-
-	//public uint8_t NumBuildingParts { get; set; }
-	//public uint8_t NumBuildingVariations { get; set; }
-	//public List<uint8_t> BuildingHeights { get; set; }    // This is the height of a building image
-	//public List<BuildingPartAnimation> BuildingAnimations { get; set; }
-	//public List<List<uint8_t>> AnimationSequences { get; set; } // Access with getAnimationSequence helper method
-	//public List<IndustryObjectRandomAnimation> RandomAnimations { get; set; }    // Access with getRandomAnimations helper method
-	//public List<List<uint8_t>> BuildingVariations { get; set; }  // Access with getBuildingParts helper method
-	//public List<uint8_t> Buildings { get; set; }
-	//public IndustryObjectProductionRateRange[] InitialProductionRate { get; set; }
-	//public List<S5Header> ProducedCargo { get; set; } // (0xFF = null)
-	//public List<S5Header> RequiredCargo { get; set; } // (0xFF = null)
-	//public uint8_t NumFarmTileImages { get; set; } // maximum of 8 images per farm tile
-	//public List<S5Header> WallTypes { get; set; } // There can be up to 4 different wall types for an industry
+	public BuildingComponents BuildingComponents { get; set; } = new();
+	public List<List<uint8_t>> AnimationSequences { get; set; } = [];
+	public List<IndustryObjectRandomAnimation> RandomAnimations { get; set; } = [];
+	public List<IndustryObjectProductionRateRange> InitialProductionRate { get; set; } = [];
+	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
+	public List<ObjectModelHeader> RequiredCargo { get; set; } = [];
+	public uint8_t NumFarmTileImages { get; set; }
+	public List<ObjectModelHeader> WallTypes { get; set; } = [];
+	public ObjectModelHeader? BuildingWall { get; set; }
+	public ObjectModelHeader? BuildingWallEntrance { get; set; }
+	public List<uint8_t> Buildings { get; set; } = [];
 
 	public static TblObjectIndustry FromObject(TblObject tbl, IndustryObject obj)
 		=> new()
@@ -68,7 +64,16 @@ public class TblObjectIndustry : DbSubObject, IConvertibleToTable<TblObjectIndus
 			FarmNumFields = obj.FarmNumFields,
 			FarmNumStagesOfGrowth = obj.FarmNumStagesOfGrowth,
 			MonthlyClosureChance = obj.MonthlyClosureChance,
-			//BuildingWall = obj.BuildingWall, ?? how to do ?? needs to look up the object in DB from the dat name+checksum
-			//BuildingWallEntrance = obj.BuildingWallEntrance, ??
+			BuildingComponents = obj.BuildingComponents,
+			AnimationSequences = obj.AnimationSequences,
+			RandomAnimations = obj.RandomAnimations,
+			InitialProductionRate = obj.InitialProductionRate,
+			ProducedCargo = obj.ProducedCargo,
+			RequiredCargo = obj.RequiredCargo,
+			NumFarmTileImages = obj.NumFarmTileImages,
+			WallTypes = obj.WallTypes,
+			BuildingWall = obj.BuildingWall,
+			BuildingWallEntrance = obj.BuildingWallEntrance,
+			Buildings = obj.Buildings,
 		};
 }

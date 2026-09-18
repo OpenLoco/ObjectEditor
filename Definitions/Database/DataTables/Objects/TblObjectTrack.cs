@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Track;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
@@ -14,13 +15,13 @@ public class TblObjectTrack : DbSubObject, IConvertibleToTable<TblObjectTrack, T
 	public TrackObjectFlags Flags { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 
-	//public TblObjectTunnel Tunnel { get; set; }
-	// public uint8_t var_06 {get; set; }
-	//public ICollection<TblObjectTrack> CompatibleTrackAndRoad { get; set; }
-	//public ICollection<TblObjectTrackExtra> Mods { get; set; } // this is a TrackExtraObject
-	//public ICollection<TblObjectTrackSignal> Signals { get; set; }
-	//public ICollection<TblObjectBridge> Bridges { get; set; }
-	//public ICollection<TblObjectTrackStation> Stations { get; set; }
+	public uint8_t var_06 { get; set; }
+	public ObjectModelHeader Tunnel { get; set; } = null!;
+	public List<ObjectModelHeader> TrackMods { get; set; } = [];
+	public List<ObjectModelHeader> Signals { get; set; } = [];
+	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
+	public List<ObjectModelHeader> Bridges { get; set; } = [];
+	public List<ObjectModelHeader> Stations { get; set; } = [];
 
 	public static TblObjectTrack FromObject(TblObject tbl, TrackObject obj)
 		=> new()
@@ -35,6 +36,12 @@ public class TblObjectTrack : DbSubObject, IConvertibleToTable<TblObjectTrack, T
 			MaxCurveSpeed = obj.MaxCurveSpeed,
 			Flags = obj.Flags,
 			VehicleDisplayListVerticalOffset = obj.VehicleDisplayListVerticalOffset,
-			//Tunnel = obj.Tunnel,
+			var_06 = obj.var_06,
+			Tunnel = obj.Tunnel,
+			TrackMods = obj.TrackMods,
+			Signals = obj.Signals,
+			TracksAndRoads = obj.TracksAndRoads,
+			Bridges = obj.Bridges,
+			Stations = obj.Stations,
 		};
 }

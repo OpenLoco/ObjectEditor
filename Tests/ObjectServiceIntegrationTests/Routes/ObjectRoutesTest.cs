@@ -66,7 +66,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 		=> new(
 				row.Id,
 				row.Name,
-				row.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
+				row.DatObjects.FirstOrDefault()?.DatName ?? row.DatObjects.FirstOrDefault()?.Object?.Name ?? "<no-display-name>",
 				row.DatObjects.FirstOrDefault()?.DatChecksum ?? 0,
 				row.Description,
 				row.ObjectSource,

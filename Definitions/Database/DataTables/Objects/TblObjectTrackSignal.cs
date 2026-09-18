@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.TrackSignal;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
@@ -13,8 +14,7 @@ public class TblObjectTrackSignal : DbSubObject, IConvertibleToTable<TblObjectTr
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 
-	//public ICollection<UniqueObjectId> CompatibleTrack { get; set; }
-	//public uint8_t pad_0B { get; set; } // unused
+	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 
 	public static TblObjectTrackSignal FromObject(TblObject tbl, TrackSignalObject obj)
 		=> new()
@@ -28,5 +28,6 @@ public class TblObjectTrackSignal : DbSubObject, IConvertibleToTable<TblObjectTr
 			CostIndex = obj.CostIndex,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
+			CompatibleTrackObjects = obj.CompatibleTrackObjects,
 		};
 }

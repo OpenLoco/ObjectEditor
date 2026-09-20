@@ -181,6 +181,13 @@ public class ScenarioPackRoutesTests : BaseRouteHandlerTestFixture
 		}
 	}
 
+[Test]
+	public async Task GetScenarioPackAsync_WithUnknownId_ReturnsNotFound()
+	{
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/9999");
+
+		Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.NotFound));
+	}
 	static void AssertPackDescriptorEqual(DtoItemPackDescriptor<DtoScenarioEntry>? actual, DtoItemPackDescriptor<DtoScenarioEntry> expected)
 	{
 		Assert.That(actual, Is.Not.Null);

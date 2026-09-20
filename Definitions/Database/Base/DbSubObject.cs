@@ -97,7 +97,6 @@ public interface IDbSubObject : IHasId
 	//IDtoSubObject ToDto();
 }
 
-[Index(nameof(Id), IsUnique = true)]
 public abstract class DbSubObject : DbIdObject, IDbSubObject
 {
 	public required TblObject Parent { get; set; }
@@ -127,8 +126,19 @@ public static class DbSubObjectHelper
 		var existingSubObj = await subObjTable.SingleOrDefaultAsync(x => x.Id == parentObj.SubObjectId);
 		if (existingSubObj != null)
 		{
-			subObj.Parent = parentObj;
-			existingSubObj = subObj; // update it
+			// Copy the incoming values onto the tracked entity so they are actually persisted. The
+			// existing row keeps its own primary key, which the incoming object does not carry.
+			var entry = db.Entry(existingSubObj);
+			foreach (var property in entry.Properties)
+			{
+				if (property.Metadata.IsKey() || property.Metadata.PropertyInfo is not { } propertyInfo)
+				{
+					continue;
+				}
+
+				property.CurrentValue = propertyInfo.GetValue(subObj);
+			}
+
 			parentObj.SubObjectId = existingSubObj.Id;
 
 			return $"Updated {parentObj.Id}-{existingSubObj.Id}";

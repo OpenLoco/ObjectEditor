@@ -254,4 +254,80 @@ public class RouteHelpersTests
 		Assert.That(RouteHelpers.MakeNicePlural("Tag"), Is.EqualTo("Tags"));
 		Assert.That(RouteHelpers.MakeNicePlural("UserRouteHandler"), Is.EqualTo("Users"));
 	}
+[Test]
+	public void TryGetSafePathUnderRoot_AcceptsAbsolutePathInsideRoot()
+	{
+		var rootPath = Path.Combine(Path.GetTempPath(), $"route-helper-{Guid.NewGuid():N}");
+
+		try
+		{
+			_ = Directory.CreateDirectory(rootPath);
+			var absolutePath = Path.Combine(rootPath, "Custom", "uploaded.dat");
+
+			var result = RouteHelpers.TryGetSafePathUnderRoot(rootPath, absolutePath, out var fullPath, out var normalizedRelativePath);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(result, Is.True);
+				Assert.That(fullPath, Is.EqualTo(absolutePath));
+				Assert.That(normalizedRelativePath, Is.EqualTo("Custom/uploaded.dat"));
+			}
+		}
+		finally
+		{
+			Directory.Delete(rootPath, recursive: true);
+		}
+	}
+
+	[Test]
+	public void TryGetSafePathUnderRoot_RejectsAbsolutePathOutsideRoot()
+	{
+		var rootPath = Path.Combine(Path.GetTempPath(), $"route-helper-{Guid.NewGuid():N}");
+
+		try
+		{
+			_ = Directory.CreateDirectory(rootPath);
+			var outsidePath = Path.Combine(Path.GetTempPath(), $"route-helper-outside-{Guid.NewGuid():N}.dat");
+
+			var result = RouteHelpers.TryGetSafePathUnderRoot(rootPath, outsidePath, out var fullPath, out var normalizedRelativePath);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(result, Is.False);
+				Assert.That(fullPath, Is.Empty);
+				Assert.That(normalizedRelativePath, Is.Empty);
+			}
+		}
+		finally
+		{
+			Directory.Delete(rootPath, recursive: true);
+		}
+	}
+
+	[Test]
+	public void TryGetSafePathUnderRoot_DelegatesToRelativeCheckForRelativePaths()
+	{
+		var rootPath = Path.Combine(Path.GetTempPath(), $"route-helper-{Guid.NewGuid():N}");
+
+		try
+		{
+			_ = Directory.CreateDirectory(rootPath);
+
+			var accepted = RouteHelpers.TryGetSafePathUnderRoot(rootPath, "Custom/uploaded.dat", out var fullPath, out var normalizedRelativePath);
+			var rejected = RouteHelpers.TryGetSafePathUnderRoot(rootPath, "../outside.dat", out _, out _);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(accepted, Is.True);
+				Assert.That(fullPath, Is.EqualTo(Path.Combine(rootPath, "Custom", "uploaded.dat")));
+				Assert.That(normalizedRelativePath, Is.EqualTo("Custom/uploaded.dat"));
+				Assert.That(rejected, Is.False);
+			}
+		}
+		finally
+		{
+			Directory.Delete(rootPath, recursive: true);
+		}
+	}
+
 }

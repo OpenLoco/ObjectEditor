@@ -200,7 +200,7 @@ public class ObjectPackService : IObjectPackService
 						continue;
 					}
 
-					if (!RouteHelpers.TryGetSafeRelativePathUnderRoot(_sfm.ObjectsFolder, entry.FileName, out var fullPath, out var entryName))
+					if (!RouteHelpers.TryGetSafePathUnderRoot(_sfm.ObjectsFolder, entry.FileName, out var fullPath, out var entryName))
 					{
 						continue;
 					}

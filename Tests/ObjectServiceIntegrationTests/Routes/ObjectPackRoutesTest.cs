@@ -211,6 +211,68 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 		}
 	}
 
+[Test]
+	public async Task GetObjectPackFileAsync_IncludesObjectStoredWithAbsoluteIndexPath()
+	{
+		const UniqueObjectId packId = 10;
+		const string objectFileName = "uploaded-absolute.dat";
+
+		using var scope = testWebAppFactory.Services.CreateScope();
+		var sfm = scope.ServiceProvider.GetRequiredService<ServerFolderManager>();
+
+		// Uploaded objects are indexed with an absolute file path (unlike scanned ones, which are relative).
+		var absolutePath = Path.Combine(sfm.ObjectsCustomFolder, objectFileName);
+		await File.WriteAllBytesAsync(absolutePath, [9, 9, 9, 9]);
+		sfm.ObjectIndex.AddEntry(new ObjectIndexEntry("ABSOLUTEOBJ", absolutePath, null, 999, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
+
+		using (var db = GetDbContext())
+		{
+			await db.ObjectPacks.AddAsync(new TblObjectPack
+			{
+				Id = packId,
+				Name = "Absolute path pack",
+				Objects =
+				[
+					new TblObject
+					{
+						Id = 10,
+						Name = "absolute-obj",
+						SubObjectId = 10,
+						ObjectType = ObjectType.Vehicle,
+						ObjectSource = ObjectSource.Custom,
+						Availability = ObjectAvailability.Available,
+						DatObjects =
+						[
+							new TblDatObject { Id = 10, DatName = "ABSOLUTEOBJ", DatChecksum = 999, xxHash3 = 10, ObjectId = 10 },
+						],
+					},
+				],
+			});
+			_ = await db.SaveChangesAsync();
+		}
+
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{packId}{Definitions.Web.Routes.File}");
+		var bytes = await response.Content.ReadAsByteArrayAsync();
+		using var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.IsSuccessStatusCode, Is.True);
+			Assert.That(archive.Entries.Select(x => x.FullName), Is.EqualTo([$"{ServerFolderManager.CustomFolderName}/{objectFileName}"]));
+			await using var entryStream = archive.Entries.Single().Open();
+			using var entryMemoryStream = new MemoryStream();
+			await entryStream.CopyToAsync(entryMemoryStream);
+			Assert.That(entryMemoryStream.ToArray(), Is.EqualTo(new byte[] { 9, 9, 9, 9 }));
+		}
+	}
+
+	[Test]
+	public async Task GetObjectPackAsync_WithUnknownId_ReturnsNotFound()
+	{
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/9999");
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
 	static void AssertPackDescriptorEqual(DtoItemPackDescriptor<DtoObjectEntry>? actual, DtoItemPackDescriptor<DtoObjectEntry> expected)
 	{
 		Assert.That(actual, Is.Not.Null);

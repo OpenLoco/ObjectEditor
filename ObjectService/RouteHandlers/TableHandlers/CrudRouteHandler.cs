@@ -1,4 +1,5 @@
 using Definitions;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using ObjectService.Services;
 
@@ -44,7 +45,7 @@ public class CrudRouteHandler<TDto, TRow> : ITableRouteHandler
 		}
 
 		var dto = await service.CreateAsync(request, ct);
-		return Results.Created($"{_baseRoute}/{dto.Id}", dto);
+		return Results.Created($"{Routes.Prefix}{_baseRoute}/{dto.Id}", dto);
 	}
 
 	async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] ICrudService<TDto, TRow> service, CancellationToken ct)

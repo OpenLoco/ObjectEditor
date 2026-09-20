@@ -37,8 +37,9 @@ public static class DatabaseInitializer
 		// Add OwnerUserId column to existing databases that were created before
 		// DbCoreObject gained the OwnerUserId property. We omit the REFERENCES
 		// clause because SQLite ALTER TABLE ADD COLUMN has limited FK support;
-		// EF Core tracks the FK at the model level instead.
-		foreach (var table in new[] { "Objects", "ObjectPacks", "Scenarios", "ScenarioPacks" })
+		// EF Core tracks the FK at the model level instead. Every DbCoreObject
+		// table needs the column, including the game-data file tables.
+		foreach (var table in new[] { "Objects", "ObjectPacks", "Scenarios", "ScenarioPacks", "Music", "SoundEffects", "Tutorials", "Graphics" })
 		{
 			try
 			{

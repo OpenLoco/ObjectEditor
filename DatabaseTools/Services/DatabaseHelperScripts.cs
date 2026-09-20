@@ -59,46 +59,6 @@ namespace DatabaseTools.Services;
 
 public static class DatabaseHelperScripts
 {
-	static ObjectType TypeToStruct(Type type)
-		=> type switch
-		{
-			var t when t == typeof(AirportObject) => ObjectType.Airport,
-			var t when t == typeof(BridgeObject) => ObjectType.Bridge,
-			var t when t == typeof(BuildingObject) => ObjectType.Building,
-			var t when t == typeof(CargoObject) => ObjectType.Cargo,
-			var t when t == typeof(CliffEdgeObject) => ObjectType.CliffEdge,
-			var t when t == typeof(ClimateObject) => ObjectType.Climate,
-			var t when t == typeof(CompetitorObject) => ObjectType.Competitor,
-			var t when t == typeof(CurrencyObject) => ObjectType.Currency,
-			var t when t == typeof(DockObject) => ObjectType.Dock,
-			var t when t == typeof(HillShapesObject) => ObjectType.HillShapes,
-			var t when t == typeof(IndustryObject) => ObjectType.Industry,
-			var t when t == typeof(InterfaceSkinObject) => ObjectType.InterfaceSkin,
-			var t when t == typeof(LandObject) => ObjectType.Land,
-			var t when t == typeof(LevelCrossingObject) => ObjectType.LevelCrossing,
-			var t when t == typeof(RegionObject) => ObjectType.Region,
-			var t when t == typeof(RoadExtraObject) => ObjectType.RoadExtra,
-			var t when t == typeof(RoadObject) => ObjectType.Road,
-			var t when t == typeof(RoadStationObject) => ObjectType.RoadStation,
-			var t when t == typeof(ScaffoldingObject) => ObjectType.Scaffolding,
-			var t when t == typeof(ScenarioTextObject) => ObjectType.ScenarioText,
-			var t when t == typeof(SnowObject) => ObjectType.Snow,
-			var t when t == typeof(SoundObject) => ObjectType.Sound,
-			var t when t == typeof(SteamObject) => ObjectType.Steam,
-			var t when t == typeof(StreetLightObject) => ObjectType.StreetLight,
-			var t when t == typeof(TownNamesObject) => ObjectType.TownNames,
-			var t when t == typeof(TrackExtraObject) => ObjectType.TrackExtra,
-			var t when t == typeof(TrackObject) => ObjectType.Track,
-			var t when t == typeof(TrackSignalObject) => ObjectType.TrackSignal,
-			var t when t == typeof(TrackStationObject) => ObjectType.TrackStation,
-			var t when t == typeof(TreeObject) => ObjectType.Tree,
-			var t when t == typeof(TunnelObject) => ObjectType.Tunnel,
-			var t when t == typeof(VehicleObject) => ObjectType.Vehicle,
-			var t when t == typeof(WallObject) => ObjectType.Wall,
-			var t when t == typeof(WaterObject) => ObjectType.Water,
-			_ => throw new ArgumentOutOfRangeException(nameof(type), $"unknown struct type {type.FullName}")
-		};
-
 	public static Task QueryBuildingVar_AC(ToolsSettings settings, Action<string> log) => Task.Run(() =>
 	{
 		var dir = settings.ObjectDirectory;
@@ -227,7 +187,7 @@ public static class DatabaseHelperScripts
 				!t.IsAbstract &&
 				typeof(ILocoStruct).IsAssignableFrom(t) &&
 				t.GetProperty("CostIndex", BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase) != null)
-			.Select(TypeToStruct)
+			.Select(ObjectTypeMapping.StructTypeToObjectType)
 			.ToHashSet();
 
 		foreach (var type in locoStructTypesWithCostIndex)

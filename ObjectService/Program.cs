@@ -253,6 +253,23 @@ builder.Services.AddAuthorization(options =>
 		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
 			.RequireAuthenticatedUser()
 			.AddRequirements(new PermissionRequirement(LocoPermissions.AuthorManage)));
+
+	// Pack management policies. Pack writes require an explicit permission claim; Admin users satisfy
+	// every permission implicitly via PermissionHandler.
+	options.AddPolicy("CanCreateObjectPacks", policy =>
+		policy.AddAuthenticationSchemes([.. apiAuthenticationSchemes])
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.ObjectPacksCreate)));
+
+	options.AddPolicy("CanModifyObjectPacks", policy =>
+		policy.AddAuthenticationSchemes([.. apiAuthenticationSchemes])
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.ObjectPacksModify)));
+
+	options.AddPolicy("CanModifyScenarioPacks", policy =>
+		policy.AddAuthenticationSchemes([.. apiAuthenticationSchemes])
+			.RequireAuthenticatedUser()
+			.AddRequirements(new PermissionRequirement(LocoPermissions.ScenarioPacksModify)));
 });
 
 // Register the ownership authorization handler

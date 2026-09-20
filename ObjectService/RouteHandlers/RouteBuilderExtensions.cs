@@ -37,12 +37,14 @@ public static class RouteBuilderExtensions
 		var authGroup = v2.MapGroup(string.Empty).RequireAuthorization();
 		MapWriteHandler(new ObjectMissingRouteHandler(), authGroup, config);
 		MapWriteHandler(new ScenarioRouteHandler(), authGroup, config);
-		MapWriteHandler(new ScenarioPackRouteHandler(), authGroup, config);
 		MapWriteHandler(new MusicRouteHandler(), authGroup, config);
 		MapWriteHandler(new SoundEffectsRouteHandler(), authGroup, config);
 		MapWriteHandler(new TutorialsRouteHandler(), authGroup, config);
 		MapWriteHandler(new GraphicsRouteHandler(), authGroup, config);
-		MapWriteHandler(new ObjectPackRouteHandler(), authGroup, config);
+		// Pack write routes require the relevant pack permission (create reuses the object-pack
+		// create permission for scenario packs as well).
+		MapWriteHandler(new ScenarioPackRouteHandler(), authGroup, config, "CanCreateObjectPacks", "CanModifyScenarioPacks");
+		MapWriteHandler(new ObjectPackRouteHandler(), authGroup, config, "CanCreateObjectPacks", "CanModifyObjectPacks");
 		// Curator write routes for metadata (requires Curator policy or Admin)
 		var curatorGroup = v2.MapGroup(string.Empty).RequireAuthorization("Curator");
 		MapWriteHandler(new AuthorRouteHandler(), curatorGroup, config);
@@ -66,6 +68,6 @@ public static class RouteBuilderExtensions
 	private static void MapHandler(ITableRouteHandler handler, IEndpointRouteBuilder group, IConfiguration config)
 		=> BaseTableRouteHandler.MapRoutes(handler, group, config);
 
-	private static void MapWriteHandler(ITableRouteHandler handler, IEndpointRouteBuilder group, IConfiguration config)
-		=> BaseTableRouteHandler.MapWriteRoutes(handler, group, config);
+	private static void MapWriteHandler(ITableRouteHandler handler, IEndpointRouteBuilder group, IConfiguration config, string? createPolicy = null, string? modifyPolicy = null)
+		=> BaseTableRouteHandler.MapWriteRoutes(handler, group, config, createPolicy, modifyPolicy);
 }

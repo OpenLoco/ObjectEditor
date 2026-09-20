@@ -27,7 +27,7 @@ public record UploadResult(bool Success, DtoObjectPostResponse? Descriptor, stri
 
 public interface IObjectQueryService
 {
-	Task<IEnumerable<DtoObjectEntry>> ListAsync(HttpContext context, CancellationToken ct);
+	Task<IEnumerable<DtoObjectEntry>> ListAsync(CancellationToken ct);
 	Task<IEnumerable<DtoObjectEntry>> ListMineAsync(UniqueObjectId ownerUserId, CancellationToken ct);
 	Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct);
 	Task<UploadResult> UploadDatAsync(DtoObjectPost request, CancellationToken ct);
@@ -62,7 +62,7 @@ public class ObjectQueryService : IObjectQueryService
 		_userManager = userManager;
 	}
 
-	public async Task<IEnumerable<DtoObjectEntry>> ListAsync(HttpContext context, CancellationToken ct) => await _db.Objects.Include(x => x.DatObjects).Select(x => x.ToDtoEntry()).ToListAsync(ct);
+	public async Task<IEnumerable<DtoObjectEntry>> ListAsync(CancellationToken ct) => await _db.Objects.Include(x => x.DatObjects).Select(x => x.ToDtoEntry()).ToListAsync(ct);
 
 	public async Task<IEnumerable<DtoObjectEntry>> ListMineAsync(UniqueObjectId ownerUserId, CancellationToken ct)
 		=> await _db.Objects
@@ -387,8 +387,10 @@ public class ObjectQueryService : IObjectQueryService
 		}
 
 		var uuid = Guid.NewGuid();
-		var saveFileName = Path.Combine(_sfm.ObjectsCustomFolder, $"{uuid}.dat");
-		await File.WriteAllBytesAsync(saveFileName, datFileBytes, ct);
+		// Index entries always store a path relative to the Objects folder (the same convention used
+		// for scanned files), so the absolute path is only needed when writing the file.
+		var relativeFileName = ServerFolderManager.GetCustomObjectRelativeFileName(uuid);
+		await File.WriteAllBytesAsync(Path.Combine(_sfm.ObjectsFolder, relativeFileName), datFileBytes, ct);
 
 		VehicleType? vehicleType = null;
 		if (LocoObject.Object is VehicleObject veh)
@@ -446,7 +448,7 @@ public class ObjectQueryService : IObjectQueryService
 		_ = await DbSubObjectHelper.AddOrUpdate(_db, tblObject, LocoObject.Object);
 		_ = await _db.SaveChangesAsync(ct);
 
-		_sfm.ObjectIndex.AddEntry(new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
+		_sfm.ObjectIndex.AddEntry(new ObjectIndexEntry(hdrs.S5.Name, relativeFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 		_ = _sfm.ObjectIndex.SaveIndexAsync(_sfm.IndexFile);
 
 		var subObject = DbSubObjectHelper.GetDbSubForType(_db, tblObject.ObjectType, tblObject.Id);

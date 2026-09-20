@@ -1,6 +1,7 @@
 using Definitions;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ObjectService.Services;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
@@ -31,9 +32,9 @@ public class CrudRouteHandler<TDto, TRow> : ITableRouteHandler
 
 	public virtual void MapAdditionalRoutes(IEndpointRouteBuilder endpoints) { }
 
-	async Task<IResult> ListAsync(HttpContext context, [FromServices] ICrudService<TDto, TRow> service, CancellationToken ct)
+	async Task<IResult> ListAsync([FromServices] ICrudService<TDto, TRow> service, CancellationToken ct)
 	{
-		var items = await service.ListAsync(context, ct);
+		var items = await service.ListAsync(ct);
 		return Results.Ok(items);
 	}
 
@@ -44,8 +45,15 @@ public class CrudRouteHandler<TDto, TRow> : ITableRouteHandler
 			return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
 		}
 
-		var dto = await service.CreateAsync(request, ct);
-		return Results.Created($"{Routes.Prefix}{_baseRoute}/{dto.Id}", dto);
+		try
+		{
+			var dto = await service.CreateAsync(request, ct);
+			return Results.Created($"{Routes.Prefix}{_baseRoute}/{dto.Id}", dto);
+		}
+		catch (DbUpdateException ex) when (DbExceptionHelpers.IsUniqueConstraintViolation(ex))
+		{
+			return Results.Problem("A record with the same name already exists.", statusCode: StatusCodes.Status409Conflict);
+		}
 	}
 
 	async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] ICrudService<TDto, TRow> service, CancellationToken ct)
@@ -56,8 +64,20 @@ public class CrudRouteHandler<TDto, TRow> : ITableRouteHandler
 
 	async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] TDto request, [FromServices] ICrudService<TDto, TRow> service, CancellationToken ct)
 	{
-		var dto = await service.UpdateAsync(id, request, ct);
-		return dto != null ? Results.Accepted($"{_baseRoute}/{dto.Id}", dto) : Results.NotFound();
+		if (!service.TryValidateUpdate(request, out var error))
+		{
+			return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+		}
+
+		try
+		{
+			var dto = await service.UpdateAsync(id, request, ct);
+			return dto != null ? Results.Accepted($"{Routes.Prefix}{_baseRoute}/{dto.Id}", dto) : Results.NotFound();
+		}
+		catch (DbUpdateException ex) when (DbExceptionHelpers.IsUniqueConstraintViolation(ex))
+		{
+			return Results.Problem("A record with the same name already exists.", statusCode: StatusCodes.Status409Conflict);
+		}
 	}
 
 	async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] ICrudService<TDto, TRow> service, CancellationToken ct)

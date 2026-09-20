@@ -304,7 +304,7 @@ public static class Client
 
 	public static Task<DtoUserDetailDescriptor?> ToggleUserRoleAsync(HttpClient client, UniqueObjectId id, string role, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> ClientHelpers.PostAsync<DtoUserRoleRequest, DtoUserDetailDescriptor>(
-			client, ApiVersion, Routes.Users + $"/{id}" + Routes.RolesSubRoute, new DtoUserRoleRequest(role), logger, cancellationToken);
+			client, ApiVersion, Routes.Users + $"/{id}" + Routes.Roles, new DtoUserRoleRequest(role), logger, cancellationToken);
 
 	public static Task<DtoUserDetailDescriptor?> ToggleUserClaimAsync(HttpClient client, UniqueObjectId id, string claim, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> ClientHelpers.PostAsync<DtoUserClaimRequest, DtoUserDetailDescriptor>(

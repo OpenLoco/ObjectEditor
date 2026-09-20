@@ -133,6 +133,28 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 	}
+[Test]
+	public async Task PostAsync_WithEmptyName_ReturnsBadRequest()
+	{
+		var request = new DtoItemPackDescriptor<DtoObjectEntry>(
+			0, "   ", null, null, null, DateOnly.UtcToday, [], [], [], null);
+
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", request);
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+	}
+
+	[Test]
+	public async Task PostAsync_WithDuplicateName_ReturnsConflict()
+	{
+		// "Alpha Object Pack" is seeded by SeedDataCoreAsync.
+		var request = new DtoItemPackDescriptor<DtoObjectEntry>(
+			0, "Alpha Object Pack", null, null, null, DateOnly.UtcToday, [], [], [], null);
+
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", request);
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+	}
 
 	[Test]
 	public override async Task GetAsync()

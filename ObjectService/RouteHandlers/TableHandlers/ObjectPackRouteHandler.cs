@@ -1,6 +1,7 @@
 using Definitions.DTO;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ObjectService.Services;
 using System.Security.Claims;
 
@@ -46,20 +47,44 @@ public class ObjectPackRouteHandler : ITableRouteHandler
 	[FromServices] IObjectPackService svc,
 	CancellationToken ct)
 	{
+		if (string.IsNullOrWhiteSpace(request.Name))
+		{
+			return Results.Problem("Name required", statusCode: StatusCodes.Status400BadRequest);
+		}
+
 		var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 		if (string.IsNullOrEmpty(userIdClaim) || !ulong.TryParse(userIdClaim, out var userId))
 		{
 			return Results.Unauthorized();
 		}
 
-		var created = await svc.CreatePackAsync(request, userId, ct);
-		return Results.Created($"{Routes.Prefix}{BaseRoute}/{created.Id}", created);
+		try
+		{
+			var created = await svc.CreatePackAsync(request, userId, ct);
+			return Results.Created($"{Routes.Prefix}{BaseRoute}/{created.Id}", created);
+		}
+		catch (DbUpdateException ex) when (DbExceptionHelpers.IsUniqueConstraintViolation(ex))
+		{
+			return Results.Problem("A pack with the same name already exists.", statusCode: StatusCodes.Status409Conflict);
+		}
 	}
 
 	async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectPackDescriptor request, [FromServices] IObjectPackService svc, CancellationToken ct)
 	{
-		var updated = await svc.UpdateAsync(id, request, ct);
-		return updated != null ? Results.Ok(updated) : Results.NotFound();
+		if (string.IsNullOrWhiteSpace(request.Name))
+		{
+			return Results.Problem("Name required", statusCode: StatusCodes.Status400BadRequest);
+		}
+
+		try
+		{
+			var updated = await svc.UpdateAsync(id, request, ct);
+			return updated != null ? Results.Ok(updated) : Results.NotFound();
+		}
+		catch (DbUpdateException ex) when (DbExceptionHelpers.IsUniqueConstraintViolation(ex))
+		{
+			return Results.Problem("A pack with the same name already exists.", statusCode: StatusCodes.Status409Conflict);
+		}
 	}
 
 	async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectPackService svc, CancellationToken ct)

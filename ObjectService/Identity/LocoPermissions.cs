@@ -28,19 +28,29 @@ public static class LocoPermissions
 	/// <summary>Allowed to set the author on any entity.</summary>
 	public const string AuthorManage = "author:manage";
 
-	/// <summary>Allowed to change own display name.</summary>
-	public const string DisplayNameChange = "displayname:change";
-
 	/// <summary>
-	/// All permissions surfaced as toggles in the user-management UI. Admin users
-	/// implicitly hold every permission without needing an explicit claim.
+	/// Every permission that can be granted to a user. This is the single source of truth: a permission
+	/// is only useful if it is listed here (so the user-management UI can toggle it) <em>and</em>
+	/// enforced by a policy or page check. Admin users implicitly hold every permission.
 	/// </summary>
 	public static readonly string[] All =
 	[
 		ObjectPacksCreate,
+		ObjectPacksModify,
+		ScenarioPacksModify,
 		TagsManage,
 		LicenceManage,
 		AuthorManage,
-		DisplayNameChange,
+	];
+
+	/// <summary>The permissions granted to the built-in <c>Curator</c> role by the database initializer.</summary>
+	public static readonly string[] Curator =
+	[
+		ObjectPacksCreate,
+		ObjectPacksModify,
+		ScenarioPacksModify,
+		TagsManage,
+		LicenceManage,
+		AuthorManage,
 	];
 }

@@ -61,10 +61,10 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
 	}
 
-	async Task<IResult> ListAsync(HttpContext context, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
+	async Task<IResult> ListAsync([FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
 		logger.LogInformation("[List] Objects");
-		return Results.Ok(await query.ListAsync(context, ct));
+		return Results.Ok(await query.ListAsync(ct));
 	}
 
 	async Task<IResult> ListMineAsync(HttpContext context, [FromServices] IObjectQueryService query, CancellationToken ct)

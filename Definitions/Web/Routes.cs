@@ -31,7 +31,6 @@ public static class Routes
 	public const string Roles = "/roles";
 	public const string Me = "/me";
 	public const string Detail = "/detail";
-	public const string RolesSubRoute = "/roles";
 	public const string ClaimsSubRoute = "/claims";
 	public const string Lockout = "/lockout";
 	public const string EmailConfirmed = "/email-confirmed";

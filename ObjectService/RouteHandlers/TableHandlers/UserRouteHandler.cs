@@ -29,7 +29,7 @@ public class UserRouteHandler : ITableRouteHandler
 
 		var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
 		_ = resourceRoute.MapGet(Routes.Detail, GetDetailAsync).RequireAuthorization("AdminOnly");
-		_ = resourceRoute.MapPost(Routes.RolesSubRoute, ToggleRoleAsync).RequireAuthorization("AdminOnly");
+		_ = resourceRoute.MapPost(Routes.Roles, ToggleRoleAsync).RequireAuthorization("AdminOnly");
 		_ = resourceRoute.MapPost(Routes.ClaimsSubRoute, ToggleClaimAsync).RequireAuthorization("AdminOnly");
 		_ = resourceRoute.MapPost(Routes.Lockout, ToggleLockoutAsync).RequireAuthorization("AdminOnly");
 		_ = resourceRoute.MapPost(Routes.EmailConfirmed, ToggleEmailConfirmedAsync).RequireAuthorization("AdminOnly");

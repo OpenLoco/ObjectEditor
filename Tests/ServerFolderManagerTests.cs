@@ -123,6 +123,21 @@ public class ServerFolderManagerTests
 	}
 
 	[Test]
+	public void GetCustomObjectRelativeFileName_IsRelativeAndUnderCustomFolder()
+	{
+		var uuid = Guid.NewGuid();
+
+		var relative = ServerFolderManager.GetCustomObjectRelativeFileName(uuid);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(Path.IsPathRooted(relative), Is.False);
+			Assert.That(Path.GetExtension(relative), Is.EqualTo(".dat"));
+			Assert.That(Path.GetDirectoryName(relative), Is.EqualTo(ServerFolderManager.CustomFolderName));
+		}
+	}
+
+	[Test]
 	public void Constructor_ThrowsWhenRootDirectoryDoesNotExist()
 	{
 		var missingRoot = Path.Combine(Path.GetTempPath(), $"server-folder-manager-missing-{Guid.NewGuid():N}");

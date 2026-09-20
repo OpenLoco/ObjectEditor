@@ -39,7 +39,13 @@ where TRow : class, IHasId
 		return errorMessage == null;
 	}
 
-	public async Task<IEnumerable<TDto>> ListAsync(HttpContext context, CancellationToken ct)
+	public bool TryValidateUpdate(TDto request, out string? errorMessage)
+	{
+		errorMessage = _validate(request);
+		return errorMessage == null;
+	}
+
+	public async Task<IEnumerable<TDto>> ListAsync(CancellationToken ct)
 	=> await Table.Select(x => _toDto(x)).ToListAsync(ct);
 
 	public async Task<TDto> CreateAsync(TDto request, CancellationToken ct)

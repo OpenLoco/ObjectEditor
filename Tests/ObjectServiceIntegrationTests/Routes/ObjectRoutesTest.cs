@@ -9,7 +9,9 @@ using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Index;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ObjectService;
 using ObjectService.Tests.Integration;
 using System.IO.Hashing;
 using System.Net;
@@ -233,6 +235,15 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			null); // SubObject
 
 		AssertDtoObjectDescriptorsAreEqual(results, expected);
+
+		// The uploaded file must be indexed with a path relative to the Objects folder (not an absolute
+		// path), so that file reads and object-pack downloads resolve consistently.
+		using var scope = testWebAppFactory.Services.CreateScope();
+		var sfm = scope.ServiceProvider.GetRequiredService<ServerFolderManager>();
+		Assert.That(sfm.ObjectIndex.TryFind((entry.DisplayName, 3072098364), out var uploadedEntry), Is.True);
+		Assert.That(uploadedEntry, Is.Not.Null);
+		Assert.That(Path.IsPathRooted(uploadedEntry!.FileName), Is.False);
+		Assert.That(File.Exists(Path.Combine(sfm.ObjectsFolder, uploadedEntry.FileName!)), Is.True);
 	}
 
 	[Test]

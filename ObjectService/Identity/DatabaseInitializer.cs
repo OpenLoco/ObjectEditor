@@ -81,10 +81,11 @@ public static class DatabaseInitializer
 				logger.LogInformation("Created Curator role");
 
 				// Assign curator permissions as role claims
-				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.ObjectPacksCreate));
-				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.TagsManage));
-				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.LicenceManage));
-				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.AuthorManage));
+				foreach (var perm in LocoPermissions.Curator)
+				{
+					_ = await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, perm));
+				}
+
 				logger.LogInformation("Assigned curator permissions to Curator role");
 			}
 			else
@@ -100,7 +101,7 @@ public static class DatabaseInitializer
 			var existingClaims = await roleManager.GetClaimsAsync(curatorRole);
 			var existingPermissionValues = existingClaims.Where(c => c.Type == LocoPermissions.ClaimType).Select(c => c.Value).ToHashSet();
 
-			foreach (var perm in new[] { LocoPermissions.ObjectPacksCreate, LocoPermissions.TagsManage, LocoPermissions.LicenceManage, LocoPermissions.AuthorManage })
+			foreach (var perm in LocoPermissions.Curator)
 			{
 				if (!existingPermissionValues.Contains(perm))
 				{
@@ -159,28 +160,6 @@ public static class DatabaseInitializer
 		{
 			await userManager.AddToRoleAsync(adminUser, "Admin");
 			logger.LogInformation("Assigned Admin role to {Username}", adminUsername);
-		}
-
-		// Ensure every user has the DisplayNameChange user claim (idempotent)
-		var allUsers = await userManager.Users.ToListAsync();
-		foreach (var u in allUsers)
-		{
-			var existingUserClaims = await userManager.GetClaimsAsync(u);
-			if (!existingUserClaims.Any(c => c.Type == LocoPermissions.ClaimType && c.Value == LocoPermissions.DisplayNameChange))
-			{
-				var claimResult = await userManager.AddClaimAsync(u,
-					new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.DisplayNameChange));
-				if (claimResult.Succeeded)
-				{
-					logger.LogInformation("Granted {Permission} user claim to {Username}", LocoPermissions.DisplayNameChange, u.UserName);
-				}
-				else
-				{
-					logger.LogWarning("Failed to grant {Permission} to {Username}: {Errors}",
-						LocoPermissions.DisplayNameChange, u.UserName,
-						string.Join(", ", claimResult.Errors.Select(e => e.Description)));
-				}
-			}
 		}
 
 		// Assign unowned objects to admin

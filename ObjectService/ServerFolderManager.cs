@@ -149,6 +149,13 @@ public class ServerFolderManager : IServerFolderManager
 	public const string CustomFolderName = "Custom";
 	public const string OpenLocoFolderName = "OpenLoco";
 
+	/// <summary>
+	/// Builds the path, relative to <see cref="ObjectsFolder"/>, that an uploaded game object is stored
+	/// at. Object-index entries always use relative paths so the index stays portable between machines.
+	/// </summary>
+	public static string GetCustomObjectRelativeFileName(Guid uuid)
+		=> Path.Combine(CustomFolderName, $"{uuid}.dat");
+
 	#region GameData
 
 	public string GameDataFolder => Path.Combine(RootDirectory, GameDataFolderName);

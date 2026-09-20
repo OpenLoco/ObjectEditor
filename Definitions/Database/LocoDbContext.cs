@@ -94,11 +94,20 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 
 	#endregion
 
-	#region Other
+	#region GameDataFiles
+
+	public DbSet<TblMusic> Music => Set<TblMusic>();
+	public DbSet<TblSoundEffect> SoundEffects => Set<TblSoundEffect>();
+	public DbSet<TblTutorial> Tutorials => Set<TblTutorial>();
+	public DbSet<TblGraphics> Graphics => Set<TblGraphics>();
+	public DbSet<TblScenario> Scenarios => Set<TblScenario>();
+
+	#endregion
+
+	#region Packs
 
 	public DbSet<TblObjectPack> ObjectPacks => Set<TblObjectPack>();
-	public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();
-	public DbSet<TblSC5FilePack> SC5FilePacks => Set<TblSC5FilePack>();
+	public DbSet<TblScenarioPack> ScenarioPacks => Set<TblScenarioPack>();
 
 	#endregion
 
@@ -157,13 +166,25 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		_ = modelBuilder.Entity<TblObject>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
-		_ = modelBuilder.Entity<TblSC5File>()
+		_ = modelBuilder.Entity<TblScenario>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 		_ = modelBuilder.Entity<TblObjectPack>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
-		_ = modelBuilder.Entity<TblSC5FilePack>()
+		_ = modelBuilder.Entity<TblScenarioPack>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblMusic>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblSoundEffect>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblTutorial>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblGraphics>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 	}

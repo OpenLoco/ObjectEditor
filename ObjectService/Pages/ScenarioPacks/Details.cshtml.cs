@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using ObjectService.Frontend;
 using ObjectService.Identity;
 
-namespace ObjectService.Pages.SC5FilePacks;
+namespace ObjectService.Pages.ScenarioPacks;
 
 public sealed class DetailsModel : PageModel
 {
@@ -16,7 +16,7 @@ public sealed class DetailsModel : PageModel
 		_api = api;
 	}
 
-	public DtoSC5FilePackDescriptor? Pack { get; private set; }
+	public DtoScenarioPackDescriptor? Pack { get; private set; }
 
 	public List<DtoAuthorEntry> AvailableAuthors { get; private set; } = [];
 	public List<DtoTagEntry> AvailableTags { get; private set; } = [];
@@ -30,7 +30,7 @@ public sealed class DetailsModel : PageModel
 	public string? ErrorMessage { get; set; }
 
 	public bool CanEdit => User.IsInRole("Admin") || User.IsInRole("Curator")
-		|| User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.SC5FilePacksModify);
+		|| User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.ScenarioPacksModify);
 
 	public async Task<IActionResult> OnGetAsync(UniqueObjectId id, CancellationToken ct)
 	{
@@ -65,7 +65,7 @@ public sealed class DetailsModel : PageModel
 		SelectedTagIds ??= [];
 		SelectedSC5FileIds ??= [];
 
-		var request = new DtoSC5FilePackDescriptor(
+		var request = new DtoScenarioPackDescriptor(
 			Id,
 			Name.Trim(),
 			Description?.Trim(),
@@ -78,7 +78,7 @@ public sealed class DetailsModel : PageModel
 			[.. SelectedSC5FileIds.Select(f => new DtoItemRef(f, string.Empty))]);
 
 		using var client = _api.CreateClient();
-		var updated = await Client.UpdateSC5FilePackAsync(client, request);
+		var updated = await Client.UpdateScenarioPackAsync(client, request);
 		if (updated != null)
 		{
 			SuccessMessage = $"Scenario pack '{Name.Trim()}' updated.";
@@ -100,11 +100,11 @@ public sealed class DetailsModel : PageModel
 		}
 
 		using var client = _api.CreateClient();
-		var deleted = await Client.DeleteSC5FilePackAsync(client, id);
+		var deleted = await Client.DeleteScenarioPackAsync(client, id);
 		if (deleted)
 		{
 			SuccessMessage = "Scenario pack deleted.";
-			return RedirectToPage("/Index", new { category = "sc5filepacks" });
+			return RedirectToPage("/Index", new { category = "scenariopacks" });
 		}
 
 		await LoadAsync(id, CancellationToken.None);
@@ -115,10 +115,10 @@ public sealed class DetailsModel : PageModel
 	async Task LoadAsync(UniqueObjectId id, CancellationToken ct)
 	{
 		using var client = _api.CreateClient();
-		Pack = await Client.GetSC5FilePackDescriptorAsync(client, id, cancellationToken: ct);
+		Pack = await Client.GetScenarioPackDescriptorAsync(client, id, cancellationToken: ct);
 		AvailableAuthors = [.. (await Client.GetAuthorsAsync(client, cancellationToken: ct)).OrderBy(a => a.Name)];
 		AvailableTags = [.. (await Client.GetTagsAsync(client, cancellationToken: ct)).OrderBy(t => t.Name)];
 		AvailableLicences = [.. (await Client.GetLicencesAsync(client, cancellationToken: ct)).OrderBy(l => l.Name)];
-		AvailableScenarios = [.. (await Client.GetSC5FilesAsync(client, cancellationToken: ct)).OrderBy(s => s.Name).Select(s => new DtoItemRef(s.Id, s.Name))];
+		AvailableScenarios = [.. (await Client.GetScenariosAsync(client, cancellationToken: ct)).OrderBy(s => s.Name).Select(s => new DtoItemRef(s.Id, s.Name))];
 	}
 }

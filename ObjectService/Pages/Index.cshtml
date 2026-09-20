@@ -434,13 +434,13 @@ else if (Model.Category == "objectpacks")
 		}
 	</section>
 }
-else if (Model.Category == "sc5files")
+else if (Model.Category == "scenarios")
 {
 	<section class="panel">
 		<div class="admin-page-header">
 			<h1>SC5 Files</h1>
 		</div>
-		@if (Model.SC5FileList.Count > 0)
+		@if (Model.ScenarioList.Count > 0)
 		{
 			<div class="table-container">
 				<table class="data-table">
@@ -457,7 +457,7 @@ else if (Model.Category == "sc5files")
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (var file in Model.SC5FileList)
+						@foreach (var file in Model.ScenarioList)
 						{
 							<tr>
 								<td><a asp-page="/Scenarios/Details" asp-route-id="@file.Id"><strong>@file.Name</strong></a></td>
@@ -480,20 +480,20 @@ else if (Model.Category == "sc5files")
 		}
 	</section>
 }
-else if (Model.Category == "sc5filepacks")
+else if (Model.Category == "scenariopacks")
 {
 	<section class="panel">
 		<div class="admin-page-header">
 			<h1>SC5 File Packs</h1>
 			@if (Model.IsAdmin)
 			{
-				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-sc5filepacks').hidden = !document.getElementById('create-form-sc5filepacks').hidden">+ New</button>
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-scenariopacks').hidden = !document.getElementById('create-form-scenariopacks').hidden">+ New</button>
 			}
 		</div>
 		@if (Model.IsAdmin)
 		{
-			<form method="post" asp-page-handler="Create" id="create-form-sc5filepacks" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
-				<input type="hidden" name="CrudCategory" value="sc5filepacks" />
+			<form method="post" asp-page-handler="Create" id="create-form-scenariopacks" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+				<input type="hidden" name="CrudCategory" value="scenariopacks" />
 				<div class="form-group">
 					<label for="newSC5PackName">Name</label>
 					<input id="newSC5PackName" name="CrudName" type="text" placeholder="Pack name" required class="form-input" />
@@ -504,7 +504,7 @@ else if (Model.Category == "sc5filepacks")
 				</div>
 				<div class="form-actions" style="margin-top:0.5rem;">
 					<button type="submit" class="button button-primary button-small">Create</button>
-					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-sc5filepacks').hidden = true">Cancel</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-scenariopacks').hidden = true">Cancel</button>
 				</div>
 			</form>
 		}
@@ -515,7 +515,7 @@ else if (Model.Category == "sc5filepacks")
 			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
 			{<div class="alert alert-error">@Model.ErrorMessage</div>}
 		}
-		@if (Model.SC5FilePackList.Count > 0)
+		@if (Model.ScenarioPackList.Count > 0)
 		{
 			<div class="table-container">
 				<table class="data-table">
@@ -532,10 +532,10 @@ else if (Model.Category == "sc5filepacks")
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (var pack in Model.SC5FilePackList)
+						@foreach (var pack in Model.ScenarioPackList)
 						{
 							<tr>
-								<td><a asp-page="/SC5FilePacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
+								<td><a asp-page="/ScenarioPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
 								<td>@(pack.Description.Length > 80 ? pack.Description[..80] + "…" : pack.Description)</td>
 								<td>@pack.UploadedDate.ToString("yyyy-MM-dd")</td>
 								<td>@pack.AuthorCount</td>
@@ -547,7 +547,7 @@ else if (Model.Category == "sc5filepacks")
 									<td class="actions-column">
 										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this pack?')">
 											<input type="hidden" name="CrudId" value="@pack.Id" />
-											<input type="hidden" name="CrudCategory" value="sc5filepacks" />
+											<input type="hidden" name="CrudCategory" value="scenariopacks" />
 											<button type="submit" class="button button-small button-danger">Delete</button>
 										</form>
 									</td>

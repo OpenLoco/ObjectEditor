@@ -65,8 +65,8 @@ public sealed class IndexModel : PageModel
 		}),
 		new("Scenarios", new Dictionary<string, string>
 		{
-			["sc5files"] = "Scenarios",
-			["sc5filepacks"] = "Scenario\u00A0Packs",
+			["scenarios"] = "Scenarios",
+			["scenariopacks"] = "Scenario\u00A0Packs",
 		}),
 		new("Data", new Dictionary<string, string>
 		{
@@ -83,8 +83,8 @@ public sealed class IndexModel : PageModel
 	public List<TagListViewModel> TagList { get; private set; } = [];
 	public List<LicenceListViewModel> LicenceList { get; private set; } = [];
 	public List<ObjectPackListViewModel> ObjectPackList { get; private set; } = [];
-	public List<SC5FileListViewModel> SC5FileList { get; private set; } = [];
-	public List<SC5FilePackListViewModel> SC5FilePackList { get; private set; } = [];
+	public List<ScenarioListViewModel> ScenarioList { get; private set; } = [];
+	public List<ScenarioPackListViewModel> ScenarioPackList { get; private set; } = [];
 	public List<ObjectsMissingListViewModel> ObjectsMissingList { get; private set; } = [];
 
 	public async Task OnGetAsync(CancellationToken cancellationToken)
@@ -98,7 +98,6 @@ public sealed class IndexModel : PageModel
 				PageNumber = Results.Page;
 				break;
 
-			case "scenarios":
 			case "music":
 			case "sfx":
 				Results = new(0, 0, 1, 48, []);
@@ -108,12 +107,12 @@ public sealed class IndexModel : PageModel
 				await LoadObjectPacksAsync(cancellationToken);
 				break;
 
-			case "sc5files":
-				await LoadSC5FilesAsync(cancellationToken);
+			case "scenarios":
+				await LoadScenariosAsync(cancellationToken);
 				break;
 
-			case "sc5filepacks":
-				await LoadSC5FilePacksAsync(cancellationToken);
+			case "scenariopacks":
+				await LoadScenarioPacksAsync(cancellationToken);
 				break;
 
 			case "authors":
@@ -156,14 +155,14 @@ public sealed class IndexModel : PageModel
 				p.ObjectCount))];
 	}
 
-	async Task LoadSC5FilesAsync(CancellationToken ct)
+	async Task LoadScenariosAsync(CancellationToken ct)
 	{
 		using var client = _api.CreateClient();
-		var files = await Client.GetSC5FilesAsync(client, cancellationToken: ct);
+		var files = await Client.GetScenariosAsync(client, cancellationToken: ct);
 
-		SC5FileList = [.. files
+		ScenarioList = [.. files
 			.OrderByDescending(f => f.UploadedDate)
-			.Select(f => new SC5FileListViewModel(
+			.Select(f => new ScenarioListViewModel(
 				f.Id,
 				f.Name,
 				f.Description ?? string.Empty,
@@ -175,14 +174,14 @@ public sealed class IndexModel : PageModel
 				f.PackCount))];
 	}
 
-	async Task LoadSC5FilePacksAsync(CancellationToken ct)
+	async Task LoadScenarioPacksAsync(CancellationToken ct)
 	{
 		using var client = _api.CreateClient();
-		var packs = await Client.GetSC5FilePackListEntriesAsync(client, cancellationToken: ct);
+		var packs = await Client.GetScenarioPackListEntriesAsync(client, cancellationToken: ct);
 
-		SC5FilePackList = [.. packs
+		ScenarioPackList = [.. packs
 			.OrderByDescending(p => p.UploadedDate)
-			.Select(p => new SC5FilePackListViewModel(
+			.Select(p => new ScenarioPackListViewModel(
 				p.Id,
 				p.Name,
 				p.Description ?? string.Empty,
@@ -253,7 +252,7 @@ public sealed class IndexModel : PageModel
 	[TempData]
 	public string? ErrorMessage { get; set; }
 
-	// ── POST: Create author/tag/licence/objectpack/sc5filepack/missing object ──
+	// ── POST: Create author/tag/licence/objectpack/scenariopack/missing object ──
 
 	public async Task<IActionResult> OnPostCreateAsync()
 	{
@@ -307,10 +306,10 @@ public sealed class IndexModel : PageModel
 				ErrorMessage = pack != null ? null : "Failed to create object pack.";
 				break;
 			}
-			case "sc5filepacks":
+			case "scenariopacks":
 			{
 				var request = new DtoItemPackDescriptor<DtoScenarioEntry>(0, CrudName.Trim(), CrudDescription?.Trim(), null, null, DateOnly.FromDateTime(DateTime.UtcNow), [], [], [], null);
-				var pack = await Client.CreateResourceAsync<DtoItemPackDescriptor<DtoScenarioEntry>, DtoItemPackDescriptor<DtoScenarioEntry>>(client, Client.SC5FilePacksEndpointGroup, request);
+				var pack = await Client.CreateResourceAsync<DtoItemPackDescriptor<DtoScenarioEntry>, DtoItemPackDescriptor<DtoScenarioEntry>>(client, Client.ScenarioPacksEndpointGroup, request);
 				SuccessMessage = pack != null ? $"Scenario pack '{CrudName.Trim()}' created." : null;
 				ErrorMessage = pack != null ? null : "Failed to create scenario pack.";
 				break;
@@ -377,7 +376,7 @@ public sealed class IndexModel : PageModel
 		return RedirectToPage(new { category = CrudCategory });
 	}
 
-	// ── POST: Delete author/tag/licence/objectpack/sc5filepack/missing object ──
+	// ── POST: Delete author/tag/licence/objectpack/scenariopack/missing object ──
 
 	public async Task<IActionResult> OnPostDeleteAsync()
 	{
@@ -415,8 +414,8 @@ public sealed class IndexModel : PageModel
 				SuccessMessage = deleted ? "Object pack deleted." : null;
 				ErrorMessage = deleted ? null : "Failed to delete object pack.";
 				break;
-			case "sc5filepacks":
-				deleted = await Client.DeleteSC5FilePackAsync(client, CrudId);
+			case "scenariopacks":
+				deleted = await Client.DeleteScenarioPackAsync(client, CrudId);
 				SuccessMessage = deleted ? "Scenario pack deleted." : null;
 				ErrorMessage = deleted ? null : "Failed to delete scenario pack.";
 				break;
@@ -433,7 +432,7 @@ public sealed class IndexModel : PageModel
 	public record TagListViewModel(UniqueObjectId Id, string Name);
 	public record LicenceListViewModel(UniqueObjectId Id, string Name, string Text);
 	public record ObjectPackListViewModel(UniqueObjectId Id, string Name, string Description, DateOnly UploadedDate, int AuthorCount, int TagCount, string Licence, int ObjectCount);
-	public record SC5FileListViewModel(UniqueObjectId Id, string Name, string Description, DateOnly UploadedDate, ObjectSource ObjectSource, int AuthorCount, int TagCount, string Licence, int PackCount);
-	public record SC5FilePackListViewModel(UniqueObjectId Id, string Name, string Description, DateOnly UploadedDate, int AuthorCount, int TagCount, string Licence, int FileCount);
+	public record ScenarioListViewModel(UniqueObjectId Id, string Name, string Description, DateOnly UploadedDate, ObjectSource ObjectSource, int AuthorCount, int TagCount, string Licence, int PackCount);
+	public record ScenarioPackListViewModel(UniqueObjectId Id, string Name, string Description, DateOnly UploadedDate, int AuthorCount, int TagCount, string Licence, int FileCount);
 	public record ObjectsMissingListViewModel(UniqueObjectId Id, string DatName, uint32_t DatChecksum, ObjectType ObjectType);
 }

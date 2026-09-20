@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -5,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Definitions.Database;
 
 [Index(nameof(Name), IsUnique = true)]
-public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMetadata, IDbDates
+public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMetadata, IDbDates, IDbObjectSource
 {
 	#region IDbName
 
@@ -37,6 +38,12 @@ public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMet
 
 	[DatabaseGenerated(DatabaseGeneratedOption.Computed), NotNull]
 	public DateOnly UploadedDate { get; set; }
+
+	#endregion
+
+	#region IDbObjectSource
+
+	public ObjectSource ObjectSource { get; set; }
 
 	#endregion
 

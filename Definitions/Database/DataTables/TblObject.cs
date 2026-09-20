@@ -16,8 +16,6 @@ public class TblObject : DbCoreObject //<T> : DbCoreObject where T : DbSubObject
 
 	public ObjectType ObjectType { get; set; } // don't need to set explicitly - can be inferred from T type
 
-	public ObjectSource ObjectSource { get; set; }
-
 	public VehicleType? VehicleType { get; set; }
 
 	public ObjectAvailability Availability { get; set; }

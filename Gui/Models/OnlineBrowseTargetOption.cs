@@ -7,7 +7,7 @@ public enum OnlineApiEndpointGroup
 	Objects,
 	ObjectPacks,
 	Scenarios,
-	SC5FilePacks,
+	ScenarioPacks,
 	Tags,
 	Authors,
 	Licences,

@@ -17,7 +17,7 @@ public static class LocoPermissions
 	public const string ObjectPacksModify = "objectpacks:modify";
 
 	/// <summary>Allowed to modify/delete scenario packs.</summary>
-	public const string SC5FilePacksModify = "sc5filepacks:modify";
+	public const string ScenarioPacksModify = "scenariopacks:modify";
 
 	/// <summary>Allowed to add/remove tags on any entity.</summary>
 	public const string TagsManage = "tags:manage";

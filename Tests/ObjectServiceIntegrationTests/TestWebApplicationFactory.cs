@@ -48,6 +48,9 @@ public class TestWebApplicationFactory<TProgram>
 				new("ObjectService:DisableAuthentication", "True"),
 				new("ObjectService:FrontendReadOnly", FrontendReadOnly.ToString()),
 				new("ObjectService:BackendReadOnly", BackendReadOnly.ToString()),
+				// Route tests don't exercise the file watcher, and it must not share the single
+				// in-memory SQLite connection while requests are in flight.
+				new("ObjectService:EnableFileWatcher", "False"),
 			])
 			.Build();
 

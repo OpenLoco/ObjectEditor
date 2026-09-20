@@ -84,6 +84,14 @@ var paletteMap = new PaletteMap(paletteMapFile);
 builder.Services.AddSingleton(serverFolderManager);
 builder.Services.AddSingleton(paletteMap);
 
+// Watches the whole GameData folder tree for files dropped in at runtime. A single service owns
+// one watcher per category folder; DAT files are indexed into objectIndex.json and the database
+// and SC5 files are added to the database so changes appear on the live service without a restart.
+if (builder.Configuration.GetValue("ObjectService:EnableFileWatcher", true))
+{
+	builder.Services.AddGameDataFileWatchers();
+}
+
 //var server = new Server(new ServerSettings(objRoot, paletteMapFile));
 //builder.Services.AddSingleton(server);
 

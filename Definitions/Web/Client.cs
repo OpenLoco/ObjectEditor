@@ -13,12 +13,15 @@ public static class Client
 	public static ApiEndpointGroup ObjectsEndpointGroup { get; } = new(Routes.Objects);
 	public static ApiEndpointGroup ObjectPacksEndpointGroup { get; } = new(Routes.ObjectPacks);
 	public static ApiEndpointGroup ScenariosEndpointGroup { get; } = new(Routes.Scenarios);
-	public static ApiEndpointGroup SC5FilePacksEndpointGroup { get; } = new(Routes.SC5FilePacks);
+	public static ApiEndpointGroup ScenarioPacksEndpointGroup { get; } = new(Routes.ScenarioPacks);
 	public static ApiEndpointGroup AuthorsEndpointGroup { get; } = new(Routes.Authors);
 	public static ApiEndpointGroup TagsEndpointGroup { get; } = new(Routes.Tags);
 	public static ApiEndpointGroup LicencesEndpointGroup { get; } = new(Routes.Licences);
 	public static ApiEndpointGroup MissingObjectsEndpointGroup { get; } = new(Routes.Objects + Routes.Missing);
-	public static ApiEndpointGroup SC5FilesEndpointGroup { get; } = new(Routes.SC5Files);
+	public static ApiEndpointGroup MusicEndpointGroup { get; } = new(Routes.Music);
+	public static ApiEndpointGroup SoundEffectsEndpointGroup { get; } = new(Routes.SoundEffects);
+	public static ApiEndpointGroup TutorialsEndpointGroup { get; } = new(Routes.Tutorials);
+	public static ApiEndpointGroup GraphicsEndpointGroup { get; } = new(Routes.Graphics);
 	public static ApiEndpointGroup UsersEndpointGroup { get; } = new(Routes.Users);
 	public static ApiEndpointGroup RolesEndpointGroup { get; } = new(Routes.Roles);
 	public static ApiEndpointGroup ServerEndpointGroup { get; } = new(Routes.Server);
@@ -102,11 +105,11 @@ public static class Client
 			logger,
 			cancellationToken) ?? default;
 
-	public static async Task<byte[]?> GetSC5FilePackFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+	public static async Task<byte[]?> GetScenarioPackFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.SendRequestAsync(
 			client,
-			ApiVersion + Routes.SC5FilePacks + $"/{id}/file",
-			ct => client.GetAsync(ApiVersion + Routes.SC5FilePacks + $"/{id}/file", ct),
+			ApiVersion + Routes.ScenarioPacks + $"/{id}/file",
+			ct => client.GetAsync(ApiVersion + Routes.ScenarioPacks + $"/{id}/file", ct),
 			ClientHelpers.ReadBinaryContentAsync,
 			logger,
 			cancellationToken) ?? default;
@@ -167,8 +170,8 @@ public static class Client
 			logger,
 			cancellationToken))?.FirstOrDefault();
 
-	public static async Task<IEnumerable<DtoScenarioEntry>> GetScenariosAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await GetListAsync<DtoScenarioEntry>(client, ScenariosEndpointGroup, logger, cancellationToken);
+	public static async Task<IEnumerable<DtoScenarioListEntry>> GetScenariosAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetListAsync<DtoScenarioListEntry>(client, ScenariosEndpointGroup, logger, cancellationToken);
 
 	public static async Task<DtoScenarioDescriptor?> GetScenarioAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.GetAsync<DtoScenarioDescriptor>(
@@ -179,14 +182,14 @@ public static class Client
 			logger,
 			cancellationToken);
 
-	public static async Task<IEnumerable<DtoItemPackEntry>> GetSC5FilePacksAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await GetListAsync<DtoItemPackEntry>(client, SC5FilePacksEndpointGroup, logger, cancellationToken);
+	public static async Task<IEnumerable<DtoItemPackEntry>> GetScenarioPacksAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetListAsync<DtoItemPackEntry>(client, ScenarioPacksEndpointGroup, logger, cancellationToken);
 
-	public static async Task<DtoItemPackDescriptor<DtoScenarioEntry>?> GetSC5FilePackAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+	public static async Task<DtoItemPackDescriptor<DtoScenarioEntry>?> GetScenarioPackAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> (await ClientHelpers.GetAsync<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>>(
 			client,
 			ApiVersion,
-			Routes.SC5FilePacks,
+			Routes.ScenarioPacks,
 			id,
 			logger,
 			cancellationToken))?.FirstOrDefault();
@@ -257,33 +260,27 @@ public static class Client
 
 	#region Scenario (SC5) file packs
 
-	public static async Task<IEnumerable<DtoSC5FilePackListEntry>> GetSC5FilePackListEntriesAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await GetListAsync<DtoSC5FilePackListEntry>(client, SC5FilePacksEndpointGroup, logger, cancellationToken);
+	public static async Task<IEnumerable<DtoScenarioPackListEntry>> GetScenarioPackListEntriesAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetListAsync<DtoScenarioPackListEntry>(client, ScenarioPacksEndpointGroup, logger, cancellationToken);
 
-	public static async Task<DtoSC5FilePackDescriptor?> GetSC5FilePackDescriptorAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await GetDescriptorAsync<DtoSC5FilePackDescriptor>(client, Routes.SC5FilePacks, id, logger, cancellationToken);
+	public static async Task<DtoScenarioPackDescriptor?> GetScenarioPackDescriptorAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetDescriptorAsync<DtoScenarioPackDescriptor>(client, Routes.ScenarioPacks, id, logger, cancellationToken);
 
-	public static async Task<DtoSC5FilePackDescriptor?> UpdateSC5FilePackAsync(HttpClient client, DtoSC5FilePackDescriptor request, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await UpdateResourceAsync<DtoSC5FilePackDescriptor, DtoSC5FilePackDescriptor>(client, SC5FilePacksEndpointGroup, request.Id, request, logger, cancellationToken);
+	public static async Task<DtoScenarioPackDescriptor?> UpdateScenarioPackAsync(HttpClient client, DtoScenarioPackDescriptor request, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await UpdateResourceAsync<DtoScenarioPackDescriptor, DtoScenarioPackDescriptor>(client, ScenarioPacksEndpointGroup, request.Id, request, logger, cancellationToken);
 
-	public static Task<bool> DeleteSC5FilePackAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> DeleteResourceAsync(client, SC5FilePacksEndpointGroup, id, logger, cancellationToken);
+	public static Task<bool> DeleteScenarioPackAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> DeleteResourceAsync(client, ScenarioPacksEndpointGroup, id, logger, cancellationToken);
 
 	#endregion
 
-	#region Scenario (SC5) files
+	#region Scenario files
 
-	public static async Task<IEnumerable<DtoSC5FileListEntry>> GetSC5FilesAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await GetListAsync<DtoSC5FileListEntry>(client, SC5FilesEndpointGroup, logger, cancellationToken);
+	public static async Task<DtoScenarioDescriptor?> UpdateScenarioAsync(HttpClient client, DtoScenarioDescriptor request, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await UpdateResourceAsync<DtoScenarioDescriptor, DtoScenarioDescriptor>(client, ScenariosEndpointGroup, request.Id, request, logger, cancellationToken);
 
-	public static async Task<DtoSC5FileDescriptor?> GetSC5FileDescriptorAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await ClientHelpers.GetAsync<DtoSC5FileDescriptor>(client, ApiVersion, Routes.SC5Files, id, logger, cancellationToken);
-
-	public static async Task<DtoSC5FileDescriptor?> UpdateSC5FileAsync(HttpClient client, DtoSC5FileDescriptor request, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await UpdateResourceAsync<DtoSC5FileDescriptor, DtoSC5FileDescriptor>(client, SC5FilesEndpointGroup, request.Id, request, logger, cancellationToken);
-
-	public static Task<bool> DeleteSC5FileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> DeleteResourceAsync(client, SC5FilesEndpointGroup, id, logger, cancellationToken);
+	public static Task<bool> DeleteScenarioAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> DeleteResourceAsync(client, ScenariosEndpointGroup, id, logger, cancellationToken);
 
 	#endregion
 
@@ -360,4 +357,106 @@ public static class Client
 	}
 
 	#endregion
+	#region Music files
+
+	public static async Task<IEnumerable<DtoMusicListEntry>> GetMusicListEntriesAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetListAsync<DtoMusicListEntry>(client, MusicEndpointGroup, logger, cancellationToken);
+
+	public static async Task<DtoMusicDescriptor?> GetMusicDescriptorAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetDescriptorAsync<DtoMusicDescriptor>(client, Routes.Music, id, logger, cancellationToken);
+
+	public static async Task<DtoMusicDescriptor?> UpdateMusicAsync(HttpClient client, DtoMusicDescriptor request, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await UpdateResourceAsync<DtoMusicDescriptor, DtoMusicDescriptor>(client, MusicEndpointGroup, request.Id, request, logger, cancellationToken);
+
+	public static Task<bool> DeleteMusicAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> DeleteResourceAsync(client, MusicEndpointGroup, id, logger, cancellationToken);
+
+	public static async Task<byte[]?> GetMusicFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			$"{ApiVersion}{Routes.Music}/{id}{Routes.File}",
+			ct => client.GetAsync($"{ApiVersion}{Routes.Music}/{id}{Routes.File}", ct),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger,
+			cancellationToken) ?? default;
+
+	#endregion
+
+	#region Sound effect files
+
+	public static async Task<IEnumerable<DtoSoundEffectListEntry>> GetSoundEffectListEntriesAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetListAsync<DtoSoundEffectListEntry>(client, SoundEffectsEndpointGroup, logger, cancellationToken);
+
+	public static async Task<DtoSoundEffectDescriptor?> GetSoundEffectDescriptorAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetDescriptorAsync<DtoSoundEffectDescriptor>(client, Routes.SoundEffects, id, logger, cancellationToken);
+
+	public static async Task<DtoSoundEffectDescriptor?> UpdateSoundEffectAsync(HttpClient client, DtoSoundEffectDescriptor request, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await UpdateResourceAsync<DtoSoundEffectDescriptor, DtoSoundEffectDescriptor>(client, SoundEffectsEndpointGroup, request.Id, request, logger, cancellationToken);
+
+	public static Task<bool> DeleteSoundEffectAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> DeleteResourceAsync(client, SoundEffectsEndpointGroup, id, logger, cancellationToken);
+
+	public static async Task<byte[]?> GetSoundEffectFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			$"{ApiVersion}{Routes.SoundEffects}/{id}{Routes.File}",
+			ct => client.GetAsync($"{ApiVersion}{Routes.SoundEffects}/{id}{Routes.File}", ct),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger,
+			cancellationToken) ?? default;
+
+	#endregion
+
+
+	#region Tutorial files
+
+	public static async Task<IEnumerable<DtoTutorialListEntry>> GetTutorialListEntriesAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetListAsync<DtoTutorialListEntry>(client, TutorialsEndpointGroup, logger, cancellationToken);
+
+	public static async Task<DtoTutorialDescriptor?> GetTutorialDescriptorAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetDescriptorAsync<DtoTutorialDescriptor>(client, Routes.Tutorials, id, logger, cancellationToken);
+
+	public static async Task<DtoTutorialDescriptor?> UpdateTutorialAsync(HttpClient client, DtoTutorialDescriptor request, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await UpdateResourceAsync<DtoTutorialDescriptor, DtoTutorialDescriptor>(client, TutorialsEndpointGroup, request.Id, request, logger, cancellationToken);
+
+	public static Task<bool> DeleteTutorialAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> DeleteResourceAsync(client, TutorialsEndpointGroup, id, logger, cancellationToken);
+
+	public static async Task<byte[]?> GetTutorialFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			$"{ApiVersion}{Routes.Tutorials}/{id}{Routes.File}",
+			ct => client.GetAsync($"{ApiVersion}{Routes.Tutorials}/{id}{Routes.File}", ct),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger,
+			cancellationToken) ?? default;
+
+	#endregion
+
+	#region Graphics files
+
+	public static async Task<IEnumerable<DtoGraphicsListEntry>> GetGraphicsListEntriesAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetListAsync<DtoGraphicsListEntry>(client, GraphicsEndpointGroup, logger, cancellationToken);
+
+	public static async Task<DtoGraphicsDescriptor?> GetGraphicsDescriptorAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await GetDescriptorAsync<DtoGraphicsDescriptor>(client, Routes.Graphics, id, logger, cancellationToken);
+
+	public static async Task<DtoGraphicsDescriptor?> UpdateGraphicsAsync(HttpClient client, DtoGraphicsDescriptor request, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await UpdateResourceAsync<DtoGraphicsDescriptor, DtoGraphicsDescriptor>(client, GraphicsEndpointGroup, request.Id, request, logger, cancellationToken);
+
+	public static Task<bool> DeleteGraphicsAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> DeleteResourceAsync(client, GraphicsEndpointGroup, id, logger, cancellationToken);
+
+	public static async Task<byte[]?> GetGraphicsFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			$"{ApiVersion}{Routes.Graphics}/{id}{Routes.File}",
+			ct => client.GetAsync($"{ApiVersion}{Routes.Graphics}/{id}{Routes.File}", ct),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger,
+			cancellationToken) ?? default;
+
+	#endregion
+
+
 }

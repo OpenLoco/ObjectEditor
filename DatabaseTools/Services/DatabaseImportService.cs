@@ -26,8 +26,8 @@ public static class DatabaseImportService
 			{
 				log("Clearing database…");
 				_ = db.ObjectPacks.ExecuteDelete();
-				_ = db.SC5FilePacks.ExecuteDelete();
-				_ = db.SC5Files.ExecuteDelete();
+				_ = db.ScenarioPacks.ExecuteDelete();
+				_ = db.Scenarios.ExecuteDelete();
 				_ = db.Tags.ExecuteDelete();
 				_ = db.Authors.ExecuteDelete();
 				_ = db.Objects.ExecuteDelete();
@@ -38,8 +38,8 @@ public static class DatabaseImportService
 			var authorsJson = Path.Combine(jsonDir, "authors.json");
 			var tagsJson = Path.Combine(jsonDir, "tags.json");
 			var licencesJson = Path.Combine(jsonDir, "licences.json");
-			var sc5FilePacksJson = Path.Combine(jsonDir, "sc5FilePacks.json");
-			var sc5FilesJson = Path.Combine(jsonDir, "sc5Files.json");
+			var scenarioPacksJson = Path.Combine(jsonDir, "scenarioPacks.json");
+			var sc5FilesJson = Path.Combine(jsonDir, "scenarios.json");
 			var objectPacksJson = Path.Combine(jsonDir, "objectPacks.json");
 			var objectMetadataJson = Path.Combine(jsonDir, "objectMetadata.json");
 
@@ -80,13 +80,13 @@ public static class DatabaseImportService
 				}
 			}
 
-			if (!db.SC5FilePacks.Any() && File.Exists(sc5FilePacksJson))
+			if (!db.ScenarioPacks.Any() && File.Exists(scenarioPacksJson))
 			{
-				log("Seeding SC5FilePacks");
-				var sc5FilePacks = JsonSerializer.Deserialize<IEnumerable<SC5FilePackJsonRecord>>(File.ReadAllText(sc5FilePacksJson), jsonOptions);
+				log("Seeding ScenarioPacks");
+				var sc5FilePacks = JsonSerializer.Deserialize<IEnumerable<ScenarioPackJsonRecord>>(File.ReadAllText(scenarioPacksJson), jsonOptions);
 				if (sc5FilePacks != null)
 				{
-					db.AddRange(sc5FilePacks.Select(x => new TblSC5FilePack
+					db.AddRange(sc5FilePacks.Select(x => new TblScenarioPack
 					{
 						Name = x.Name,
 						Description = x.Description,
@@ -101,19 +101,19 @@ public static class DatabaseImportService
 				}
 			}
 
-			if (!db.SC5Files.Any() && File.Exists(sc5FilesJson))
+			if (!db.Scenarios.Any() && File.Exists(sc5FilesJson))
 			{
 				log("Seeding SC5Files");
-				var sc5Files = JsonSerializer.Deserialize<IEnumerable<SC5FileJsonRecord>>(File.ReadAllText(sc5FilesJson), jsonOptions);
-				if (sc5Files != null)
+				var scenarios = JsonSerializer.Deserialize<IEnumerable<ScenarioJsonRecord>>(File.ReadAllText(sc5FilesJson), jsonOptions);
+				if (scenarios != null)
 				{
-					var sC5FilePacks = db.SC5FilePacks?.Where(x => x.SC5Files.Select(fp => fp.Name).Contains(x.Name)).ToList();
-					db.AddRange(sc5Files.Select(x => new TblSC5File
+					var scenarioPacks = db.ScenarioPacks?.Where(x => x.Scenarios.Select(fp => fp.Name).Contains(x.Name)).ToList();
+					db.AddRange(scenarios.Select(x => new TblScenario
 					{
 						Name = x.Name,
 						Description = x.Description,
 						Authors = [.. db.Authors.Where(a => x.Authors.Contains(a.Name))],
-						SC5FilePacks = sC5FilePacks ?? [],
+						ScenarioPacks = scenarioPacks ?? [],
 					}));
 					_ = db.SaveChanges();
 				}

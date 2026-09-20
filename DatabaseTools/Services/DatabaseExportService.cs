@@ -29,12 +29,12 @@ public static class DatabaseExportService
 				db.Licences.Select(l => new LicenceJsonRecord(l.Name, l.Text)).ToList().OrderBy(l => l.Name),
 				jsonOptions);
 
-			var sc5Files = db.SC5Files
+			var scenarios = db.Scenarios
 				.Include(l => l.Licence)
-				.Select(x => new ExpandedTbl<TblSC5File, TblSC5FilePack>(x, x.Authors, x.Tags, x.SC5FilePacks))
+				.Select(x => new ExpandedTbl<TblScenario, TblScenarioPack>(x, x.Authors, x.Tags, x.ScenarioPacks))
 				.ToList()
 				.OrderBy(x => x.Object.Name)
-				.Select(o => new SC5FileJsonRecord(
+				.Select(o => new ScenarioJsonRecord(
 					o.Object.Name,
 					o.Object.Description,
 					[.. o.Authors.Select(a => a.Name)],
@@ -44,14 +44,14 @@ public static class DatabaseExportService
 					o.Object.ModifiedDate,
 					o.Object.UploadedDate,
 					o.Object.ObjectSource));
-			var sc5FilesJson = JsonSerializer.Serialize(sc5Files, jsonOptions);
+			var scenariosJson = JsonSerializer.Serialize(scenarios, jsonOptions);
 
-			var sc5FilePacks = db.SC5FilePacks
+			var scenarioPacks = db.ScenarioPacks
 				.Include(l => l.Licence)
-				.Select(x => new ExpandedTblPack<TblSC5FilePack, TblSC5File>(x, x.SC5Files, x.Authors, x.Tags))
+				.Select(x => new ExpandedTblPack<TblScenarioPack, TblScenario>(x, x.Scenarios, x.Authors, x.Tags))
 				.ToList()
 				.OrderBy(x => x.Pack.Name)
-				.Select(o => new SC5FilePackJsonRecord(
+				.Select(o => new ScenarioPackJsonRecord(
 					o.Pack.Name,
 					o.Pack.Description,
 					[.. o.Authors.Select(a => a.Name)],
@@ -60,7 +60,7 @@ public static class DatabaseExportService
 					o.Pack.CreatedDate,
 					o.Pack.ModifiedDate,
 					o.Pack.UploadedDate));
-			var sc5FilePacksJson = JsonSerializer.Serialize(sc5FilePacks, jsonOptions);
+			var scenarioPacksJson = JsonSerializer.Serialize(scenarioPacks, jsonOptions);
 
 			var objectPacks = db.ObjectPacks
 				.Include(l => l.Licence)
@@ -104,8 +104,8 @@ public static class DatabaseExportService
 			File.WriteAllText(Path.Combine(settings.JsonDirectory, "licences.json"), licences);
 			File.WriteAllText(Path.Combine(settings.JsonDirectory, "objectPacks.json"), objectPacksJson);
 			File.WriteAllText(Path.Combine(settings.JsonDirectory, "objectMetadata.json"), objectsJson);
-			File.WriteAllText(Path.Combine(settings.JsonDirectory, "sc5Files.json"), sc5FilesJson);
-			File.WriteAllText(Path.Combine(settings.JsonDirectory, "sc5FilePacks.json"), sc5FilePacksJson);
+			File.WriteAllText(Path.Combine(settings.JsonDirectory, "scenarios.json"), scenariosJson);
+			File.WriteAllText(Path.Combine(settings.JsonDirectory, "sc5FilePacks.json"), scenarioPacksJson);
 			log($"Done. Wrote 7 files to {settings.JsonDirectory}");
 		});
 }

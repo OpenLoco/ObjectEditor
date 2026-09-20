@@ -70,7 +70,7 @@ public static class DtoExtensions
 			[.. x.Tags.Select(x => x.ToDtoEntry())],
 			x.Pack.Licence?.ToDtoEntry());
 
-	public static DtoItemPackDescriptor<DtoScenarioEntry> ToDtoDescriptor(this ExpandedTblPack<TblSC5FilePack, TblSC5File> x)
+	public static DtoItemPackDescriptor<DtoScenarioEntry> ToDtoDescriptor(this ExpandedTblPack<TblScenarioPack, TblScenario> x)
 		=> new(
 			x.Pack.Id,
 			x.Pack.Name,
@@ -109,10 +109,10 @@ public static class DtoExtensions
 	public static TblObjectMissing ToTable(this DtoObjectMissingEntry dto)
 		=> new() { Id = dto.Id, DatName = dto.DatName, DatChecksum = dto.DatChecksum, ObjectType = dto.ObjectType };
 
-	public static DtoScenarioEntry ToDtoEntry(this TblSC5File table)
+	public static DtoScenarioEntry ToDtoEntry(this TblScenario table)
 		=> new(table.Id, table.Name);
 
-	public static TblSC5File ToTable(this DtoScenarioEntry dto)
+	public static TblScenario ToTable(this DtoScenarioEntry dto)
 		=> new() { Name = dto.Name, Id = dto.Id };
 
 	public static DtoAuthorEntry ToDtoEntry(this TblAuthor table)
@@ -172,7 +172,7 @@ public static class DtoExtensions
 			Licence = x.Licence?.ToTable()
 		};
 
-	public static DtoItemPackDescriptor<DtoScenarioEntry> ToDtoEntry(this TblSC5FilePack x)
+	public static DtoItemPackDescriptor<DtoScenarioEntry> ToDtoEntry(this TblScenarioPack x)
 		=> new(
 			x.Id,
 			x.Name,
@@ -180,18 +180,18 @@ public static class DtoExtensions
 			x.CreatedDate,
 			x.ModifiedDate,
 			x.UploadedDate,
-			[.. x.SC5Files.Select(x => x.ToDtoEntry())],
+			[.. x.Scenarios.Select(x => x.ToDtoEntry())],
 			[.. x.Authors.Select(x => x.ToDtoEntry())],
 			[.. x.Tags.Select(x => x.ToDtoEntry())],
 			x.Licence?.ToDtoEntry());
 
-	public static TblSC5FilePack ToTable(this DtoItemPackDescriptor<DtoScenarioEntry> x)
+	public static TblScenarioPack ToTable(this DtoItemPackDescriptor<DtoScenarioEntry> x)
 		=> new()
 		{
 			Id = x.Id,
 			Name = x.Name,
 			Description = x.Description,
-			SC5Files = [.. x.Items.Select(x => x.ToTable())],
+			Scenarios = [.. x.Items.Select(x => x.ToTable())],
 			Authors = [.. x.Authors.Select(x => x.ToTable())],
 			CreatedDate = x.CreatedDate,
 			ModifiedDate = x.ModifiedDate,

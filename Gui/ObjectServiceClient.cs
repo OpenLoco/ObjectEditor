@@ -79,8 +79,8 @@ public class ObjectServiceClient
 	public async Task<byte[]?> GetScenarioFileAsync(UniqueObjectId id)
 		=> await Client.GetScenarioFileAsync(WebClient, id, Logger);
 
-	public async Task<byte[]?> GetSC5FilePackFileAsync(UniqueObjectId id)
-		=> await Client.GetSC5FilePackFileAsync(WebClient, id, Logger);
+	public async Task<byte[]?> GetScenarioPackFileAsync(UniqueObjectId id)
+		=> await Client.GetScenarioPackFileAsync(WebClient, id, Logger);
 
 	public async Task<byte[]?> GetObjectPackFileAsync(UniqueObjectId id)
 		=> await Client.GetObjectPackFileAsync(WebClient, id, Logger);
@@ -106,17 +106,17 @@ public class ObjectServiceClient
 	public async Task<DtoItemPackDescriptor<DtoObjectEntry>?> GetObjectPackAsync(UniqueObjectId id)
 		=> await Client.GetObjectPackAsync(WebClient, id, Logger);
 
-	public async Task<IEnumerable<DtoScenarioEntry>> GetScenariosAsync()
+	public async Task<IEnumerable<DtoScenarioListEntry>> GetScenariosAsync()
 		=> await Client.GetScenariosAsync(WebClient, Logger);
 
 	public async Task<DtoScenarioDescriptor?> GetScenarioAsync(UniqueObjectId id)
 		=> await Client.GetScenarioAsync(WebClient, id, Logger);
 
-	public async Task<IEnumerable<DtoItemPackEntry>> GetSC5FilePacksAsync()
-		=> await Client.GetSC5FilePacksAsync(WebClient, Logger);
+	public async Task<IEnumerable<DtoItemPackEntry>> GetScenarioPacksAsync()
+		=> await Client.GetScenarioPacksAsync(WebClient, Logger);
 
-	public async Task<DtoItemPackDescriptor<DtoScenarioEntry>?> GetSC5FilePackAsync(UniqueObjectId id)
-		=> await Client.GetSC5FilePackAsync(WebClient, id, Logger);
+	public async Task<DtoItemPackDescriptor<DtoScenarioEntry>?> GetScenarioPackAsync(UniqueObjectId id)
+		=> await Client.GetScenarioPackAsync(WebClient, id, Logger);
 
 	public async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync()
 		=> await Client.GetMissingObjectsAsync(WebClient, Logger);

@@ -16,7 +16,7 @@ public sealed class DetailsModel : PageModel
 		_api = api;
 	}
 
-	public DtoSC5FileDescriptor? Scenario { get; private set; }
+	public DtoScenarioDescriptor? Scenario { get; private set; }
 
 	public List<DtoAuthorEntry> AvailableAuthors { get; private set; } = [];
 	public List<DtoTagEntry> AvailableTags { get; private set; } = [];
@@ -88,7 +88,7 @@ public sealed class DetailsModel : PageModel
 		SelectedTagIds ??= [];
 		SelectedPackIds ??= [];
 
-		var request = new DtoSC5FileDescriptor(
+		var request = new DtoScenarioDescriptor(
 			Id,
 			Name.Trim(),
 			Description?.Trim(),
@@ -102,7 +102,7 @@ public sealed class DetailsModel : PageModel
 			[.. SelectedPackIds.Select(p => new DtoItemRef(p, string.Empty))]);
 
 		using var client = _api.CreateClient();
-		var updated = await Client.UpdateSC5FileAsync(client, request);
+		var updated = await Client.UpdateScenarioAsync(client, request);
 		if (updated != null)
 		{
 			SuccessMessage = $"Scenario '{Name.Trim()}' updated.";
@@ -124,7 +124,7 @@ public sealed class DetailsModel : PageModel
 		}
 
 		using var client = _api.CreateClient();
-		var deleted = await Client.DeleteSC5FileAsync(client, id);
+		var deleted = await Client.DeleteScenarioAsync(client, id);
 		if (deleted)
 		{
 			SuccessMessage = "Scenario deleted.";
@@ -139,10 +139,10 @@ public sealed class DetailsModel : PageModel
 	async Task LoadAsync(UniqueObjectId id, CancellationToken ct)
 	{
 		using var client = _api.CreateClient();
-		Scenario = await Client.GetSC5FileDescriptorAsync(client, id, cancellationToken: ct);
+		Scenario = await Client.GetScenarioAsync(client, id, cancellationToken: ct);
 		AvailableAuthors = [.. (await Client.GetAuthorsAsync(client, cancellationToken: ct)).OrderBy(a => a.Name)];
 		AvailableTags = [.. (await Client.GetTagsAsync(client, cancellationToken: ct)).OrderBy(t => t.Name)];
 		AvailableLicences = [.. (await Client.GetLicencesAsync(client, cancellationToken: ct)).OrderBy(l => l.Name)];
-		AvailablePacks = [.. (await Client.GetSC5FilePackListEntriesAsync(client, cancellationToken: ct)).OrderBy(p => p.Name).Select(p => new DtoItemRef(p.Id, p.Name))];
+		AvailablePacks = [.. (await Client.GetScenarioPackListEntriesAsync(client, cancellationToken: ct)).OrderBy(p => p.Name).Select(p => new DtoItemRef(p.Id, p.Name))];
 	}
 }

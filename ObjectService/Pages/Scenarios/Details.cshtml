@@ -122,7 +122,7 @@
 						{
 							@foreach (var pack in Model.AvailablePacks)
 							{
-								var isSelected = scenario.SC5FilePacks.Any(p => p.Id == pack.Id);
+								var isSelected = scenario.ScenarioPacks.Any(p => p.Id == pack.Id);
 								<label class="checkbox" style="display:block;">
 									<input type="checkbox" name="SelectedPackIds" value="@pack.Id" checked="@isSelected" />
 									<span>@pack.Name</span>
@@ -225,7 +225,7 @@
 			</div>
 			<div>
 				<h3>SC5 File Packs</h3>
-				<p>@(scenario.SC5FilePacks.Count > 0 ? string.Join(", ", scenario.SC5FilePacks.Select(p => p.Name)) : "No packs linked")</p>
+				<p>@(scenario.ScenarioPacks.Count > 0 ? string.Join(", ", scenario.ScenarioPacks.Select(p => p.Name)) : "No packs linked")</p>
 			</div>
 		</div>
 	</section>

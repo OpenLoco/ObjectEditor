@@ -1,6 +1,6 @@
 namespace Definitions.Database;
 
-public class TblSC5FilePack : DbCoreObject
+public class TblScenarioPack : DbCoreObject
 {
-	public ICollection<TblSC5File> SC5Files { get; set; } = [];
+	public ICollection<TblScenario> Scenarios { get; set; } = [];
 }

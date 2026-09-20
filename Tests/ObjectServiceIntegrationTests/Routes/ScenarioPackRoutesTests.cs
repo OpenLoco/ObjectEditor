@@ -17,12 +17,12 @@ using UniqueObjectId = System.UInt64;
 namespace Tests.ObjectServiceIntegrationTests.Routes;
 
 [TestFixture]
-public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
+public class ScenarioPackRoutesTests : BaseRouteHandlerTestFixture
 {
 	const UniqueObjectId AlphaPackId = 1;
 
 	public override string BaseRoute
-		=> Definitions.Web.Routes.SC5FilePacks;
+		=> Definitions.Web.Routes.ScenarioPacks;
 
 	protected override async Task SeedDataCoreAsync(LocoDbContext db)
 	{
@@ -41,28 +41,28 @@ public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
 		await File.WriteAllBytesAsync(Path.Combine(rootFolder, "outside.SC5"), [7, 7, 7]);
 		await File.WriteAllBytesAsync(Path.Combine(sfm.ScenariosFolder, @"..\outside-windows.SC5"), [6, 6, 6]);
 
-		await db.SC5FilePacks.AddRangeAsync(
+		await db.ScenarioPacks.AddRangeAsync(
 		[
-			new TblSC5FilePack
+			new TblScenarioPack
 			{
 				Id = AlphaPackId,
 				Name = "Alpha Scenario Pack",
 				Description = "Safe and unsafe scenarios",
-				SC5Files =
+				Scenarios =
 				[
-					new TblSC5File { Id = 1, Name = safeRelativePath },
-					new TblSC5File { Id = 2, Name = Path.Combine("..", "outside.SC5") },
-					new TblSC5File { Id = 3, Name = @"..\outside-windows.SC5" },
+					new TblScenario { Id = 1, Name = safeRelativePath },
+					new TblScenario { Id = 2, Name = Path.Combine("..", "outside.SC5") },
+					new TblScenario { Id = 3, Name = @"..\outside-windows.SC5" },
 				],
 			},
-			new TblSC5FilePack
+			new TblScenarioPack
 			{
 				Id = 2,
 				Name = "Zulu Scenario Pack",
 				Description = "Only safe scenarios",
-				SC5Files =
+				Scenarios =
 				[
-					new TblSC5File { Id = 4, Name = secondSafeRelativePath },
+					new TblScenario { Id = 4, Name = secondSafeRelativePath },
 				],
 			},
 		]);
@@ -71,9 +71,9 @@ public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task ListAsync()
 	{
-		var results = (await Client.GetSC5FilePacksAsync(HttpClient!)).ToList();
+		var results = (await Client.GetScenarioPacksAsync(HttpClient!)).ToList();
 		using var db = GetDbContext();
-		var expectedRows = await db.SC5FilePacks
+		var expectedRows = await db.ScenarioPacks
 			.Include(x => x.Licence)
 			.OrderBy(x => x.Name)
 			.ToListAsync();
@@ -107,10 +107,10 @@ public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task GetAsync()
 	{
-		var result = await Client.GetSC5FilePackAsync(HttpClient!, AlphaPackId);
+		var result = await Client.GetScenarioPackAsync(HttpClient!, AlphaPackId);
 		using var db = GetDbContext();
-		var expected = (await db.SC5FilePacks
-			.Include(x => x.SC5Files)
+		var expected = (await db.ScenarioPacks
+			.Include(x => x.Scenarios)
 			.Include(x => x.Authors)
 			.Include(x => x.Tags)
 			.Include(x => x.Licence)
@@ -123,7 +123,7 @@ public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task PutAsync()
 	{
-		var request = new DtoSC5FilePackDescriptor(
+		var request = new DtoScenarioPackDescriptor(
 			AlphaPackId,
 			"Updated scenario pack",
 			"Updated description",
@@ -142,7 +142,7 @@ public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
 			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
 			using var db = GetDbContext();
-			var updated = await db.SC5FilePacks.SingleAsync(x => x.Id == AlphaPackId);
+			var updated = await db.ScenarioPacks.SingleAsync(x => x.Id == AlphaPackId);
 			Assert.That(updated.Name, Is.EqualTo("Updated scenario pack"));
 			Assert.That(updated.Description, Is.EqualTo("Updated description"));
 		}
@@ -158,12 +158,12 @@ public class SC5FilePackRoutesTests : BaseRouteHandlerTestFixture
 			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
 			using var db = GetDbContext();
-			Assert.That(await db.SC5FilePacks.AnyAsync(x => x.Id == AlphaPackId), Is.False);
+			Assert.That(await db.ScenarioPacks.AnyAsync(x => x.Id == AlphaPackId), Is.False);
 		}
 	}
 
 	[Test]
-	public async Task GetSC5FilePackFileAsync_ReturnsZipWithOnlySafeScenarioEntries()
+	public async Task GetScenarioPackFileAsync_ReturnsZipWithOnlySafeScenarioEntries()
 	{
 		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}{Definitions.Web.Routes.File}");
 		var bytes = await response.Content.ReadAsByteArrayAsync();

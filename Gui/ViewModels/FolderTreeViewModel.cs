@@ -171,7 +171,7 @@ public class DesignerOnlineBrowseResultsViewModel : FolderTreeViewModel
 				new FileSystemItem("Highland Corridor", null, default, null, null, FileLocation.Online, ObjectType: ObjectType.ScenarioText),
 				new FileSystemItem("Three Seas Express", null, default, null, null, FileLocation.Online, ObjectType: ObjectType.ScenarioText)
 			],
-			OnlineApiEndpointGroup.SC5FilePacks));
+			OnlineApiEndpointGroup.ScenarioPacks));
 
 		CurrentOnlineBrowseResults.Add(new OnlineLicenceBrowseResult(
 			default,
@@ -236,7 +236,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		ObjectOnlineBrowseTarget,
 		new(OnlineApiEndpointGroup.ObjectPacks, "Object packs", "Object packs", Client.ObjectPacksEndpointGroup),
 		new(OnlineApiEndpointGroup.Scenarios, "Scenarios", "Scenarios", Client.ScenariosEndpointGroup),
-		new(OnlineApiEndpointGroup.SC5FilePacks, "SC5 file packs", "SC5 file packs", Client.SC5FilePacksEndpointGroup),
+		new(OnlineApiEndpointGroup.ScenarioPacks, "SC5 file packs", "SC5 file packs", Client.ScenarioPacksEndpointGroup),
 		new(OnlineApiEndpointGroup.Tags, "Tags", "Tags", Client.TagsEndpointGroup),
 		new(OnlineApiEndpointGroup.Authors, "Authors", "Authors", Client.AuthorsEndpointGroup),
 		new(OnlineApiEndpointGroup.Licences, "Licences", "Licences", Client.LicencesEndpointGroup),
@@ -707,7 +707,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		var items = selectedGroup switch
 		{
 			OnlineApiEndpointGroup.Objects => await GetOnlineObjectDirectoryItemsAsync(useExistingIndex),
-			OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+			OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioListEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
 				.OrderBy(x => x.Name)
 				.Select(CreateOnlineScenarioFileSystemItem)],
 			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
@@ -733,7 +733,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		IReadOnlyList<object> items = selectedGroup switch
 		{
 			OnlineApiEndpointGroup.ObjectPacks => [.. (await GetOnlineObjectPackBrowseResultsAsync()).Cast<object>()],
-			OnlineApiEndpointGroup.SC5FilePacks => [.. (await GetOnlineSC5FilePackBrowseResultsAsync()).Cast<object>()],
+			OnlineApiEndpointGroup.ScenarioPacks => [.. (await GetOnlineScenarioPackBrowseResultsAsync()).Cast<object>()],
 			OnlineApiEndpointGroup.Tags => [.. (await EditorContext.ObjectServiceClient.GetTagsAsync())
 				.OrderBy(x => x.Name)
 				.Select(x => (object)new OnlineTagBrowseResult(x.Id, x.Name))],
@@ -797,22 +797,22 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 				descriptor => descriptor.Items.OrderBy(x => x.DisplayName).Select(CreateOnlineObjectFileSystemItem))))];
 	}
 
-	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetOnlineSC5FilePackBrowseResultsAsync()
+	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetOnlineScenarioPackBrowseResultsAsync()
 	{
 		if (EditorContext.ObjectServiceClient == null)
 		{
 			return [];
 		}
 
-		var packs = (await EditorContext.ObjectServiceClient.GetSC5FilePacksAsync())
+		var packs = (await EditorContext.ObjectServiceClient.GetScenarioPacksAsync())
 			.OrderBy(x => x.Name)
 			.ToList();
 
 		return [.. await Task.WhenAll(packs.Select(async pack =>
 			CreateOnlineItemPackBrowseResult(
 				pack,
-				await EditorContext.ObjectServiceClient.GetSC5FilePackAsync(pack.Id),
-				OnlineApiEndpointGroup.SC5FilePacks,
+				await EditorContext.ObjectServiceClient.GetScenarioPackAsync(pack.Id),
+				OnlineApiEndpointGroup.ScenarioPacks,
 				descriptor => descriptor.Items.OrderBy(x => x.Name).Select(CreateOnlineScenarioFileSystemItem))))];
 	}
 
@@ -854,6 +854,12 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	}
 
 	static FileSystemItem CreateOnlineScenarioFileSystemItem(DtoScenarioEntry item)
+		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
+		{
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
+		};
+
+	static FileSystemItem CreateOnlineScenarioFileSystemItem(DtoScenarioListEntry item)
 		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
 		{
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
@@ -927,7 +933,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		var fileBytes = pack.Group switch
 		{
 			OnlineApiEndpointGroup.ObjectPacks => await EditorContext.ObjectServiceClient.GetObjectPackFileAsync(pack.Id),
-			OnlineApiEndpointGroup.SC5FilePacks => await EditorContext.ObjectServiceClient.GetSC5FilePackFileAsync(pack.Id),
+			OnlineApiEndpointGroup.ScenarioPacks => await EditorContext.ObjectServiceClient.GetScenarioPackFileAsync(pack.Id),
 			_ => null,
 		};
 

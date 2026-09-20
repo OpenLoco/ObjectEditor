@@ -38,7 +38,7 @@ public static class DatabaseInitializer
 		// DbCoreObject gained the OwnerUserId property. We omit the REFERENCES
 		// clause because SQLite ALTER TABLE ADD COLUMN has limited FK support;
 		// EF Core tracks the FK at the model level instead.
-		foreach (var table in new[] { "Objects", "ObjectPacks", "SC5Files", "SC5FilePacks" })
+		foreach (var table in new[] { "Objects", "ObjectPacks", "Scenarios", "ScenarioPacks" })
 		{
 			try
 			{
@@ -53,6 +53,13 @@ public static class DatabaseInitializer
 				logger.LogWarning(ex, "Could not add OwnerUserId column to {Table} table (may already exist)", table);
 			}
 		}
+
+		// Ensure the per-entity game-data file tables exist. EnsureCreated does not add tables to an
+		// existing database, so create them explicitly here (idempotent).
+		await GameDataFileTableInitializer.EnsureTablesAsync(db, logger);
+
+		// Rename tables that were created under their original names before they were renamed.
+		await ScenarioPackTableInitializer.EnsureRenamedAsync(db, logger);
 
 		// Ensure Admin role
 		if (!await roleManager.RoleExistsAsync("Admin"))

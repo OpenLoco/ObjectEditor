@@ -9,23 +9,23 @@ using ObjectService.RouteHandlers;
 
 namespace ObjectService.Services;
 
-public interface ISC5FilePackService
+public interface IScenarioPackService
 {
 	Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> ListPacksAsync(CancellationToken ct);
-	Task<IEnumerable<DtoSC5FilePackListEntry>> ListEntriesAsync(CancellationToken ct);
+	Task<IEnumerable<DtoScenarioPackListEntry>> ListEntriesAsync(CancellationToken ct);
 	Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct);
-	Task<DtoSC5FilePackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoScenarioPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct);
 	Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoItemPackDescriptor<DtoScenarioEntry>> CreatePackAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, UniqueObjectId ownerUserId, CancellationToken ct);
-	Task<DtoSC5FilePackDescriptor?> UpdateAsync(UniqueObjectId id, DtoSC5FilePackDescriptor request, CancellationToken ct);
+	Task<DtoScenarioPackDescriptor?> UpdateAsync(UniqueObjectId id, DtoScenarioPackDescriptor request, CancellationToken ct);
 	Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct);
 }
 
-public class SC5FilePackService : ISC5FilePackService
+public class ScenarioPackService : IScenarioPackService
 {
 	private readonly LocoDbContext _db;
 	private readonly ServerFolderManager _sfm;
-	public SC5FilePackService(LocoDbContext db, ServerFolderManager sfm)
+	public ScenarioPackService(LocoDbContext db, ServerFolderManager sfm)
 	{
 		_db = db;
 		_sfm = sfm;
@@ -33,22 +33,22 @@ public class SC5FilePackService : ISC5FilePackService
 
 	public async Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> ListPacksAsync(CancellationToken ct)
 	{
-		var packs = await _db.SC5FilePacks.Include(l => l.Licence).ToListAsync(ct);
+		var packs = await _db.ScenarioPacks.Include(l => l.Licence).ToListAsync(ct);
 		return packs.Select(x => x.ToDtoEntry()).OrderBy(x => x.Name);
 	}
 
-	public async Task<IEnumerable<DtoSC5FilePackListEntry>> ListEntriesAsync(CancellationToken ct)
+	public async Task<IEnumerable<DtoScenarioPackListEntry>> ListEntriesAsync(CancellationToken ct)
 	{
-		var packs = await _db.SC5FilePacks
+		var packs = await _db.ScenarioPacks
 			.Include(p => p.Licence)
 			.Include(p => p.Authors)
 			.Include(p => p.Tags)
-			.Include(p => p.SC5Files)
+			.Include(p => p.Scenarios)
 			.AsSplitQuery()
 			.ToListAsync(ct);
 
 		return packs
-			.Select(p => new DtoSC5FilePackListEntry(
+			.Select(p => new DtoScenarioPackListEntry(
 				p.Id,
 				p.Name,
 				p.Description,
@@ -56,39 +56,39 @@ public class SC5FilePackService : ISC5FilePackService
 				p.Licence?.ToDtoEntry(),
 				p.Authors.Count,
 				p.Tags.Count,
-				p.SC5Files.Count))
+				p.Scenarios.Count))
 			.OrderBy(p => p.Name);
 	}
 
 	public async Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var packs = await _db.SC5FilePacks.Where(x => x.Id == id).Include(l => l.Licence)
-		.Select(x => new ExpandedTblPack<TblSC5FilePack, TblSC5File>(x, x.SC5Files, x.Authors, x.Tags)).ToListAsync(ct);
+		var packs = await _db.ScenarioPacks.Where(x => x.Id == id).Include(l => l.Licence)
+		.Select(x => new ExpandedTblPack<TblScenarioPack, TblScenario>(x, x.Scenarios, x.Authors, x.Tags)).ToListAsync(ct);
 		return packs.Select(x => x.ToDtoDescriptor()).OrderBy(x => x.Name);
 	}
 
-	public async Task<DtoSC5FilePackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct)
+	public async Task<DtoScenarioPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var pack = await _db.SC5FilePacks
+		var pack = await _db.ScenarioPacks
 			.Where(x => x.Id == id)
 			.Include(x => x.Licence)
 			.Include(x => x.Authors)
 			.Include(x => x.Tags)
-			.Include(x => x.SC5Files)
+			.Include(x => x.Scenarios)
 			.AsSplitQuery()
 			.FirstOrDefaultAsync(ct);
 
 		return pack is null ? null : ToDescriptor(pack);
 	}
 
-	public async Task<DtoSC5FilePackDescriptor?> UpdateAsync(UniqueObjectId id, DtoSC5FilePackDescriptor request, CancellationToken ct)
+	public async Task<DtoScenarioPackDescriptor?> UpdateAsync(UniqueObjectId id, DtoScenarioPackDescriptor request, CancellationToken ct)
 	{
-		var pack = await _db.SC5FilePacks
+		var pack = await _db.ScenarioPacks
 			.Where(x => x.Id == id)
 			.Include(x => x.Licence)
 			.Include(x => x.Authors)
 			.Include(x => x.Tags)
-			.Include(x => x.SC5Files)
+			.Include(x => x.Scenarios)
 			.AsSplitQuery()
 			.FirstOrDefaultAsync(ct);
 
@@ -126,14 +126,14 @@ public class SC5FilePackService : ISC5FilePackService
 			}
 		}
 
-		pack.SC5Files.Clear();
+		pack.Scenarios.Clear();
 		var fileIds = request.SC5Files.Select(f => f.Id).ToList();
 		if (fileIds.Count > 0)
 		{
-			var files = await _db.SC5Files.Where(f => fileIds.Contains(f.Id)).ToListAsync(ct);
+			var files = await _db.Scenarios.Where(f => fileIds.Contains(f.Id)).ToListAsync(ct);
 			foreach (var file in files)
 			{
-				pack.SC5Files.Add(file);
+				pack.Scenarios.Add(file);
 			}
 		}
 
@@ -143,18 +143,18 @@ public class SC5FilePackService : ISC5FilePackService
 
 	public async Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var pack = await _db.SC5FilePacks.FindAsync([id], ct);
+		var pack = await _db.ScenarioPacks.FindAsync([id], ct);
 		if (pack is null)
 		{
 			return false;
 		}
 
-		_ = _db.SC5FilePacks.Remove(pack);
+		_ = _db.ScenarioPacks.Remove(pack);
 		_ = await _db.SaveChangesAsync(ct);
 		return true;
 	}
 
-	static DtoSC5FilePackDescriptor ToDescriptor(TblSC5FilePack pack)
+	static DtoScenarioPackDescriptor ToDescriptor(TblScenarioPack pack)
 		=> new(
 			pack.Id,
 			pack.Name,
@@ -165,11 +165,11 @@ public class SC5FilePackService : ISC5FilePackService
 			pack.Licence?.ToDtoEntry(),
 			[.. pack.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())],
 			[.. pack.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())],
-			[.. pack.SC5Files.OrderBy(f => f.Name).Select(f => new DtoItemRef(f.Id, f.Name))]);
+			[.. pack.Scenarios.OrderBy(f => f.Name).Select(f => new DtoItemRef(f.Id, f.Name))]);
 
 	public async Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var pack = await _db.SC5FilePacks.Where(x => x.Id == id).Include(x => x.SC5Files).SingleOrDefaultAsync(ct);
+		var pack = await _db.ScenarioPacks.Where(x => x.Id == id).Include(x => x.Scenarios).SingleOrDefaultAsync(ct);
 		if (pack == null)
 		{
 			return (null, string.Empty);
@@ -179,9 +179,9 @@ public class SC5FilePackService : ISC5FilePackService
 		var zipStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 		using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
 		{
-			foreach (var sc5File in pack.SC5Files)
+			foreach (var scenario in pack.Scenarios)
 			{
-				if (!RouteHelpers.TryGetSafeRelativePathUnderRoot(_sfm.ScenariosFolder, sc5File.Name, out var fullPath, out var entryName))
+				if (!RouteHelpers.TryGetSafeRelativePathUnderRoot(_sfm.ScenariosFolder, scenario.Name, out var fullPath, out var entryName))
 				{
 					continue;
 				}
@@ -204,7 +204,7 @@ public class SC5FilePackService : ISC5FilePackService
 
 	public async Task<DtoItemPackDescriptor<DtoScenarioEntry>> CreatePackAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, UniqueObjectId ownerUserId, CancellationToken ct)
 	{
-		var pack = new TblSC5FilePack
+		var pack = new TblScenarioPack
 		{
 			Name = request.Name,
 			Description = request.Description,
@@ -222,18 +222,18 @@ public class SC5FilePackService : ISC5FilePackService
 		if (request.Items?.Count > 0)
 		{
 			var fileIds = request.Items.Select(i => i.Id).ToList();
-			var files = await _db.SC5Files.Where(f => fileIds.Contains(f.Id)).ToListAsync(ct);
+			var files = await _db.Scenarios.Where(f => fileIds.Contains(f.Id)).ToListAsync(ct);
 			foreach (var file in files)
 			{
-				pack.SC5Files.Add(file);
+				pack.Scenarios.Add(file);
 			}
 		}
 
-		_ = await _db.SC5FilePacks.AddAsync(pack, ct);
+		_ = await _db.ScenarioPacks.AddAsync(pack, ct);
 		_ = await _db.SaveChangesAsync(ct);
 
 		// Reload to get computed columns like UploadedDate
-		var created = await _db.SC5FilePacks.Include(p => p.Licence).FirstAsync(p => p.Id == pack.Id, ct);
+		var created = await _db.ScenarioPacks.Include(p => p.Licence).FirstAsync(p => p.Id == pack.Id, ct);
 		return created.ToDtoEntry();
 	}
 }

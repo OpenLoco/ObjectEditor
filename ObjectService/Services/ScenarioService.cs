@@ -1,16 +1,23 @@
 using Definitions.Database;
 using Definitions.DTO;
+using Definitions.DTO.Mappers;
 using Microsoft.EntityFrameworkCore;
 using ObjectService.RouteHandlers;
 
 namespace ObjectService.Services;
 
+/// <summary>
+/// Database-backed scenario queries that back the public <c>/v2/scenarios</c> routes. Scenario
+/// metadata lives in the <c>SC5Files</c> table; the files themselves live on disk under the
+/// Scenarios folder and may or may not still exist there.
+/// </summary>
 public interface IScenarioService
 {
-	IEnumerable<DtoScenarioEntry> ListScenarios();
-	string? GetScenarioFilePath(ulong index);
-	Task<string?> GetScenarioFilePathByIdAsync(UniqueObjectId id, CancellationToken ct);
+	Task<IEnumerable<DtoScenarioListEntry>> ListEntriesAsync(CancellationToken ct);
 	Task<DtoScenarioDescriptor?> GetScenarioAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoScenarioDescriptor?> UpdateAsync(UniqueObjectId id, DtoScenarioDescriptor request, CancellationToken ct);
+	Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct);
+	Task<string?> GetScenarioFilePathByIdAsync(UniqueObjectId id, CancellationToken ct);
 }
 
 public class ScenarioService : IScenarioService
@@ -24,25 +31,110 @@ public class ScenarioService : IScenarioService
 		_db = db;
 	}
 
-	public IEnumerable<DtoScenarioEntry> ListScenarios()
+	public async Task<IEnumerable<DtoScenarioListEntry>> ListEntriesAsync(CancellationToken ct)
 	{
-		var files = GetSortedScenarioFiles(_sfm.ScenariosFolder);
+		var files = await Query().ToListAsync(ct).ConfigureAwait(false);
+
 		return files
-			.Select((file, index) => new DtoScenarioEntry((ulong)index, Path.GetRelativePath(_sfm.ScenariosFolder, file)))
+			.Select(f => new DtoScenarioListEntry(
+				f.Id,
+				f.Name,
+				f.Description,
+				f.UploadedDate,
+				f.ObjectSource,
+				f.Licence?.ToDtoEntry(),
+				f.Authors.Count,
+				f.Tags.Count,
+				f.ScenarioPacks.Count))
+			.OrderBy(f => f.Name)
 			.ToArray();
 	}
 
-	public string? GetScenarioFilePath(ulong index)
+	public async Task<DtoScenarioDescriptor?> GetScenarioAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var files = GetSortedScenarioFiles(_sfm.ScenariosFolder);
-		return index < (ulong)files.Length ? files[(int)index] : null;
+		var scenario = await Query()
+			.Where(s => s.Id == id)
+			.FirstOrDefaultAsync(ct)
+			.ConfigureAwait(false);
+
+		return scenario is null ? null : ToDescriptor(scenario);
+	}
+
+	public async Task<DtoScenarioDescriptor?> UpdateAsync(UniqueObjectId id, DtoScenarioDescriptor request, CancellationToken ct)
+	{
+		var scenario = await Query()
+			.Where(s => s.Id == id)
+			.FirstOrDefaultAsync(ct)
+			.ConfigureAwait(false);
+
+		if (scenario is null)
+		{
+			return null;
+		}
+
+		scenario.Name = request.Name;
+		scenario.Description = request.Description;
+		scenario.ObjectSource = request.ObjectSource;
+		scenario.CreatedDate = request.CreatedDate;
+		scenario.ModifiedDate = request.ModifiedDate;
+
+		scenario.Licence = request.Licence is null
+			? null
+			: await _db.Licences.FindAsync([request.Licence.Id], ct).ConfigureAwait(false);
+
+		scenario.Authors.Clear();
+		var authorIds = request.Authors.Select(a => a.Id).ToList();
+		if (authorIds.Count > 0)
+		{
+			foreach (var author in await _db.Authors.Where(a => authorIds.Contains(a.Id)).ToListAsync(ct).ConfigureAwait(false))
+			{
+				scenario.Authors.Add(author);
+			}
+		}
+
+		scenario.Tags.Clear();
+		var tagIds = request.Tags.Select(t => t.Id).ToList();
+		if (tagIds.Count > 0)
+		{
+			foreach (var tag in await _db.Tags.Where(t => tagIds.Contains(t.Id)).ToListAsync(ct).ConfigureAwait(false))
+			{
+				scenario.Tags.Add(tag);
+			}
+		}
+
+		scenario.ScenarioPacks.Clear();
+		var packIds = request.ScenarioPacks.Select(p => p.Id).ToList();
+		if (packIds.Count > 0)
+		{
+			foreach (var pack in await _db.ScenarioPacks.Where(p => packIds.Contains(p.Id)).ToListAsync(ct).ConfigureAwait(false))
+			{
+				scenario.ScenarioPacks.Add(pack);
+			}
+		}
+
+		_ = await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+		return ToDescriptor(scenario);
+	}
+
+	public async Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var scenario = await _db.Scenarios.FindAsync([id], ct).ConfigureAwait(false);
+		if (scenario is null)
+		{
+			return false;
+		}
+
+		_ = _db.Scenarios.Remove(scenario);
+		_ = await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+		return true;
 	}
 
 	public async Task<string?> GetScenarioFilePathByIdAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var scenario = await _db.SC5Files
+		var scenario = await _db.Scenarios
 			.AsNoTracking()
-			.FirstOrDefaultAsync(s => s.Id == id, ct);
+			.FirstOrDefaultAsync(s => s.Id == id, ct)
+			.ConfigureAwait(false);
 
 		if (scenario is null || string.IsNullOrWhiteSpace(scenario.Name))
 		{
@@ -57,19 +149,25 @@ public class ScenarioService : IScenarioService
 		return File.Exists(fullPath) ? fullPath : null;
 	}
 
-	public async Task<DtoScenarioDescriptor?> GetScenarioAsync(UniqueObjectId id, CancellationToken ct)
-	{
-		var scenario = await _db.SC5Files
-			.AsNoTracking()
-			.FirstOrDefaultAsync(s => s.Id == id, ct);
+	private IQueryable<TblScenario> Query()
+		=> _db.Scenarios
+			.Include(f => f.Licence)
+			.Include(f => f.Authors)
+			.Include(f => f.Tags)
+			.Include(f => f.ScenarioPacks)
+			.AsSplitQuery();
 
-		return scenario is null
-			? null
-			: new DtoScenarioDescriptor(scenario.Id, scenario.Name, scenario.Description);
-	}
-
-	private static string[] GetSortedScenarioFiles(string folder)
-	=> [.. Directory
-.GetFiles(folder, "*.SC5", SearchOption.AllDirectories)
-.OrderBy(x => Path.GetRelativePath(folder, x), StringComparer.Ordinal)];
+	private static DtoScenarioDescriptor ToDescriptor(TblScenario file)
+		=> new(
+			file.Id,
+			file.Name,
+			file.Description,
+			file.ObjectSource,
+			file.CreatedDate,
+			file.ModifiedDate,
+			file.UploadedDate,
+			file.Licence?.ToDtoEntry(),
+			[.. file.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())],
+			[.. file.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())],
+			[.. file.ScenarioPacks.OrderBy(p => p.Name).Select(p => new DtoItemRef(p.Id, p.Name))]);
 }

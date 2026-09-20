@@ -85,8 +85,11 @@ public static class ServiceCollectionExtensions
 		_ = services.AddScoped<IObjectQueryService, ObjectQueryService>();
 		_ = services.AddScoped<IScenarioService, ScenarioService>();
 		_ = services.AddScoped<IObjectPackService, ObjectPackService>();
-		_ = services.AddScoped<ISC5FilePackService, SC5FilePackService>();
-		_ = services.AddScoped<ISC5FileService, SC5FileService>();
+		_ = services.AddScoped<IScenarioPackService, ScenarioPackService>();
+		_ = services.AddScoped<IMusicService, MusicService>();
+		_ = services.AddScoped<ISoundEffectsService, SoundEffectsService>();
+		_ = services.AddScoped<ITutorialsService, TutorialsService>();
+		_ = services.AddScoped<IGraphicsService, GraphicsService>();
 		_ = services.AddScoped<IReferenceDataService, ReferenceDataService>();
 		_ = services.AddScoped<IUserService, UserService>();
 
@@ -100,8 +103,43 @@ public static class ServiceCollectionExtensions
 		_ = services.AddScoped<ObjectRouteHandler>();
 		_ = services.AddScoped<ScenarioRouteHandler>();
 		_ = services.AddScoped<ObjectPackRouteHandler>();
-		_ = services.AddScoped<SC5FilePackRouteHandler>();
-		_ = services.AddScoped<SC5FileRouteHandler>();
+		_ = services.AddScoped<ScenarioPackRouteHandler>();
+		_ = services.AddScoped<MusicRouteHandler>();
+		_ = services.AddScoped<SoundEffectsRouteHandler>();
+		_ = services.AddScoped<TutorialsRouteHandler>();
+		_ = services.AddScoped<GraphicsRouteHandler>();
+
+		return services;
+	}
+
+	/// <summary>
+	/// Registers the single GameData file-watching service plus the seven per-folder watchers it
+	/// owns (see <see cref="GameDataWatcherService"/>).
+	/// </summary>
+	public static IServiceCollection AddGameDataFileWatchers(this IServiceCollection services)
+	{
+		_ = services.AddSingleton<GameDataWatcherLock>();
+
+		// One entity-specific import service per GameData folder - a game object, scenario,
+		// landscape, tutorial, sound effect, music file and graphics file are all distinct entities.
+		_ = services.AddScoped<ObjectsFolderService>();
+		_ = services.AddScoped<ScenariosFolderService>();
+		_ = services.AddScoped<LandscapesFolderService>();
+		_ = services.AddScoped<TutorialsFolderService>();
+		_ = services.AddScoped<SoundEffectsFolderService>();
+		_ = services.AddScoped<MusicFolderService>();
+		_ = services.AddScoped<GraphicsFolderService>();
+
+		// One watcher per folder, owned by the single hosted service.
+		_ = services.AddSingleton<GameDataFolderWatcher, ObjectsFolderWatcher>();
+		_ = services.AddSingleton<GameDataFolderWatcher, ScenariosFolderWatcher>();
+		_ = services.AddSingleton<GameDataFolderWatcher, LandscapesFolderWatcher>();
+		_ = services.AddSingleton<GameDataFolderWatcher, TutorialsFolderWatcher>();
+		_ = services.AddSingleton<GameDataFolderWatcher, SoundEffectsFolderWatcher>();
+		_ = services.AddSingleton<GameDataFolderWatcher, MusicFolderWatcher>();
+		_ = services.AddSingleton<GameDataFolderWatcher, GraphicsFolderWatcher>();
+
+		_ = services.AddHostedService<GameDataWatcherService>();
 
 		return services;
 	}

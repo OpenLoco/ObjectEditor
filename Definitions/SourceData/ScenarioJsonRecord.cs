@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Definitions.SourceData;
 
 [method: JsonConstructor]
-public record SC5FileJsonRecord(
+public record ScenarioJsonRecord(
 	string Name,
 	string? Description,
 	List<string> Authors,

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Definitions.SourceData;
 
 [method: JsonConstructor]
-public record SC5FilePackJsonRecord(
+public record ScenarioPackJsonRecord(
 	string Name,
 	string? Description,
 	List<string> Authors,

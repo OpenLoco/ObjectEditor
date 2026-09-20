@@ -143,7 +143,7 @@
 
 	<section class="panel">
 		<h2>SC5 File Packs</h2>
-		@if (Model.SC5FilePacks.Count == 0)
+		@if (Model.ScenarioPacks.Count == 0)
 		{
 			<p class="muted">No SC5 file packs are associated with this author.</p>
 		}
@@ -157,10 +157,10 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (var pack in Model.SC5FilePacks)
+						@foreach (var pack in Model.ScenarioPacks)
 						{
 							<tr>
-								<td><a asp-page="/SC5FilePacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
+								<td><a asp-page="/ScenarioPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
 							</tr>
 						}
 					</tbody>

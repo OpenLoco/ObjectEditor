@@ -88,25 +88,20 @@ public interface IConvertibleToTable<TTable, TDat>
 [JsonDerivedType(typeof(DtoObjectWater), "water")]
 public interface IDtoSubObject : IHasId
 {
-	//IDbSubObject ToTbl();
 }
 
 public interface IDbSubObject : IHasId
 {
 	public abstract TblObject Parent { get; set; }
-	//IDtoSubObject ToDto();
 }
 
 public abstract class DbSubObject : DbIdObject, IDbSubObject
 {
 	public required TblObject Parent { get; set; }
-
-	//public abstract IDtoSubObject ToDto();
 }
 
 public abstract class DtoSubObject : DbIdObject, IDtoSubObject
 {
-	//public abstract IDbSubObject ToTbl();
 }
 
 public static class DbSubObjectHelper

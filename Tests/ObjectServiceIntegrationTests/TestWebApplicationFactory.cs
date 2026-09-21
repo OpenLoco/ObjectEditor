@@ -45,6 +45,11 @@ public class TestWebApplicationFactory<TProgram>
 				new("ObjectService:RootFolder", testFolder.FullName),
 				new("ObjectService:PaletteMapFile", dummyPaletteFile),
 				new("ObjectService:ShowScalar", "False"),
+				// Tests exercise the admin bootstrap, so a password must be supplied explicitly: there is no
+				// code default (see AdminUserSettings). The username deliberately keeps the built-in default
+				// so DevAuthenticationHandler finds the admin deterministically.
+				new("AdminUser:Email", "test-admin@localhost"),
+				new("AdminUser:Password", "TestAdminPassword123!@#"),
 				new("ObjectService:DisableAuthentication", "True"),
 				new("ObjectService:FrontendReadOnly", FrontendReadOnly.ToString()),
 				new("ObjectService:BackendReadOnly", BackendReadOnly.ToString()),

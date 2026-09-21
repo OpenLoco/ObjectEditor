@@ -64,7 +64,7 @@ public class DevAuthenticationHandler : AuthenticationHandler<AuthenticationSche
 		}
 
 		var admin = await db.Users
-			.Where(u => u.UserName == DatabaseInitializer.DefaultAdminUsername)
+			.Where(u => u.UserName == AdminUserSettings.DefaultUserName)
 			.Select(u => (ulong?)u.Id)
 			.FirstOrDefaultAsync();
 

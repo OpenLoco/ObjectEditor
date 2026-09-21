@@ -57,6 +57,12 @@ Every entity stored from a `GameData` folder has its own route group, following 
 - A single shared `GameDataWatcherLock` serialises file operations across all seven folders so the object index and SQLite database are never written concurrently.
 - Schema changes are delivered as EF migrations (`Definitions/Migrations`). `DatabaseInitializer` calls `Migrate()` on startup; databases created before migrations were adopted have the baseline recorded in `__EFMigrationsHistory` first (see `MigrationInitializer`), so they are never re-created. The file-entity tables (`Music`, `SoundEffects`, `Tutorials`, `Graphics`) are part of the baseline.
 
+### Configuration
+- **`AdminUser:Password`** is required to bootstrap the system admin account. It is never defaulted in code: when it is missing the admin is simply not created (an **error** is logged outside Development), so deployments must supply it via user-secrets or environment variables. `AdminUser:Email` / `AdminUser:Username` fall back to a non-secret display identity.
+- **`DevAuth:Email` / `DevAuth:Password`** configure the development-only `/dev/quick-login` endpoint and the quick-login page. The endpoint is only mapped when the environment is Development and returns `503` when unset.
+- Development-only values for both live in `appsettings.Development.json`; `appsettings.json` intentionally contains neither.
+- `ObjectService:DisableAuthentication` enables the dev authentication scheme, which impersonates the admin user for `/v2` requests. It is deliberately excluded for `/v2/users`, `/v2/roles` and `/v2/identity` so identity flows are exercised for real.
+
 ### Web Server
 - The API is rate-limited to a burst limit of [20 requests per second](https://github.com/OpenLoco/ObjectEditor/blob/master/ObjectService/ObjectServiceRateLimitOptions.cs) with 10 tokens replenished every second. This is a global limit, regardless of client. This will be [changed in the future](https://github.com/OpenLoco/ObjectEditor/issues/76).
 - The server runs on a spare PC I have converted into a Linux (Ubuntu) server. It runs the Object Service as a daemon under systemctl and has an auto-restart configured in case it crashes.

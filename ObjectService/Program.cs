@@ -308,11 +308,20 @@ _ = app.MapRazorPages();
 // standard Identity /login endpoint.
 if (app.Environment.IsDevelopment())
 {
-	_ = app.MapPost("/dev/quick-login", async (UserManager<TblUser> userManager, RoleManager<TblUserRole> roleManager) =>
+	_ = app.MapPost("/dev/quick-login", async (UserManager<TblUser> userManager, RoleManager<TblUserRole> roleManager, IConfiguration config) =>
 	{
-		const string devUserEmail = "dev@localhost";
-		const string devUserName = "DevAdmin";
-		const string devPassword = "DevPassword123!@#";
+		// Dev credentials are configuration-driven (see appsettings.Development.json); there is no code
+		// default so a deployment can never accidentally ship working dev credentials.
+		var devUserEmail = config["DevAuth:Email"];
+		var devPassword = config["DevAuth:Password"];
+		if (string.IsNullOrWhiteSpace(devUserEmail) || string.IsNullOrWhiteSpace(devPassword))
+		{
+			return Results.Problem(
+				"Dev quick-login is not configured. Set DevAuth:Email and DevAuth:Password (development only).",
+				statusCode: StatusCodes.Status503ServiceUnavailable);
+		}
+
+		var devUserName = config["DevAuth:UserName"] ?? devUserEmail;
 
 		var user = await userManager.FindByEmailAsync(devUserEmail);
 		if (user == null)

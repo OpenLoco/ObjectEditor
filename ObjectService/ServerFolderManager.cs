@@ -3,16 +3,6 @@ using System.Text.Json;
 
 namespace ObjectService;
 
-public interface IServerFolderManager
-{
-	//string RootDirectory { get; init; }
-}
-
-public class TestServerFolderManager : IServerFolderManager
-{
-	//string RootDirectory { get; init; }
-}
-
 /// <summary>
 /// <para>This class represents the folder structure for game data on the server.</para>
 /// <para>
@@ -63,7 +53,7 @@ public class TestServerFolderManager : IServerFolderManager
 /// </para>
 ///
 /// </summary>
-public class ServerFolderManager : IServerFolderManager
+public class ServerFolderManager
 {
 	string RootDirectory { get; init; }
 

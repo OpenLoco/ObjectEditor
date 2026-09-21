@@ -34,8 +34,8 @@ Tracking document for the database and web-API design review. Keep the checkboxe
 | 3     | WS5 — EF migrations (+ WS5b)            | ☑      |
 | 4     | WS1 — Sub-object identity               | ☑      |
 | 4     | WS6 — `SC5Files` → `Scenarios`          | ☑      |
-| 5     | WS10 — Credentials                      | ☐      |
-| 5     | WS-DeadCode — Experiment cleanup        | ☐      |
+| 5     | WS10 — Credentials                      | ☑      |
+| 5     | WS-DeadCode — Experiment cleanup        | ☑      |
 
 ---
 
@@ -274,21 +274,29 @@ a new cascade test).
 
 ---
 
-## Phase 5 — Security & polish
+## Phase 5 — Security & polish ✅ complete 2026-09-21
 
 ### WS10 — Hardcoded credentials
 
-**Status:** ☐ &nbsp; **Size:** S
+**Status:** ☑ &nbsp; **Size:** S &nbsp; **Completed:** 2026-09-21
 
-- [ ] Replace the hardcoded admin-password fallback with fail-fast (or force `AdminUser:Password` / user-secrets)
-- [ ] Gate and document the dev quick-login password; confirm the dev auth scheme stays excluded from `AdminOnly` / identity endpoints
+The admin password is **never defaulted in code**: it must come from configuration, and without it the
+admin account is simply not bootstrapped — so a deployment can never ship a known-password admin.
+
+- [x] New `AdminUserSettings.FromConfiguration` returns `null` unless `AdminUser:Password` is configured; `DatabaseInitializer` logs a **warning** in Development and an **error** elsewhere, then skips admin creation, role assignment and the unowned-object backfill
+- [x] Removed `DatabaseInitializer.DefaultAdminPassword`; the email/username defaults moved into `AdminUserSettings` as non-secret display defaults
+- [x] `/dev/quick-login` and `Pages/Dev/QuickLogin` now read `DevAuth:Email` / `DevAuth:UserName` / `DevAuth:Password` from configuration and return 503/400 when unset — no code default. The endpoint was already Development-only + `AllowAnonymous`
+- [x] `appsettings.Development.json` carries the development-only `AdminUser` and `DevAuth` values (with an explanatory comment); `appsettings.json` has neither, so production must supply them via user-secrets or environment variables
+- [x] Dev-auth exclusions confirmed unchanged: `/v2/users`, `/v2/roles` and `/v2/identity` are never impersonated
+- [x] `TestWebApplicationFactory` now supplies `AdminUser:Password` explicitly (keeping the built-in username so `DevAuthenticationHandler` finds the admin deterministically)
+- [x] Tests: `AdminUserSettingsTests` (null when missing/blank, configured values win, identity defaults)
 
 ### WS-DeadCode — Experiment cleanup
 
-**Status:** ☐ &nbsp; **Size:** S
+**Status:** ☑ &nbsp; **Size:** S &nbsp; **Completed:** 2026-09-21
 
-- [ ] Remove the commented-out TPT / relationship experiments in `Definitions/Database/LocoDbContext.cs` and `TblObject.cs`
-- [ ] Remove `TestServerFolderManager` / the empty `IServerFolderManager` if unused
+- [x] Removed the commented-out TPT / relationship experiments: the `TblObject` leftovers (WS1), the `OrderItem` sample in `LocoDbContext.OnModelCreating`, and the commented `ToDto`/`ToTbl` members in `DbSubObject`
+- [x] Removed the empty `IServerFolderManager` interface and the unused `TestServerFolderManager` (neither had any callers)
 
 ---
 
@@ -309,7 +317,7 @@ a new cascade test).
 
 ## Verification strategy
 
-- Full suite must stay green: `dotnet test Tests/Tests.csproj` (baseline after WS2: **2515 passed / 0 failed**, 5 skips).
+- Full suite must stay green: `dotnet test Tests/Tests.csproj` (baseline after Phase 5: **2520 passed / 0 failed**, 5 skips).
 - Migration drift must stay clean: `dotnet ef migrations has-pending-model-changes --project Definitions` (also enforced by `.github/workflows/db-migrations.yml`).
 - The whole solution must build: `dotnet build ObjectEditor.slnx` (covers `Gui`, `DatabaseTools`, `DatabaseToolsConsole`).
 - Every schema change needs: fresh-DB test + legacy-DB upgrade test + the migration-drift CI gate.
@@ -332,6 +340,7 @@ Add a row whenever a task or workstream is completed, with the PR/commit.
 | 2026-09-21 | Phase 4 (WS1) | `TblObject.SubObjectId` dropped (migration `20260921015814_DropObjectSubObjectId`); `DbSubObjectHelper` resolves the sub-object via the `Parent` FK; cascade delete proven by test; dead TPT comments removed. WS2 (object delete) is now unblocked. 2509 green | _uncommitted_ |
 | 2026-09-21 | WS2 (object delete) | New per-category `Removed` folder (moved-to, never deleted; ignored by watchers + reconciliation); `DELETE /v2/objects/{id}` parks the DAT, drops the index entry and marks the row `Unavailable` (vanilla refused); the same file policy applied to the other game-data deletes; restoring a parked file flips the object back to `Available`; README + `ServerFolderManager` docs updated. 2515 green | _uncommitted_ |
 | 2026-09-21 | Phase 4 (WS6) | `SC5Files` → `Scenarios` navigation + DTO rename (migration `20260921024756_RenameSc5FilesNavigationToScenarios` renames the join columns/indexes/FKs); `SC5FilePackService.cs` renamed; page strings/Gui labels updated. Fixed two latent bugs: `DatabaseTools` export/import filename mismatch (`sc5FilePacks.json` vs `scenarioPacks.json`) and the dead `category=sc5files` links. **Breaking:** descriptor JSON field `SC5Files` → `Scenarios`. 2515 green | _uncommitted_ |
+| 2026-09-21 | Phase 5 (WS10, WS-DeadCode) | Admin password no longer defaulted in code (`AdminUserSettings`; admin is skipped + logged when unconfigured); dev quick-login credentials moved to `DevAuth` config; `appsettings.Development.json` holds dev-only values; dead TPT/relationship comments and the unused `IServerFolderManager`/`TestServerFolderManager` removed; README config section added. +5 tests (2520 green) | _uncommitted_ |
 
 ## Discovered during remediation
 

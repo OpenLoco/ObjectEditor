@@ -10,17 +10,16 @@ namespace ObjectService.Pages.Dev;
 [AllowAnonymous]
 public class QuickLoginModel : PageModel
 {
-	private const string DevUserEmail = "dev@localhost";
-	private const string DevPassword = "DevPassword123!@#";
-
 	private readonly FrontendApiClient _api;
 	private readonly IWebHostEnvironment _environment;
+	private readonly IConfiguration _config;
 	private readonly ILogger<QuickLoginModel> _logger;
 
-	public QuickLoginModel(FrontendApiClient api, IWebHostEnvironment environment, ILogger<QuickLoginModel> logger)
+	public QuickLoginModel(FrontendApiClient api, IWebHostEnvironment environment, IConfiguration config, ILogger<QuickLoginModel> logger)
 	{
 		_api = api;
 		_environment = environment;
+		_config = config;
 		_logger = logger;
 	}
 
@@ -29,6 +28,15 @@ public class QuickLoginModel : PageModel
 		if (!_environment.IsDevelopment())
 		{
 			return Forbid();
+		}
+
+		// Dev credentials come from configuration (see appsettings.Development.json); there is no code
+		// default so a deployment can never accidentally ship working dev credentials.
+		var devUserEmail = _config["DevAuth:Email"];
+		var devPassword = _config["DevAuth:Password"];
+		if (string.IsNullOrWhiteSpace(devUserEmail) || string.IsNullOrWhiteSpace(devPassword))
+		{
+			return BadRequest("Dev quick-login is not configured.");
 		}
 
 		using var client = _api.CreateClient();
@@ -41,7 +49,7 @@ public class QuickLoginModel : PageModel
 		}
 
 		// Sign in via the Identity API.
-		var loginPayload = new DtoLoginRequest(DevUserEmail, DevPassword);
+		var loginPayload = new DtoLoginRequest(devUserEmail, devPassword);
 		using var cookieResponse = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityLogin}?useCookies=true", loginPayload);
 		if (!cookieResponse.IsSuccessStatusCode)
 		{

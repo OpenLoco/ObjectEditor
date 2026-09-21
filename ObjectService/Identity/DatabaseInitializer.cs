@@ -10,9 +10,6 @@ namespace ObjectService.Identity;
 /// </summary>
 public static class DatabaseInitializer
 {
-	private const string DefaultAdminEmail = "leftofzen@openloco.io";
-	public const string DefaultAdminUsername = "LeftofZen";
-	private const string DefaultAdminPassword = "3!D:Gy681%&y(HCg";
 
 	public static async Task InitializeAsync(WebApplication app)
 	{
@@ -93,63 +90,81 @@ public static class DatabaseInitializer
 			}
 		}
 
-		// Ensure system admin user
-		var adminEmail = config["AdminUser:Email"] ?? DefaultAdminEmail;
-		var adminUsername = config["AdminUser:Username"] ?? DefaultAdminUsername;
-		var adminPassword = config["AdminUser:Password"] ?? DefaultAdminPassword;
+		// Ensure system admin user. The password is never defaulted in code: without AdminUser:Password the
+		// system admin is not bootstrapped at all (see AdminUserSettings).
+		var adminSettings = AdminUserSettings.FromConfiguration(config);
+		TblUser? adminUser = null;
 
-		logger.LogInformation("Ensuring admin user: {Username} / {Email}", adminUsername, adminEmail);
-
-		var adminUser = await userManager.FindByEmailAsync(adminEmail);
-		if (adminUser == null)
+		if (adminSettings is null)
 		{
-			adminUser = new TblUser
+			if (app.Environment.IsDevelopment())
 			{
-				UserName = adminUsername,
-				Email = adminEmail,
-				EmailConfirmed = true,
-			};
-
-			var cr = await userManager.CreateAsync(adminUser, adminPassword);
-			if (!cr.Succeeded)
-			{
-				logger.LogError("Failed to create admin user: {Errors}", string.Join(", ", cr.Errors.Select(e => e.Description)));
-				logger.LogError("Password rules — Digit:{RD} Lower:{RL} Upper:{RU} NonAlpha:{RNA} MinLen:{MinLen}",
-					userManager.Options.Password.RequireDigit,
-					userManager.Options.Password.RequireLowercase,
-					userManager.Options.Password.RequireUppercase,
-					userManager.Options.Password.RequireNonAlphanumeric,
-					userManager.Options.Password.RequiredLength);
-				return; // let app start; admin features won't work
+				logger.LogWarning(
+					"AdminUser:Password is not configured; the system admin account was not bootstrapped. " +
+					"Configure AdminUser:Password (user-secrets, environment variable or appsettings) to create it.");
 			}
-
-			logger.LogInformation("Created system admin user {Username}", adminUsername);
+			else
+			{
+				logger.LogError(
+					"AdminUser:Password is not configured; the system admin account was NOT bootstrapped. " +
+					"Configure AdminUser:Password via user-secrets or environment variables.");
+			}
 		}
 		else
 		{
-			logger.LogInformation("Admin user {Username} already exists (Id={Id})", adminUsername, adminUser.Id);
-		}
+			logger.LogInformation("Ensuring admin user: {Username} / {Email}", adminSettings.UserName, adminSettings.Email);
 
-		// Ensure admin role assignment
-		if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
-		{
-			await userManager.AddToRoleAsync(adminUser, "Admin");
-			logger.LogInformation("Assigned Admin role to {Username}", adminUsername);
-		}
-
-		// Assign unowned objects to admin
-		var unowned = await db.Objects.Where(o => o.OwnerUserId == null).ToListAsync();
-		if (unowned.Count > 0)
-		{
-			foreach (var obj in unowned)
+			adminUser = await userManager.FindByEmailAsync(adminSettings.Email);
+			if (adminUser == null)
 			{
-				obj.OwnerUserId = adminUser.Id;
+				adminUser = new TblUser
+				{
+					UserName = adminSettings.UserName,
+					Email = adminSettings.Email,
+					EmailConfirmed = true,
+				};
+
+				var cr = await userManager.CreateAsync(adminUser, adminSettings.Password);
+				if (!cr.Succeeded)
+				{
+					logger.LogError("Failed to create admin user: {Errors}", string.Join(", ", cr.Errors.Select(e => e.Description)));
+					logger.LogError("Password rules — Digit:{RD} Lower:{RL} Upper:{RU} NonAlpha:{RNA} MinLen:{MinLen}",
+						userManager.Options.Password.RequireDigit,
+						userManager.Options.Password.RequireLowercase,
+						userManager.Options.Password.RequireUppercase,
+						userManager.Options.Password.RequireNonAlphanumeric,
+						userManager.Options.Password.RequiredLength);
+					return; // let app start; admin features won't work
+				}
+
+				logger.LogInformation("Created system admin user {Username}", adminSettings.UserName);
+			}
+			else
+			{
+				logger.LogInformation("Admin user {Username} already exists (Id={Id})", adminSettings.UserName, adminUser.Id);
 			}
 
-			await db.SaveChangesAsync();
-			logger.LogInformation("Assigned {Count} unowned objects to admin", unowned.Count);
+			// Ensure admin role assignment
+			if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+			{
+				await userManager.AddToRoleAsync(adminUser, "Admin");
+				logger.LogInformation("Assigned Admin role to {Username}", adminSettings.UserName);
+			}
+
+			// Assign unowned objects to admin
+			var unowned = await db.Objects.Where(o => o.OwnerUserId == null).ToListAsync();
+			if (unowned.Count > 0)
+			{
+				foreach (var obj in unowned)
+				{
+					obj.OwnerUserId = adminUser.Id;
+				}
+
+				await db.SaveChangesAsync();
+				logger.LogInformation("Assigned {Count} unowned objects to admin", unowned.Count);
+			}
 		}
 
-		logger.LogInformation("Database initialization complete (Admin exists={Exists})", adminUser != null);
+		logger.LogInformation("Database initialization complete (Admin bootstrapped={Bootstrapped})", adminUser != null);
 	}
 }

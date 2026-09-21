@@ -154,12 +154,6 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		// Complex object-model properties (lists, nested objects, dictionaries, jagged arrays) are stored as JSON.
 		JsonColumnConvention.Apply(modelBuilder);
 
-		// Configure the one-to-many relationship
-		//modelBuilder.Entity<OrderItem>()
-		//	.HasOne(oi => oi.Order) // OrderItem has one Order
-		//	.WithMany(o => o.OrderItems) // Order has many OrderItems
-		//	.HasForeignKey(oi => new { oi.OrderNumber, oi.CustomerCode }); // The composite foreign key on OrderItem
-
 		_ = modelBuilder.Entity<TblObject>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite

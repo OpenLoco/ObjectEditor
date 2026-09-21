@@ -1,4 +1,5 @@
 using Definitions.DTO.Identity;
+using Definitions.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -41,7 +42,7 @@ public class QuickLoginModel : PageModel
 
 		// Sign in via the Identity API.
 		var loginPayload = new DtoLoginRequest(DevUserEmail, DevPassword);
-		using var cookieResponse = await client.PostAsJsonAsync("/login?useCookies=true", loginPayload);
+		using var cookieResponse = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityLogin}?useCookies=true", loginPayload);
 		if (!cookieResponse.IsSuccessStatusCode)
 		{
 			return BadRequest("Failed to sign in dev user");
@@ -75,7 +76,7 @@ public class QuickLoginModel : PageModel
 	{
 		try
 		{
-			using var response = await client.PostAsJsonAsync("/login?useCookies=false", payload);
+			using var response = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityLogin}?useCookies=false", payload);
 			if (!response.IsSuccessStatusCode)
 			{
 				return;

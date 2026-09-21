@@ -69,7 +69,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 		);
 
 		// act
-		var response = await HttpClient!.PostAsJsonAsync("/register", registerRequest);
+		var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityRegister}", registerRequest);
 
 		// assert
 		Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -86,7 +86,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 		);
 
 		// act
-		var response = await HttpClient!.PostAsJsonAsync("/register", registerRequest);
+		var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityRegister}", registerRequest);
 
 		// assert
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
@@ -101,7 +101,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 			UserName: "loginuser",
 			Password: "TestPassword123!"
 		);
-		_ = await HttpClient!.PostAsJsonAsync("/register", registerRequest);
+		_ = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityRegister}", registerRequest);
 
 		var loginRequest = new
 		{
@@ -110,7 +110,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 		};
 
 		// act
-		var response = await HttpClient!.PostAsJsonAsync("/login?useCookies=false", loginRequest);
+		var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityLogin}?useCookies=false", loginRequest);
 
 		// assert
 		Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -129,7 +129,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 		};
 
 		// act
-		var response = await HttpClient!.PostAsJsonAsync("/login?useCookies=false", loginRequest);
+		var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityLogin}?useCookies=false", loginRequest);
 
 		// assert
 		Assert.That(response.IsSuccessStatusCode, Is.False);
@@ -164,7 +164,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 			UserName: "authuser",
 			Password: "TestPassword123!"
 		);
-		_ = await HttpClient!.PostAsJsonAsync("/register", registerRequest);
+		_ = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityRegister}", registerRequest);
 
 		// Login to get bearer token
 		var loginRequest = new
@@ -172,7 +172,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 			Email = "authtest@example.com",
 			Password = "TestPassword123!"
 		};
-		var loginResponse = await HttpClient!.PostAsJsonAsync("/login?useCookies=false", loginRequest);
+		var loginResponse = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityLogin}?useCookies=false", loginRequest);
 		Assert.That(loginResponse.IsSuccessStatusCode, Is.True);
 
 		var loginResult = await loginResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
@@ -188,5 +188,40 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 
 		// assert - Should succeed with valid authentication
 		Assert.That(response.IsSuccessStatusCode, Is.True);
+	}
+[Test]
+	public async Task UpdateCurrentUserDisplayName_WithAuthentication_ShouldSucceed()
+	{
+		// arrange - register and sign in
+		var registerRequest = new DtoRegisterRequest(
+			Email: "medisplay@example.com",
+			UserName: "medisplayuser",
+			Password: "TestPassword123!");
+		_ = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityRegister}", registerRequest);
+
+		var loginRequest = new { Email = "medisplay@example.com", Password = "TestPassword123!" };
+		var loginResponse = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityLogin}?useCookies=false", loginRequest);
+		Assert.That(loginResponse.IsSuccessStatusCode, Is.True);
+
+		var loginResult = await loginResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+		var accessToken = loginResult.GetProperty("accessToken").GetString();
+		HttpClient!.DefaultRequestHeaders.Authorization =
+			new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+		// act - PUT /v2/users/me is registered from the write path (WS14)
+		var updated = await Definitions.Web.Client.SetCurrentUserDisplayNameAsync(HttpClient!, "RenamedDisplayUser");
+
+		// assert
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(updated, Is.Not.Null);
+			Assert.That(updated!.UserName, Is.EqualTo("RenamedDisplayUser"));
+
+			// /v2/identity/manage/info is reachable (WS8). Note: the framework's InfoResponse only
+			// returns email/confirmation, so DtoInfoResponse.UserName is always null here.
+			var info = await HttpClient!.GetFromJsonAsync<DtoInfoResponse>($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityManageInfo}");
+			Assert.That(info, Is.Not.Null);
+			Assert.That(info!.Email, Is.EqualTo("medisplay@example.com"));
+		}
 	}
 }

@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Graphics;
+using Definitions.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -292,8 +293,9 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapIdentityApi<TblUser>();
-// app.MapPost("/register", () => Results.Ok());
+// ASP.NET Identity's built-in endpoints, mounted under /v2/identity so the whole API is versioned.
+var identityEndpoints = app.MapGroup($"{Routes.Prefix}{Routes.Identity}");
+_ = identityEndpoints.MapIdentityApi<TblUser>();
 
 _ = app
 	.MapHealthChecks("/health")

@@ -62,6 +62,10 @@ public static class RouteBuilderExtensions
 		MapWriteHandler(new UserRouteHandler(), adminGroup, config);
 		MapWriteHandler(new RoleRouteHandler(), adminGroup, config);
 
+		// Self-service account writes (/v2/users/me) are registered from the write path rather than the
+		// read path. They stay available when the game-data API is read-only.
+		new UserRouteHandler().MapAdditionalWriteRoutes(authGroup);
+
 		return v2;
 	}
 

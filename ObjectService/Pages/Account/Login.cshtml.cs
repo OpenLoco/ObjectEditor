@@ -1,4 +1,5 @@
 using Definitions.DTO.Identity;
+using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ObjectService.Frontend;
@@ -41,7 +42,7 @@ public sealed class LoginModel : PageModel
 		var payload = new DtoLoginRequest(Email.Trim(), Password);
 
 		// Sign in via the Identity API using cookies so the Razor frontend stays authenticated.
-		using var cookieResponse = await client.PostAsJsonAsync("/login?useCookies=true", payload);
+		using var cookieResponse = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityLogin}?useCookies=true", payload);
 		if (!cookieResponse.IsSuccessStatusCode)
 		{
 			ModelState.AddModelError(string.Empty, "Invalid email or password.");
@@ -78,7 +79,7 @@ public sealed class LoginModel : PageModel
 	{
 		try
 		{
-			using var response = await client.PostAsJsonAsync("/login?useCookies=false", payload);
+			using var response = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityLogin}?useCookies=false", payload);
 			if (!response.IsSuccessStatusCode)
 			{
 				return null;

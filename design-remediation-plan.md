@@ -27,10 +27,10 @@ Tracking document for the database and web-API design review. Keep the checkboxe
 | 1     | WS12 — Minor consistency                | ☑      |
 | 1     | WS11 — Dead code / `ObjectType` mapping | ☑      |
 | 1     | WS13 — Index path convention            | ☑      |
-| 2     | WS7 — Pack GET-by-id                    | ☐      |
-| 2     | WS2 — Object delete                     | ☐      |
-| 2     | WS14 — Route registration               | ☐      |
-| 2     | WS8 — Identity prefix                   | ☐      |
+| 2     | WS7 — Pack GET-by-id                    | ☑      |
+| 2     | WS2 — Object delete                     | ⊘      |
+| 2     | WS14 — Route registration               | ☑      |
+| 2     | WS8 — Identity prefix                   | ☑      |
 | 3     | WS5 — EF migrations (+ WS5b)            | ☐      |
 | 4     | WS1 — Sub-object identity               | ☐      |
 | 4     | WS6 — `SC5Files` → `Scenarios`          | ☐      |
@@ -143,24 +143,29 @@ display names; being linked to one grants edit rights over objects crediting tha
 
 ---
 
-## Phase 2 — API surface & auth alignment
+## Phase 2 — API surface & auth alignment — ✅ complete 2026-09-20 (WS2 deferred to Phase 4)
 
 ### WS7 — Pack GET-by-id
 
-**Status:** ☐ &nbsp; **Size:** M &nbsp; **Depends on:** D4
+**Status:** ☑ &nbsp; **Size:** M &nbsp; **Depends on:** D4 &nbsp; **Completed:** 2026-09-20
 
-`GET /v2/objectpacks/{id}` returns a collection with 0-or-1 rich descriptors, and `/descriptor`
-duplicates it with a lighter shape; `Client.GetObjectPackAsync` hides this behind `FirstOrDefault()`.
+`GET /v2/objectpacks/{id}` used to return a collection with 0-or-1 rich descriptors, and `/descriptor`
+duplicated it with a lighter shape; `Client.GetObjectPackAsync` hid this behind `FirstOrDefault()`.
 
-- [ ] Return a single descriptor from `GET /v2/objectpacks/{id}` and `/v2/scenariopacks/{id}`
-- [ ] Update `Definitions/Web/Client.cs` (`GetObjectPackAsync`, `GetScenarioPackAsync`)
-- [ ] Update `Gui/ObjectServiceClient.cs` and `Gui/ViewModels/FolderTreeViewModel.cs` (~line 795)
-- [ ] Update pack pages if their read path changes
-- [ ] Tests: `ObjectPackRoutesTest.GetAsync`, `ScenarioPackRoutesTests.GetAsync`, plus the 404 cases already added
+- [x] `GET /v2/objectpacks/{id}` and `/v2/scenariopacks/{id}` now return a **single** rich descriptor (or 404)
+- [x] Updated `Definitions/Web/Client.cs` (`GetObjectPackAsync`, `GetScenarioPackAsync` now read a single descriptor)
+- [x] `Gui/ObjectServiceClient.cs` / `FolderTreeViewModel` need no change (identical client signatures)
+- [x] `/descriptor` kept as the light summary shape (per D4a)
+- [x] Tests: `ObjectPackRoutesTest.GetAsync` / `ScenarioPackRoutesTests.GetAsync` now exercise the single-object shape, plus the 404 cases
 
 ### WS2 — Object delete
 
-**Status:** ☐ &nbsp; **Size:** L &nbsp; **Depends on:** D3, WS5, WS1
+**Status:** ⊘ blocked &nbsp; **Size:** L &nbsp; **Depends on:** D3, WS5, WS1
+
+> **Deferred to after WS1/WS5.** Object deletion must remove the sub-object row, and the sub-object model
+> currently has no relationship to cascade from (`TblObject.SubObjectId` is an unconstrained scalar). Doing
+> it now would need a throwaway 34-case per-`DbSet` switch that WS1 deletes again — so it is queued behind
+> WS1 (sub-object identity) as planned. D3a (implement delete) is still the agreed direction.
 
 - [ ] Add `IObjectQueryService.DeleteObjectAsync`
 - [ ] Delete sub-object row (via `Parent` FK after WS1), `StringTable` rows, `DatObject` rows, `ObjectPacks` links, then the `TblObject`
@@ -171,18 +176,21 @@ duplicates it with a lighter shape; `Client.GetObjectPackAsync` hides this behin
 
 ### WS14 — Route registration cleanup
 
-**Status:** ☐ &nbsp; **Size:** S
+**Status:** ☑ &nbsp; **Size:** S &nbsp; **Completed:** 2026-09-20
 
-- [ ] Register `UserRouteHandler`'s `/me` writes from the write group rather than the read group
-- [ ] Remove the collapsed `RolesSubRoute` constant (see WS12)
+- [x] `UserRouteHandler.MapAdditionalWriteRoutes` now registers the `/v2/users/me` PUT/DELETE from the write path (called from `RouteBuilderExtensions`), not the read path
+- [x] `RolesSubRoute` collapsed into `Routes.Roles` (done in WS12/Phase 1)
+- [x] The admin maintenance POSTs stay on the read-path registration on purpose, so identity management keeps working when `ObjectService:BackendReadOnly` disables game-data writes (documented in code)
+- [x] Test: `IdentityRoutesTest.UpdateCurrentUserDisplayName_WithAuthentication_ShouldSucceed` covers `PUT /v2/users/me`
 
 ### WS8 — Identity endpoint prefix
 
-**Status:** ☐ &nbsp; **Size:** S–M &nbsp; **Depends on:** D6
+**Status:** ☑ &nbsp; **Size:** S–M &nbsp; **Depends on:** D6 &nbsp; **Completed:** 2026-09-20
 
-- [ ] Map Identity endpoints under a versioned group (`/v2/identity`)
-- [ ] Update `Pages/Account/*` and `Pages/Dev/QuickLogin`
-- [ ] Document as a breaking API change
+- [x] Identity endpoints are mounted under `/v2/identity` (`Routes.Identity*` constants)
+- [x] Updated `Pages/Account/{Login,Register,Manage}` and `Pages/Dev/QuickLogin` to the versioned paths
+- [x] `DevAuthenticationHandler` now also excludes `/v2/identity`, so identity flows are never impersonated in dev
+- [x] Documented as a breaking API change (see Progress Log)
 
 ## Phase 3 — Schema management (prerequisite for Phase 4)
 
@@ -268,7 +276,7 @@ duplicates it with a lighter shape; `Client.GetObjectPackAsync` hides this behin
 
 ## Verification strategy
 
-- Full suite must stay green: `dotnet test Tests/Tests.csproj` (baseline after Phase 1: **2510 passed / 0 failed**, 5 skips).
+- Full suite must stay green: `dotnet test Tests/Tests.csproj` (baseline after Phase 2: **2511 passed / 0 failed**, 5 skips).
 - The whole solution must build: `dotnet build ObjectEditor.slnx` (covers `Gui`, `DatabaseTools`, `DatabaseToolsConsole`).
 - Every schema change needs: fresh-DB test + legacy-DB upgrade test + the migration-drift CI gate.
 - Every API shape change must update, in the same PR: `Definitions/Web/Client.cs`, `Gui/ObjectServiceClient.cs`, the Razor pages, and the integration tests.
@@ -285,3 +293,12 @@ Add a row whenever a task or workstream is completed, with the PR/commit.
 | ---------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | 2026-09-20 | Initial review | Object-pack absolute-path fix, pack 404s, `/v2` Location prefix, game-data `OwnerUserId` backfill, `DbSubObjectHelper` update fix, duplicate index removal, +12 tests | _uncommitted_ |
 | 2026-09-20 | Phase 1 (WS3, WS4, WS12, WS11, WS13) | Permissions reconciled + pack policies + author-based ownership; update validation + 409 on duplicate name; route/constant + `HttpContext` cleanup; dead `ObjectTypeMapping`/`GetDbSetForType` removed and mapping consolidated; uploads index relative paths. +23 tests (2510 green) | _uncommitted_ |
+| 2026-09-20 | Phase 2 (WS7, WS14, WS8) | Pack GET-by-id returns a single descriptor; `/users/me` writes registered from the write path; Identity API moved to `/v2/identity` (**breaking change** for clients using `/register`, `/login`, `/manage/*`, `/logout`). WS2 (object delete) deferred behind WS1 per plan. +1 test (2511 green) | _uncommitted_ |
+
+## Discovered during remediation
+
+Issues found while implementing that were not in the original review. Not yet scheduled.
+
+| Date | Area | Finding | Suggested fix |
+| ------------ | ------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 2026-09-20 | Frontend | `DtoInfoResponse.UserName` is never populated: ASP.NET Identity's `/manage/info` only returns `email` / `isEmailConfirmed`, so `Pages/Account/Manage` renders an empty username. | Drop `UserName` from `DtoInfoResponse`, or populate the page from `GET /v2/users/{id}` instead. |

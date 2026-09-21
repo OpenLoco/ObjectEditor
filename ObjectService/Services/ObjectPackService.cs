@@ -15,7 +15,7 @@ public interface IObjectPackService
 {
 	Task<IEnumerable<DtoItemPackEntry>> ListPacksAsync(CancellationToken ct);
 	Task<IEnumerable<DtoObjectPackListEntry>> ListEntriesAsync(CancellationToken ct);
-	Task<IEnumerable<DtoItemPackDescriptor<DtoObjectEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoItemPackDescriptor<DtoObjectEntry>?> GetPackAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoObjectPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct);
 	Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoItemPackEntry> CreatePackAsync(DtoItemPackDescriptor<DtoObjectEntry> request, UniqueObjectId ownerUserId, CancellationToken ct);
@@ -63,10 +63,15 @@ public class ObjectPackService : IObjectPackService
 			.OrderBy(p => p.Name);
 	}
 
-	public async Task<IEnumerable<DtoItemPackDescriptor<DtoObjectEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct)
+	public async Task<DtoItemPackDescriptor<DtoObjectEntry>?> GetPackAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var packs = await _db.ObjectPacks.Where(x => x.Id == id).Include(l => l.Licence).Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags)).ToListAsync(ct);
-		return packs.Select(x => x.ToDtoDescriptor()).OrderBy(x => x.Name);
+		var pack = await _db.ObjectPacks
+			.Where(x => x.Id == id)
+			.Include(l => l.Licence)
+			.Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags))
+			.SingleOrDefaultAsync(ct);
+
+		return pack?.ToDtoDescriptor();
 	}
 
 	public async Task<DtoObjectPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct)

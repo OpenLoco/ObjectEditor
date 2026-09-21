@@ -54,7 +54,7 @@ public sealed class RegisterModel : PageModel
 
 		// Register through the Identity API.
 		var registerPayload = new DtoRegisterRequest(Email.Trim(), UserName.Trim(), Password);
-		using var registerResponse = await client.PostAsJsonAsync("/register", registerPayload);
+		using var registerResponse = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityRegister}", registerPayload);
 		if (!registerResponse.IsSuccessStatusCode)
 		{
 			var error = await registerResponse.Content.ReadAsStringAsync();
@@ -66,7 +66,7 @@ public sealed class RegisterModel : PageModel
 
 		// Sign the new user in (+ bearer token for subsequent API calls).
 		var loginPayload = new DtoLoginRequest(Email.Trim(), Password);
-		using var cookieResponse = await client.PostAsJsonAsync("/login?useCookies=true", loginPayload);
+		using var cookieResponse = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityLogin}?useCookies=true", loginPayload);
 		if (cookieResponse.IsSuccessStatusCode)
 		{
 			ForwardSetCookieHeaders(cookieResponse);
@@ -101,7 +101,7 @@ public sealed class RegisterModel : PageModel
 	{
 		try
 		{
-			using var response = await client.PostAsJsonAsync("/login?useCookies=false", payload);
+			using var response = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityLogin}?useCookies=false", payload);
 			if (!response.IsSuccessStatusCode)
 			{
 				return null;

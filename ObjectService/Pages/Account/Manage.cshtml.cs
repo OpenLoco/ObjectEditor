@@ -69,7 +69,7 @@ public sealed class ManageModel : PageModel
 	{
 		try
 		{
-			return await client.GetFromJsonAsync<DtoInfoResponse>("/manage/info");
+			return await client.GetFromJsonAsync<DtoInfoResponse>($"{Routes.Prefix}{Routes.IdentityManageInfo}");
 		}
 		catch (HttpRequestException)
 		{
@@ -81,7 +81,7 @@ public sealed class ManageModel : PageModel
 	{
 		try
 		{
-			using var response = await client.PostAsync("/logout", null);
+			using var response = await client.PostAsync($"{Routes.Prefix}{Routes.IdentityLogout}", null);
 		}
 		catch (HttpRequestException)
 		{

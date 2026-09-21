@@ -36,6 +36,13 @@ public static class Routes
 	public const string EmailConfirmed = "/email-confirmed";
 	public const string PasswordReset = "/password-reset";
 
+	// ASP.NET Identity's built-in API, mounted under Routes.Prefix + Routes.Identity.
+	public const string Identity = "/identity";
+	public const string IdentityRegister = Identity + "/register";
+	public const string IdentityLogin = Identity + "/login";
+	public const string IdentityLogout = Identity + "/logout";
+	public const string IdentityManageInfo = Identity + "/manage/info";
+
 	// system
 	public const string Prefix = "/v2";
 	public const string ResourceRoute = "/{id:int}";

@@ -26,8 +26,8 @@ public class ObjectPackRouteHandler : ITableRouteHandler
 	async Task<IResult> ListAsync([FromServices] IObjectPackService svc, CancellationToken ct) => Results.Ok(await svc.ListEntriesAsync(ct));
 	async Task<IResult> ReadAsync(UniqueObjectId id, [FromServices] IObjectPackService svc, CancellationToken ct)
 	{
-		var pack = (await svc.GetPackAsync(id, ct)).ToList();
-		return pack.Count > 0 ? Results.Ok(pack) : Results.NotFound();
+		var pack = await svc.GetPackAsync(id, ct);
+		return pack != null ? Results.Ok(pack) : Results.NotFound();
 	}
 	async Task<IResult> GetDescriptorAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectPackService svc, CancellationToken ct)
 	{

@@ -162,13 +162,13 @@ public static class Client
 		=> await GetListAsync<DtoItemPackEntry>(client, ObjectPacksEndpointGroup, logger, cancellationToken);
 
 	public static async Task<DtoItemPackDescriptor<DtoObjectEntry>?> GetObjectPackAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> (await ClientHelpers.GetAsync<IEnumerable<DtoItemPackDescriptor<DtoObjectEntry>>>(
+		=> await ClientHelpers.GetAsync<DtoItemPackDescriptor<DtoObjectEntry>>(
 			client,
 			ApiVersion,
 			Routes.ObjectPacks,
 			id,
 			logger,
-			cancellationToken))?.FirstOrDefault();
+			cancellationToken);
 
 	public static async Task<IEnumerable<DtoScenarioListEntry>> GetScenariosAsync(HttpClient client, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await GetListAsync<DtoScenarioListEntry>(client, ScenariosEndpointGroup, logger, cancellationToken);
@@ -186,13 +186,13 @@ public static class Client
 		=> await GetListAsync<DtoItemPackEntry>(client, ScenarioPacksEndpointGroup, logger, cancellationToken);
 
 	public static async Task<DtoItemPackDescriptor<DtoScenarioEntry>?> GetScenarioPackAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> (await ClientHelpers.GetAsync<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>>(
+		=> await ClientHelpers.GetAsync<DtoItemPackDescriptor<DtoScenarioEntry>>(
 			client,
 			ApiVersion,
 			Routes.ScenarioPacks,
 			id,
 			logger,
-			cancellationToken))?.FirstOrDefault();
+			cancellationToken);
 
 	public static async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync(HttpClient client, ILogger? logger = null)
 		=> await GetListAsync<DtoObjectMissingEntry>(client, MissingObjectsEndpointGroup, logger);

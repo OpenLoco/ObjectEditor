@@ -24,16 +24,29 @@ public class UserRouteHandler : ITableRouteHandler
 
 	public void MapAdditionalRoutes(IEndpointRouteBuilder baseRoute)
 	{
-		_ = baseRoute.MapDelete(Routes.Me, DeleteCurrentUserAsync);
-		_ = baseRoute.MapPut(Routes.Me, UpdateCurrentUserAsync);
-
 		var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
 		_ = resourceRoute.MapGet(Routes.Detail, GetDetailAsync).RequireAuthorization("AdminOnly");
+
+		// The admin maintenance POSTs are registered here (rather than from the write path) so that
+		// identity management stays available when ObjectService:BackendReadOnly disables game-data writes.
 		_ = resourceRoute.MapPost(Routes.Roles, ToggleRoleAsync).RequireAuthorization("AdminOnly");
 		_ = resourceRoute.MapPost(Routes.ClaimsSubRoute, ToggleClaimAsync).RequireAuthorization("AdminOnly");
 		_ = resourceRoute.MapPost(Routes.Lockout, ToggleLockoutAsync).RequireAuthorization("AdminOnly");
 		_ = resourceRoute.MapPost(Routes.EmailConfirmed, ToggleEmailConfirmedAsync).RequireAuthorization("AdminOnly");
 		_ = resourceRoute.MapPost(Routes.PasswordReset, ForcePasswordResetAsync).RequireAuthorization("AdminOnly");
+	}
+
+	/// <summary>
+	/// Registers the self-service account write routes (<c>/v2/users/me</c>). This is called from the
+	/// write-path registration so the writes are not mapped as part of the read routes; they remain
+	/// available to any authenticated user and are not disabled by
+	/// <c>ObjectService:BackendReadOnly</c>.
+	/// </summary>
+	public void MapAdditionalWriteRoutes(IEndpointRouteBuilder parentRoute)
+	{
+		var baseRoute = parentRoute.MapGroup(BaseRoute);
+		_ = baseRoute.MapDelete(Routes.Me, DeleteCurrentUserAsync);
+		_ = baseRoute.MapPut(Routes.Me, UpdateCurrentUserAsync);
 	}
 
 	async Task<IResult> ListAsync([FromServices] IUserService svc, CancellationToken ct)

@@ -34,7 +34,8 @@ public class DevAuthenticationHandler : AuthenticationHandler<AuthenticationSche
 		var path = Request.Path;
 		if (!path.StartsWithSegments(Routes.Prefix, StringComparison.OrdinalIgnoreCase)
 			|| path.StartsWithSegments($"{Routes.Prefix}{Routes.Users}", StringComparison.OrdinalIgnoreCase)
-			|| path.StartsWithSegments($"{Routes.Prefix}{Routes.Roles}", StringComparison.OrdinalIgnoreCase))
+			|| path.StartsWithSegments($"{Routes.Prefix}{Routes.Roles}", StringComparison.OrdinalIgnoreCase)
+			|| path.StartsWithSegments($"{Routes.Prefix}{Routes.Identity}", StringComparison.OrdinalIgnoreCase))
 		{
 			return AuthenticateResult.NoResult();
 		}

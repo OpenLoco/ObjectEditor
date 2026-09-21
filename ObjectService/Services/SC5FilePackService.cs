@@ -13,7 +13,7 @@ public interface IScenarioPackService
 {
 	Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> ListPacksAsync(CancellationToken ct);
 	Task<IEnumerable<DtoScenarioPackListEntry>> ListEntriesAsync(CancellationToken ct);
-	Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoItemPackDescriptor<DtoScenarioEntry>?> GetPackAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoScenarioPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct);
 	Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct);
 	Task<DtoItemPackDescriptor<DtoScenarioEntry>> CreatePackAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, UniqueObjectId ownerUserId, CancellationToken ct);
@@ -60,11 +60,15 @@ public class ScenarioPackService : IScenarioPackService
 			.OrderBy(p => p.Name);
 	}
 
-	public async Task<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>> GetPackAsync(UniqueObjectId id, CancellationToken ct)
+	public async Task<DtoItemPackDescriptor<DtoScenarioEntry>?> GetPackAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var packs = await _db.ScenarioPacks.Where(x => x.Id == id).Include(l => l.Licence)
-		.Select(x => new ExpandedTblPack<TblScenarioPack, TblScenario>(x, x.Scenarios, x.Authors, x.Tags)).ToListAsync(ct);
-		return packs.Select(x => x.ToDtoDescriptor()).OrderBy(x => x.Name);
+		var pack = await _db.ScenarioPacks
+			.Where(x => x.Id == id)
+			.Include(l => l.Licence)
+			.Select(x => new ExpandedTblPack<TblScenarioPack, TblScenario>(x, x.Scenarios, x.Authors, x.Tags))
+			.SingleOrDefaultAsync(ct);
+
+		return pack?.ToDtoDescriptor();
 	}
 
 	public async Task<DtoScenarioPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct)

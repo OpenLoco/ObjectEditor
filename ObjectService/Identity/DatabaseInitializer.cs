@@ -31,36 +31,11 @@ public static class DatabaseInitializer
 			await db.Database.EnsureDeletedAsync();
 		}
 
-		// Ensure the database file and core schema exist
-		await db.Database.EnsureCreatedAsync();
-
-		// Add OwnerUserId column to existing databases that were created before
-		// DbCoreObject gained the OwnerUserId property. We omit the REFERENCES
-		// clause because SQLite ALTER TABLE ADD COLUMN has limited FK support;
-		// EF Core tracks the FK at the model level instead. Every DbCoreObject
-		// table needs the column, including the game-data file tables.
-		foreach (var table in new[] { "Objects", "ObjectPacks", "Scenarios", "ScenarioPacks", "Music", "SoundEffects", "Tutorials", "Graphics" })
-		{
-			try
-			{
-#pragma warning disable EF1002 // table names are from a hard-coded array, no injection risk
-				await db.Database.ExecuteSqlRawAsync(
-					$"ALTER TABLE \"{table}\" ADD COLUMN \"OwnerUserId\" INTEGER NULL");
-#pragma warning restore EF1002
-				logger.LogInformation("Added OwnerUserId column to {Table} table", table);
-			}
-			catch (Exception ex)
-			{
-				logger.LogWarning(ex, "Could not add OwnerUserId column to {Table} table (may already exist)", table);
-			}
-		}
-
-		// Ensure the per-entity game-data file tables exist. EnsureCreated does not add tables to an
-		// existing database, so create them explicitly here (idempotent).
-		await GameDataFileTableInitializer.EnsureTablesAsync(db, logger);
-
-		// Rename tables that were created under their original names before they were renamed.
-		await ScenarioPackTableInitializer.EnsureRenamedAsync(db, logger);
+		// Bring the schema up to date. Databases created before migrations were adopted have no
+		// __EFMigrationsHistory table, so the baseline migration is recorded as applied first; from then on
+		// EF migrations own the schema and every future model change is delivered as a migration.
+		await MigrationInitializer.EnsureBaselineHistoryAsync(db, logger);
+		await db.Database.MigrateAsync();
 
 		// Ensure Admin role
 		if (!await roleManager.RoleExistsAsync("Admin"))

@@ -1,0 +1,36 @@
+name: Database migrations
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+
+    env:
+      # SixLabors ImageSharp v4 requires a build-time license; it is only needed if the secret is set.
+      SIXLABORS_LICENSE_KEY: ${{ secrets.SIXLABORS_LICENSE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef --version 10.0.11
+
+      # Fails when the EF model has changed without a matching migration, so the database schema can
+      # never drift away from the migrations again (the original cause of the bespoke upgrader classes).
+      - name: Check for pending model changes
+        run: dotnet ef migrations has-pending-model-changes --project Definitions
+
+      # Proves the migrations still produce a valid, idempotent script.
+      - name: Verify migrations generate an idempotent script
+        run: dotnet ef migrations script --idempotent --project Definitions --output migrations.sql

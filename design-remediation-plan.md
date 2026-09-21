@@ -31,7 +31,7 @@ Tracking document for the database and web-API design review. Keep the checkboxe
 | 2     | WS2 — Object delete                     | ⊘      |
 | 2     | WS14 — Route registration               | ☑      |
 | 2     | WS8 — Identity prefix                   | ☑      |
-| 3     | WS5 — EF migrations (+ WS5b)            | ☐      |
+| 3     | WS5 — EF migrations (+ WS5b)            | ☑      |
 | 4     | WS1 — Sub-object identity               | ☐      |
 | 4     | WS6 — `SC5Files` → `Scenarios`          | ☐      |
 | 5     | WS10 — Credentials                      | ☐      |
@@ -43,19 +43,22 @@ Tracking document for the database and web-API design review. Keep the checkboxe
 
 Two root causes sit behind most of the findings:
 
-1. **Schema management is split-brain.**
-   `Definitions/Migrations` exists (25 migrations, latest `20260918063013_DropBridgeVar03`, and
-   `Definitions.csproj` references `Microsoft.EntityFrameworkCore.Design`), but nothing ever calls
-   `Migrate()` / `MigrateAsync()`. Runtime uses `EnsureCreatedAsync()` plus three hand-written
+1. **Schema management is split-brain.** *(resolved in Phase 3 — see WS5)*
+   `Definitions/Migrations` existed (25 migrations, latest `20260918063013_DropBridgeVar03`, and
+   `Definitions.csproj` references `Microsoft.EntityFrameworkCore.Design`), but nothing ever called
+   `Migrate()` / `MigrateAsync()`. Runtime used `EnsureCreatedAsync()` plus three hand-written
    upgrader classes (`DatabaseInitializer`, `GameDataFileTableInitializer`, `ScenarioPackTableInitializer`).
-   The model snapshot is **stale**: it still models `TblSC5FilePack` and has no
+   The model snapshot was **stale**: it still modelled `TblSC5FilePack` and had no
    `TblMusic` / `TblSoundEffect` / `TblTutorial` / `TblGraphics`, which is why the runtime table
-   initialiser was written. Any new column needs another bespoke patch.
+   initialiser was written, and any new column needed another bespoke patch.
+   **Resolved in Phase 3 (WS5):** migrations are now the source of truth, the baseline replaced the
+   bespoke upgraders, and a CI gate prevents the snapshot from drifting again.
 
 2. **The object / sub-object model is a workaround.**
    TPT was attempted and reverted (`20250630043418_SubObjectTPT` migration contains commented-out FK
    operations), leaving `TblObject.SubObjectId` as an unconstrained scalar that duplicates the
    `Parent` FK each sub-table already has. There is no referential integrity and rows can orphan.
+   **Still open — addressed by WS1 (Phase 4).**
 
 ---
 
@@ -192,25 +195,34 @@ duplicated it with a lighter shape; `Client.GetObjectPackAsync` hid this behind 
 - [x] `DevAuthenticationHandler` now also excludes `/v2/identity`, so identity flows are never impersonated in dev
 - [x] Documented as a breaking API change (see Progress Log)
 
-## Phase 3 — Schema management (prerequisite for Phase 4)
+## Phase 3 — Schema management (prerequisite for Phase 4) — ✅ complete 2026-09-21
 
 ### WS5 — Adopt EF migrations
 
-**Status:** ☐ &nbsp; **Size:** L &nbsp; **Depends on:** D1
+**Status:** ☑ &nbsp; **Size:** L &nbsp; **Depends on:** D1 &nbsp; **Completed:** 2026-09-21
 
-- [ ] Regenerate a **baseline**: one migration that matches the _current_ model (also captures the removed duplicate indexes, the game-data tables, and the `TblScenarioPack` rename)
-- [ ] Add a **baseline-journal step**: if a DB has tables but no `__EFMigrationsHistory`, insert the baseline row _before_ `MigrateAsync()` — otherwise every existing deployment fails
-- [ ] Replace `EnsureCreatedAsync()` with `MigrateAsync()` in `DatabaseInitializer`
-- [ ] Delete `GameDataFileTableInitializer.cs` and `ScenarioPackTableInitializer.cs` (+ their tests); express the scenario-pack rename as a migration
-- [ ] Keep `ObjectService:DeleteDatabaseOnStartup` for dev; let tests opt into either path
-- [ ] Add a CI gate: `dotnet ef migrations has-pending-model-changes` must be clean
-- [ ] Tests: `DatabaseInitializerTests` for (i) fresh DB, (ii) legacy DB with no history, (iii) already-migrated DB
+The 25 stale migrations were squashed into a single **`20260921012153_InitialBaseline`** generated from
+the current model (65 tables; `TblSC5FilePack` is gone and the game-data tables are present, so the
+snapshot is finally in sync).
+
+- [x] Regenerated the baseline from the current model (captures the removed duplicate indexes, the game-data file tables and the `TblScenarioPack` rename)
+- [x] Added `MigrationInitializer.EnsureBaselineHistoryAsync`: creates `__EFMigrationsHistory` and records the baseline for a non-empty database that has no history; no-op for brand-new/already-migrated databases
+- [x] `DatabaseInitializer` now calls `EnsureBaselineHistoryAsync` + `MigrateAsync()` instead of `EnsureCreatedAsync()`
+- [x] Deleted `GameDataFileTableInitializer.cs` and `ScenarioPackTableInitializer.cs` (+ their tests). The scenario-pack rename is inherent in the baseline (`ScenarioPacks` is created directly); the game-data tables likewise
+- [x] `ObjectService:DeleteDatabaseOnStartup` retained for dev; `TestWebApplicationFactory` now uses `Migrate()` so the whole suite runs on the migrated schema
+- [x] CI gate added: `.github/workflows/db-migrations.yml` runs `dotnet ef migrations has-pending-model-changes` and `migrations script --idempotent`
+- [x] Tests: `DatabaseMigrationTests` covers fresh DB, brand-new (unseeded) DB, legacy DB with no history, idempotency and already-migrated
+
+> **Known limitation (accepted):** the baseline assumes an existing database already has the *current*
+> schema, because `EnsureCreated` builds from the model. Databases older than the last `EnsureCreated`
+> release must be rebuilt (delete `loco.db` or set `ObjectService:DeleteDatabaseOnStartup`); the file
+> watcher/reconcile jobs repopulate the data from the `GameData` folders.
 
 ### WS5b — `OwnerUserId` backfill
 
-**Status:** ☐ &nbsp; **Size:** S &nbsp; **Depends on:** WS5
+**Status:** ☑ &nbsp; **Size:** S &nbsp; **Depends on:** WS5 &nbsp; **Completed:** 2026-09-21
 
-- [ ] Fold the interim `ALTER TABLE ... ADD COLUMN OwnerUserId` loop into the migration baseline; keep it only if the legacy-baseline path still needs it for option (b) of D1
+- [x] The interim `ALTER TABLE ... ADD COLUMN OwnerUserId` loop was deleted: the column is part of the migration baseline, and pre-migration databases already have it from `EnsureCreated`
 
 ---
 
@@ -276,7 +288,8 @@ duplicated it with a lighter shape; `Client.GetObjectPackAsync` hid this behind 
 
 ## Verification strategy
 
-- Full suite must stay green: `dotnet test Tests/Tests.csproj` (baseline after Phase 2: **2511 passed / 0 failed**, 5 skips).
+- Full suite must stay green: `dotnet test Tests/Tests.csproj` (baseline after Phase 3: **2508 passed / 0 failed**, 5 skips).
+- Migration drift must stay clean: `dotnet ef migrations has-pending-model-changes --project Definitions` (also enforced by `.github/workflows/db-migrations.yml`).
 - The whole solution must build: `dotnet build ObjectEditor.slnx` (covers `Gui`, `DatabaseTools`, `DatabaseToolsConsole`).
 - Every schema change needs: fresh-DB test + legacy-DB upgrade test + the migration-drift CI gate.
 - Every API shape change must update, in the same PR: `Definitions/Web/Client.cs`, `Gui/ObjectServiceClient.cs`, the Razor pages, and the integration tests.
@@ -294,6 +307,7 @@ Add a row whenever a task or workstream is completed, with the PR/commit.
 | 2026-09-20 | Initial review | Object-pack absolute-path fix, pack 404s, `/v2` Location prefix, game-data `OwnerUserId` backfill, `DbSubObjectHelper` update fix, duplicate index removal, +12 tests | _uncommitted_ |
 | 2026-09-20 | Phase 1 (WS3, WS4, WS12, WS11, WS13) | Permissions reconciled + pack policies + author-based ownership; update validation + 409 on duplicate name; route/constant + `HttpContext` cleanup; dead `ObjectTypeMapping`/`GetDbSetForType` removed and mapping consolidated; uploads index relative paths. +23 tests (2510 green) | _uncommitted_ |
 | 2026-09-20 | Phase 2 (WS7, WS14, WS8) | Pack GET-by-id returns a single descriptor; `/users/me` writes registered from the write path; Identity API moved to `/v2/identity` (**breaking change** for clients using `/register`, `/login`, `/manage/*`, `/logout`). WS2 (object delete) deferred behind WS1 per plan. +1 test (2511 green) | _uncommitted_ |
+| 2026-09-21 | Phase 3 (WS5, WS5b) | 25 stale migrations squashed into `InitialBaseline`; `MigrationInitializer` journals the baseline for pre-migration databases; `DatabaseInitializer` uses `MigrateAsync`; `GameDataFileTableInitializer`/`ScenarioPackTableInitializer` (+ tests) deleted; `TestWebApplicationFactory` uses `Migrate()`; CI drift gate added. See "Known limitation" above for pre-baseline databases. 2508 green | _uncommitted_ |
 
 ## Discovered during remediation
 

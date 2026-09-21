@@ -77,7 +77,7 @@ public class TestWebApplicationFactory<TProgram>
 			var sp = services.BuildServiceProvider();
 			using var scope = sp.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
-			_ = db.Database.EnsureCreated();
+			db.Database.Migrate();
 		});
 	}
 }

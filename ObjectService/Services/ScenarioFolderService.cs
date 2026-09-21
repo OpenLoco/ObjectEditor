@@ -8,7 +8,7 @@ namespace ObjectService.Services;
 
 /// <summary>
 /// The services for <c>GameData/Scenarios</c> and <c>GameData/Landscapes</c>. Scenarios and
-/// landscapes are the same entity type (S5 scenario files) and share the <c>SC5Files</c> table, so
+/// landscapes are the same entity type (S5 scenario files) and share the <c>Scenarios</c> table, so
 /// they share this implementation but are still distinct services, one per folder.
 /// </summary>
 public abstract class ScenarioFolderServiceBase : GameDataFolderServiceBase
@@ -55,7 +55,7 @@ public abstract class ScenarioFolderServiceBase : GameDataFolderServiceBase
 			return new GameDataImportResult(GameDataImportStatus.Failed, "Invalid S5 file header");
 		}
 
-		// Savegames are not part of the repository (see TblSC5File), so ignore them.
+		// Savegames are not part of the repository (see TblScenario), so ignore them.
 		if (header!.Type is S5FileType.SavedGame)
 		{
 			return new GameDataImportResult(GameDataImportStatus.Skipped, "Savegames are not added to the database");

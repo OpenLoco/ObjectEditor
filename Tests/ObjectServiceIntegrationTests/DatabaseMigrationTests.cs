@@ -1,6 +1,8 @@
 using Definitions.Database;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using ObjectService.Identity;
@@ -37,11 +39,21 @@ public class DatabaseMigrationTests
 			.UseSqlite($"Data Source={dbPath}")
 			.Options);
 
-	/// <summary>Reproduces a database created before migrations were adopted.</summary>
+	/// <summary>
+	/// Reproduces a database created before migrations were adopted: the schema exactly as of the
+	/// baseline migration, but with no <c>__EFMigrationsHistory</c> table. (Using
+	/// <c>EnsureCreated</c> here would build the <em>current</em> model, which diverges from the
+	/// baseline as soon as a later migration changes a column.)
+	/// </summary>
 	static async Task CreateLegacyDatabaseAsync(string dbPath)
 	{
 		await using var legacy = CreateContext(dbPath);
-		_ = await legacy.Database.EnsureCreatedAsync();
+
+		await legacy.Database
+			.GetService<IMigrator>()
+			.MigrateAsync(MigrationInitializer.GetBaselineMigrationId(legacy));
+
+		await legacy.Database.ExecuteSqlRawAsync($"DROP TABLE \"{MigrationInitializer.HistoryTableName}\"");
 	}
 
 	static async Task<HashSet<string>> GetTableNamesAsync(LocoDbContext db)

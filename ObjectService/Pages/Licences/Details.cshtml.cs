@@ -19,7 +19,7 @@ public sealed class DetailsModel : PageModel
 
 	public IReadOnlyList<DtoItemRef> Objects { get; private set; } = [];
 	public IReadOnlyList<DtoItemRef> ObjectPacks { get; private set; } = [];
-	public IReadOnlyList<DtoItemRef> SC5Files { get; private set; } = [];
+	public IReadOnlyList<DtoItemRef> Scenarios { get; private set; } = [];
 	public IReadOnlyList<DtoItemRef> ScenarioPacks { get; private set; } = [];
 
 	[TempData]
@@ -106,7 +106,7 @@ public sealed class DetailsModel : PageModel
 		{
 			Objects = [.. licence.Objects];
 			ObjectPacks = [.. licence.ObjectPacks];
-			SC5Files = [.. licence.SC5Files];
+			Scenarios = [.. licence.Scenarios];
 			ScenarioPacks = [.. licence.ScenarioPacks];
 		}
 	}

@@ -354,7 +354,7 @@ else if (Model.Category == "objectpacks")
 {
 	<section class="panel">
 		<div class="admin-page-header">
-			<h1>Object Packs</h1>
+			<h1>Object Packs</h1>
 			@if (Model.IsAdmin)
 			{
 				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-objectpacks').hidden = !document.getElementById('create-form-objectpacks').hidden">+ New</button>
@@ -438,7 +438,7 @@ else if (Model.Category == "scenarios")
 {
 	<section class="panel">
 		<div class="admin-page-header">
-			<h1>SC5 Files</h1>
+			<h1>Scenarios</h1>
 		</div>
 		@if (Model.ScenarioList.Count > 0)
 		{
@@ -476,7 +476,7 @@ else if (Model.Category == "scenarios")
 		}
 		else
 		{
-			<p class="empty-state">No SC5 files found.</p>
+			<p class="empty-state">No scenarios found.</p>
 		}
 	</section>
 }
@@ -484,7 +484,7 @@ else if (Model.Category == "scenariopacks")
 {
 	<section class="panel">
 		<div class="admin-page-header">
-			<h1>SC5 File Packs</h1>
+			<h1>Scenario Packs</h1>
 			@if (Model.IsAdmin)
 			{
 				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-scenariopacks').hidden = !document.getElementById('create-form-scenariopacks').hidden">+ New</button>
@@ -495,12 +495,12 @@ else if (Model.Category == "scenariopacks")
 			<form method="post" asp-page-handler="Create" id="create-form-scenariopacks" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
 				<input type="hidden" name="CrudCategory" value="scenariopacks" />
 				<div class="form-group">
-					<label for="newSC5PackName">Name</label>
-					<input id="newSC5PackName" name="CrudName" type="text" placeholder="Pack name" required class="form-input" />
+					<label for="newScenarioPackName">Name</label>
+					<input id="newScenarioPackName" name="CrudName" type="text" placeholder="Pack name" required class="form-input" />
 				</div>
 				<div class="form-group">
-					<label for="newSC5PackDesc">Description</label>
-					<textarea id="newSC5PackDesc" name="CrudDescription" placeholder="Pack description" class="form-input"></textarea>
+					<label for="newScenarioPackDesc">Description</label>
+					<textarea id="newScenarioPackDesc" name="CrudDescription" placeholder="Pack description" class="form-input"></textarea>
 				</div>
 				<div class="form-actions" style="margin-top:0.5rem;">
 					<button type="submit" class="button button-primary button-small">Create</button>
@@ -560,7 +560,7 @@ else if (Model.Category == "scenariopacks")
 		}
 		else
 		{
-			<p class="empty-state">No SC5 file packs found.</p>
+			<p class="empty-state">No scenario packs found.</p>
 		}
 	</section>
 }

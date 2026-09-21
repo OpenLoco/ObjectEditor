@@ -10,7 +10,7 @@
 	<section class="panel">
 		<h1>Scenario not found</h1>
 		<p>The scenario you are looking for does not exist.</p>
-		<a class="button button-secondary" asp-page="/Index" asp-route-category="sc5files">Back to scenario list</a>
+		<a class="button button-secondary" asp-page="/Index" asp-route-category="scenarios">Back to scenario list</a>
 	</section>
 	return;
 }
@@ -26,7 +26,7 @@
 
 <section class="detail-hero panel">
 	<div>
-		<a class="back-link" asp-page="/Index" asp-route-category="sc5files">Back to scenarios</a>
+		<a class="back-link" asp-page="/Index" asp-route-category="scenarios">Back to scenarios</a>
 		<div class="admin-page-header">
 			<h1>@scenario.Name</h1>
 			<div class="action-buttons">
@@ -112,7 +112,7 @@
 				</div>
 
 				<div class="form-group">
-					<label>SC5 File Packs</label>
+					<label>Scenario Packs</label>
 					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
 						@if (Model.AvailablePacks.Count == 0)
 						{
@@ -224,7 +224,7 @@
 				</p>
 			</div>
 			<div>
-				<h3>SC5 File Packs</h3>
+				<h3>Scenario Packs</h3>
 				<p>@(scenario.ScenarioPacks.Count > 0 ? string.Join(", ", scenario.ScenarioPacks.Select(p => p.Name)) : "No packs linked")</p>
 			</div>
 		</div>

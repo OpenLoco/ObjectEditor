@@ -33,7 +33,7 @@ Tracking document for the database and web-API design review. Keep the checkboxe
 | 2     | WS8 — Identity prefix                   | ☑      |
 | 3     | WS5 — EF migrations (+ WS5b)            | ☑      |
 | 4     | WS1 — Sub-object identity               | ☑      |
-| 4     | WS6 — `SC5Files` → `Scenarios`          | ☐      |
+| 4     | WS6 — `SC5Files` → `Scenarios`          | ☑      |
 | 5     | WS10 — Credentials                      | ☐      |
 | 5     | WS-DeadCode — Experiment cleanup        | ☐      |
 
@@ -232,7 +232,7 @@ snapshot is finally in sync).
 
 ---
 
-## Phase 4 — Data-model refactors (after Phase 3) — WS1 complete 2026-09-21, WS6 remaining
+## Phase 4 — Data-model refactors ✅ complete 2026-09-21
 
 ### WS1 — Sub-object identity
 
@@ -255,12 +255,22 @@ a new cascade test).
 
 ### WS6 — `SC5Files` → `Scenarios` naming
 
-**Status:** ☐ &nbsp; **Size:** M &nbsp; **Depends on:** WS5, D7
+**Status:** ☑ &nbsp; **Size:** M &nbsp; **Depends on:** WS5, D7 &nbsp; **Completed:** 2026-09-21
 
-- [ ] Rename the navigation on `TblAuthor` / `TblTag` and the DTO properties in `Definitions/DTO/DtoWeb.cs`
-- [ ] Update `ReferenceDataService`, `Pages/{Authors,Tags,Licences}/Details.*`, and route tests
-- [ ] Migration: rename the join tables (`TblAuthorTblSC5File` → `TblAuthorTblScenario`, `TblTagTblSC5File` → `TblTagTblScenario`)
-- [ ] Update "SC5 Files" headings/strings in the pages
+- [x] Renamed the navigation on `TblAuthor` / `TblTag` to `Scenarios`, and the corresponding properties on `DtoAuthorDescriptor`, `DtoTagDescriptor`, `DtoLicenceDescriptor` and `DtoScenarioPackDescriptor`
+- [x] Updated `ReferenceDataService`, `Pages/{Authors,Tags,Licences}/Details.*`, `ScenarioPacks/Details.*` (`SelectedSC5FileIds` → `SelectedScenarioIds`), `Scenarios/Details.*`, and the route tests
+- [x] Migration `20260921024756_RenameSc5FilesNavigationToScenarios`: the join *tables* were already `TblAuthorTblScenario` / `TblScenarioTblTag` (EF names them after the entity types, and the entity was renamed to `TblScenario` earlier), so this renames their **columns and indexes** (`SC5FilesId` → `ScenariosId`) and recreates the FKs. Verified end-to-end against a baseline-era database by the legacy-upgrade test
+- [x] Renamed `SC5FilePackService.cs` → `ScenarioPackService.cs` (the class inside was already `ScenarioPackService`)
+- [x] Updated the user-facing strings: "SC5 Files" → "Scenarios", "SC5 File Packs" → "Scenario Packs", plus the Gui folder-tree labels and the `Dto`/README/mermaid naming
+
+**Two latent bugs fixed while here:**
+
+1. **`DatabaseTools` export/import filename mismatch** — export wrote `sc5FilePacks.json` but import reads `scenarioPacks.json`, so an export could never be imported back. Export now writes `scenarioPacks.json`.
+2. **Scenarios pages linked to a dead category** — `Pages/Scenarios/Details.*` used `asp-route-category="sc5files"` while `Pages/Index` switches on `scenarios`, so the "Back to scenarios" links and the post-delete redirect landed on the default view.
+
+> **Breaking change (API/UI):** the JSON field `SC5Files` on the author/tag/licence/scenario-pack descriptors is now `Scenarios`. `Definitions/Web/Client.cs`, the Gui and the Razor pages were all updated together.
+
+> Also normalised stray U+202F (narrow no-break space) characters in `Pages/Index.cshtml` headings that had masked some of these strings.
 
 ---
 
@@ -321,6 +331,7 @@ Add a row whenever a task or workstream is completed, with the PR/commit.
 | 2026-09-21 | Phase 3 (WS5, WS5b) | 25 stale migrations squashed into `InitialBaseline`; `MigrationInitializer` journals the baseline for pre-migration databases; `DatabaseInitializer` uses `MigrateAsync`; `GameDataFileTableInitializer`/`ScenarioPackTableInitializer` (+ tests) deleted; `TestWebApplicationFactory` uses `Migrate()`; CI drift gate added. See "Known limitation" above for pre-baseline databases. 2508 green | _uncommitted_ |
 | 2026-09-21 | Phase 4 (WS1) | `TblObject.SubObjectId` dropped (migration `20260921015814_DropObjectSubObjectId`); `DbSubObjectHelper` resolves the sub-object via the `Parent` FK; cascade delete proven by test; dead TPT comments removed. WS2 (object delete) is now unblocked. 2509 green | _uncommitted_ |
 | 2026-09-21 | WS2 (object delete) | New per-category `Removed` folder (moved-to, never deleted; ignored by watchers + reconciliation); `DELETE /v2/objects/{id}` parks the DAT, drops the index entry and marks the row `Unavailable` (vanilla refused); the same file policy applied to the other game-data deletes; restoring a parked file flips the object back to `Available`; README + `ServerFolderManager` docs updated. 2515 green | _uncommitted_ |
+| 2026-09-21 | Phase 4 (WS6) | `SC5Files` → `Scenarios` navigation + DTO rename (migration `20260921024756_RenameSc5FilesNavigationToScenarios` renames the join columns/indexes/FKs); `SC5FilePackService.cs` renamed; page strings/Gui labels updated. Fixed two latent bugs: `DatabaseTools` export/import filename mismatch (`sc5FilePacks.json` vs `scenarioPacks.json`) and the dead `category=sc5files` links. **Breaking:** descriptor JSON field `SC5Files` → `Scenarios`. 2515 green | _uncommitted_ |
 
 ## Discovered during remediation
 

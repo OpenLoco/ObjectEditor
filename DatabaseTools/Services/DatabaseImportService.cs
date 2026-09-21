@@ -39,7 +39,7 @@ public static class DatabaseImportService
 			var tagsJson = Path.Combine(jsonDir, "tags.json");
 			var licencesJson = Path.Combine(jsonDir, "licences.json");
 			var scenarioPacksJson = Path.Combine(jsonDir, "scenarioPacks.json");
-			var sc5FilesJson = Path.Combine(jsonDir, "scenarios.json");
+			var scenariosJson = Path.Combine(jsonDir, "scenarios.json");
 			var objectPacksJson = Path.Combine(jsonDir, "objectPacks.json");
 			var objectMetadataJson = Path.Combine(jsonDir, "objectMetadata.json");
 
@@ -83,10 +83,10 @@ public static class DatabaseImportService
 			if (!db.ScenarioPacks.Any() && File.Exists(scenarioPacksJson))
 			{
 				log("Seeding ScenarioPacks");
-				var sc5FilePacks = JsonSerializer.Deserialize<IEnumerable<ScenarioPackJsonRecord>>(File.ReadAllText(scenarioPacksJson), jsonOptions);
-				if (sc5FilePacks != null)
+				var scenarioPacks = JsonSerializer.Deserialize<IEnumerable<ScenarioPackJsonRecord>>(File.ReadAllText(scenarioPacksJson), jsonOptions);
+				if (scenarioPacks != null)
 				{
-					db.AddRange(sc5FilePacks.Select(x => new TblScenarioPack
+					db.AddRange(scenarioPacks.Select(x => new TblScenarioPack
 					{
 						Name = x.Name,
 						Description = x.Description,
@@ -101,10 +101,10 @@ public static class DatabaseImportService
 				}
 			}
 
-			if (!db.Scenarios.Any() && File.Exists(sc5FilesJson))
+			if (!db.Scenarios.Any() && File.Exists(scenariosJson))
 			{
-				log("Seeding SC5Files");
-				var scenarios = JsonSerializer.Deserialize<IEnumerable<ScenarioJsonRecord>>(File.ReadAllText(sc5FilesJson), jsonOptions);
+				log("Seeding Scenarios");
+				var scenarios = JsonSerializer.Deserialize<IEnumerable<ScenarioJsonRecord>>(File.ReadAllText(scenariosJson), jsonOptions);
 				if (scenarios != null)
 				{
 					var scenarioPacks = db.ScenarioPacks?.Where(x => x.Scenarios.Select(fp => fp.Name).Contains(x.Name)).ToList();

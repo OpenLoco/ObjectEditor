@@ -105,7 +105,7 @@ public static class DatabaseExportService
 			File.WriteAllText(Path.Combine(settings.JsonDirectory, "objectPacks.json"), objectPacksJson);
 			File.WriteAllText(Path.Combine(settings.JsonDirectory, "objectMetadata.json"), objectsJson);
 			File.WriteAllText(Path.Combine(settings.JsonDirectory, "scenarios.json"), scenariosJson);
-			File.WriteAllText(Path.Combine(settings.JsonDirectory, "sc5FilePacks.json"), scenarioPacksJson);
+			File.WriteAllText(Path.Combine(settings.JsonDirectory, "scenarioPacks.json"), scenarioPacksJson);
 			log($"Done. Wrote 7 files to {settings.JsonDirectory}");
 		});
 }

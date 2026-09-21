@@ -17,7 +17,7 @@ public record DtoAuthorDescriptor(
 	string Name,
 	ICollection<DtoItemRef> Objects,
 	ICollection<DtoItemRef> ObjectPacks,
-	ICollection<DtoItemRef> SC5Files,
+	ICollection<DtoItemRef> Scenarios,
 	ICollection<DtoItemRef> ScenarioPacks) : IHasId;
 
 /// <summary>Tag plus the entities that reference it.</summary>
@@ -26,7 +26,7 @@ public record DtoTagDescriptor(
 	string Name,
 	ICollection<DtoItemRef> Objects,
 	ICollection<DtoItemRef> ObjectPacks,
-	ICollection<DtoItemRef> SC5Files,
+	ICollection<DtoItemRef> Scenarios,
 	ICollection<DtoItemRef> ScenarioPacks) : IHasId;
 
 /// <summary>Licence plus the entities that use it.</summary>
@@ -36,7 +36,7 @@ public record DtoLicenceDescriptor(
 	string Text,
 	ICollection<DtoItemRef> Objects,
 	ICollection<DtoItemRef> ObjectPacks,
-	ICollection<DtoItemRef> SC5Files,
+	ICollection<DtoItemRef> Scenarios,
 	ICollection<DtoItemRef> ScenarioPacks) : IHasId;
 
 /// <summary>A single object pack with its related metadata and objects.</summary>
@@ -63,7 +63,7 @@ public record DtoScenarioPackDescriptor(
 	DtoLicenceEntry? Licence,
 	ICollection<DtoAuthorEntry> Authors,
 	ICollection<DtoTagEntry> Tags,
-	ICollection<DtoItemRef> SC5Files) : IHasId, IDbDates;
+	ICollection<DtoItemRef> Scenarios) : IHasId, IDbDates;
 
 /// <summary>A single scenario (SC5) file with its related metadata.</summary>
 public record DtoScenarioDescriptor(

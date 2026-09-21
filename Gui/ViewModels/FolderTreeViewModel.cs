@@ -236,7 +236,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		ObjectOnlineBrowseTarget,
 		new(OnlineApiEndpointGroup.ObjectPacks, "Object packs", "Object packs", Client.ObjectPacksEndpointGroup),
 		new(OnlineApiEndpointGroup.Scenarios, "Scenarios", "Scenarios", Client.ScenariosEndpointGroup),
-		new(OnlineApiEndpointGroup.ScenarioPacks, "SC5 file packs", "SC5 file packs", Client.ScenarioPacksEndpointGroup),
+		new(OnlineApiEndpointGroup.ScenarioPacks, "Scenario packs", "Scenario packs", Client.ScenarioPacksEndpointGroup),
 		new(OnlineApiEndpointGroup.Tags, "Tags", "Tags", Client.TagsEndpointGroup),
 		new(OnlineApiEndpointGroup.Authors, "Authors", "Authors", Client.AuthorsEndpointGroup),
 		new(OnlineApiEndpointGroup.Licences, "Licences", "Licences", Client.LicencesEndpointGroup),

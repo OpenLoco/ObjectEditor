@@ -52,7 +52,7 @@ public class ScenariosFolderServiceTests
 		var source = FindSourceFile(".SC5");
 		if (source == null)
 		{
-			Assert.Ignore("No source SC5 files are available to import");
+			Assert.Ignore("No source scenarios are available to import");
 		}
 
 		var root = Directory.CreateTempSubdirectory("sc5-file-import").FullName;

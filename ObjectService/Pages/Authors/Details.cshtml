@@ -114,10 +114,10 @@
 	</section>
 
 	<section class="panel">
-		<h2>SC5 Files</h2>
-		@if (Model.SC5Files.Count == 0)
+		<h2>Scenarios</h2>
+		@if (Model.Scenarios.Count == 0)
 		{
-			<p class="muted">No SC5 files are associated with this author.</p>
+			<p class="muted">No scenarios are associated with this author.</p>
 		}
 		else
 		{
@@ -129,7 +129,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (var file in Model.SC5Files)
+						@foreach (var file in Model.Scenarios)
 						{
 							<tr>
 								<td>@file.Name</td>
@@ -142,10 +142,10 @@
 	</section>
 
 	<section class="panel">
-		<h2>SC5 File Packs</h2>
+		<h2>Scenario Packs</h2>
 		@if (Model.ScenarioPacks.Count == 0)
 		{
-			<p class="muted">No SC5 file packs are associated with this author.</p>
+			<p class="muted">No scenario packs are associated with this author.</p>
 		}
 		else
 		{

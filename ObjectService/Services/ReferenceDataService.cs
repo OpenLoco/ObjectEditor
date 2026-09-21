@@ -29,7 +29,7 @@ public class ReferenceDataService : IReferenceDataService
 		var author = await _db.Authors
 			.Include(a => a.Objects)
 			.Include(a => a.ObjectPacks)
-			.Include(a => a.SC5Files)
+			.Include(a => a.Scenarios)
 			.Include(a => a.ScenarioPacks)
 			.AsSplitQuery()
 			.FirstOrDefaultAsync(a => a.Id == id, ct);
@@ -41,7 +41,7 @@ public class ReferenceDataService : IReferenceDataService
 				author.Name,
 				[.. author.Objects.OrderBy(o => o.Name).Select(o => new DtoItemRef(o.Id, o.Description ?? o.Name))],
 				[.. author.ObjectPacks.OrderBy(p => p.Name).Select(p => new DtoItemRef(p.Id, p.Name))],
-				[.. author.SC5Files.OrderBy(f => f.Name).Select(f => new DtoItemRef(f.Id, f.Name))],
+				[.. author.Scenarios.OrderBy(f => f.Name).Select(f => new DtoItemRef(f.Id, f.Name))],
 				[.. author.ScenarioPacks.OrderBy(p => p.Name).Select(p => new DtoItemRef(p.Id, p.Name))]);
 	}
 
@@ -50,7 +50,7 @@ public class ReferenceDataService : IReferenceDataService
 		var tag = await _db.Tags
 			.Include(t => t.Objects)
 			.Include(t => t.ObjectPacks)
-			.Include(t => t.SC5Files)
+			.Include(t => t.Scenarios)
 			.Include(t => t.ScenarioPacks)
 			.AsSplitQuery()
 			.FirstOrDefaultAsync(t => t.Id == id, ct);
@@ -62,7 +62,7 @@ public class ReferenceDataService : IReferenceDataService
 				tag.Name,
 				[.. tag.Objects.OrderBy(o => o.Name).Select(o => new DtoItemRef(o.Id, o.Description ?? o.Name))],
 				[.. tag.ObjectPacks.OrderBy(p => p.Name).Select(p => new DtoItemRef(p.Id, p.Name))],
-				[.. tag.SC5Files.OrderBy(f => f.Name).Select(f => new DtoItemRef(f.Id, f.Name))],
+				[.. tag.Scenarios.OrderBy(f => f.Name).Select(f => new DtoItemRef(f.Id, f.Name))],
 				[.. tag.ScenarioPacks.OrderBy(p => p.Name).Select(p => new DtoItemRef(p.Id, p.Name))]);
 	}
 
@@ -92,12 +92,12 @@ public class ReferenceDataService : IReferenceDataService
 			.Select(f => new DtoItemRef(f.Id, f.Name))
 			.ToListAsync(ct);
 
-		var sc5FilePacks = await _db.ScenarioPacks
+		var scenarioPacks = await _db.ScenarioPacks
 			.Where(p => p.Licence != null && p.Licence.Id == id)
 			.OrderBy(p => p.Name)
 			.Select(p => new DtoItemRef(p.Id, p.Name))
 			.ToListAsync(ct);
 
-		return new DtoLicenceDescriptor(licence.Id, licence.Name, licence.Text, objects, objectPacks, scenarios, sc5FilePacks);
+		return new DtoLicenceDescriptor(licence.Id, licence.Name, licence.Text, objects, objectPacks, scenarios, scenarioPacks);
 	}
 }

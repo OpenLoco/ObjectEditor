@@ -131,9 +131,9 @@
 						{
 							@foreach (var scenario in Model.AvailableScenarios)
 							{
-								var isSelected = pack.SC5Files.Any(s => s.Id == scenario.Id);
+								var isSelected = pack.Scenarios.Any(s => s.Id == scenario.Id);
 								<label class="checkbox" style="display:block;">
-									<input type="checkbox" name="SelectedSC5FileIds" value="@scenario.Id" checked="@isSelected" />
+									<input type="checkbox" name="SelectedScenarioIds" value="@scenario.Id" checked="@isSelected" />
 									<span>@scenario.Name</span>
 								</label>
 							}
@@ -235,8 +235,8 @@
 	</section>
 
 	<section class="panel panel-span">
-		<h2>Scenarios in this pack (@pack.SC5Files.Count)</h2>
-		@if (pack.SC5Files.Count == 0)
+		<h2>Scenarios in this pack (@pack.Scenarios.Count)</h2>
+		@if (pack.Scenarios.Count == 0)
 		{
 			<p class="muted">No scenarios are linked to this pack.</p>
 		}
@@ -250,7 +250,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (var file in pack.SC5Files.OrderBy(f => f.Name))
+						@foreach (var file in pack.Scenarios.OrderBy(f => f.Name))
 						{
 							<tr>
 								<td><a asp-page="/Scenarios/Details" asp-route-id="@file.Id">@file.Name</a></td>

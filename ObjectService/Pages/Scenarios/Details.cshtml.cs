@@ -128,7 +128,7 @@ public sealed class DetailsModel : PageModel
 		if (deleted)
 		{
 			SuccessMessage = "Scenario deleted.";
-			return RedirectToPage("/Index", new { category = "sc5files" });
+			return RedirectToPage("/Index", new { category = "scenarios" });
 		}
 
 		await LoadAsync(id, CancellationToken.None);

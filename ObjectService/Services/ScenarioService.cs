@@ -8,7 +8,7 @@ namespace ObjectService.Services;
 
 /// <summary>
 /// Database-backed scenario queries that back the public <c>/v2/scenarios</c> routes. Scenario
-/// metadata lives in the <c>SC5Files</c> table; the files themselves live on disk under the
+/// metadata lives in the <c>Scenarios</c> table; the files themselves live on disk under the
 /// Scenarios folder and may or may not still exist there.
 /// </summary>
 public interface IScenarioService

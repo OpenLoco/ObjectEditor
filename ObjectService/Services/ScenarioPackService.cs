@@ -131,7 +131,7 @@ public class ScenarioPackService : IScenarioPackService
 		}
 
 		pack.Scenarios.Clear();
-		var fileIds = request.SC5Files.Select(f => f.Id).ToList();
+		var fileIds = request.Scenarios.Select(f => f.Id).ToList();
 		if (fileIds.Count > 0)
 		{
 			var files = await _db.Scenarios.Where(f => fileIds.Contains(f.Id)).ToListAsync(ct);

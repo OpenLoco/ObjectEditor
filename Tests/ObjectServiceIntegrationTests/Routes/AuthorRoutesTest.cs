@@ -60,7 +60,7 @@ public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<
 			Assert.That(descriptor.Name, Is.EqualTo("Alice"));
 			Assert.That(descriptor.Objects, Is.Empty);
 			Assert.That(descriptor.ObjectPacks, Is.Empty);
-			Assert.That(descriptor.SC5Files, Is.Empty);
+			Assert.That(descriptor.Scenarios, Is.Empty);
 			Assert.That(descriptor.ScenarioPacks, Is.Empty);
 		}
 	}

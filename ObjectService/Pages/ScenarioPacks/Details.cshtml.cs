@@ -47,7 +47,7 @@ public sealed class DetailsModel : PageModel
 		[FromForm] UniqueObjectId? LicenceId,
 		[FromForm] List<UniqueObjectId>? SelectedAuthorIds,
 		[FromForm] List<UniqueObjectId>? SelectedTagIds,
-		[FromForm] List<UniqueObjectId>? SelectedSC5FileIds)
+		[FromForm] List<UniqueObjectId>? SelectedScenarioIds)
 	{
 		if (!CanEdit)
 		{
@@ -63,7 +63,7 @@ public sealed class DetailsModel : PageModel
 
 		SelectedAuthorIds ??= [];
 		SelectedTagIds ??= [];
-		SelectedSC5FileIds ??= [];
+		SelectedScenarioIds ??= [];
 
 		var request = new DtoScenarioPackDescriptor(
 			Id,
@@ -75,7 +75,7 @@ public sealed class DetailsModel : PageModel
 			LicenceId.HasValue ? new DtoLicenceEntry(LicenceId.Value, string.Empty, string.Empty) : null,
 			[.. SelectedAuthorIds.Select(a => new DtoAuthorEntry(a, string.Empty))],
 			[.. SelectedTagIds.Select(t => new DtoTagEntry(t, string.Empty))],
-			[.. SelectedSC5FileIds.Select(f => new DtoItemRef(f, string.Empty))]);
+			[.. SelectedScenarioIds.Select(f => new DtoItemRef(f, string.Empty))]);
 
 		using var client = _api.CreateClient();
 		var updated = await Client.UpdateScenarioPackAsync(client, request);

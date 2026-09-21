@@ -11,9 +11,9 @@ TblObjectPack }o--o{ TblAuthor : many-to-many
 TblObjectPack }o--o{ TblTag : many-to-many
 TblObjectPack }o--|| TblLicence : one-to-many
 
-TblSC5File }o--o{ TblAuthor : many-to-many
-TblSC5File }o--o{ TblTag : many-to-many
-TblSC5File }o--|| TblLicence : one-to-many
+TblScenario }o--o{ TblAuthor : many-to-many
+TblScenario }o--o{ TblTag : many-to-many
+TblScenario }o--|| TblLicence : one-to-many
 
 TblScenarioPack }o--o{ TblAuthor : many-to-many
 TblScenarioPack }o--o{ TblTag : many-to-many
@@ -40,7 +40,7 @@ TblObject ||--|| TblObjectT : one-to-one
 TblObject ||--o{ TblDatObject : many-to-one
 
 TblObjectPack ||--|| TblObject : many-to-many
-TblScenarioPack ||--|| TblSC5File : many-to-many
+TblScenarioPack ||--|| TblScenario : many-to-many
 
 TblObjectT {
   ulong Id
@@ -82,7 +82,7 @@ TblStringTableRow {
   string Text
 }
 
-TblSC5File {
+TblScenario {
   ulong Id
   string Name
   string Description

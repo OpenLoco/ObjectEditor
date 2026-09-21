@@ -153,6 +153,10 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 			}
 
 			existingObj.ModifiedDate = entry.ModifiedDate;
+
+			// A file that reappears (e.g. restored from the Removed folder) makes the object available again.
+			existingObj.Availability = ObjectAvailability.Available;
+
 			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 			return GameDataImportStatus.Updated;
 		}
@@ -188,7 +192,6 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 			ObjectPacks = [],
 			DatObjects = [],
 			StringTable = [],
-			SubObjectId = 0,
 			Licence = null,
 			OwnerUserId = null,
 		};

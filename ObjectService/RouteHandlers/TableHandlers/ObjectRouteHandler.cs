@@ -55,10 +55,21 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return r != null ? Results.Ok(r) : Results.NotFound();
 	}
 
-	async Task<IResult> DeleteAsync([FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
+	async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
-		logger.LogInformation("[Delete] Not implemented");
-		return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
+		var result = await query.DeleteObjectAsync(id, ct);
+
+		if (result.Outcome is ObjectDeleteOutcome.Removed)
+		{
+			logger.LogInformation("[Delete] Object {ObjectId} removed; {FileCount} file(s) parked under Removed", id, result.RemovedFiles?.Count ?? 0);
+		}
+
+		return result.Outcome switch
+		{
+			ObjectDeleteOutcome.Removed => Results.Ok(),
+			ObjectDeleteOutcome.NotFound => Results.NotFound(),
+			ObjectDeleteOutcome.Forbidden => Results.Problem(result.ErrorMessage, statusCode: StatusCodes.Status403Forbidden),
+		};
 	}
 
 	async Task<IResult> ListAsync([FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)

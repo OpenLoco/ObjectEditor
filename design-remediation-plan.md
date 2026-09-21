@@ -28,11 +28,11 @@ Tracking document for the database and web-API design review. Keep the checkboxe
 | 1     | WS11 — Dead code / `ObjectType` mapping | ☑      |
 | 1     | WS13 — Index path convention            | ☑      |
 | 2     | WS7 — Pack GET-by-id                    | ☑      |
-| 2     | WS2 — Object delete                     | ⊘      |
+| 2     | WS2 — Object delete                     | ☑      |
 | 2     | WS14 — Route registration               | ☑      |
 | 2     | WS8 — Identity prefix                   | ☑      |
 | 3     | WS5 — EF migrations (+ WS5b)            | ☑      |
-| 4     | WS1 — Sub-object identity               | ☐      |
+| 4     | WS1 — Sub-object identity               | ☑      |
 | 4     | WS6 — `SC5Files` → `Scenarios`          | ☐      |
 | 5     | WS10 — Credentials                      | ☐      |
 | 5     | WS-DeadCode — Experiment cleanup        | ☐      |
@@ -54,11 +54,12 @@ Two root causes sit behind most of the findings:
    **Resolved in Phase 3 (WS5):** migrations are now the source of truth, the baseline replaced the
    bespoke upgraders, and a CI gate prevents the snapshot from drifting again.
 
-2. **The object / sub-object model is a workaround.**
+2. **The object / sub-object model is a workaround.** *(resolved in Phase 4 — see WS1)*
    TPT was attempted and reverted (`20250630043418_SubObjectTPT` migration contains commented-out FK
-   operations), leaving `TblObject.SubObjectId` as an unconstrained scalar that duplicates the
-   `Parent` FK each sub-table already has. There is no referential integrity and rows can orphan.
-   **Still open — addressed by WS1 (Phase 4).**
+   operations), leaving `TblObject.SubObjectId` as an unconstrained scalar that duplicated the
+   `Parent` FK each sub-table already has, with no referential integrity and rows that could orphan.
+   **Resolved in Phase 4 (WS1):** `SubObjectId` is dropped and the sub-table's `Parent` FK (required,
+   `ON DELETE CASCADE`) is now the single source of truth.
 
 ---
 
@@ -146,7 +147,7 @@ display names; being linked to one grants edit rights over objects crediting tha
 
 ---
 
-## Phase 2 — API surface & auth alignment — ✅ complete 2026-09-20 (WS2 deferred to Phase 4)
+## Phase 2 — API surface & auth alignment — ✅ complete 2026-09-21 (WS2 finished after Phase 4/WS1)
 
 ### WS7 — Pack GET-by-id
 
@@ -163,19 +164,24 @@ duplicated it with a lighter shape; `Client.GetObjectPackAsync` hid this behind 
 
 ### WS2 — Object delete
 
-**Status:** ⊘ blocked &nbsp; **Size:** L &nbsp; **Depends on:** D3, WS5, WS1
+**Status:** ☑ &nbsp; **Size:** L &nbsp; **Depends on:** D3, WS5, WS1 &nbsp; **Completed:** 2026-09-21
 
-> **Deferred to after WS1/WS5.** Object deletion must remove the sub-object row, and the sub-object model
-> currently has no relationship to cascade from (`TblObject.SubObjectId` is an unconstrained scalar). Doing
-> it now would need a throwaway 34-case per-`DbSet` switch that WS1 deletes again — so it is queued behind
-> WS1 (sub-object identity) as planned. D3a (implement delete) is still the agreed direction.
+Removal is **recoverable and non-destructive**: file(s) are moved into a per-category `Removed`
+subfolder and the database row is kept (objects are marked `ObjectAvailability.Unavailable`).
 
-- [ ] Add `IObjectQueryService.DeleteObjectAsync`
-- [ ] Delete sub-object row (via `Parent` FK after WS1), `StringTable` rows, `DatObject` rows, `ObjectPacks` links, then the `TblObject`
-- [ ] Delete the DAT file only for `ObjectSource.Custom`; remove the `ObjectIndex` entry and `SaveIndexAsync`
-- [ ] Refuse vanilla (Steam/GoG) and `Unavailable` objects (mirror the update guards)
-- [ ] Update `Tests/.../ObjectRoutesTest.DeleteAsync` (currently asserts delete is a **no-op**) and add cascade coverage
-- [ ] Update `Definitions/Web/Client.cs` / Gui if a delete client method is wanted
+- [x] Added the `Removed` subfolder to every category folder (`ServerFolderManager.RemovedFolderName` + `...RemovedFolder` properties), created alongside `Original`/`Custom`/`OpenLoco`
+- [x] `ServerFolderManager.MoveToRemovedFolder` moves a file into `Removed` preserving its relative path (`Custom/x.dat` → `Removed/Custom/x.dat`), never overwriting an earlier removal, and refuses paths outside the category / already-removed / missing files
+- [x] `Removed` is ignored by the file watchers (`GameDataFolderWatcher.IsIgnored`) **and** by reconciliation (`GameDataFolderServiceBase.EnumerateFiles`), so a parked file is never re-imported
+- [x] `IObjectQueryService.DeleteObjectAsync`: parks the DAT file(s), drops the object-index entries, sets `Availability = Unavailable` and keeps the row (metadata, packs and scenario references survive). Refuses vanilla (`LocomotionSteam`/`LocomotionGoG`). Sub-object/string-table/DAT rows are cleaned up by the FK cascades proven in WS1
+- [x] `ObjectRouteHandler.DeleteAsync` replaced its 501 stub with the real handler (200 / 404 / 403)
+- [x] Applied the same file policy to the other game-data deletes (`GameDataFileQueryService.DeleteAsync`, `ScenarioService.DeleteAsync`) which previously deleted the row but left the file on disk, so the watcher re-imported it
+- [x] Tests: `ServerFolderManagerTests` (Removed folder exists for all categories, move preserves the relative path, no overwrite, rejects outside/removed/missing, `IsUnderRemovedFolder`), `ObjectsFolderServiceTests` (reconciliation ignores parked files; remove→restore flips availability), and `ObjectRoutesTest.DeleteAsync` rewritten for the soft-delete semantics
+- [x] **Round trip:** re-importing a file that reappears (i.e. restored from `Removed`) now sets `Availability = Available` again, so a removal is fully recoverable
+- [x] `ObjectService/README.md` + the `ServerFolderManager` structure comment document the `Removed` convention
+
+> **Domain note (corrected):** `ObjectsMissing` is **not** an ignore list. It lists objects we know about
+> (e.g. referenced by a scenario) whose DAT file we do not have; when someone later supplies the file it is
+> indexed and the row is removed from `ObjectsMissing`. It is therefore not used for removals.
 
 ### WS14 — Route registration cleanup
 
@@ -226,19 +232,24 @@ snapshot is finally in sync).
 
 ---
 
-## Phase 4 — Data-model refactors (after Phase 3)
+## Phase 4 — Data-model refactors (after Phase 3) — WS1 complete 2026-09-21, WS6 remaining
 
 ### WS1 — Sub-object identity
 
-**Status:** ☐ &nbsp; **Size:** L &nbsp; **Depends on:** WS5, D2
+**Status:** ☑ &nbsp; **Size:** L &nbsp; **Depends on:** WS5, D2 &nbsp; **Completed:** 2026-09-21
 
-- [ ] Drop `TblObject.SubObjectId`
-- [ ] Rewrite `AddOrUpdateCore` to look up the existing row via `x.Parent.Id == parentObj.Id`
-- [ ] Ensure `DbSubObject.Parent` is a required FK with `OnDelete(Cascade)` so object deletion cleans up sub-objects
-- [ ] Decide whether `ObjectQueryService.UpdateAsync` should also update the sub-object (it currently ignores sub-object changes)
-- [ ] Migration: drop the column (and any index on it)
-- [ ] Update seeds in `ObjectPackRoutesTest`, `ObjectRoutesTest`, `ObjectsFolderServiceTests`, `DbSubObjectHelperTests`
-- [ ] Tests: extend `DbSubObjectHelperTests` (insert/update via `Parent`) + a cascade-delete test
+`TblObject.SubObjectId` was a second, unconstrained pointer to the same row that the sub-table's
+`Parent` FK already identifies. It is gone: the sub-table's `Parent` FK is the single source of truth,
+and it is already a **required FK with `ON DELETE CASCADE`** (verified in the baseline migration and by
+a new cascade test).
+
+- [x] Dropped `TblObject.SubObjectId` (plus the dead TPT experiment comments around it and the commented `HasAlternateKey` in `LocoDbContext`)
+- [x] `AddOrUpdateCore` now finds the existing row via `x.Parent.Id == parentObj.Id` and no longer writes anything back to the object
+- [x] `DbSubObject.Parent` cascade delete confirmed (required FK + `ReferentialAction.Cascade` in the baseline; no model change needed). `DbSubObjectHelperTests.DeletingParentObject_CascadesToSubObjectRow` proves a delete of the object removes the sub-object row at the database level
+- [x] Migration `20260921015814_DropObjectSubObjectId` drops the column (no index existed on it)
+- [x] Updated `ObjectQueryService.UploadDatAsync` / `ObjectsFolderService` (removed `SubObjectId = 0`) and the seeds in `ObjectPackRoutesTest` / `ObjectRoutesTest` / `DbSubObjectHelperTests`
+- [x] Tests: `DbSubObjectHelperTests` reworked for the `Parent`-based lookup (update keeps the id, insert works) + the cascade-delete test
+- [ ] **Decision — object update still ignores the sub-object.** Implementing it would need DTO→DAT reverse mappers for all 34 sub-object types (`ToObject`/`FromDto` do not exist). Out of scope for WS1; recorded under "Discovered during remediation"
 
 > Note: `DatabaseTools` import/export does not read `SubObjectId`, so it is unaffected.
 
@@ -288,7 +299,7 @@ snapshot is finally in sync).
 
 ## Verification strategy
 
-- Full suite must stay green: `dotnet test Tests/Tests.csproj` (baseline after Phase 3: **2508 passed / 0 failed**, 5 skips).
+- Full suite must stay green: `dotnet test Tests/Tests.csproj` (baseline after WS2: **2515 passed / 0 failed**, 5 skips).
 - Migration drift must stay clean: `dotnet ef migrations has-pending-model-changes --project Definitions` (also enforced by `.github/workflows/db-migrations.yml`).
 - The whole solution must build: `dotnet build ObjectEditor.slnx` (covers `Gui`, `DatabaseTools`, `DatabaseToolsConsole`).
 - Every schema change needs: fresh-DB test + legacy-DB upgrade test + the migration-drift CI gate.
@@ -308,6 +319,8 @@ Add a row whenever a task or workstream is completed, with the PR/commit.
 | 2026-09-20 | Phase 1 (WS3, WS4, WS12, WS11, WS13) | Permissions reconciled + pack policies + author-based ownership; update validation + 409 on duplicate name; route/constant + `HttpContext` cleanup; dead `ObjectTypeMapping`/`GetDbSetForType` removed and mapping consolidated; uploads index relative paths. +23 tests (2510 green) | _uncommitted_ |
 | 2026-09-20 | Phase 2 (WS7, WS14, WS8) | Pack GET-by-id returns a single descriptor; `/users/me` writes registered from the write path; Identity API moved to `/v2/identity` (**breaking change** for clients using `/register`, `/login`, `/manage/*`, `/logout`). WS2 (object delete) deferred behind WS1 per plan. +1 test (2511 green) | _uncommitted_ |
 | 2026-09-21 | Phase 3 (WS5, WS5b) | 25 stale migrations squashed into `InitialBaseline`; `MigrationInitializer` journals the baseline for pre-migration databases; `DatabaseInitializer` uses `MigrateAsync`; `GameDataFileTableInitializer`/`ScenarioPackTableInitializer` (+ tests) deleted; `TestWebApplicationFactory` uses `Migrate()`; CI drift gate added. See "Known limitation" above for pre-baseline databases. 2508 green | _uncommitted_ |
+| 2026-09-21 | Phase 4 (WS1) | `TblObject.SubObjectId` dropped (migration `20260921015814_DropObjectSubObjectId`); `DbSubObjectHelper` resolves the sub-object via the `Parent` FK; cascade delete proven by test; dead TPT comments removed. WS2 (object delete) is now unblocked. 2509 green | _uncommitted_ |
+| 2026-09-21 | WS2 (object delete) | New per-category `Removed` folder (moved-to, never deleted; ignored by watchers + reconciliation); `DELETE /v2/objects/{id}` parks the DAT, drops the index entry and marks the row `Unavailable` (vanilla refused); the same file policy applied to the other game-data deletes; restoring a parked file flips the object back to `Available`; README + `ServerFolderManager` docs updated. 2515 green | _uncommitted_ |
 
 ## Discovered during remediation
 
@@ -316,3 +329,4 @@ Issues found while implementing that were not in the original review. Not yet sc
 | Date | Area | Finding | Suggested fix |
 | ------------ | ------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | 2026-09-20 | Frontend | `DtoInfoResponse.UserName` is never populated: ASP.NET Identity's `/manage/info` only returns `email` / `isEmailConfirmed`, so `Pages/Account/Manage` renders an empty username. | Drop `UserName` from `DtoInfoResponse`, or populate the page from `GET /v2/users/{id}` instead. |
+| 2026-09-21 | API | `PUT /v2/objects/{id}` accepts `DtoObjectPostResponse.SubObject` but silently ignores it — sub-object edits via the API are discarded. | Add DTO→DAT reverse mappers for the sub-object types and call `DbSubObjectHelper.AddOrUpdate` from `ObjectQueryService.UpdateAsync` when `SubObject` is supplied. |

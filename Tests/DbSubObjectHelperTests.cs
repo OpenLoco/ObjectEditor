@@ -49,9 +49,6 @@ public class DbSubObjectHelperTests
 			var existing = new TblObjectAirport { Parent = parent, BuildCostFactor = 100 };
 			_ = await db.ObjAirport.AddAsync(existing);
 			_ = await db.SaveChangesAsync();
-
-			parent.SubObjectId = existing.Id;
-			_ = await db.SaveChangesAsync();
 			var existingId = existing.Id;
 
 			var incoming = new TblObjectAirport { Parent = parent, BuildCostFactor = 200 };
@@ -61,7 +58,6 @@ public class DbSubObjectHelperTests
 			using (Assert.EnterMultipleScope())
 			{
 				Assert.That(result, Is.EqualTo($"Updated {parent.Id}-{existingId}"));
-				Assert.That(parent.SubObjectId, Is.EqualTo(existingId));
 				Assert.That(await db.ObjAirport.CountAsync(), Is.EqualTo(1));
 
 				var reloaded = await db.ObjAirport.AsNoTracking().SingleAsync(x => x.Id == existingId);
@@ -84,15 +80,44 @@ public class DbSubObjectHelperTests
 			var incoming = new TblObjectAirport { Parent = parent, BuildCostFactor = 150 };
 			var result = await DbSubObjectHelper.AddOrUpdate(db, parent, incoming);
 
+			var addedId = UniqueObjectId.Parse(result[(result.IndexOf('-') + 1)..]);
+
 			using (Assert.EnterMultipleScope())
 			{
 				Assert.That(result, Does.StartWith($"Added {parent.Id}-"));
-				Assert.That(parent.SubObjectId, Is.Not.Zero);
 				Assert.That(await db.ObjAirport.CountAsync(), Is.EqualTo(1));
 
 				var reloaded = await db.ObjAirport.AsNoTracking().SingleAsync();
-				Assert.That(reloaded.Id, Is.EqualTo(parent.SubObjectId));
+				Assert.That(reloaded.Id, Is.EqualTo(addedId));
 				Assert.That(reloaded.BuildCostFactor, Is.EqualTo((short)150));
+			}
+		}
+	}
+
+	[Test]
+	public async Task DeletingParentObject_CascadesToSubObjectRow()
+	{
+		var (db, connection) = await CreateDbAsync();
+		await using (db)
+		using (connection)
+		{
+			var parent = CreateParent(1);
+			_ = await db.Objects.AddAsync(parent);
+			_ = await db.SaveChangesAsync();
+
+			_ = await DbSubObjectHelper.AddOrUpdate(db, parent, new TblObjectAirport { Parent = parent, BuildCostFactor = 100 });
+			Assert.That(await db.ObjAirport.CountAsync(), Is.EqualTo(1));
+
+			// Clear the tracker so the sub-object row is not loaded: the database FK cascade must remove it.
+			db.ChangeTracker.Clear();
+			var tracked = await db.Objects.SingleAsync(x => x.Id == 1);
+			_ = db.Objects.Remove(tracked);
+			_ = await db.SaveChangesAsync();
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(await db.Objects.CountAsync(), Is.Zero);
+				Assert.That(await db.ObjAirport.CountAsync(), Is.Zero);
 			}
 		}
 	}

@@ -32,8 +32,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 	protected override IEnumerable<TblObject> DbSeedData =>
 	[
-		new() { Id = 1, Name = "test-name-1", SubObjectId = 1, ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
-		new() { Id = 2, Name = "test-name-2", SubObjectId = 2, ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
+		new() { Id = 1, Name = "test-name-1", ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
+		new() { Id = 2, Name = "test-name-2", ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
 	];
 
 	protected override DtoObjectPost PostRequestDto
@@ -155,18 +155,22 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	[Test]
 	public override async Task DeleteAsync()
 	{
-		// act
+		// act - removal keeps the row (so curated metadata and references survive), parks any files under
+		// GameData/Objects/Removed and marks the object unavailable.
 		const int id = 1;
-		_ = await ClientHelpers.DeleteAsync(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
+		var deleted = await ClientHelpers.DeleteAsync(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
 
 		// assert
+		using var db = GetDbContext();
+		var row = await db.Objects.AsNoTracking().SingleAsync(x => x.Id == id);
+		var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
+
 		using (Assert.EnterMultipleScope())
 		{
-			var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
-			var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
-
-			// assert
-			AssertDtoObjectDescriptorsAreEqual(results, descriptor);
+			Assert.That(deleted, Is.True);
+			Assert.That(row.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
+			Assert.That(results, Is.Not.Null);
+			Assert.That(results!.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
 		}
 	}
 
@@ -522,7 +526,6 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			{
 				Id = 3,
 				Name = "restricted-name-3",
-				SubObjectId = 3,
 				ObjectType = ObjectType.Vehicle,
 				ObjectSource = ObjectSource.LocomotionGoG,
 				Availability = ObjectAvailability.Available,

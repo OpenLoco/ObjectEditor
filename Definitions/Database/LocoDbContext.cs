@@ -154,9 +154,6 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		// Complex object-model properties (lists, nested objects, dictionaries, jagged arrays) are stored as JSON.
 		JsonColumnConvention.Apply(modelBuilder);
 
-		//_ = modelBuilder.Entity<TblObject>()
-		//	.HasAlternateKey(o => new { o.SubObjectId, o.ObjectType });
-
 		// Configure the one-to-many relationship
 		//modelBuilder.Entity<OrderItem>()
 		//	.HasOne(oi => oi.Order) // OrderItem has one Order

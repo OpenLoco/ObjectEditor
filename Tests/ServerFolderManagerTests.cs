@@ -17,11 +17,13 @@ public class ServerFolderManagerTests
 		ServerFolderManager.GraphicsFolderName,
 	];
 
+	// Every category folder gets the three source subfolders plus the Removed subfolder that parked files live in.
 	static readonly string[] SourceFolderNames =
 	[
 		ServerFolderManager.OriginalFolderName,
 		ServerFolderManager.CustomFolderName,
 		ServerFolderManager.OpenLocoFolderName,
+		ServerFolderManager.RemovedFolderName,
 	];
 
 	[Test]
@@ -134,6 +136,118 @@ public class ServerFolderManagerTests
 			Assert.That(Path.IsPathRooted(relative), Is.False);
 			Assert.That(Path.GetExtension(relative), Is.EqualTo(".dat"));
 			Assert.That(Path.GetDirectoryName(relative), Is.EqualTo(ServerFolderManager.CustomFolderName));
+		}
+	}
+
+	[Test]
+	public void MoveToRemovedFolder_MovesFilePreservingRelativePath()
+	{
+		var root = Path.Combine(Path.GetTempPath(), $"server-folder-manager-{Guid.NewGuid():N}");
+		_ = Directory.CreateDirectory(root);
+
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+			var source = Path.Combine(sfm.ObjectsCustomFolder, "my-object.dat");
+			File.WriteAllBytes(source, [1, 2, 3]);
+
+			var moved = ServerFolderManager.MoveToRemovedFolder(sfm.ObjectsFolder, source);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(moved, Is.Not.Null);
+				Assert.That(File.Exists(source), Is.False, "the source file must be moved, not copied");
+				Assert.That(moved, Is.EqualTo(Path.Combine(sfm.ObjectsRemovedFolder, ServerFolderManager.CustomFolderName, "my-object.dat")));
+				Assert.That(File.Exists(moved!), Is.True);
+			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
+
+	[Test]
+	public void MoveToRemovedFolder_DoesNotOverwriteAnEarlierRemoval()
+	{
+		var root = Path.Combine(Path.GetTempPath(), $"server-folder-manager-{Guid.NewGuid():N}");
+		_ = Directory.CreateDirectory(root);
+
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+			var source = Path.Combine(sfm.ObjectsCustomFolder, "duplicate.dat");
+
+			File.WriteAllBytes(source, [1]);
+			var first = ServerFolderManager.MoveToRemovedFolder(sfm.ObjectsFolder, source);
+
+			File.WriteAllBytes(source, [2]);
+			var second = ServerFolderManager.MoveToRemovedFolder(sfm.ObjectsFolder, source);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(first, Is.Not.Null);
+				Assert.That(second, Is.Not.Null);
+				Assert.That(second, Is.Not.EqualTo(first));
+				Assert.That(File.ReadAllBytes(first!), Is.EqualTo(new byte[] { 1 }));
+				Assert.That(File.ReadAllBytes(second!), Is.EqualTo(new byte[] { 2 }));
+			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
+
+	[Test]
+	public void MoveToRemovedFolder_ReturnsNullWhenNotApplicable()
+	{
+		var root = Path.Combine(Path.GetTempPath(), $"server-folder-manager-{Guid.NewGuid():N}");
+		_ = Directory.CreateDirectory(root);
+
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+			var source = Path.Combine(sfm.ObjectsCustomFolder, "already-removed.dat");
+			File.WriteAllBytes(source, [1]);
+
+			var removed = ServerFolderManager.MoveToRemovedFolder(sfm.ObjectsFolder, source);
+			var outside = Path.Combine(root, "outside.dat");
+			File.WriteAllBytes(outside, [1]);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(ServerFolderManager.MoveToRemovedFolder(sfm.ObjectsFolder, removed!), Is.Null, "already-removed file");
+				Assert.That(ServerFolderManager.MoveToRemovedFolder(sfm.ObjectsFolder, outside), Is.Null, "file outside the category");
+				Assert.That(ServerFolderManager.MoveToRemovedFolder(sfm.ObjectsFolder, Path.Combine(sfm.ObjectsFolder, "missing.dat")), Is.Null, "missing file");
+				Assert.That(File.Exists(outside), Is.True, "a rejected file must not be touched");
+			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
+
+	[Test]
+	public void IsUnderRemovedFolder_IdentifiesParkedFiles()
+	{
+		var root = Path.Combine(Path.GetTempPath(), $"server-folder-manager-{Guid.NewGuid():N}");
+		_ = Directory.CreateDirectory(root);
+
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(ServerFolderManager.IsUnderRemovedFolder(sfm.ObjectsFolder, Path.Combine(sfm.ObjectsRemovedFolder, "Custom", "a.dat")), Is.True);
+				Assert.That(ServerFolderManager.IsUnderRemovedFolder(sfm.ObjectsFolder, Path.Combine(sfm.ObjectsCustomFolder, "a.dat")), Is.False);
+			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
 		}
 	}
 

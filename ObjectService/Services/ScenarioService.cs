@@ -124,6 +124,15 @@ public class ScenarioService : IScenarioService
 			return false;
 		}
 
+		// Park the scenario file under Scenarios/Removed before dropping the row, so it is not
+		// re-imported by the next reconciliation.
+		if (!string.IsNullOrWhiteSpace(scenario.Name)
+			&& RouteHelpers.TryGetSafeRelativePathUnderRoot(_sfm.ScenariosFolder, scenario.Name, out var fullPath, out _)
+			&& File.Exists(fullPath))
+		{
+			_ = ServerFolderManager.MoveToRemovedFolder(_sfm.ScenariosFolder, fullPath);
+		}
+
 		_ = _db.Scenarios.Remove(scenario);
 		_ = await _db.SaveChangesAsync(ct).ConfigureAwait(false);
 		return true;

@@ -13,6 +13,7 @@ using Definitions.Web;
 using Index;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ObjectService.RouteHandlers;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 using System.IO.Hashing;
@@ -25,6 +26,26 @@ namespace ObjectService.Services;
 /// </summary>
 public record UploadResult(bool Success, DtoObjectPostResponse? Descriptor, string? ErrorMessage, int StatusCode);
 
+/// <summary>The outcome of removing an object.</summary>
+public enum ObjectDeleteOutcome
+{
+	/// <summary>The object is no longer available and its files were parked under <c>Removed</c>.</summary>
+	Removed,
+
+	/// <summary>No object with the given id exists.</summary>
+	NotFound,
+
+	/// <summary>The object cannot be removed (vanilla Locomotion assets).</summary>
+	Forbidden,
+}
+
+/// <summary>
+/// Result of removing an object. The database row is intentionally kept (marked
+/// <see cref="ObjectAvailability.Unavailable"/>) so curated metadata and pack/scenario references survive;
+/// <see cref="RemovedFiles"/> lists the files moved into the category's <c>Removed</c> folder.
+/// </summary>
+public record ObjectDeleteResult(ObjectDeleteOutcome Outcome, string? ErrorMessage = null, IReadOnlyList<string>? RemovedFiles = null);
+
 public interface IObjectQueryService
 {
 	Task<IEnumerable<DtoObjectEntry>> ListAsync(CancellationToken ct);
@@ -32,6 +53,7 @@ public interface IObjectQueryService
 	Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct);
 	Task<UploadResult> UploadDatAsync(DtoObjectPost request, CancellationToken ct);
 	Task<DtoObjectPostResponse?> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct);
+	Task<ObjectDeleteResult> DeleteObjectAsync(UniqueObjectId id, CancellationToken ct);
 	Task<byte[]?> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct);
 	Task<byte[]?> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct);
 	Task<string?> GetFilePathAsync(UniqueObjectId id, CancellationToken ct);
@@ -426,7 +448,6 @@ public class ObjectQueryService : IObjectQueryService
 			ObjectPacks = [],
 			DatObjects = [],
 			StringTable = [],
-			SubObjectId = 0,
 			Licence = null,
 			OwnerUserId = ownerUserId,
 		};
@@ -454,5 +475,74 @@ public class ObjectQueryService : IObjectQueryService
 		var subObject = DbSubObjectHelper.GetDbSubForType(_db, tblObject.ObjectType, tblObject.Id);
 		var response = new ExpandedTbl<TblObject, TblObjectPack>(tblObject, [], [], []).ToDtoDescriptor(subObject);
 		return new UploadResult(true, response, null, 201);
+	}
+
+	/// <summary>
+	/// "Deletes" an object by moving its DAT file(s) into <c>GameData/Objects/Removed</c>, dropping their
+	/// object-index entries and marking the row <see cref="ObjectAvailability.Unavailable"/>. The row itself
+	/// is kept so metadata, tags, packs and scenario references survive, and the file is kept so the removal
+	/// is recoverable. <c>Removed</c> is ignored by the file watchers, so the object is never re-imported.
+	/// </summary>
+	public async Task<ObjectDeleteResult> DeleteObjectAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var obj = await _db.Objects
+			.Where(x => x.Id == id)
+			.Include(x => x.DatObjects)
+			.SingleOrDefaultAsync(ct);
+
+		if (obj is null)
+		{
+			return new ObjectDeleteResult(ObjectDeleteOutcome.NotFound);
+		}
+
+		if (obj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+		{
+			return new ObjectDeleteResult(ObjectDeleteOutcome.Forbidden, "Vanilla Locomotion objects cannot be removed");
+		}
+
+		// Resolve the files behind this object's DAT entries before anything is moved.
+		var entries = new List<(ObjectIndexEntry Entry, string FullPath)>();
+		foreach (var dat in obj.DatObjects)
+		{
+			if (!_sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry)
+				|| entry?.FileName is null
+				|| !RouteHelpers.TryGetSafePathUnderRoot(_sfm.ObjectsFolder, entry.FileName, out var fullPath, out _))
+			{
+				continue;
+			}
+
+			entries.Add((entry, fullPath));
+		}
+
+		var removedFiles = new List<string>();
+		foreach (var (_, fullPath) in entries)
+		{
+			if (ServerFolderManager.MoveToRemovedFolder(_sfm.ObjectsFolder, fullPath) is { } moved)
+			{
+				removedFiles.Add(moved);
+			}
+		}
+
+		lock (_sfm.ObjectIndex)
+		{
+			foreach (var (entry, _) in entries)
+			{
+				_sfm.ObjectIndex.RemoveEntry(entry);
+			}
+		}
+
+		if (entries.Count > 0)
+		{
+			await _sfm.ObjectIndex.SaveIndexAsync(_sfm.IndexFile);
+		}
+
+		obj.Availability = ObjectAvailability.Unavailable;
+		_ = await _db.SaveChangesAsync(ct);
+
+		_logger.LogInformation(
+			"Removed object {ObjectId} ({Name}): marked unavailable and parked {Count} file(s) under the Objects Removed folder",
+			obj.Id, obj.Name, removedFiles.Count);
+
+		return new ObjectDeleteResult(ObjectDeleteOutcome.Removed, null, removedFiles);
 	}
 }

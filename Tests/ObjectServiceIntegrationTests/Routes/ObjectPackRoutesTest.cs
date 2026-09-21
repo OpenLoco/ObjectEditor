@@ -62,7 +62,6 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 					{
 						Id = 1,
 						Name = "safe-obj",
-						SubObjectId = 1,
 						ObjectType = ObjectType.Vehicle,
 						ObjectSource = ObjectSource.Custom,
 						Availability = ObjectAvailability.Available,
@@ -86,7 +85,6 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 					{
 						Id = 2,
 						Name = "safe-obj-2",
-						SubObjectId = 2,
 						ObjectType = ObjectType.Vehicle,
 						ObjectSource = ObjectSource.Custom,
 						Availability = ObjectAvailability.Available,
@@ -259,7 +257,6 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 					{
 						Id = 10,
 						Name = "absolute-obj",
-						SubObjectId = 10,
 						ObjectType = ObjectType.Vehicle,
 						ObjectSource = ObjectSource.Custom,
 						Availability = ObjectAvailability.Available,

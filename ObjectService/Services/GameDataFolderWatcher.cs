@@ -177,8 +177,14 @@ public abstract class GameDataFolderWatcher : IDisposable
 		_ = _pending.Writer.TryWrite(item);
 	}
 
-	private static bool IsIgnored(string path)
+	private bool IsIgnored(string path)
 	{
+		if (ServerFolderManager.IsUnderRemovedFolder(Folder, path))
+		{
+			// Files that were "deleted" are parked here by the API; they must never be re-imported.
+			return true;
+		}
+
 		var fileName = Path.GetFileName(path);
 		if (string.IsNullOrEmpty(fileName) || fileName.StartsWith('.'))
 		{

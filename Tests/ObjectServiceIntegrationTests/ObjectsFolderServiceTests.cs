@@ -201,4 +201,117 @@ public class ObjectsFolderServiceTests
 		}
 	}
 
+	[Test]
+	public async Task ReconcileAsync_IgnoresFilesParkedInRemovedFolder()
+	{
+		var source = FindSmallestSourceDat();
+		if (source == null)
+		{
+			Assert.Ignore("No source DAT files are available to import");
+		}
+
+		var root = Directory.CreateTempSubdirectory("object-file-removed").FullName;
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+			var fileName = Path.GetFileName(source!);
+
+			// The same DAT exists under Custom and under Removed; only the Custom copy may be indexed.
+			_ = Directory.CreateDirectory(Path.Combine(sfm.ObjectsRemovedFolder, ServerFolderManager.CustomFolderName));
+			File.Copy(source!, Path.Combine(sfm.ObjectsCustomFolder, fileName));
+			File.Copy(source!, Path.Combine(sfm.ObjectsRemovedFolder, ServerFolderManager.CustomFolderName, fileName));
+
+			using var connection = new SqliteConnection("DataSource=:memory:");
+			connection.Open();
+
+			var options = new DbContextOptionsBuilder<LocoDbContext>()
+				.UseSqlite(connection)
+				.Options;
+
+			using var db = new LocoDbContext(options);
+			_ = db.Database.EnsureCreated();
+
+			var service = new ObjectsFolderService(
+				db,
+				sfm,
+				NullLogger<ObjectsFolderService>.Instance,
+				NullLoggerFactory.Instance);
+
+			await service.ReconcileAsync(CancellationToken.None);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(sfm.ObjectIndex.Objects, Has.Count.EqualTo(1));
+				Assert.That(await db.Objects.CountAsync(), Is.EqualTo(1));
+
+				var entry = sfm.ObjectIndex.Objects.Single();
+				Assert.That(entry.FileName, Is.EqualTo(Path.Combine(ServerFolderManager.CustomFolderName, fileName)));
+			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
+
+	[Test]
+	public async Task RemoveThenReImport_FlipsAvailabilityAndRestoresTheObject()
+	{
+		var source = FindSmallestSourceDat();
+		if (source == null)
+		{
+			Assert.Ignore("No source DAT files are available to import");
+		}
+
+		var root = Directory.CreateTempSubdirectory("object-file-roundtrip").FullName;
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+			var destination = Path.Combine(sfm.ObjectsCustomFolder, Path.GetFileName(source!));
+			File.Copy(source!, destination);
+
+			using var connection = new SqliteConnection("DataSource=:memory:");
+			connection.Open();
+
+			var options = new DbContextOptionsBuilder<LocoDbContext>()
+				.UseSqlite(connection)
+				.Options;
+
+			using var db = new LocoDbContext(options);
+			_ = db.Database.EnsureCreated();
+
+			var service = new ObjectsFolderService(
+				db,
+				sfm,
+				NullLogger<ObjectsFolderService>.Instance,
+				NullLoggerFactory.Instance);
+
+			_ = await service.ImportAsync(destination, CancellationToken.None);
+			Assert.That((await db.Objects.SingleAsync()).Availability, Is.EqualTo(ObjectAvailability.Available));
+
+			// The file disappears (removal, or a manual move into Removed): the object becomes unavailable.
+			File.Delete(destination);
+			_ = await service.RemoveAsync(destination, CancellationToken.None);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That((await db.Objects.SingleAsync()).Availability, Is.EqualTo(ObjectAvailability.Unavailable));
+				Assert.That(sfm.ObjectIndex.Objects, Is.Empty);
+			}
+
+			// Restoring the file makes the object available again, so a removal is fully recoverable.
+			File.Copy(source!, destination);
+			_ = await service.ImportAsync(destination, CancellationToken.None);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That((await db.Objects.SingleAsync()).Availability, Is.EqualTo(ObjectAvailability.Available));
+				Assert.That(sfm.ObjectIndex.Objects, Has.Count.EqualTo(1));
+			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
 }

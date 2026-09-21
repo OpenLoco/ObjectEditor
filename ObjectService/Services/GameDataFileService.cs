@@ -70,7 +70,9 @@ public abstract class GameDataFolderServiceBase : IGameDataFileService
 
 	protected static IEnumerable<string> EnumerateFiles(string folder, Func<string, bool> predicate)
 		=> Directory.Exists(folder)
-			? Directory.GetFiles(folder, "*", SearchOption.AllDirectories).Where(predicate)
+			? Directory.GetFiles(folder, "*", SearchOption.AllDirectories)
+				.Where(path => !ServerFolderManager.IsUnderRemovedFolder(folder, path))
+				.Where(predicate)
 			: [];
 
 	/// <summary>

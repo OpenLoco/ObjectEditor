@@ -123,7 +123,9 @@ public static class DbSubObjectHelper
 		where TSubObject : class, IDbSubObject, IConvertibleToTable<TSubObject, TDat>
 		where TDat : ILocoStruct
 	{
-		var existingSubObj = await subObjTable.SingleOrDefaultAsync(x => x.Id == parentObj.SubObjectId);
+		// A parent object owns at most one row per sub-object table; the row is linked back via DbSubObject.Parent
+		// (a required FK with cascade delete), so the object id is the only source of truth.
+		var existingSubObj = await subObjTable.SingleOrDefaultAsync(x => x.Parent.Id == parentObj.Id);
 		if (existingSubObj != null)
 		{
 			// Copy the incoming values onto the tracked entity so they are actually persisted. The
@@ -139,15 +141,12 @@ public static class DbSubObjectHelper
 				property.CurrentValue = propertyInfo.GetValue(subObj);
 			}
 
-			parentObj.SubObjectId = existingSubObj.Id;
-
 			return $"Updated {parentObj.Id}-{existingSubObj.Id}";
 		}
 		else
 		{
 			var newSubObj = await subObjTable.AddAsync(subObj);
 			_ = await db.SaveChangesAsync(); // must save object to obtain an id
-			parentObj.SubObjectId = newSubObj.Entity.Id;
 
 			return $"Added {parentObj.Id}-{newSubObj.Entity.Id}";
 		}

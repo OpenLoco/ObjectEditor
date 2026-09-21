@@ -130,6 +130,14 @@ public abstract class GameDataFileQueryService<TEntity, TListEntry, TDescriptor>
 			return false;
 		}
 
+		// Park the file under the category's Removed folder before dropping the row, so a file that is
+		// still on disk is not silently re-imported by the next reconciliation.
+		var path = await GetFilePathAsync(id, ct).ConfigureAwait(false);
+		if (path != null)
+		{
+			_ = ServerFolderManager.MoveToRemovedFolder(_folder, path);
+		}
+
 		_ = Set.Remove(file);
 		_ = await _db.SaveChangesAsync(ct).ConfigureAwait(false);
 		return true;

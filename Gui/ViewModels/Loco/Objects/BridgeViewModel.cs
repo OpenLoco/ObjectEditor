@@ -105,11 +105,4 @@ public class BridgeViewModel(BridgeObject model)
 
 	[Category("Compatible")]
 	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = [with(model.CompatibleRoadObjects)];
-
-	[Category("<unknown>")]
-	public uint8_t var_03
-	{
-		get => Model.var_03;
-		set => Model.var_03 = value;
-	}
 }

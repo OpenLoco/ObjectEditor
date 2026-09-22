@@ -54,7 +54,7 @@ public class TrackObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(TunnelCostFactor)} must be positive.", [nameof(TunnelCostFactor)]);
 		}
 
-		if ((TrackPieces.HasFlag(TrackTraitFlags.Diagonal) || TrackPieces.HasFlag(TrackTraitFlags.LargeCurve)) && (TrackPieces.HasFlag(TrackTraitFlags.OneSided) || TrackPieces.HasFlag(TrackTraitFlags.VerySmallCurve))
+		if ((TrackPieces.HasFlag(TrackTraitFlags.Diagonal) || TrackPieces.HasFlag(TrackTraitFlags.LargeCurve)) && (TrackPieces.HasFlag(TrackTraitFlags.OneSided) || TrackPieces.HasFlag(TrackTraitFlags.VerySmallCurve)))
 		{
 			yield return new ValidationResult($"{nameof(TrackPieces)} cannot include {TrackTraitFlags.Diagonal} or {TrackTraitFlags.LargeCurve} if it also includes {TrackTraitFlags.OneSided} or {TrackTraitFlags.VerySmallCurve}.", [nameof(TrackPieces)]);
 		}

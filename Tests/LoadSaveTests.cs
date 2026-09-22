@@ -1250,7 +1250,8 @@ public class LoadSaveTests
 				Assert.That(struc.Mode, Is.EqualTo(TransportMode.Air), nameof(struc.Mode));
 				Assert.That(struc.Type, Is.EqualTo(VehicleType.Aircraft), nameof(struc.Type));
 				Assert.That(struc.NumCarComponents, Is.EqualTo(1), nameof(struc.NumCarComponents));
-				// Assert.That(struc.TrackType, Is.EqualTo(0xFF), nameof(struc.TrackType)); // is changed after load from 0 to 255
+				Assert.That(struc.RoadOrTrackType, Is.Null, nameof(struc.RoadOrTrackType));
+				Assert.That(struc.TrackTypeId, Is.Zero, nameof(struc.TrackTypeId));
 				Assert.That(struc.RequiredTrackExtras.Count, Is.Zero, nameof(struc.RequiredTrackExtras));
 				Assert.That(struc.CostIndex, Is.EqualTo(8), nameof(struc.CostIndex));
 				Assert.That(struc.CostFactor, Is.EqualTo(345), nameof(struc.CostFactor));
@@ -1259,46 +1260,42 @@ public class LoadSaveTests
 				Assert.That(struc.RunCostFactor, Is.EqualTo(55), nameof(struc.RunCostFactor));
 				Assert.That(struc.CompanyColourSchemeIndex, Is.EqualTo(CompanyColourType.Airplane), nameof(struc.CompanyColourSchemeIndex));
 				Assert.That(struc.CompatibleVehicles.Count, Is.Zero, nameof(struc.CompatibleVehicles));
-				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 8).ToArray(), struc.CompatibleVehicles, nameof(struc.CompatibleVehicles));
-				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 4).ToArray(), struc.RequiredTrackExtras, nameof(struc.RequiredTrackExtras));
-				//Assert.That(struc.var_24, Is.EqualTo(0), nameof(struc.var_24));
-				//Assert.That(struc.BodySprites, Is.EqualTo(0), nameof(struc.BodySprites));
-				//Assert.That(struc.BogieSprites, Is.EqualTo(1), nameof(struc.BogieSprites));
+				Assert.That(struc.CarComponents, Has.Count.EqualTo(4), nameof(struc.CarComponents));
+				Assert.That(struc.BodySprites, Has.Count.EqualTo(4), nameof(struc.BodySprites));
+				Assert.That(struc.BogieSprites, Has.Count.EqualTo(2), nameof(struc.BogieSprites));
 				Assert.That(struc.Power, Is.EqualTo(3000), nameof(struc.Power));
 				Assert.That(struc.Speed, Is.EqualTo(604), nameof(struc.Speed));
 				Assert.That(struc.RackSpeed, Is.EqualTo(120), nameof(struc.RackSpeed));
 				Assert.That(struc.Weight, Is.EqualTo(141), nameof(struc.Weight));
 				Assert.That(struc.Flags, Is.EqualTo(VehicleObjectFlags.Refittable), nameof(struc.Flags));
-				// CollectionAssert.AreEqual(struc.MaxCargo, Enumerable.Repeat(0, 2).ToArray(), nameof(struc.MaxCargo)); // this is changed after load from 0 to 24
-				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), struc.CompatibleCargoCategories, nameof(struc.CompatibleCargoCategories));
-				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 32).ToArray(), struc.CargoTypeSpriteOffsets, nameof(struc.CargoTypeSpriteOffsets));
+				Assert.That(struc.MaxCargo, Is.EqualTo(new[] { 160, 0 }), nameof(struc.MaxCargo));
+				Assert.That(struc.CompatibleCargoCategories, Has.Length.EqualTo(2), nameof(struc.CompatibleCargoCategories));
+				Assert.That(struc.CompatibleCargoCategories[0], Is.EqualTo(new[] { CargoCategory.Passengers }), nameof(struc.CompatibleCargoCategories) + "[0]");
+				Assert.That(struc.CompatibleCargoCategories[1], Is.Empty, nameof(struc.CompatibleCargoCategories) + "[1]");
+				Assert.That(struc.CargoTypeSpriteOffsets, Is.EqualTo(new Dictionary<CargoCategory, byte> { [CargoCategory.Passengers] = 0 }), nameof(struc.CargoTypeSpriteOffsets));
 				Assert.That(struc.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(struc.NumSimultaneousCargoTypes));
-				Assert.That(struc.ParticleEmitters[0].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[0].EmitterVerticalPos, Is.EqualTo(24), nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[0].Type, Is.EqualTo(EmitterAnimationType.None), nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[1].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[1].EmitterVerticalPos, Is.Zero, nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[1].Type, Is.EqualTo(EmitterAnimationType.None), nameof(struc.ParticleEmitters));
+				Assert.That(struc.ParticleEmitters, Is.Empty, nameof(struc.ParticleEmitters));
 				Assert.That(struc.ShipWakeSpacing, Is.Zero, nameof(struc.ShipWakeSpacing));
 				Assert.That(struc.DesignedYear, Is.EqualTo(1957), nameof(struc.DesignedYear));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(1987), nameof(struc.ObsoleteYear));
-				//Assert.That(struc.RackRailType, Is.Zero, nameof(struc.RackRailType));
-				//Assert.That(struc.DrivingSoundType, Is.EqualTo(DrivingSoundType.Engine1), nameof(struc.DrivingSoundType));
-				//Assert.That(struc.Sound, Is.EqualTo(0), nameof(struc.Sound));
-				//Assert.That(struc.var_135, Is.EqualTo(0), nameof(struc.var_135));
+				Assert.That(struc.RackRail, Is.Null, nameof(struc.RackRail));
+				Assert.That(struc.DrivingSoundType, Is.EqualTo(DrivingSoundType.SimpleMotor), nameof(struc.DrivingSoundType));
+				Assert.That(struc.FrictionSound, Is.Null, nameof(struc.FrictionSound));
+				Assert.That(struc.SimpleMotorSound, Is.Not.Null, nameof(struc.SimpleMotorSound));
+				Assert.That(struc.GearboxMotorSound, Is.Null, nameof(struc.GearboxMotorSound));
+				Assert.That(struc.DrivingSound, Is.Not.Null, nameof(struc.DrivingSound));
 				Assert.That(struc.StartSounds.Count, Is.EqualTo(2), nameof(struc.StartSounds));
 
 				Assert.That(struc.StartSounds[0].Name, Is.EqualTo("SNDTD1"), nameof(struc.StartSounds) + "[0]Name");
 				Assert.That(struc.StartSounds[0].DatChecksum, Is.Zero, nameof(struc.StartSounds) + "[0]Checksum");
-				//Assert.That(struc.StartSounds[0].Flags, Is.EqualTo(1), nameof(struc.StartSounds) + "[0]Flags");
 				Assert.That(struc.StartSounds[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.StartSounds) + "[0]Checksum");
 				Assert.That(struc.StartSounds[0].ObjectType, Is.EqualTo(ObjectType.Sound), nameof(struc.StartSounds) + "[0]Flags");
 
 				Assert.That(struc.StartSounds[1].Name, Is.EqualTo("SNDTD2"), nameof(struc.StartSounds) + "[1]Name");
 				Assert.That(struc.StartSounds[1].DatChecksum, Is.Zero, nameof(struc.StartSounds) + "[1]Checksum");
-				//Assert.That(struc.StartSounds[1].Flags, Is.EqualTo(1), nameof(struc.StartSounds) + "[1]Flags");
 				Assert.That(struc.StartSounds[1].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.StartSounds) + "[1]Checksum");
 				Assert.That(struc.StartSounds[1].ObjectType, Is.EqualTo(ObjectType.Sound), nameof(struc.StartSounds) + "[1]Flags");
+				Assert.That(struc.CrossingSounds, Is.Empty, nameof(struc.CrossingSounds));
 
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(168));
 			}

@@ -214,15 +214,10 @@ public class LocoBinaryReader : BinaryReader
 				NumRollFrames = ReadByte(),
 				HalfLength = ReadByte(),
 				Flags = (BodySpriteFlags)ReadByte(),
-				_Width = ReadByte(),
-				_HeightNegative = ReadByte(),
-				_HeightPositive = ReadByte(),
-				_FlatYawAccuracy = ReadByte(),
-				_SlopedYawAccuracy = ReadByte(),
-				_NumPermutationsPerRotation = ReadByte(),
 			};
 
-			SkipImageId(4);
+			SkipBytes(6); // Width, HeightNegative, HeightPositive, FlatYawAccuracy, SlopedYawAccuracy, NumPermutationsPerRotation
+			SkipImageId(4); // image ids not part of object definition
 		}
 	}
 

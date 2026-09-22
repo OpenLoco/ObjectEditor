@@ -227,6 +227,50 @@ public static class DbSubObjectHelper
 			_ => throw new NotImplementedException(),
 		};
 
+	/// <summary>
+	/// Returns the tracked sub-object row for <paramref name="parentId"/> from the object's own sub-object
+	/// table, or <see langword="null"/> when it has none. Used to remove a sub-object when a PUT omits it.
+	/// </summary>
+	public static async Task<DbSubObject?> GetSubObjectRowAsync(LocoDbContext db, ObjectType objectType, UniqueObjectId parentId)
+		=> objectType switch
+		{
+			ObjectType.Airport => await db.ObjAirport.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Bridge => await db.ObjBridge.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Building => await db.ObjBuilding.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Cargo => await db.ObjCargo.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.CliffEdge => await db.ObjCliffEdge.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Climate => await db.ObjClimate.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Competitor => await db.ObjCompetitor.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Currency => await db.ObjCurrency.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Dock => await db.ObjDock.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.HillShapes => await db.ObjHillShapes.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Industry => await db.ObjIndustry.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.InterfaceSkin => await db.ObjInterface.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Land => await db.ObjLand.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.LevelCrossing => await db.ObjLevelCrossing.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Region => await db.ObjRegion.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.RoadExtra => await db.ObjRoadExtra.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Road => await db.ObjRoad.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.RoadStation => await db.ObjRoadStation.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Scaffolding => await db.ObjScaffolding.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.ScenarioText => await db.ObjScenarioText.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Snow => await db.ObjSnow.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Sound => await db.ObjSound.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Steam => await db.ObjSteam.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.StreetLight => await db.ObjStreetLight.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.TownNames => await db.ObjTownNames.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.TrackExtra => await db.ObjTrackExtra.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Track => await db.ObjTrack.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.TrackSignal => await db.ObjTrackSignal.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.TrackStation => await db.ObjTrackStation.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Tree => await db.ObjTree.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Tunnel => await db.ObjTunnel.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Vehicle => await db.ObjVehicle.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Water => await db.ObjWater.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Wall => await db.ObjWall.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			_ => null,
+		};
+
 	public static IDtoSubObject? GetDbSubForType(LocoDbContext db, ObjectType objectType, UniqueObjectId parentId)
 		=> objectType switch
 		{

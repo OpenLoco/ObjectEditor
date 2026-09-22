@@ -251,6 +251,252 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	}
 
 	[Test]
+	public async Task PutAsync_WithSubObject_PersistsSubObjectChanges()
+	{
+		// arrange - an Airport object with an existing sub-object row
+		const ulong objectId = 100;
+		using (var seedDb = GetDbContext())
+		{
+			var airportObject = new TblObject
+			{
+				Id = objectId,
+				Name = "airport-object",
+				ObjectType = ObjectType.Airport,
+				ObjectSource = ObjectSource.Custom,
+				Availability = ObjectAvailability.Available,
+			};
+
+			_ = await seedDb.Objects.AddAsync(airportObject);
+			_ = await seedDb.SaveChangesAsync();
+
+			_ = await seedDb.ObjAirport.AddAsync(new TblObjectAirport { Parent = airportObject, MinX = 1 });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var request = new DtoObjectPostResponse(
+			Id: objectId,
+			Name: "airport-object",
+			DisplayName: "airport-object",
+			DatChecksum: null,
+			Description: "updated via sub-object",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Airport,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: new DtoObjectAirport { Id = 1, MinX = -5, RequiredClearEdges = 7 });
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var subObject = await verifyDb.ObjAirport.AsNoTracking().SingleAsync(x => x.Parent.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(subObject.MinX, Is.EqualTo((sbyte)-5), "the sub-object edit must be persisted, not discarded");
+			Assert.That(subObject.RequiredClearEdges, Is.EqualTo(7u));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithoutSubObject_RemovesTheExistingSubObject()
+	{
+		// arrange - PUT replaces the whole resource, so omitting the sub-object must remove it
+		const ulong objectId = 103;
+		using (var seedDb = GetDbContext())
+		{
+			var airportObject = new TblObject
+			{
+				Id = objectId,
+				Name = "airport-remove-object",
+				ObjectType = ObjectType.Airport,
+				ObjectSource = ObjectSource.Custom,
+				Availability = ObjectAvailability.Available,
+			};
+
+			_ = await seedDb.Objects.AddAsync(airportObject);
+			_ = await seedDb.SaveChangesAsync();
+
+			_ = await seedDb.ObjAirport.AddAsync(new TblObjectAirport { Parent = airportObject, MinX = 4 });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var request = new DtoObjectPostResponse(
+			Id: objectId,
+			Name: "airport-remove-object",
+			DisplayName: "airport-remove-object",
+			DatChecksum: null,
+			Description: "sub-object omitted",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Airport,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(await verifyDb.ObjAirport.AsNoTracking().AnyAsync(x => x.Parent.Id == objectId), Is.False);
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithStringTable_AddsUpdatesAndRemovesRows()
+	{
+		// arrange - an object with two existing string-table rows
+		const ulong objectId = 101;
+		using (var seedDb = GetDbContext())
+		{
+			_ = await seedDb.Objects.AddAsync(new TblObject
+			{
+				Id = objectId,
+				Name = "stringtable-object",
+				ObjectType = ObjectType.Vehicle,
+				ObjectSource = ObjectSource.Custom,
+				Availability = ObjectAvailability.Available,
+			});
+			_ = await seedDb.SaveChangesAsync();
+
+			await seedDb.StringTable.AddRangeAsync(
+				new TblStringTableRow { Name = "Name", Language = LanguageId.English_UK, Text = "old name", ObjectId = objectId },
+				new TblStringTableRow { Name = "Removed", Language = LanguageId.English_UK, Text = "delete me", ObjectId = objectId });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var stringTable = new DtoStringTableDescriptor(
+			new Dictionary<string, Dictionary<LanguageId, string>>
+			{
+				["Name"] = new() { [LanguageId.English_UK] = "new name" },
+				["Extra"] = new() { [LanguageId.French] = "bonjour" },
+			},
+			objectId);
+
+		var request = new DtoObjectPostResponse(
+			Id: objectId,
+			Name: "stringtable-object",
+			DisplayName: "stringtable-object",
+			DatChecksum: null,
+			Description: "string table edit",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Vehicle,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: stringTable,
+			SubObject: null);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var rows = await verifyDb.StringTable.AsNoTracking().Where(r => r.ObjectId == objectId).ToListAsync();
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(rows, Has.Count.EqualTo(2));
+			Assert.That(rows.Single(r => r.Name == "Name" && r.Language == LanguageId.English_UK).Text, Is.EqualTo("new name"));
+			Assert.That(rows.Single(r => r.Name == "Extra" && r.Language == LanguageId.French).Text, Is.EqualTo("bonjour"));
+			Assert.That(rows.Any(r => r.Name == "Removed"), Is.False, "rows the request omits must be removed");
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithEmptyStringTable_ClearsTheRows()
+	{
+		// arrange - PUT replaces the whole resource, so omitting every row must clear the table (clients
+		// are expected to send the rows they want to keep).
+		const ulong objectId = 102;
+		using (var seedDb = GetDbContext())
+		{
+			_ = await seedDb.Objects.AddAsync(new TblObject
+			{
+				Id = objectId,
+				Name = "stringtable-preserve-object",
+				ObjectType = ObjectType.Vehicle,
+				ObjectSource = ObjectSource.Custom,
+				Availability = ObjectAvailability.Available,
+			});
+			_ = await seedDb.SaveChangesAsync();
+
+			_ = await seedDb.StringTable.AddAsync(
+				new TblStringTableRow { Name = "Name", Language = LanguageId.English_UK, Text = "keep me", ObjectId = objectId });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var request = new DtoObjectPostResponse(
+			Id: objectId,
+			Name: "stringtable-preserve-object",
+			DisplayName: "stringtable-preserve-object",
+			DatChecksum: null,
+			Description: "metadata only edit",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Vehicle,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null);
+
+		// act
+		_ = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var rows = await verifyDb.StringTable.AsNoTracking().Where(r => r.ObjectId == objectId).ToListAsync();
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(rows, Is.Empty, "an empty string table means the client sent no rows, so all rows are removed");
+		}
+	}
+
+	[Test]
 	public override async Task PutAsync()
 	{
 		// arrange

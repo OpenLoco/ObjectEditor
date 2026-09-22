@@ -140,6 +140,12 @@ public class ObjectQueryService : IObjectQueryService
 
 	public async Task<DtoObjectPostResponse?> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct)
 	{
+		// PUT semantics: the stored object is made to match the request. The fields below are deliberately
+		// NOT taken from the client because they are derived from the DAT file / its location on disk, and
+		// the server is authoritative for them: Name ({datName}_{checksum}), ObjectType, ObjectSource,
+		// VehicleType, DatObjects (and the DisplayName/DatChecksum/UploadedDate projections). Everything
+		// else - description, dates, availability, licence, authors, tags, packs, string table, sub-object -
+		// is applied exactly as sent.
 		var obj = await _db.Objects.Include(x => x.Licence).Include(x => x.Authors).Include(x => x.Tags).Include(x => x.ObjectPacks).Include(x => x.DatObjects).Include(x => x.StringTable).Where(x => x.Id == id).SingleOrDefaultAsync(ct);
 		if (obj == null)
 		{
@@ -214,10 +220,73 @@ public class ObjectQueryService : IObjectQueryService
 			}
 		}
 
+		// String-table rows are stored one per name+language. A PUT replaces the whole resource, so the
+		// descriptor's rows become the object's rows (an empty table clears them).
+		SyncStringTable(obj, request.StringTable);
+
+		// A PUT replaces the resource, so the sub-object becomes exactly what the request says: supplied data
+		// is applied, and an omitted sub-object removes the existing row. The object's *type* itself is
+		// server-derived (from the DAT), so which sub-object table is touched is not client-controlled.
+		if (request.SubObject is not null)
+		{
+			var subObjectEntity = SubObjectDtoMapper.ToTableEntity(request.SubObject, obj);
+			_ = await DbSubObjectHelper.AddOrUpdate(_db, obj, subObjectEntity);
+		}
+		else if (await DbSubObjectHelper.GetSubObjectRowAsync(_db, obj.ObjectType, obj.Id) is { } existingSubObject)
+		{
+			_ = _db.Remove(existingSubObject);
+		}
+
 		_ = await _db.SaveChangesAsync(ct);
 		var expandedObj = new ExpandedTbl<TblObject, TblObjectPack>(obj, obj.Authors, obj.Tags, obj.ObjectPacks);
 		var subObject = DbSubObjectHelper.GetDbSubForType(_db, obj.ObjectType, obj.Id);
 		return expandedObj.ToDtoDescriptor(subObject);
+	}
+
+	/// <summary>
+	/// Replaces the object's string-table rows with the supplied descriptor (PUT semantics). Rows are
+	/// matched by name and language: existing rows are updated, new rows are added, and every row the
+	/// request omits is removed — so a descriptor with no rows clears the string table, and clients are
+	/// expected to send the rows they want to keep.
+	/// </summary>
+	static void SyncStringTable(TblObject obj, DtoStringTableDescriptor? descriptor)
+	{
+		var requested = descriptor?.Table ?? new Dictionary<string, Dictionary<LanguageId, string>>();
+
+		// A duplicate name+language row would be a legacy artefact; keep the first.
+		var existing = obj.StringTable
+			.GroupBy(row => (row.Name, row.Language))
+			.ToDictionary(group => group.Key, group => group.First());
+
+		foreach (var (name, languages) in requested)
+		{
+			foreach (var (language, text) in languages)
+			{
+				if (existing.TryGetValue((name, language), out var row))
+				{
+					row.Text = text;
+				}
+				else
+				{
+					obj.StringTable.Add(new TblStringTableRow
+					{
+						Name = name,
+						Language = language,
+						Text = text,
+						ObjectId = obj.Id,
+					});
+				}
+			}
+		}
+
+		var requestedKeys = requested
+			.SelectMany(entry => entry.Value.Keys.Select(language => (entry.Key, language)))
+			.ToHashSet();
+
+		foreach (var row in obj.StringTable.Where(row => !requestedKeys.Contains((row.Name, row.Language))).ToList())
+		{
+			_ = obj.StringTable.Remove(row);
+		}
 	}
 
 	public async Task<byte[]?> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct)

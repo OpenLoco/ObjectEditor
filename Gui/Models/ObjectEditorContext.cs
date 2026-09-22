@@ -354,7 +354,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				DatObjects = [.. cachedLocoObjDto.DatObjects],
 				Licence = cachedLocoObjDto.Licence,
 				Availability = cachedLocoObjDto.Availability,
-				//SubObject = cachedLocoObjDto.SubObject,
+				SubObject = cachedLocoObjDto.SubObject,
 			};
 
 			//if (locoObject != null)

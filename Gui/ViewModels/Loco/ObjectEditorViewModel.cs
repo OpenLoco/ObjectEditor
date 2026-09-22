@@ -398,7 +398,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				Tags: metadataModel.Tags,
 				ObjectPacks: metadataModel.ObjectPacks,
 				DatObjects: metadataModel.DatObjects,
-				StringTable: new DtoStringTableDescriptor([], objectId),
+				StringTable: new DtoStringTableDescriptor(Model.LocoObject.StringTable.Table, objectId),
 				SubObject: metadataModel.SubObject
 			);
 

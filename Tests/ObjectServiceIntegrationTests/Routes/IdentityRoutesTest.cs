@@ -218,7 +218,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 			Assert.That(updated!.UserName, Is.EqualTo("RenamedDisplayUser"));
 
 			// /v2/identity/manage/info is reachable (WS8). Note: the framework's InfoResponse only
-			// returns email/confirmation, so DtoInfoResponse.UserName is always null here.
+			// returns email/confirmation, so the DTO deliberately has no username field.
 			var info = await HttpClient!.GetFromJsonAsync<DtoInfoResponse>($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityManageInfo}");
 			Assert.That(info, Is.Not.Null);
 			Assert.That(info!.Email, Is.EqualTo("medisplay@example.com"));

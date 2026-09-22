@@ -17,6 +17,10 @@ That's it. It's real basic right now but it should suffice for most purposes.
 ### Uploading objects
 You can technically manually call the `uploaddat` route but this is intended primarily for the Object Editor to use in an automated fashion. It isn't for individual use.
 
+`PUT /v2/objects/{id}` replaces the object: metadata, authors/tags/packs, the string table and the sub-object all become exactly what the request says — an omitted sub-object removes the stored row, and a string table containing only the rows you want to keep replaces the stored set (an empty table clears it). Clients are therefore expected to send the whole object, which `POST /v2/objects` does (including an empty string table). Deletion is `DELETE` and partial modification would be `PATCH`, which is not implemented.
+
+A few DTO fields are deliberately **not** taken from the request, because they are derived from the DAT file or its location on disk and the server is authoritative for them: `Name` (`{datName}_{checksum}`), `ObjectType`, `ObjectSource`, `VehicleType` and `DatObjects` (plus the `DisplayName`, `DatChecksum` and `UploadedDate` projections).
+
 ## Server Admin
 - `sudo systemctl start objectservice.service`
 - `sudo systemctl restart objectservice.service`
@@ -61,7 +65,7 @@ Every entity stored from a `GameData` folder has its own route group, following 
 - **`AdminUser:Password`** is required to bootstrap the system admin account. It is never defaulted in code: when it is missing the admin is simply not created (an **error** is logged outside Development), so deployments must supply it via user-secrets or environment variables. `AdminUser:Email` / `AdminUser:Username` fall back to a non-secret display identity.
 - **`DevAuth:Email` / `DevAuth:Password`** configure the development-only `/dev/quick-login` endpoint and the quick-login page. The endpoint is only mapped when the environment is Development and returns `503` when unset.
 - Development-only values for both live in `appsettings.Development.json`; `appsettings.json` intentionally contains neither.
-- `ObjectService:DisableAuthentication` enables the dev authentication scheme, which impersonates the admin user for `/v2` requests. It is deliberately excluded for `/v2/users`, `/v2/roles` and `/v2/identity` so identity flows are exercised for real.
+- `ObjectService:DisableAuthentication` enables the dev authentication scheme, which impersonates the admin user for `/v2` requests. It is **only honoured in the Development environment** and is deliberately excluded for `/v2/users`, `/v2/roles` and `/v2/identity` so identity flows are exercised for real.
 
 ### Web Server
 - The API is rate-limited to a burst limit of [20 requests per second](https://github.com/OpenLoco/ObjectEditor/blob/master/ObjectService/ObjectServiceRateLimitOptions.cs) with 10 tokens replenished every second. This is a global limit, regardless of client. This will be [changed in the future](https://github.com/OpenLoco/ObjectEditor/issues/76).

@@ -32,7 +32,9 @@ public sealed class ManageModel : PageModel
 			return RedirectToPage("/Account/Login");
 		}
 
-		Username = info.UserName;
+		// The Identity API's /manage/info only returns the email and confirmation state, so the display
+		// name comes from the signed-in principal rather than the response.
+		Username = User.Identity?.Name ?? string.Empty;
 		Email = info.Email;
 
 		OwnedObjects = [.. (await Client.GetMyObjectsAsync(client))

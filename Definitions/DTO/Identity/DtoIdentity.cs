@@ -3,7 +3,7 @@ namespace Definitions.DTO.Identity;
 public record DtoRegisterRequest(string Email, string UserName, string Password);
 public record DtoLoginRequest(string Email, string Password);
 
-public record DtoInfoResponse(string UserName, string Email, bool EmailIsConfirmed);
+public record DtoInfoResponse(string Email, bool EmailIsConfirmed);
 
 public record DtoRoleEntry(UniqueObjectId Id, string Name) : IHasId;
 //public record DtoRoleDescriptor(UniqueObjectId Id, string Name) : DtoWithDbKey(Id), IHasId { }

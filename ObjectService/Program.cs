@@ -173,7 +173,14 @@ builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, o
 
 // Dev-mode authentication bypass: when enabled, API requests are authenticated as a local admin.
 // Set "ObjectService:DisableAuthentication": true in appsettings.Development.json.
-var disableAuth = builder.Configuration.GetValue<bool?>("ObjectService:DisableAuthentication") ?? false;
+// Outside Development the bypass is never honoured, so a production deployment cannot disable
+// authentication even if the setting leaks into configuration.
+var disableAuthRequested = builder.Configuration.GetValue<bool?>("ObjectService:DisableAuthentication") ?? false;
+var disableAuth = disableAuthRequested && builder.Environment.IsDevelopment();
+if (disableAuthRequested && !builder.Environment.IsDevelopment())
+{
+Console.Error.WriteLine("ObjectService:DisableAuthentication is set but the environment is not Development; ignoring it. Authentication cannot be disabled outside Development.");
+}
 
 // The schemes used by the API authorization policies. The dev scheme is added last so that real
 // credentials (cookies / bearer tokens) still take precedence when they are supplied.

@@ -181,7 +181,7 @@ public class ScenarioPackRoutesTests : BaseRouteHandlerTestFixture
 		}
 	}
 
-[Test]
+	[Test]
 	public async Task GetScenarioPackAsync_WithUnknownId_ReturnsNotFound()
 	{
 		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/9999");

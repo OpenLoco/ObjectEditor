@@ -70,8 +70,8 @@ public sealed class TutorialsFolderService(LocoDbContext db, ServerFolderManager
 
 		foreach (var file in EnumerateFiles(Sfm.TutorialsFolder, _ => true))
 		{
-			var result = await ImportAsync(file, ct).ConfigureAwait(false);
-			if (result.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
+			var result = await TryReconcileFileAsync(file, () => ImportAsync(file, ct), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
 			{
 				changed++;
 			}

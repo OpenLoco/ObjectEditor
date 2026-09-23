@@ -182,17 +182,62 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 
 	public bool DoesObjectExist(string datName, uint datChecksum, out TblObject? existingObject)
 	{
-		// there's a unique constraint on the composite key index (DatName, DatChecksum), so check existence first so no exceptions
-		// this isn't necessary since we're already filtering in LINQ, but if we were adding to a non-empty database, this would be necessary
+		// The (DatName, DatChecksum) index is deliberately not unique: two binary-different files can
+		// share the same S5 name and checksum, so this returns the first match rather than requiring one.
+		// xxHash3 (see DoesObjectWithHashExist) is the authoritative identity of a file.
 		var existingEntityInDb = DatObjects
-			.SingleOrDefault(e => e.DatName == datName && e.DatChecksum == datChecksum)?.Object;
+			.Where(e => e.DatName == datName && e.DatChecksum == datChecksum)
+			.Select(e => e.Object)
+			.FirstOrDefault();
 
 		var existingEntityInChangeTracker = ChangeTracker.Entries()
 			.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblDatObject))
 			.Select(e => e.Entity as TblDatObject)
-			.SingleOrDefault(e => e!.DatName == datName && e.DatChecksum == datChecksum)?.Object;
+			.FirstOrDefault(e => e!.DatName == datName && e.DatChecksum == datChecksum)?.Object;
 
 		existingObject = existingEntityInDb ?? existingEntityInChangeTracker;
 		return existingObject != null;
+	}
+
+	/// <summary>
+	/// Finds the object already backed by a file with the given whole-file hash. <c>xxHash3</c> is the
+	/// authoritative file identity, so a match means the file is a duplicate of one we already have and
+	/// no new object/row should be created for it.
+	/// </summary>
+	public bool DoesObjectWithHashExist(ulong xxHash3, out TblObject? existingObject)
+	{
+		existingObject = DatObjects
+			.Where(e => e.xxHash3 == xxHash3)
+			.Select(e => e.Object)
+			.FirstOrDefault();
+
+		return existingObject != null;
+	}
+
+	/// <summary>
+	/// Builds an object name from the S5 name and checksum. Because several binary-different objects may
+	/// share that pair, the whole-file hash is appended when the plain name is already taken so the
+	/// unique <c>Objects.Name</c> constraint still holds.
+	/// </summary>
+	public Task<string> GetUniqueObjectNameAsync(string s5Name, uint checksum, ulong xxHash3, CancellationToken ct = default)
+	{
+		var baseName = $"{s5Name}_{checksum}";
+		return GetUniqueObjectNameCoreAsync(baseName, xxHash3, ct);
+	}
+
+	private async Task<string> GetUniqueObjectNameCoreAsync(string baseName, ulong xxHash3, CancellationToken ct)
+	{
+		if (!await Objects.AnyAsync(x => x.Name == baseName, ct))
+		{
+			return baseName;
+		}
+
+		var disambiguated = $"{baseName}_{xxHash3}";
+		for (var suffix = 0; await Objects.AnyAsync(x => x.Name == disambiguated, ct); suffix++)
+		{
+			disambiguated = $"{baseName}_{xxHash3}_{suffix}";
+		}
+
+		return disambiguated;
 	}
 }

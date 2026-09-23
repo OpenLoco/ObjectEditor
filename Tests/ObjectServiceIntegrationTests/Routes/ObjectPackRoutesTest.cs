@@ -131,7 +131,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 	}
-[Test]
+	[Test]
 	public async Task PostAsync_WithEmptyName_ReturnsBadRequest()
 	{
 		var request = new DtoItemPackDescriptor<DtoObjectEntry>(
@@ -231,7 +231,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 		}
 	}
 
-[Test]
+	[Test]
 	public async Task GetObjectPackFileAsync_IncludesObjectStoredWithAbsoluteIndexPath()
 	{
 		const UniqueObjectId packId = 10;

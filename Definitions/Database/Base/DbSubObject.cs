@@ -37,6 +37,8 @@ using Definitions.ObjectModels.Objects.Wall;
 using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace Definitions.Database;
@@ -106,6 +108,39 @@ public abstract class DtoSubObject : DbIdObject, IDtoSubObject
 
 public static class DbSubObjectHelper
 {
+	/// <summary>
+	/// The suffix of the sub-object table belonging to <paramref name="objectType"/>: the table is always
+	/// <c>Obj&lt;suffix&gt;</c> and its entity <c>TblObject&lt;suffix&gt;</c>. Every type is named after the
+	/// enum member except <see cref="ObjectType.InterfaceSkin"/>, whose table is <c>ObjInterface</c>.
+	/// </summary>
+	public static string GetTableSuffix(ObjectType objectType)
+		=> objectType == ObjectType.InterfaceSkin ? "Interface" : objectType.ToString();
+
+	private static readonly ConcurrentDictionary<ObjectType, Type> subObjectTableTypes = new();
+
+	/// <summary>
+	/// The CLR type of <paramref name="objectType"/>'s sub-object table, resolved through the
+	/// <c>Obj&lt;ObjectType&gt;</c> DbSet convention.
+	/// </summary>
+	/// <exception cref="NotImplementedException"><paramref name="objectType"/> has no sub-object table.</exception>
+	public static Type GetSubObjectTableType(ObjectType objectType)
+		=> subObjectTableTypes.GetOrAdd(objectType, static type => typeof(LocoDbContext)
+			.GetProperty("Obj" + GetTableSuffix(type), BindingFlags.Public | BindingFlags.Instance)
+			?.PropertyType.GetGenericArguments()[0]
+			?? throw new NotImplementedException($"{type} has no sub-object table"));
+
+	/// <summary>
+	/// Returns <see langword="true"/> when <paramref name="dto"/> carries the sub-object that
+	/// <paramref name="objectType"/> uses, so a request cannot write e.g. airport data into a vehicle.
+	/// </summary>
+	public static bool IsSubObjectOfType(IDtoSubObject dto, ObjectType objectType)
+	{
+		ArgumentNullException.ThrowIfNull(dto);
+
+		var mapper = SubObjectDtoMapper.FindMapperOrNull(dto.GetType());
+		return mapper != null && mapper.ReturnType == GetSubObjectTableType(objectType);
+	}
+
 	static async Task<string> AddOrUpdate<TSubObject, TDat>(LocoDbContext db, DbSet<TSubObject> subObjTable, TblObject parentObj, ILocoStruct datObj)
 		where TSubObject : class, IDbSubObject, IConvertibleToTable<TSubObject, TDat>
 		where TDat : ILocoStruct
@@ -231,6 +266,12 @@ public static class DbSubObjectHelper
 	/// Returns the tracked sub-object row for <paramref name="parentId"/> from the object's own sub-object
 	/// table, or <see langword="null"/> when it has none. Used to remove a sub-object when a PUT omits it.
 	/// </summary>
+	/// <remarks>
+	/// Every game object has a header row in <c>Objects</c> and at most one row in the sub-object table
+	/// named after its <see cref="ObjectType"/>, which links back via the required
+	/// <see cref="DbSubObject.Parent"/> FK. The single exception to the naming convention is
+	/// <see cref="ObjectType.InterfaceSkin"/>, whose table is <c>ObjInterface</c>.
+	/// </remarks>
 	public static async Task<DbSubObject?> GetSubObjectRowAsync(LocoDbContext db, ObjectType objectType, UniqueObjectId parentId)
 		=> objectType switch
 		{
@@ -268,7 +309,7 @@ public static class DbSubObjectHelper
 			ObjectType.Vehicle => await db.ObjVehicle.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
 			ObjectType.Water => await db.ObjWater.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
 			ObjectType.Wall => await db.ObjWall.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
-			_ => null,
+			_ => throw new NotImplementedException(),
 		};
 
 	public static IDtoSubObject? GetDbSubForType(LocoDbContext db, ObjectType objectType, UniqueObjectId parentId)

@@ -17,9 +17,16 @@ That's it. It's real basic right now but it should suffice for most purposes.
 ### Uploading objects
 You can technically manually call the `uploaddat` route but this is intended primarily for the Object Editor to use in an automated fashion. It isn't for individual use.
 
-`PUT /v2/objects/{id}` replaces the object: metadata, authors/tags/packs, the string table and the sub-object all become exactly what the request says — an omitted sub-object removes the stored row, and a string table containing only the rows you want to keep replaces the stored set (an empty table clears it). Clients are therefore expected to send the whole object, which `POST /v2/objects` does (including an empty string table). Deletion is `DELETE` and partial modification would be `PATCH`, which is not implemented.
+`PUT /v2/objects/{id}` replaces the object: it is the caller's description of what the object should be. Every column of the `Objects` header row (`Name`, `ObjectType`, `VehicleType`, `Description`, dates, `Availability`, licence, authors, tags, object packs) and the object's sub-object table are applied exactly as sent, and the string table becomes exactly the rows sent (an empty table clears it). An omitted sub-object removes the stored row, and changing `ObjectType` moves the object to the new type's table, dropping the previous type's row — so clients send the whole object, which `POST /v2/objects` does (including an empty string table).
 
-A few DTO fields are deliberately **not** taken from the request, because they are derived from the DAT file or its location on disk and the server is authoritative for them: `Name` (`{datName}_{checksum}`), `ObjectType`, `ObjectSource`, `VehicleType` and `DatObjects` (plus the `DisplayName`, `DatChecksum` and `UploadedDate` projections).
+A sub-object that does not belong to the declared `ObjectType` (`DtoObjectVehicle` for `ObjectType.Airport`, say) is a `400`, a name already used by another object is a `409`, and a vanilla Locomotion object is a `403` - all are rejected before anything is written. Deletion is `DELETE` and partial modification would be `PATCH`, which is not implemented.
+
+Two things are **not** the client's to set, because they describe the file rather than the object:
+
+- `ObjectSource` is server-owned. Uploading through `POST /v2/objects` always stores `Custom` (vanilla uploads are refused outright), and `LocomotionSteam`/`LocomotionGoG`/`OpenLoco` objects are placed in the server folders by hand, so no web request can move an object between sources - a request asking for a different source is ignored (and logged).
+- `DatObjects` is the DAT file(s) on disk that the object is built from, so nothing reassigns them.
+
+`DisplayName`, `DatChecksum` and `UploadedDate` are projections: the first two are derived from the object's files and the last is set by the database when the row is created.
 
 ## Server Admin
 - `sudo systemctl start objectservice.service`

@@ -70,8 +70,8 @@ public sealed class MusicFolderService(LocoDbContext db, ServerFolderManager sfm
 
 		foreach (var file in EnumerateFiles(Sfm.MusicFolder, _ => true))
 		{
-			var result = await ImportAsync(file, ct).ConfigureAwait(false);
-			if (result.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
+			var result = await TryReconcileFileAsync(file, () => ImportAsync(file, ct), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
 			{
 				changed++;
 			}

@@ -384,7 +384,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 					Model.DatInfo.S5Header.Name,
 					Model.DatInfo.S5Header.Checksum),
 				ObjectType: Model.DatInfo.S5Header.ObjectType.Convert(),
-				VehicleType: null,
+				VehicleType: metadataModel.VehicleType,
 				Availability: metadataModel.Availability,
 				CreatedDate: metadataModel.CreatedDate.HasValue
 					? DateOnly.FromDateTime(metadataModel.CreatedDate.Value.UtcDateTime)

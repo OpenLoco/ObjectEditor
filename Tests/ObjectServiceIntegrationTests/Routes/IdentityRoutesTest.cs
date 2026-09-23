@@ -189,7 +189,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 		// assert - Should succeed with valid authentication
 		Assert.That(response.IsSuccessStatusCode, Is.True);
 	}
-[Test]
+	[Test]
 	public async Task UpdateCurrentUserDisplayName_WithAuthentication_ShouldSucceed()
 	{
 		// arrange - register and sign in

@@ -254,7 +254,7 @@ public class RouteHelpersTests
 		Assert.That(RouteHelpers.MakeNicePlural("Tag"), Is.EqualTo("Tags"));
 		Assert.That(RouteHelpers.MakeNicePlural("UserRouteHandler"), Is.EqualTo("Users"));
 	}
-[Test]
+	[Test]
 	public void TryGetSafePathUnderRoot_AcceptsAbsolutePathInsideRoot()
 	{
 		var rootPath = Path.Combine(Path.GetTempPath(), $"route-helper-{Guid.NewGuid():N}");

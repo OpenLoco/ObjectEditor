@@ -46,13 +46,38 @@ public enum ObjectDeleteOutcome
 /// </summary>
 public record ObjectDeleteResult(ObjectDeleteOutcome Outcome, string? ErrorMessage = null, IReadOnlyList<string>? RemovedFiles = null);
 
+/// <summary>The outcome of replacing an object with <c>PUT</c>.</summary>
+public enum ObjectUpdateOutcome
+{
+	/// <summary>The stored object now matches the request.</summary>
+	Updated,
+
+	/// <summary>No object with the given id exists.</summary>
+	NotFound,
+
+	/// <summary>The object cannot be updated (vanilla Locomotion assets).</summary>
+	Forbidden,
+
+	/// <summary>The request cannot be applied - no name, or a sub-object that is not the declared type's.</summary>
+	InvalidRequest,
+
+	/// <summary>Another object already uses the requested name.</summary>
+	NameConflict,
+}
+
+/// <summary>
+/// Result of replacing an object, allowing the route handler to translate validation failures into the
+/// appropriate HTTP response.
+/// </summary>
+public record ObjectUpdateResult(ObjectUpdateOutcome Outcome, DtoObjectPostResponse? Descriptor = null, string? ErrorMessage = null);
+
 public interface IObjectQueryService
 {
 	Task<IEnumerable<DtoObjectEntry>> ListAsync(CancellationToken ct);
 	Task<IEnumerable<DtoObjectEntry>> ListMineAsync(UniqueObjectId ownerUserId, CancellationToken ct);
 	Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct);
 	Task<UploadResult> UploadDatAsync(DtoObjectPost request, CancellationToken ct);
-	Task<DtoObjectPostResponse?> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct);
+	Task<ObjectUpdateResult> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct);
 	Task<ObjectDeleteResult> DeleteObjectAsync(UniqueObjectId id, CancellationToken ct);
 	Task<byte[]?> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct);
 	Task<byte[]?> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct);
@@ -138,18 +163,16 @@ public class ObjectQueryService : IObjectQueryService
 		}
 	}
 
-	public async Task<DtoObjectPostResponse?> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct)
+	public async Task<ObjectUpdateResult> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct)
 	{
-		// PUT semantics: the stored object is made to match the request. The fields below are deliberately
-		// NOT taken from the client because they are derived from the DAT file / its location on disk, and
-		// the server is authoritative for them: Name ({datName}_{checksum}), ObjectType, ObjectSource,
-		// VehicleType, DatObjects (and the DisplayName/DatChecksum/UploadedDate projections). Everything
-		// else - description, dates, availability, licence, authors, tags, packs, string table, sub-object -
-		// is applied exactly as sent.
+		// PUT semantics: the stored object is made to match the request. Every column of the header row
+		// (Objects) and of the object's sub-object table is taken from the request. The one thing a request
+		// cannot change is which DAT file(s) the object is built from: the DatObjects rows describe the file
+		// on disk, which a web request has no business reassigning.
 		var obj = await _db.Objects.Include(x => x.Licence).Include(x => x.Authors).Include(x => x.Tags).Include(x => x.ObjectPacks).Include(x => x.DatObjects).Include(x => x.StringTable).Where(x => x.Id == id).SingleOrDefaultAsync(ct);
 		if (obj == null)
 		{
-			return null;
+			return new(ObjectUpdateOutcome.NotFound);
 		}
 
 		// Vanilla game objects (original Locomotion assets) can NEVER be edited by anyone,
@@ -158,9 +181,40 @@ public class ObjectQueryService : IObjectQueryService
 		if (obj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 		{
 			_logger.LogWarning("Attempt to update vanilla object {ObjectId} was blocked", id);
-			return null;
+			return new(ObjectUpdateOutcome.Forbidden, ErrorMessage: "Vanilla Locomotion objects cannot be edited.");
 		}
 
+		// Everything is validated before anything is mutated so that a rejected request cannot half-apply.
+		if (string.IsNullOrWhiteSpace(request.Name))
+		{
+			return new(ObjectUpdateOutcome.InvalidRequest, ErrorMessage: "A name is required.");
+		}
+
+		if (request.SubObject is not null && !DbSubObjectHelper.IsSubObjectOfType(request.SubObject, request.ObjectType))
+		{
+			_logger.LogWarning("Object {ObjectId} update rejected: {SubObjectDto} does not belong to {ObjectType}", id, request.SubObject.GetType().Name, request.ObjectType);
+			return new(ObjectUpdateOutcome.InvalidRequest, ErrorMessage: $"{request.SubObject.GetType().Name} is not the sub-object of ObjectType.{request.ObjectType}.");
+		}
+
+		if (!string.Equals(obj.Name, request.Name, StringComparison.Ordinal) && await _db.Objects.AnyAsync(x => x.Id != id && x.Name == request.Name, ct))
+		{
+			return new(ObjectUpdateOutcome.NameConflict, ErrorMessage: $"An object named '{request.Name}' already exists.");
+		}
+
+		var previousObjectType = obj.ObjectType;
+
+		obj.Name = request.Name;
+		obj.ObjectType = request.ObjectType;
+
+		// The object source is server-owned: it tells us where the object came from, and only the server
+		// knows that. Uploads always store Custom, while Steam/GoG/OpenLoco objects are placed in the
+		// server folders by hand, so no client can move an object between sources.
+		if (request.ObjectSource != obj.ObjectSource)
+		{
+			_logger.LogWarning("Object {ObjectId} source is server-owned; ignoring the requested {RequestedSource} (stored: {ObjectSource})", id, request.ObjectSource, obj.ObjectSource);
+		}
+
+		obj.VehicleType = request.VehicleType;
 		obj.Description = request.Description;
 		obj.CreatedDate = request.CreatedDate;
 		obj.ModifiedDate = request.ModifiedDate;
@@ -225,22 +279,38 @@ public class ObjectQueryService : IObjectQueryService
 		SyncStringTable(obj, request.StringTable);
 
 		// A PUT replaces the resource, so the sub-object becomes exactly what the request says: supplied data
-		// is applied, and an omitted sub-object removes the existing row. The object's *type* itself is
-		// server-derived (from the DAT), so which sub-object table is touched is not client-controlled.
+		// is applied, and an omitted sub-object removes the existing row. The row belongs to the object's
+		// current type, so changing the type must not leave the old type's row behind.
+		if (previousObjectType != obj.ObjectType && await DbSubObjectHelper.GetSubObjectRowAsync(_db, previousObjectType, obj.Id) is { } previousSubObject)
+		{
+			_logger.LogInformation("Object {ObjectId} changed type from {PreviousType} to {ObjectType}; removing its {PreviousType} sub-object row", id, previousObjectType, obj.ObjectType, previousObjectType);
+			_ = _db.Remove(previousSubObject);
+		}
+
 		if (request.SubObject is not null)
 		{
 			var subObjectEntity = SubObjectDtoMapper.ToTableEntity(request.SubObject, obj);
 			_ = await DbSubObjectHelper.AddOrUpdate(_db, obj, subObjectEntity);
 		}
-		else if (await DbSubObjectHelper.GetSubObjectRowAsync(_db, obj.ObjectType, obj.Id) is { } existingSubObject)
+		else if (previousObjectType == obj.ObjectType && await DbSubObjectHelper.GetSubObjectRowAsync(_db, obj.ObjectType, obj.Id) is { } existingSubObject)
 		{
 			_ = _db.Remove(existingSubObject);
 		}
 
-		_ = await _db.SaveChangesAsync(ct);
+		try
+		{
+			_ = await _db.SaveChangesAsync(ct);
+		}
+		catch (DbUpdateException ex) when (DbExceptionHelpers.IsUniqueConstraintViolation(ex))
+		{
+			// The pre-check above can lose a race with a concurrent rename.
+			_logger.LogWarning(ex, "Object {ObjectId} update rejected: name '{Name}' is already taken", id, request.Name);
+			return new(ObjectUpdateOutcome.NameConflict, ErrorMessage: $"An object named '{request.Name}' already exists.");
+		}
+
 		var expandedObj = new ExpandedTbl<TblObject, TblObjectPack>(obj, obj.Authors, obj.Tags, obj.ObjectPacks);
 		var subObject = DbSubObjectHelper.GetDbSubForType(_db, obj.ObjectType, obj.Id);
-		return expandedObj.ToDtoDescriptor(subObject);
+		return new(ObjectUpdateOutcome.Updated, expandedObj.ToDtoDescriptor(subObject));
 	}
 
 	/// <summary>
@@ -452,11 +522,13 @@ public class ObjectQueryService : IObjectQueryService
 			return new UploadResult(false, null, "Invalid DAT file", 400);
 		}
 
-		var objName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}";
-		var existing = await _db.Objects.FirstOrDefaultAsync(x => x.Name == objName, ct);
-		if (existing != null)
+		// xxHash3 over the whole file is the authoritative identity: identical content means the object
+		// already exists regardless of its S5 name/checksum. A binary-different file that happens to
+		// share the S5 name/checksum is a genuinely different object and is imported as one.
+		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
+		if (_db.DoesObjectWithHashExist(xxHash3, out var existingObj))
 		{
-			return new UploadResult(false, null, $"Object already exists. UploadedDate={existing.UploadedDate}", 202);
+			return new UploadResult(false, null, $"Object with identical content already exists. UploadedDate={existingObj!.UploadedDate}", 202);
 		}
 
 		var missingEntry = await _db.ObjectsMissing.FirstOrDefaultAsync(x => x.DatName == hdrs.S5.Name && x.DatChecksum == hdrs.S5.Checksum, ct);
@@ -464,11 +536,6 @@ public class ObjectQueryService : IObjectQueryService
 		{
 			_ = _db.ObjectsMissing.Remove(missingEntry);
 			_ = await _db.SaveChangesAsync(ct);
-		}
-
-		if (_db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObj))
-		{
-			return new UploadResult(false, null, $"DatObject already exists. UploadedDate={existingObj!.UploadedDate}", 202);
 		}
 
 		var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObject(datFileBytes, ssrLogger);
@@ -501,6 +568,8 @@ public class ObjectQueryService : IObjectQueryService
 			}
 		}
 
+		var objName = await _db.GetUniqueObjectNameAsync(hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, ct);
+
 		var tblObject = new TblObject()
 		{
 			Name = objName,
@@ -532,7 +601,6 @@ public class ObjectQueryService : IObjectQueryService
 			}
 		}
 
-		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 		tblObject.DatObjects.Add(new TblDatObject() { ObjectId = tblObject.Id, DatName = DatFileInfo.S5Header.Name, DatChecksum = DatFileInfo.S5Header.Checksum, xxHash3 = xxHash3, Object = tblObject, });
 
 		_ = await DbSubObjectHelper.AddOrUpdate(_db, tblObject, LocoObject.Object);

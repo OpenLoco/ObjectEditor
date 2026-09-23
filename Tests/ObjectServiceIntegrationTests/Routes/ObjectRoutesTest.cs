@@ -6,6 +6,7 @@ using Definitions.DTO;
 using Definitions.DTO.Comparers;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.Web;
 using Index;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ using ObjectService;
 using ObjectService.Tests.Integration;
 using System.IO.Hashing;
 using System.Net;
+using System.Net.Http.Json;
 
 namespace Tests.ObjectServiceIntegrationTests.Routes;
 
@@ -814,5 +816,249 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 		// assert
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
+
+	/// <summary>
+	/// Builds a PUT body. Every <c>Objects</c> column and the sub-object are the request's business;
+	/// which DAT file(s) an object is built from is not, so <c>DatObjects</c> is empty here and the server
+	/// ignores it.
+	/// </summary>
+	static DtoObjectPostResponse PutRequest(
+		ulong id,
+		string name,
+		ObjectType objectType,
+		ObjectSource objectSource = ObjectSource.Custom,
+		VehicleType? vehicleType = null,
+		IDtoSubObject? subObject = null,
+		string? description = null)
+		=> new(
+			Id: id,
+			Name: name,
+			DisplayName: name,
+			DatChecksum: null,
+			Description: description,
+			ObjectSource: objectSource,
+			ObjectType: objectType,
+			VehicleType: vehicleType,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], id),
+			SubObject: subObject);
+
+	async Task SeedObjectAsync(ulong id, string name, ObjectType objectType = ObjectType.Vehicle, ObjectSource objectSource = ObjectSource.Custom)
+	{
+		using var seedDb = GetDbContext();
+		_ = await seedDb.Objects.AddAsync(new TblObject
+		{
+			Id = id,
+			Name = name,
+			ObjectType = objectType,
+			ObjectSource = objectSource,
+			Availability = ObjectAvailability.Available,
+		});
+		_ = await seedDb.SaveChangesAsync();
+	}
+
+	string ObjectRoute(ulong id)
+		=> $"{Definitions.Web.Routes.Prefix}{BaseRoute}/{id}";
+
+	[Test]
+	public async Task PutAsync_AppliesEveryChangeableHeaderRowColumn()
+	{
+		// arrange - PUT replaces the whole Objects row, not just the curated metadata (ObjectSource is the
+		// one exception, see PutAsync_DoesNotChangeTheObjectSource)
+		const ulong objectId = 110;
+		await SeedObjectAsync(objectId, "before-rename", ObjectType.Airport);
+
+		var request = PutRequest(objectId, "after-rename", ObjectType.Vehicle, vehicleType: VehicleType.Train, description: "header rewrite");
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(row.Name, Is.EqualTo("after-rename"), "Name must be applied");
+			Assert.That(row.ObjectType, Is.EqualTo(ObjectType.Vehicle), "ObjectType must be applied");
+			Assert.That(row.ObjectSource, Is.EqualTo(ObjectSource.Custom), "ObjectSource stays as the server set it");
+			Assert.That(row.VehicleType, Is.EqualTo(VehicleType.Train), "VehicleType must be applied");
+			Assert.That(row.Description, Is.EqualTo("header rewrite"));
+			Assert.That(result!.Name, Is.EqualTo("after-rename"));
+			Assert.That(result.VehicleType, Is.EqualTo(VehicleType.Train));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_ChangingObjectType_MovesTheSubObjectToTheNewTypeTable()
+	{
+		// arrange - an Airport object with a sub-object row of its own type
+		const ulong objectId = 111;
+		await SeedObjectAsync(objectId, "type-change-object", ObjectType.Airport);
+
+		using (var seedDb = GetDbContext())
+		{
+			var parent = await seedDb.Objects.SingleAsync(x => x.Id == objectId);
+			_ = await seedDb.ObjAirport.AddAsync(new TblObjectAirport { Parent = parent, MinX = 3 });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var request = PutRequest(objectId, "type-change-object", ObjectType.Vehicle,
+			subObject: new DtoObjectVehicle { Id = 6, Type = VehicleType.Bus, NumCarComponents = 4 });
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var vehicle = await verifyDb.ObjVehicle.AsNoTracking().SingleAsync(x => x.Parent.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null, "the type change must be accepted");
+			Assert.That(await verifyDb.ObjAirport.AsNoTracking().AnyAsync(x => x.Parent.Id == objectId), Is.False, "the previous type's row must not be left behind");
+			Assert.That(vehicle.NumCarComponents, Is.EqualTo((byte)4));
+			Assert.That(result!.SubObject, Is.TypeOf<DtoObjectVehicle>());
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithAnotherTypesSubObject_ReturnsBadRequest()
+	{
+		// arrange - writing vehicle data into an airport object would leave an orphan row behind
+		const ulong objectId = 112;
+		await SeedObjectAsync(objectId, "mismatched-sub-object", ObjectType.Airport);
+
+		var request = PutRequest(objectId, "renamed-by-rejected-request", ObjectType.Airport,
+			description: "must not be applied",
+			subObject: new DtoObjectVehicle { Id = 7, Type = VehicleType.Train });
+
+		// act
+		using var response = await HttpClient!.PutAsJsonAsync(ObjectRoute(objectId), request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+			Assert.That(await verifyDb.ObjVehicle.AsNoTracking().AnyAsync(x => x.Parent.Id == objectId), Is.False);
+			Assert.That(row.Name, Is.EqualTo("mismatched-sub-object"), "a rejected request must not half-apply");
+			Assert.That(row.Description, Is.Null, "a rejected request must not half-apply");
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithTakenName_ReturnsConflict()
+	{
+		// arrange - Objects.Name is unique
+		const ulong objectId = 113;
+		const ulong takenByObjectId = 114;
+		await SeedObjectAsync(objectId, "first-object");
+		await SeedObjectAsync(takenByObjectId, "second-object");
+
+		var request = PutRequest(objectId, "second-object", ObjectType.Vehicle);
+
+		// act
+		using var response = await HttpClient!.PutAsJsonAsync(ObjectRoute(objectId), request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+			Assert.That(row.Name, Is.EqualTo("first-object"), "the stored name must survive a rejected rename");
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithoutName_ReturnsBadRequest()
+	{
+		const ulong objectId = 115;
+		await SeedObjectAsync(objectId, "name-less-request");
+
+		var request = PutRequest(objectId, "   ", ObjectType.Vehicle);
+
+		// act
+		using var response = await HttpClient!.PutAsJsonAsync(ObjectRoute(objectId), request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+			Assert.That(row.Name, Is.EqualTo("name-less-request"));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_VanillaObject_ReturnsForbidden()
+	{
+		// arrange - vanilla (original Locomotion) objects can never be edited by anyone
+		const ulong objectId = 116;
+		await SeedObjectAsync(objectId, "vanilla-object", ObjectType.Vehicle, ObjectSource.LocomotionSteam);
+
+		var request = PutRequest(objectId, "renamed-vanilla", ObjectType.Vehicle, ObjectSource.Custom);
+
+		// act
+		using var response = await HttpClient!.PutAsJsonAsync(ObjectRoute(objectId), request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+			Assert.That(row.Name, Is.EqualTo("vanilla-object"));
+			Assert.That(row.ObjectSource, Is.EqualTo(ObjectSource.LocomotionSteam));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_DoesNotChangeTheObjectSource()
+	{
+		// arrange - the source says where an object came from, which only the server knows: uploads always
+		// store Custom, and Steam/GoG/OpenLoco objects are placed in the server folders by hand
+		const ulong openLocoObjectId = 117;
+		const ulong customObjectId = 118;
+		await SeedObjectAsync(openLocoObjectId, "openloco-object", ObjectType.Vehicle, ObjectSource.OpenLoco);
+		await SeedObjectAsync(customObjectId, "custom-object", ObjectType.Vehicle, ObjectSource.Custom);
+
+		// act - a request claiming a different source, in both directions
+		using var demotedToCustom = await HttpClient!.PutAsJsonAsync(ObjectRoute(openLocoObjectId),
+			PutRequest(openLocoObjectId, "openloco-object", ObjectType.Vehicle, ObjectSource.Custom));
+		using var promotedToOpenLoco = await HttpClient!.PutAsJsonAsync(ObjectRoute(customObjectId),
+			PutRequest(customObjectId, "custom-object", ObjectType.Vehicle, ObjectSource.OpenLoco));
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var demotedRow = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == openLocoObjectId);
+		var promotedRow = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == customObjectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(demotedToCustom.StatusCode, Is.EqualTo(HttpStatusCode.OK), "the request is applied, only the source is ignored");
+			Assert.That(promotedToOpenLoco.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+			Assert.That(demotedRow.ObjectSource, Is.EqualTo(ObjectSource.OpenLoco), "an OpenLoco object cannot be demoted to Custom");
+			Assert.That(promotedRow.ObjectSource, Is.EqualTo(ObjectSource.Custom), "a custom object cannot be promoted to OpenLoco");
+		}
 	}
 }

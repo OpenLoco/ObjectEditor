@@ -121,8 +121,8 @@ public abstract class ScenarioFolderServiceBase : GameDataFolderServiceBase
 
 		foreach (var file in EnumerateFiles(_scanFolder, IsSc5File))
 		{
-			var result = await ImportAsync(file, ct).ConfigureAwait(false);
-			if (result.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
+			var result = await TryReconcileFileAsync(file, () => ImportAsync(file, ct), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
 			{
 				changed++;
 			}

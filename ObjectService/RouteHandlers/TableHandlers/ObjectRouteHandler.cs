@@ -51,8 +51,16 @@ public class ObjectRouteHandler : ITableRouteHandler
 	async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectPostResponse request, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
 		logger.LogInformation("[Update] Object {ObjectId}", id);
-		var r = await query.UpdateAsync(id, request, ct);
-		return r != null ? Results.Ok(r) : Results.NotFound();
+		var result = await query.UpdateAsync(id, request, ct);
+
+		return result.Outcome switch
+		{
+			ObjectUpdateOutcome.Updated => Results.Ok(result.Descriptor),
+			ObjectUpdateOutcome.NotFound => Results.NotFound(),
+			ObjectUpdateOutcome.Forbidden => Results.Problem(result.ErrorMessage, statusCode: StatusCodes.Status403Forbidden),
+			ObjectUpdateOutcome.InvalidRequest => Results.Problem(result.ErrorMessage, statusCode: StatusCodes.Status400BadRequest),
+			ObjectUpdateOutcome.NameConflict => Results.Problem(result.ErrorMessage, statusCode: StatusCodes.Status409Conflict),
+		};
 	}
 
 	async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)

@@ -72,7 +72,8 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		}
 
 		// Only update the local index once the database succeeded so the two never point at
-		// different sets of objects.
+		// different sets of objects. A duplicate (identical content to an existing file) is indexed
+		// too, so the file stays served and the reconcile does not re-read it on every startup.
 		UpdateIndexEntry(entry);
 
 		if (persistIndex)
@@ -110,6 +111,17 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 			return new GameDataImportResult(GameDataImportStatus.Removed, $"Removed {entry.DisplayName} from the index", entry);
 		}
 
+		// The same file content can be represented on disk more than once (duplicate files are collapsed
+		// to the oldest, but the index can transiently hold several). If an identical file is still
+		// present the object stays available - only the file mapping was dropped.
+		if (entry.xxHash3.HasValue && IsContentStillOnDisk(entry.xxHash3.Value))
+		{
+			return new GameDataImportResult(
+				GameDataImportStatus.Removed,
+				$"Removed {entry.DisplayName} from the index (identical content is still present)",
+				entry);
+		}
+
 		// Mark the database object as unavailable rather than deleting it so any metadata (authors,
 		// tags, packs) curated against it is preserved.
 		var datObject = await Db.DatObjects
@@ -142,23 +154,22 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		var datChecksum = entry.DatChecksum ?? 0;
 		var xxHash3 = entry.xxHash3 ?? XxHash3.HashToUInt64(bytes);
 
-		if (Db.DoesObjectExist(datName, datChecksum, out var existingObj))
+		// xxHash3 is the authoritative identity of a file. If we already hold a file with this exact
+		// content, this one is a duplicate: keep the oldest (the existing object) and add nothing.
+		if (Db.DoesObjectWithHashExist(xxHash3, out var duplicateObj))
 		{
-			// The object is already known - refresh the mapping, hashes and dates so the live
-			// service reflects the (possibly relocated or re-encoded) file without a full reindex.
-			var existingDat = existingObj!.DatObjects.FirstOrDefault(d => d.DatName == datName && d.DatChecksum == datChecksum);
-			if (existingDat != null && existingDat.xxHash3 != xxHash3)
-			{
-				existingDat.xxHash3 = xxHash3;
-			}
-
-			existingObj.ModifiedDate = entry.ModifiedDate;
+			duplicateObj!.ModifiedDate = entry.ModifiedDate;
 
 			// A file that reappears (e.g. restored from the Removed folder) makes the object available again.
-			existingObj.Availability = ObjectAvailability.Available;
+			duplicateObj.Availability = ObjectAvailability.Available;
 
 			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
-			return GameDataImportStatus.Updated;
+
+			Logger.LogInformation(
+				"File \"{RelativePath}\" is a duplicate (xxHash3={XxHash3}); keeping the existing object {ObjectId}",
+				relativePath, xxHash3, duplicateObj.Id);
+
+			return GameDataImportStatus.Duplicate;
 		}
 
 		if (!SawyerStreamReader.TryGetHeadersFromBytes(bytes, out var hdrs, _ssrLogger))
@@ -166,9 +177,10 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 			return GameDataImportStatus.Failed;
 		}
 
-		// Match the naming convention used by the upload route ({name}_{checksum}) so duplicate
-		// display names with different checksums remain unique in the Objects table.
-		var objName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}";
+		// The (DatName, DatChecksum) pair is not unique: a binary-different file may carry the same S5
+		// name and checksum. Name the object from that pair, disambiguating with the whole-file hash
+		// when the name is already taken so the unique Objects.Name constraint still holds.
+		var objName = await Db.GetUniqueObjectNameAsync(hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, ct).ConfigureAwait(false);
 
 		var missingEntry = await Db.ObjectsMissing.FirstOrDefaultAsync(x => x.DatName == datName && x.DatChecksum == datChecksum, ct).ConfigureAwait(false);
 		if (missingEntry != null)
@@ -260,6 +272,7 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		var missing = 0;
 		var backfilled = 0;
 		var added = 0;
+		var duplicates = 0;
 
 		// 1. Index entries whose file has gone.
 		foreach (var entry in indexEntries)
@@ -275,8 +288,8 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 				continue;
 			}
 
-			var result = await RemoveCoreAsync(fullPath, ct, persistIndex: false).ConfigureAwait(false);
-			if (result.Status is GameDataImportStatus.Unavailable or GameDataImportStatus.Removed)
+			var result = await TryReconcileFileAsync(fullPath, () => RemoveCoreAsync(fullPath, ct, persistIndex: false), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Unavailable or GameDataImportStatus.Removed)
 			{
 				changed = true;
 				missing++;
@@ -297,11 +310,15 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 				continue;
 			}
 
-			var result = await ImportCoreAsync(fullPath, ct, persistIndex: false).ConfigureAwait(false);
-			if (result.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
+			var result = await TryReconcileFileAsync(fullPath, () => ImportCoreAsync(fullPath, ct, persistIndex: false), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
 			{
 				changed = true;
 				backfilled++;
+			}
+			else if (result?.Status is GameDataImportStatus.Duplicate)
+			{
+				duplicates++;
 			}
 		}
 
@@ -313,11 +330,15 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 				continue;
 			}
 
-			var result = await ImportCoreAsync(file, ct, persistIndex: false).ConfigureAwait(false);
-			if (result.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
+			var result = await TryReconcileFileAsync(file, () => ImportCoreAsync(file, ct, persistIndex: false), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
 			{
 				changed = true;
 				added++;
+			}
+			else if (result?.Status is GameDataImportStatus.Duplicate)
+			{
+				duplicates++;
 			}
 		}
 
@@ -327,8 +348,23 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		}
 
 		Logger.LogInformation(
-			"Objects reconciliation complete: added={Added}, database backfilled={Backfilled}, marked unavailable={Missing}",
-			added, backfilled, missing);
+			"Objects reconciliation complete: added={Added}, database backfilled={Backfilled}, marked unavailable={Missing}, duplicates ignored={Duplicates}",
+			added, backfilled, missing, duplicates);
+	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> when any file still in the index has the same whole-file content
+	/// hash and is present on disk.
+	/// </summary>
+	private bool IsContentStillOnDisk(ulong xxHash3)
+	{
+		lock (Sfm.ObjectIndex)
+		{
+			return Sfm.ObjectIndex.Objects.Any(e =>
+				e.xxHash3 == xxHash3
+				&& !string.IsNullOrEmpty(e.FileName)
+				&& File.Exists(ResolveObjectPath(e.FileName!)));
+		}
 	}
 
 	/// <summary>

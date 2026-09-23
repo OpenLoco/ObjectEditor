@@ -179,7 +179,7 @@ var disableAuthRequested = builder.Configuration.GetValue<bool?>("ObjectService:
 var disableAuth = disableAuthRequested && builder.Environment.IsDevelopment();
 if (disableAuthRequested && !builder.Environment.IsDevelopment())
 {
-Console.Error.WriteLine("ObjectService:DisableAuthentication is set but the environment is not Development; ignoring it. Authentication cannot be disabled outside Development.");
+	Console.Error.WriteLine("ObjectService:DisableAuthentication is set but the environment is not Development; ignoring it. Authentication cannot be disabled outside Development.");
 }
 
 // The schemes used by the API authorization policies. The dev scheme is added last so that real

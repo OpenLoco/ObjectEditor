@@ -83,7 +83,20 @@ public sealed class GameDataWatcherService : BackgroundService
 			{
 				foreach (var watcher in _watchers)
 				{
-					await watcher.ReconcileAsync(ct).ConfigureAwait(false);
+					try
+					{
+						await watcher.ReconcileAsync(ct).ConfigureAwait(false);
+					}
+					catch (OperationCanceledException) when (ct.IsCancellationRequested)
+					{
+						// Normal shutdown - stop reconciling the remaining folders.
+						throw;
+					}
+					catch (Exception ex)
+					{
+						// One folder failing must not stop the others from being reconciled.
+						_logger.LogError(ex, "Reconciliation of the {Category} folder failed; continuing with the remaining folders", watcher.Category);
+					}
 				}
 			}
 			finally

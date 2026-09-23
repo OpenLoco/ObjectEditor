@@ -10,6 +10,10 @@ public enum GameDataImportStatus
 	Added,
 	Updated,
 	Removed,
+
+	/// <summary>The file's content (<c>xxHash3</c>) is already present: it is a duplicate of an existing
+	/// file, so the oldest one is kept and this one is ignored.</summary>
+	Duplicate,
 	Unavailable,
 	Skipped,
 	Failed,
@@ -74,6 +78,43 @@ public abstract class GameDataFolderServiceBase : IGameDataFileService
 				.Where(path => !ServerFolderManager.IsUnderRemovedFolder(folder, path))
 				.Where(predicate)
 			: [];
+
+	/// <summary>
+	/// Runs one file's import or removal during a reconciliation pass. Failures are logged against the
+	/// offending file and swallowed rather than propagated, so a single malformed file (or a data
+	/// conflict such as a duplicate object name) can never abort the whole reconcile and leave the
+	/// remaining files unprocessed.
+	/// </summary>
+	protected async Task<GameDataImportResult?> TryReconcileFileAsync(
+		string absolutePath,
+		Func<Task<GameDataImportResult>> action,
+		CancellationToken ct)
+	{
+		try
+		{
+			var result = await action().ConfigureAwait(false);
+			if (result.Status is GameDataImportStatus.Failed)
+			{
+				Logger.LogWarning("Failed to reconcile \"{Path}\": {Message}", absolutePath, result.Message);
+			}
+			else if (result.Status is GameDataImportStatus.Duplicate)
+			{
+				Logger.LogDebug("Ignored duplicate file \"{Path}\": {Message}", absolutePath, result.Message);
+			}
+
+			return result;
+		}
+		catch (OperationCanceledException) when (ct.IsCancellationRequested)
+		{
+			// Normal shutdown - let it propagate.
+			throw;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to reconcile \"{Path}\"; continuing with the remaining files", absolutePath);
+			return null;
+		}
+	}
 
 	/// <summary>
 	/// Determines the object source of a file from the Original/OpenLoco/Custom subfolder it lives in.

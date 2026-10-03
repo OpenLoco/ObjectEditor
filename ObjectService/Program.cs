@@ -85,6 +85,11 @@ var paletteMap = new PaletteMap(paletteMapFile);
 builder.Services.AddSingleton(serverFolderManager);
 builder.Services.AddSingleton(paletteMap);
 
+// The GameData folder services are shared by the startup synchronisation and the file watchers, and
+// are always registered so the files on disk and the database are reconciled whenever the server
+// starts - even when the file watcher is turned off.
+builder.Services.AddGameDataFolderServices();
+
 // Watches the whole GameData folder tree for files dropped in at runtime. A single service owns
 // one watcher per category folder; DAT files are indexed into objectIndex.json and the database
 // and scenarios are added to the database so changes appear on the live service without a restart.

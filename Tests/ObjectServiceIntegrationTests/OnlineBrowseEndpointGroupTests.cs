@@ -139,4 +139,43 @@ public class OnlineBrowseEndpointGroupTests
 
 		Assert.That(results.Select(x => x.Name), Is.EqualTo(["Challenge Pack", "Starter Pack"]));
 	}
+
+	[Test]
+	public async Task GetListAsync_ReturnsGameDataFilesFromConfiguredEndpointGroups()
+	{
+		using var scope = testWebAppFactory!.Services.CreateScope();
+		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
+		await db.Music.AddRangeAsync(
+		[
+			new TblMusic { Id = 1, Name = "Adventure Theme" },
+			new TblMusic { Id = 2, Name = "Coaster Rag" },
+		]);
+		await db.SoundEffects.AddRangeAsync(
+		[
+			new TblSoundEffect { Id = 1, Name = "Door Close" },
+			new TblSoundEffect { Id = 2, Name = "Steam Whistle" },
+		]);
+		await db.Tutorials.AddRangeAsync(
+		[
+			new TblTutorial { Id = 1, Name = "Building a Station" },
+		]);
+		await db.Graphics.AddRangeAsync(
+		[
+			new TblGraphics { Id = 1, Name = "Interface Icons" },
+		]);
+		_ = await db.SaveChangesAsync();
+
+		var music = await Client.GetListAsync<DtoMusicListEntry>(httpClient!, Client.MusicEndpointGroup);
+		var soundEffects = await Client.GetListAsync<DtoSoundEffectListEntry>(httpClient!, Client.SoundEffectsEndpointGroup);
+		var tutorials = await Client.GetListAsync<DtoTutorialListEntry>(httpClient!, Client.TutorialsEndpointGroup);
+		var graphics = await Client.GetListAsync<DtoGraphicsListEntry>(httpClient!, Client.GraphicsEndpointGroup);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(music.Select(x => x.Name), Is.EqualTo(["Adventure Theme", "Coaster Rag"]));
+			Assert.That(soundEffects.Select(x => x.Name), Is.EqualTo(["Door Close", "Steam Whistle"]));
+			Assert.That(tutorials.Select(x => x.Name), Is.EqualTo(["Building a Station"]));
+			Assert.That(graphics.Select(x => x.Name), Is.EqualTo(["Interface Icons"]));
+		}
+	}
 }

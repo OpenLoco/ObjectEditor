@@ -1,4 +1,5 @@
 using Dat.Converters;
+using Dat.Data;
 using Dat.FileParsing;
 using Definitions;
 using Definitions.Database;
@@ -512,15 +513,23 @@ public class ObjectQueryService : IObjectQueryService
 			return new UploadResult(false, null, "Invalid dat file headers", 400);
 		}
 
-		if (hdrs.S5.IsVanilla())
-		{
-			return new UploadResult(false, null, "Uploading vanilla objects is not allowed", 400);
-		}
-
 		if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
 		{
 			return new UploadResult(false, null, "Invalid DAT file", 400);
 		}
+
+		// Work out what the file actually is. Modders routinely label their own work as "vanilla" to
+		// dodge the in-game restrictions, and the header cannot be rewritten (that would change the
+		// checksum), so vanilla (and custom) uploads are accepted and stored in the Custom folder as
+		// custom objects. Genuine OpenLoco objects are refused outright.
+		var detectedSource = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectSource);
+		if (detectedSource is ObjectSource.OpenLoco)
+		{
+			_logger.LogWarning("Rejected upload \"{Name}\" ({Checksum}): its content identifies it as an OpenLoco object", hdrs.S5.Name, hdrs.S5.Checksum);
+			return new UploadResult(false, null, "Uploading OpenLoco objects is not allowed", 400);
+		}
+
+		_logger.LogInformation("Accepted upload \"{Name}\" ({Checksum}); detected source {Source}, storing it in the Custom folder", hdrs.S5.Name, hdrs.S5.Checksum, detectedSource);
 
 		// xxHash3 over the whole file is the authoritative identity: identical content means the object
 		// already exists regardless of its S5 name/checksum. A binary-different file that happens to

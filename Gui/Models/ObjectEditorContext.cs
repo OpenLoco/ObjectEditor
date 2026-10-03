@@ -447,83 +447,29 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.ObjDataDirectory = directory;
 		Settings.Save(SettingsFilePathName, Logger);
 
-		if (useExistingIndex && File.Exists(IndexFileName))
+		if (string.IsNullOrEmpty(IndexFileName))
 		{
-			var exception = false;
+			Logger.LogError("Index filename was null or empty.");
+			return;
+		}
 
-			try
-			{
-				var index = await ObjectIndex.LoadIndexAsync(IndexFileName).ConfigureAwait(false);
-				ArgumentNullException.ThrowIfNull(index, nameof(index));
-				ObjectIndex = index;
-				Logger.LogInformation("Loaded index for {Directory} with {Count} objects.", directory, ObjectIndex.Objects.Count);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "Failed to load index from \"{IndexFileName}\"", IndexFileName);
-				exception = true;
-			}
-
-			if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.FileName) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
-			{
-				Logger.LogWarning("Index file format has changed or otherwise appears to be malformed - recreating now.");
-				await RecreateIndex(directory, progress).ConfigureAwait(false);
-				return;
-			}
-
-			var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.FileName);
-			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-
-			var a = objectIndexFilenames.Except(allFiles);
-			var b = allFiles.Except(objectIndexFilenames);
-			if (a.Any() || b.Any())
-			{
-				Logger.LogWarning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
-				Logger.LogWarning("Objects in index but not on disk: {Value}", string.Join(',', a));
-				Logger.LogWarning("Objects on disk but not in index: {Value}", string.Join(',', b));
-				await UpdateIndex(directory, progress, a.Concat(b).Where(x => x != null)!).ConfigureAwait(false);
-			}
+		// Loading the index, comparing it against the files on disk and re-indexing the differences is
+		// shared with the server's startup synchronisation (ObjectIndex.LoadOrCreateAndSyncAsync), so
+		// both use exactly the same behaviour.
+		if (useExistingIndex)
+		{
+			Logger.LogInformation("Loading index file for {Directory}", directory);
+			ObjectIndex = await ObjectIndex.LoadOrCreateAndSyncAsync(directory, IndexFileName, Logger, progress).ConfigureAwait(false);
 		}
 		else
 		{
-			await RecreateIndex(directory, progress).ConfigureAwait(false);
-		}
-
-		async Task UpdateIndex(string directory, IProgress<float> progress, IEnumerable<string> filesToAdd)
-		{
-			Logger.LogInformation("Updating index file for {Directory}", directory);
-			_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
-
-			if (string.IsNullOrEmpty(IndexFileName))
-			{
-				Logger.LogError("Index filename was null or empty.");
-				return;
-			}
-
-			await ObjectIndex.SaveIndexAsync(IndexFileName).ConfigureAwait(false);
-			Logger.LogInformation("Index was saved to {IndexFileName}", IndexFileName);
-		}
-
-		async Task RecreateIndex(string directory, IProgress<float> progress)
-		{
 			Logger.LogInformation("Recreating index file for {Directory}", directory);
 			ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress).ConfigureAwait(false);
-
-			if (ObjectIndex == null)
-			{
-				Logger.LogError("Index was unable to be created.");
-				return;
-			}
-
-			if (string.IsNullOrEmpty(IndexFileName))
-			{
-				Logger.LogError("Index filename was null or empty.");
-				return;
-			}
-
 			await ObjectIndex.SaveIndexAsync(IndexFileName).ConfigureAwait(false);
 			Logger.LogInformation("New index was saved to {IndexFileName}", IndexFileName);
 		}
+
+		Logger.LogInformation("Indexed {Directory} with {Count} objects.", directory, ObjectIndex.Objects.Count);
 	}
 
 	/// <summary>

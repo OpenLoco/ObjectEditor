@@ -113,23 +113,44 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Registers the single GameData file-watching service plus the seven per-folder watchers it
-	/// owns (see <see cref="GameDataWatcherService"/>).
+	/// Registers the seven per-folder GameData services and the startup synchronisation service. This
+	/// is registered independently of the file watchers so the files on disk and the database are
+	/// always reconciled at startup (see <see cref="GameDataSyncService"/>).
 	/// </summary>
-	public static IServiceCollection AddGameDataFileWatchers(this IServiceCollection services)
+	public static IServiceCollection AddGameDataFolderServices(this IServiceCollection services)
 	{
 		_ = services.AddSingleton<GameDataWatcherLock>();
 
 		// One entity-specific import service per GameData folder - a game object, scenario,
 		// landscape, tutorial, sound effect, music file and graphics file are all distinct entities.
+		// Each is also registered as IGameDataFileService so the startup sync can reconcile them all.
 		_ = services.AddScoped<ObjectsFolderService>();
+		_ = services.AddScoped<IGameDataFileService>(p => p.GetRequiredService<ObjectsFolderService>());
 		_ = services.AddScoped<ScenariosFolderService>();
+		_ = services.AddScoped<IGameDataFileService>(p => p.GetRequiredService<ScenariosFolderService>());
 		_ = services.AddScoped<LandscapesFolderService>();
+		_ = services.AddScoped<IGameDataFileService>(p => p.GetRequiredService<LandscapesFolderService>());
 		_ = services.AddScoped<TutorialsFolderService>();
+		_ = services.AddScoped<IGameDataFileService>(p => p.GetRequiredService<TutorialsFolderService>());
 		_ = services.AddScoped<SoundEffectsFolderService>();
+		_ = services.AddScoped<IGameDataFileService>(p => p.GetRequiredService<SoundEffectsFolderService>());
 		_ = services.AddScoped<MusicFolderService>();
+		_ = services.AddScoped<IGameDataFileService>(p => p.GetRequiredService<MusicFolderService>());
 		_ = services.AddScoped<GraphicsFolderService>();
+		_ = services.AddScoped<IGameDataFileService>(p => p.GetRequiredService<GraphicsFolderService>());
 
+		_ = services.AddHostedService<GameDataSyncService>();
+
+		return services;
+	}
+
+	/// <summary>
+	/// Registers the single GameData file-watching service plus the seven per-folder watchers it
+	/// owns (see <see cref="GameDataWatcherService"/>). Requires
+	/// <see cref="AddGameDataFolderServices"/> to have been called.
+	/// </summary>
+	public static IServiceCollection AddGameDataFileWatchers(this IServiceCollection services)
+	{
 		// One watcher per folder, owned by the single hosted service.
 		_ = services.AddSingleton<GameDataFolderWatcher, ObjectsFolderWatcher>();
 		_ = services.AddSingleton<GameDataFolderWatcher, ScenariosFolderWatcher>();

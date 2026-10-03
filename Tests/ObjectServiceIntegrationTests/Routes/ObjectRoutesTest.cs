@@ -1,5 +1,6 @@
 using Common;
 using Common.Logging;
+using Dat.Tests;
 using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
@@ -173,6 +174,64 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Assert.That(row.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
 			Assert.That(results, Is.Not.Null);
 			Assert.That(results!.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
+		}
+	}
+
+	[Test]
+	public async Task PostAsync_RejectsOpenLocoObjects()
+	{
+		var objDirectory = @"Q:\Games\Locomotion\Server\GameData\Objects";
+		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, new Logger());
+		var openLocoEntry = index.Objects.FirstOrDefault(x =>
+			x.ObjectSource == ObjectSource.OpenLoco
+			&& !string.IsNullOrEmpty(x.FileName)
+			&& File.Exists(Path.Combine(objDirectory, x.FileName)));
+
+		if (openLocoEntry == null)
+		{
+			Assert.Ignore("No OpenLoco object is available to attempt an upload with");
+		}
+
+		var bytes = File.ReadAllBytes(Path.Combine(objDirectory, openLocoEntry!.FileName!));
+		var dto = new DtoObjectPost(Convert.ToBase64String(bytes), XxHash3.HashToUInt64(bytes), ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
+
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", dto);
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+	}
+
+	[Test]
+	public async Task PostAsync_AcceptsVanillaObjectsAndStoresThemAsCustom()
+	{
+		var source = Directory.Exists(TestConstants.BaseSteamObjDataPath)
+			? Directory.GetFiles(TestConstants.BaseSteamObjDataPath, "*.dat").OrderBy(x => new FileInfo(x).Length).FirstOrDefault()
+			: null;
+
+		if (source == null)
+		{
+			Assert.Ignore("No vanilla DAT files are available to upload");
+		}
+
+		var bytes = File.ReadAllBytes(source!);
+		var dto = new DtoObjectPost(Convert.ToBase64String(bytes), XxHash3.HashToUInt64(bytes), ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
+
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", dto);
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
+
+		var descriptor = await response.Content.ReadFromJsonAsync<DtoObjectPostResponse>();
+		Assert.That(descriptor, Is.Not.Null);
+
+		using (Assert.EnterMultipleScope())
+		{
+			// A file that claims to be vanilla is accepted (the header cannot be rewritten) but is
+			// stored in the Custom folder as a custom object.
+			Assert.That(descriptor!.ObjectSource, Is.EqualTo(ObjectSource.Custom));
+
+			using var scope = testWebAppFactory.Services.CreateScope();
+			var sfm = scope.ServiceProvider.GetRequiredService<ServerFolderManager>();
+			Assert.That(sfm.ObjectIndex.TryFind((descriptor.DisplayName, descriptor.DatChecksum!.Value), out var uploadedEntry), Is.True);
+			Assert.That(uploadedEntry!.FileName, Does.StartWith(ServerFolderManager.CustomFolderName));
 		}
 	}
 

@@ -61,6 +61,7 @@ public class GameDataWatcherServiceTests
 		_ = services.AddLogging();
 		_ = services.AddSingleton(sfm);
 		_ = services.AddDbContext<LocoDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
+		_ = services.AddGameDataFolderServices();
 		_ = services.AddGameDataFileWatchers();
 
 		var provider = services.BuildServiceProvider();
@@ -75,13 +76,16 @@ public class GameDataWatcherServiceTests
 
 	private static async Task<IHostedService> StartAsync(ServiceProvider provider)
 	{
-		var hostedService = provider.GetServices<IHostedService>().Single();
-		await hostedService.StartAsync(CancellationToken.None);
+		var hostedServices = provider.GetServices<IHostedService>().ToList();
+		foreach (var hostedService in hostedServices)
+		{
+			await hostedService.StartAsync(CancellationToken.None);
+		}
 
-		// Let the startup reconciliation of the (empty) folders complete so the assertions below
+		// Let the startup synchronisation of the (empty) folders complete so the assertions below
 		// genuinely exercise the live FileSystemWatcher event path, not the reconcile path.
 		await Task.Delay(TimeSpan.FromSeconds(2));
-		return hostedService;
+		return hostedServices.OfType<GameDataWatcherService>().Single();
 	}
 	[Test]
 	public async Task Watcher_ImportsObjectsAndScenarios_AndMarksObjectsUnavailableWhenDeleted()

@@ -4,8 +4,9 @@ namespace ObjectService.Services;
 /// <para>
 /// The single file-watching service for the server. It owns one watcher per GameData category
 /// folder (<c>Objects</c>, <c>Scenarios</c>, <c>Landscapes</c>, <c>Tutorials</c>,
-/// <c>SoundEffects</c>, <c>Music</c>, <c>Graphics</c>) and runs a one-off reconciliation of every
-/// folder at startup so files added or removed while the server was offline are picked up.
+/// <c>SoundEffects</c>, <c>Music</c>, <c>Graphics</c>). The one-off startup reconciliation of every
+/// folder lives in <see cref="GameDataSyncService"/> so that it also runs when this service is not
+/// registered.
 /// </para>
 /// <para>
 /// Each folder is watched by its own <see cref="FileSystemWatcher"/> (owned by a
@@ -18,18 +19,15 @@ namespace ObjectService.Services;
 public sealed class GameDataWatcherService : BackgroundService
 {
 	private readonly IReadOnlyList<GameDataFolderWatcher> _watchers;
-	private readonly GameDataWatcherLock _operationLock;
 	private readonly ServerFolderManager _sfm;
 	private readonly ILogger<GameDataWatcherService> _logger;
 
 	public GameDataWatcherService(
 		IEnumerable<GameDataFolderWatcher> watchers,
-		GameDataWatcherLock operationLock,
 		ServerFolderManager sfm,
 		ILogger<GameDataWatcherService> logger)
 	{
 		_watchers = [.. watchers];
-		_operationLock = operationLock;
 		_sfm = sfm;
 		_logger = logger;
 	}
@@ -51,7 +49,8 @@ public sealed class GameDataWatcherService : BackgroundService
 			"GameData watcher service started for \"{Root}\" ({Count} folders: {Folders})",
 			_sfm.GameDataFolder, _watchers.Count, string.Join(", ", _watchers.Select(w => w.Category)));
 
-		await ReconcileAsync(stoppingToken).ConfigureAwait(false);
+		// The one-off startup synchronisation is owned by GameDataSyncService so that it also runs when
+		// the file watcher is disabled; from here on the watchers only handle live changes.
 
 		try
 		{
@@ -65,54 +64,6 @@ public sealed class GameDataWatcherService : BackgroundService
 		foreach (var watcher in _watchers)
 		{
 			await watcher.StopAsync().ConfigureAwait(false);
-		}
-	}
-
-	/// <summary>
-	/// Reassesses every watched folder in turn. Live events raised while this is running are queued
-	/// by each folder watcher and processed once the shared lock is released.
-	/// </summary>
-	private async Task ReconcileAsync(CancellationToken ct)
-	{
-		_logger.LogInformation("Reconciling the GameData folder structure with the index and database...");
-
-		try
-		{
-			await _operationLock.Semaphore.WaitAsync(ct).ConfigureAwait(false);
-			try
-			{
-				foreach (var watcher in _watchers)
-				{
-					try
-					{
-						await watcher.ReconcileAsync(ct).ConfigureAwait(false);
-					}
-					catch (OperationCanceledException) when (ct.IsCancellationRequested)
-					{
-						// Normal shutdown - stop reconciling the remaining folders.
-						throw;
-					}
-					catch (Exception ex)
-					{
-						// One folder failing must not stop the others from being reconciled.
-						_logger.LogError(ex, "Reconciliation of the {Category} folder failed; continuing with the remaining folders", watcher.Category);
-					}
-				}
-			}
-			finally
-			{
-				_ = _operationLock.Semaphore.Release();
-			}
-
-			_logger.LogInformation("Reconciliation complete");
-		}
-		catch (OperationCanceledException) when (ct.IsCancellationRequested)
-		{
-			// Normal shutdown.
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Startup reconciliation failed; the watchers will still process live changes");
 		}
 	}
 }

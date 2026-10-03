@@ -1,6 +1,7 @@
 using Dat.FileParsing;
 using Definitions;
 using Definitions.Database;
+using Definitions.ObjectModels.Types;
 using Index;
 using Microsoft.EntityFrameworkCore;
 using System.IO.Hashing;
@@ -64,6 +65,10 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		{
 			return new GameDataImportResult(GameDataImportStatus.Failed, "Invalid DAT file (missing or invalid S5/object headers)");
 		}
+
+		// An object dropped into the Custom folder that is really an OpenLoco object is moved into the
+		// OpenLoco folder before it is indexed or imported, so a file's location always matches its content.
+		(absolutePath, relativePath, entry) = EnsureCorrectObjectFolder(absolutePath, relativePath, entry);
 
 		var dbStatus = await UpsertDatabaseEntryAsync(bytes, entry, relativePath, ct).ConfigureAwait(false);
 		if (dbStatus == GameDataImportStatus.Failed)
@@ -251,6 +256,20 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 	/// </summary>
 	public override async Task ReconcileAsync(CancellationToken ct)
 	{
+		var changed = false;
+		var missing = 0;
+		var backfilled = 0;
+		var added = 0;
+		var duplicates = 0;
+
+		// 0. Objects sitting in the wrong folder are moved to the folder their content says they belong
+		// to first, so the rest of the pass works against the corrected layout.
+		var relocated = await RelocateMisplacedObjectsAsync(ct).ConfigureAwait(false);
+		if (relocated > 0)
+		{
+			changed = true;
+		}
+
 		var dbPairs = await Db.DatObjects
 			.AsNoTracking()
 			.Select(x => new { x.DatName, x.DatChecksum })
@@ -264,30 +283,17 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 			indexEntries = [.. Sfm.ObjectIndex.Objects];
 		}
 
-		var indexedPaths = new HashSet<string>(
-			indexEntries.Where(e => !string.IsNullOrEmpty(e.FileName)).Select(e => NormalizePath(ResolveObjectPath(e.FileName!))),
-			StringComparer.OrdinalIgnoreCase);
-
-		var changed = false;
-		var missing = 0;
-		var backfilled = 0;
-		var added = 0;
-		var duplicates = 0;
+		// The index/disk comparison is the same one the editor performs when it reloads its index. The
+		// file list is supplied so files parked in the Removed folder are ignored, as before.
+		var diskFiles = EnumerateFiles(Sfm.ObjectsFolder, IsDatFile)
+			.Select(f => Path.GetRelativePath(Sfm.ObjectsFolder, f))
+			.ToList();
+		var (missingEntries, unindexedFiles) = Sfm.ObjectIndex.DiffWithDisk(Sfm.ObjectsFolder, diskFiles);
 
 		// 1. Index entries whose file has gone.
-		foreach (var entry in indexEntries)
+		foreach (var entry in missingEntries)
 		{
-			if (string.IsNullOrEmpty(entry.FileName))
-			{
-				continue;
-			}
-
-			var fullPath = ResolveObjectPath(entry.FileName!);
-			if (File.Exists(fullPath))
-			{
-				continue;
-			}
-
+			var fullPath = ResolveObjectPath(entry.FileName ?? string.Empty);
 			var result = await TryReconcileFileAsync(fullPath, () => RemoveCoreAsync(fullPath, ct, persistIndex: false), ct).ConfigureAwait(false);
 			if (result?.Status is GameDataImportStatus.Unavailable or GameDataImportStatus.Removed)
 			{
@@ -323,13 +329,9 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		}
 
 		// 3. DAT files on disk that are not in the index at all.
-		foreach (var file in EnumerateFiles(Sfm.ObjectsFolder, IsDatFile))
+		foreach (var relativePath in unindexedFiles)
 		{
-			if (indexedPaths.Contains(NormalizePath(file)))
-			{
-				continue;
-			}
-
+			var file = Path.Combine(Sfm.ObjectsFolder, relativePath);
 			var result = await TryReconcileFileAsync(file, () => ImportCoreAsync(file, ct, persistIndex: false), ct).ConfigureAwait(false);
 			if (result?.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
 			{
@@ -348,8 +350,116 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		}
 
 		Logger.LogInformation(
-			"Objects reconciliation complete: added={Added}, database backfilled={Backfilled}, marked unavailable={Missing}, duplicates ignored={Duplicates}",
-			added, backfilled, missing, duplicates);
+			"Objects reconciliation complete: relocated={Relocated}, added={Added}, database backfilled={Backfilled}, marked unavailable={Missing}, duplicates ignored={Duplicates}",
+			relocated, added, backfilled, missing, duplicates);
+	}
+
+	/// <summary>
+	/// Moves object files that sit in the <c>Custom</c> folder but whose content identifies them as
+	/// OpenLoco objects into the <c>OpenLoco</c> folder, re-pointing the index entry (and the database's
+	/// recorded source) at the new location.
+	/// </summary>
+	private async Task<int> RelocateMisplacedObjectsAsync(CancellationToken ct)
+	{
+		List<ObjectIndexEntry> indexEntries;
+		lock (Sfm.ObjectIndex)
+		{
+			indexEntries = [.. Sfm.ObjectIndex.Objects];
+		}
+
+		var moved = 0;
+		foreach (var entry in indexEntries)
+		{
+			if (ct.IsCancellationRequested)
+			{
+				break;
+			}
+
+			if (entry.ObjectSource != ObjectSource.OpenLoco || string.IsNullOrEmpty(entry.FileName))
+			{
+				continue;
+			}
+
+			var source = ResolveObjectPath(entry.FileName!);
+			if (!File.Exists(source) || !IsUnder(source, Sfm.ObjectsCustomFolder))
+			{
+				continue;
+			}
+
+			var destination = Path.Combine(Sfm.ObjectsOpenLocoFolder, Path.GetFileName(source));
+			if (File.Exists(destination))
+			{
+				Logger.LogWarning("Cannot move OpenLoco object \"{Source}\": \"{Destination}\" already exists", source, destination);
+				continue;
+			}
+
+			try
+			{
+				File.Move(source, destination);
+			}
+			catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+			{
+				Logger.LogError(ex, "Failed to move OpenLoco object \"{Source}\" into the OpenLoco folder", source);
+				continue;
+			}
+
+			var newRelativePath = Path.GetRelativePath(Sfm.ObjectsFolder, destination);
+			lock (Sfm.ObjectIndex)
+			{
+				Sfm.ObjectIndex.RemoveEntry(entry);
+				Sfm.ObjectIndex.AddEntry(entry with { FileName = newRelativePath, ObjectSource = ObjectSource.OpenLoco });
+			}
+
+			if (entry.DatChecksum.HasValue
+				&& Db.DoesObjectExist(entry.DisplayName, entry.DatChecksum.Value, out var tblObject)
+				&& tblObject!.ObjectSource != ObjectSource.OpenLoco)
+			{
+				tblObject.ObjectSource = ObjectSource.OpenLoco;
+				_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+			}
+
+			moved++;
+			Logger.LogInformation("Moved OpenLoco object \"{Name}\" from Custom into the OpenLoco folder", entry.DisplayName);
+		}
+
+		return moved;
+	}
+
+	/// <summary>
+	/// Moves <paramref name="absolutePath"/> into the OpenLoco folder when it is an OpenLoco object
+	/// sitting in the Custom folder, and returns the updated paths and index entry. Otherwise the
+	/// inputs are returned unchanged.
+	/// </summary>
+	private (string AbsolutePath, string RelativePath, ObjectIndexEntry Entry) EnsureCorrectObjectFolder(
+		string absolutePath,
+		string relativePath,
+		ObjectIndexEntry entry)
+	{
+		if (entry.ObjectSource != ObjectSource.OpenLoco || !IsUnder(absolutePath, Sfm.ObjectsCustomFolder))
+		{
+			return (absolutePath, relativePath, entry);
+		}
+
+		var destination = Path.Combine(Sfm.ObjectsOpenLocoFolder, Path.GetFileName(absolutePath));
+		if (File.Exists(destination))
+		{
+			Logger.LogWarning("Cannot move OpenLoco object \"{Source}\": \"{Destination}\" already exists", absolutePath, destination);
+			return (absolutePath, relativePath, entry);
+		}
+
+		try
+		{
+			File.Move(absolutePath, destination);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			Logger.LogError(ex, "Failed to move OpenLoco object \"{Source}\" into the OpenLoco folder", absolutePath);
+			return (absolutePath, relativePath, entry);
+		}
+
+		var newRelativePath = Path.GetRelativePath(Sfm.ObjectsFolder, destination);
+		Logger.LogInformation("Moved OpenLoco object \"{Name}\" from Custom into the OpenLoco folder", entry.DisplayName);
+		return (destination, newRelativePath, entry with { FileName = newRelativePath });
 	}
 
 	/// <summary>
@@ -427,7 +537,4 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 
 	private string ResolveObjectPath(string fileName)
 		=> Path.IsPathRooted(fileName) ? fileName : Path.Combine(Sfm.ObjectsFolder, fileName);
-
-	private static string NormalizePath(string path)
-		=> Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 }

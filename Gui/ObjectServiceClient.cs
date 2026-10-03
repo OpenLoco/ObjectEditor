@@ -120,4 +120,16 @@ public class ObjectServiceClient
 
 	public async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync()
 		=> await Client.GetMissingObjectsAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoMusicListEntry>> GetMusicListEntriesAsync()
+		=> await Client.GetMusicListEntriesAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoSoundEffectListEntry>> GetSoundEffectListEntriesAsync()
+		=> await Client.GetSoundEffectListEntriesAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoTutorialListEntry>> GetTutorialListEntriesAsync()
+		=> await Client.GetTutorialListEntriesAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoGraphicsListEntry>> GetGraphicsListEntriesAsync()
+		=> await Client.GetGraphicsListEntriesAsync(WebClient, Logger);
 }

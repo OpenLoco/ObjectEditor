@@ -169,6 +169,108 @@ public class ObjectIndex
 		return index;
 	}
 
+	/// <summary>
+	/// Loads the index from <paramref name="indexFile"/> (creating it from disk when it is missing or
+	/// malformed), reconciles it with the <c>.dat</c> files under <paramref name="directory"/>, and
+	/// persists the result. Both the editor's "reload index" and the server's startup synchronisation
+	/// call this so that the two behave identically.
+	/// </summary>
+	public static async Task<ObjectIndex> LoadOrCreateAndSyncAsync(string directory, string indexFile, ILogger logger, IProgress<float>? progress = null)
+	{
+		ObjectIndex? index = null;
+		if (File.Exists(indexFile))
+		{
+			try
+			{
+				index = await LoadIndexAsync(indexFile).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "Failed to load index from \"{IndexFile}\"", indexFile);
+			}
+		}
+
+		var malformed = index?.Objects == null
+			|| index.Objects.Any(x => string.IsNullOrEmpty(x.FileName) || string.IsNullOrEmpty(x.DisplayName));
+
+		if (malformed)
+		{
+			logger.LogWarning("Index file is missing, malformed or its format has changed - recreating it from disk.");
+			index = await CreateIndexAsync(directory, logger, progress).ConfigureAwait(false);
+		}
+		else
+		{
+			index!.RebuildLookups();
+			var (missingEntries, unindexedFiles) = index.DiffWithDisk(directory);
+			if (missingEntries.Count > 0 || unindexedFiles.Count > 0)
+			{
+				logger.LogWarning(
+					"Index and files on disk don't match; updating the index now ({Missing} file(s) gone, {New} file(s) new).",
+					missingEntries.Count, unindexedFiles.Count);
+
+				index.Delete(e => missingEntries.Contains(e));
+				_ = index.UpdateIndex(directory, logger, unindexedFiles, progress);
+			}
+		}
+
+		await index.SaveIndexAsync(indexFile).ConfigureAwait(false);
+		return index;
+	}
+
+	/// <summary>
+	/// Compares this index against the files on disk: returns the entries whose file is no longer
+	/// present and the <c>.dat</c> files that are not indexed. This is the same comparison the editor
+	/// performs when it reloads its index, shared so the server's startup sync behaves identically.
+	/// </summary>
+	public (List<ObjectIndexEntry> MissingEntries, List<string> UnindexedFiles) DiffWithDisk(string directory)
+		=> DiffWithDisk(directory, [.. SawyerStreamUtils.GetDatFilesInDirectory(directory)]);
+
+	/// <summary>
+	/// Compares this index against <paramref name="files"/> (which must be relative to
+	/// <paramref name="directory"/>). The caller supplies the file list so it can apply its own
+	/// exclusions - the server, for example, ignores files parked in the <c>Removed</c> folder.
+	/// </summary>
+	public (List<ObjectIndexEntry> MissingEntries, List<string> UnindexedFiles) DiffWithDisk(string directory, IReadOnlyCollection<string> files)
+	{
+		List<ObjectIndexEntry> snapshot;
+		lock (this)
+		{
+			snapshot = [.. Objects];
+		}
+
+		var fileSet = new HashSet<string>(files, StringComparer.OrdinalIgnoreCase);
+
+		var missing = new List<ObjectIndexEntry>();
+		var present = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var entry in snapshot)
+		{
+			if (string.IsNullOrEmpty(entry.FileName))
+			{
+				missing.Add(entry);
+				continue;
+			}
+
+			var relative = MakeRelativeTo(directory, entry.FileName!);
+			if (fileSet.Contains(relative))
+			{
+				_ = present.Add(relative);
+			}
+			else
+			{
+				missing.Add(entry);
+			}
+		}
+
+		var unindexed = files.Where(f => !present.Contains(f)).ToList();
+		return (missing, unindexed);
+	}
+
+	/// <summary>Returns the index's stored filename relative to <paramref name="directory"/>.</summary>
+	public static string MakeRelativeTo(string directory, string fileName)
+		=> Path.IsPathRooted(fileName)
+			? Path.GetRelativePath(directory, fileName)
+			: fileName;
+
 	public static Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 		=> Task.Run(() => CreateIndex(directory, logger, progress));
 

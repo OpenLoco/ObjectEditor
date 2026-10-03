@@ -79,6 +79,30 @@
 			</Border>
 		</DataTemplate>
 
+		<DataTemplate DataType="mo:OnlineGameFileBrowseResult">
+			<Border Margin="0,0,0,8" Background="{DynamicResource ExpanderContentBackground}" Padding="10">
+				<Expander IsExpanded="True">
+					<Expander.Header>
+						<Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+							<materialIcons:MaterialIcon Kind="FileMusic" Width="24" Height="24" Margin="2" />
+							<StackPanel Grid.Column="1" Spacing="2">
+								<TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Name}" />
+								<TextBlock Opacity="0.7" Text="{Binding Id}" />
+							</StackPanel>
+						</Grid>
+					</Expander.Header>
+					<StackPanel Spacing="8">
+						<TextBlock TextWrapping="Wrap" Text="{Binding Description}" IsVisible="{Binding HasDescription}" />
+						<TextBlock Opacity="0.7" Text="{Binding UploadedDate, StringFormat='Uploaded: {0}'}" />
+						<TextBlock Opacity="0.7" Text="{Binding ObjectSource, StringFormat='Source: {0}'}" />
+						<TextBlock Opacity="0.7" TextWrapping="Wrap" Text="{Binding AuthorsText, StringFormat='Authors: {0}'}" IsVisible="{Binding HasAuthors}" />
+						<TextBlock Opacity="0.7" TextWrapping="Wrap" Text="{Binding TagsText, StringFormat='Tags: {0}'}" IsVisible="{Binding HasTags}" />
+						<TextBlock Opacity="0.7" Text="{Binding LicenceName, StringFormat='Licence: {0}'}" />
+					</StackPanel>
+				</Expander>
+			</Border>
+		</DataTemplate>
+
 		<DataTemplate DataType="mo:OnlineItemPackBrowseResult">
 			<Border Background="{DynamicResource ExpanderContentBackground}" Padding="4">
 				<Expander IsExpanded="True">

@@ -1,6 +1,7 @@
 using Dat.Tests;
 using Definitions;
 using Definitions.Database;
+using Definitions.ObjectModels.Types;
 using Index;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -307,6 +308,103 @@ public class ObjectsFolderServiceTests
 			{
 				Assert.That((await db.Objects.SingleAsync()).Availability, Is.EqualTo(ObjectAvailability.Available));
 				Assert.That(sfm.ObjectIndex.Objects, Has.Count.EqualTo(1));
+			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
+
+	private const string ServerObjectsFolder = @"Q:\Games\Locomotion\Server\GameData\Objects";
+
+	/// <summary>
+	/// Finds a DAT file whose content identifies it as an OpenLoco object, wherever it currently lives.
+	/// </summary>
+	private static string? FindOpenLocoSourceDat()
+	{
+		foreach (var folder in new[] { ServerFolderManager.CustomFolderName, ServerFolderManager.OpenLocoFolderName })
+		{
+			var root = Path.Combine(ServerObjectsFolder, folder);
+			if (!Directory.Exists(root))
+			{
+				continue;
+			}
+
+			foreach (var file in Directory.GetFiles(root, "*.dat").OrderBy(x => new FileInfo(x).Length))
+			{
+				try
+				{
+					var entry = ObjectIndex.GetDatFileInfoFromBytes(file, Path.GetFileName(file), File.ReadAllBytes(file), NullLogger.Instance);
+					if (entry?.ObjectSource == ObjectSource.OpenLoco)
+					{
+						return file;
+					}
+				}
+				catch (Exception)
+				{
+					// Unreadable file - keep looking.
+				}
+			}
+		}
+
+		return null;
+	}
+
+	[Test]
+	public async Task ReconcileAsync_MovesOpenLocoObjectsOutOfTheCustomFolder()
+	{
+		var source = FindOpenLocoSourceDat();
+		if (source == null)
+		{
+			Assert.Ignore("No OpenLoco object is available to relocate");
+		}
+
+		var root = Directory.CreateTempSubdirectory("object-file-relocate").FullName;
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+			var fileName = Path.GetFileName(source!);
+			var customPath = Path.Combine(sfm.ObjectsCustomFolder, fileName);
+			File.Copy(source!, customPath);
+
+			using var connection = new SqliteConnection("DataSource=:memory:");
+			connection.Open();
+
+			var options = new DbContextOptionsBuilder<LocoDbContext>()
+				.UseSqlite(connection)
+				.Options;
+
+			using var db = new LocoDbContext(options);
+			_ = db.Database.EnsureCreated();
+
+			var service = new ObjectsFolderService(
+				db,
+				sfm,
+				NullLogger<ObjectsFolderService>.Instance,
+				NullLoggerFactory.Instance);
+
+			// Seed the index exactly as it would have been before the relocation existed: the file is in
+			// Custom but its content says OpenLoco.
+			var relative = Path.Combine(ServerFolderManager.CustomFolderName, fileName);
+			var entry = ObjectIndex.GetDatFileInfoFromBytes(customPath, relative, File.ReadAllBytes(customPath), NullLogger.Instance);
+			Assert.That(entry, Is.Not.Null);
+			sfm.ObjectIndex.AddEntry(entry!);
+
+			await service.ReconcileAsync(CancellationToken.None);
+
+			var openLocoPath = Path.Combine(sfm.ObjectsOpenLocoFolder, fileName);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(File.Exists(openLocoPath), Is.True, "the file should have been moved into the OpenLoco folder");
+				Assert.That(File.Exists(customPath), Is.False, "the file should no longer be in the Custom folder");
+
+				var relocated = sfm.ObjectIndex.Objects.Single();
+				Assert.That(relocated.ObjectSource, Is.EqualTo(ObjectSource.OpenLoco));
+				Assert.That(relocated.FileName, Is.EqualTo(Path.Combine(ServerFolderManager.OpenLocoFolderName, fileName)));
+
+				Assert.That((await db.Objects.SingleAsync()).ObjectSource, Is.EqualTo(ObjectSource.OpenLoco));
 			}
 		}
 		finally

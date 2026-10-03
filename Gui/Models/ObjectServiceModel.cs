@@ -1,6 +1,7 @@
 using Avalonia.Threading;
 using Definitions.DTO;
 using Microsoft.Extensions.Logging;
+using ObjectService;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,7 +18,7 @@ namespace Gui.Models;
 // ReloadAsync() to refresh it explicitly.
 public class ObjectServiceModel
 {
-	readonly ObjectServiceClient client;
+	readonly ApiClient client;
 	readonly ILogger logger;
 	readonly SemaphoreSlim loadLock = new(1, 1);
 
@@ -28,7 +29,7 @@ public class ObjectServiceModel
 
 	public Task InitialLoadTask { get; }
 
-	public ObjectServiceModel(ObjectServiceClient client, ILogger logger)
+	public ObjectServiceModel(ApiClient client, ILogger logger)
 	{
 		this.client = client;
 		this.logger = logger;

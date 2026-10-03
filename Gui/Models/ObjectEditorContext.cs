@@ -11,6 +11,7 @@ using Definitions.ObjectModels.Types;
 using DynamicData;
 using Index;
 using Microsoft.Extensions.Logging;
+using ObjectService;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
@@ -54,6 +55,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	public const string ApplicationName = "OpenLoco Object Editor";
 	public const string SettingsFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
 	public const string LoggingFileName = "objectEditor.log";
+	public const string UserAgent = "ObjectEditor";
 	public const string ImageTableGroupsFileName = ImageTableGroupLoader.FileName;
 
 	public string DefaultConfigFolder { get; set; } = "config";
@@ -70,7 +72,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
-	public ObjectServiceClient ObjectServiceClient { get; init; }
+	public ApiClient ObjectServiceClient { get; init; }
 
 	public ObjectServiceModel ObjectServiceModel { get; init; }
 
@@ -93,7 +95,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
 		Settings.ConfigFolder = InitialiseDirectory(Settings.ConfigFolder, "config");
 
-		ObjectServiceClient = new(Settings, Logger);
+		var serverAddress = Settings.UseHttps
+			? Settings.ServerAddressHttps
+			: Settings.ServerAddressHttp;
+
+		ObjectServiceClient = new(serverAddress, Logger, UserAgent);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
 	}
 

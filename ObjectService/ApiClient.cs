@@ -1,50 +1,35 @@
 using Common;
 using Definitions.DTO;
 using Definitions.Web;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 
-namespace Gui;
+namespace ObjectService;
 
-//public class LocalUser(string Email, string Password)
-//{
-//	public string Email { get; } = Email;
-//	public string Password { get; } = Password;
-//	public string UserName { get; set; } // set when user logs in
-//	public TblAuthor? AssociatedAuthor { get; set; }
-//}
-
-public class ObjectServiceClient
+public class ApiClient
 {
-	//public LocalUser LocoUser { get; set; }
-
 	public HttpClient WebClient { get; }
 
 	public ILogger Logger { get; } = null!;
 
 	public CookieContainer CookieContainer { get; set; }
 
-	public ObjectServiceClient(EditorSettings settings, ILogger logger)
+	public ApiClient(string serverAddress, ILogger logger, string userAgent)
 	{
+		ArgumentNullException.ThrowIfNullOrWhiteSpace(serverAddress);
+		ArgumentNullException.ThrowIfNull(logger);
+		ArgumentNullException.ThrowIfNullOrWhiteSpace(userAgent);
+
 		Logger = logger;
 		CookieContainer = new CookieContainer();
 		var handler = new HttpClientHandler() { CookieContainer = CookieContainer };
 		WebClient = new HttpClient(handler);
-
-		var serverAddress = settings.UseHttps
-			? settings.ServerAddressHttps
-			: settings.ServerAddressHttp;
 
 		if (Uri.TryCreate(serverAddress, new(), out var serverUri))
 		{
 			WebClient.BaseAddress = serverUri;
 
 			var currentAppVersion = VersionHelpers.GetCurrentAppVersion();
-			WebClient.DefaultRequestHeaders.UserAgent.ParseAdd($"ObjectEditor/{currentAppVersion}");
+			WebClient.DefaultRequestHeaders.UserAgent.ParseAdd($"{userAgent}/{currentAppVersion}");
 
 			Logger.LogInformation("Successfully registered object service with address \"{ServerUri}\"", serverUri);
 		}
@@ -52,11 +37,7 @@ public class ObjectServiceClient
 		{
 			Logger.LogError("Unable to parse object service address \"{ServerAddress}\". Online functionality will not work until the address is corrected and the editor is restarted.", serverAddress);
 		}
-
-		//LocoUser = new LocalUser(settings.ServerEmail, settings.ServerPassword);
 	}
-
-	//public async Task<DtoLoginRequest>
 
 	public async Task<IEnumerable<T>> GetListAsync<T>(ApiEndpointGroup endpointGroup)
 		=> await Client.GetListAsync<T>(WebClient, endpointGroup, Logger);

@@ -1,4 +1,5 @@
 using Dat.Tests;
+using Dat.Types;
 using Definitions;
 using Definitions.Database;
 using Definitions.ObjectModels.Types;
@@ -31,6 +32,40 @@ public class ObjectsFolderServiceTests
 			.OrderBy(x => new FileInfo(x).Length)
 			.ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
 			.FirstOrDefault();
+	}
+
+	/// <summary>
+	/// Finds the smallest DAT whose object is not a vehicle. Truncating such a file immediately after
+	/// its headers leaves the S5/object headers valid (so it is indexed) but the body undecodable -
+	/// exactly the kind of corrupt object that must be parked.
+	/// </summary>
+	private static string? FindSmallestNonVehicleSourceDat()
+	{
+		if (!Directory.Exists(TestConstants.BaseSteamObjDataPath))
+		{
+			return null;
+		}
+
+		foreach (var file in Directory
+			.GetFiles(TestConstants.BaseSteamObjDataPath, "*.dat")
+			.OrderBy(x => new FileInfo(x).Length)
+			.ThenBy(x => x, StringComparer.OrdinalIgnoreCase))
+		{
+			try
+			{
+				var entry = ObjectIndex.GetDatFileInfoFromBytes(file, Path.GetFileName(file), File.ReadAllBytes(file), NullLogger.Instance);
+				if (entry != null && entry.ObjectType != ObjectType.Vehicle)
+				{
+					return file;
+				}
+			}
+			catch (Exception)
+			{
+				// Unreadable file - keep looking.
+			}
+		}
+
+		return null;
 	}
 
 	[Test]
@@ -138,6 +173,63 @@ public class ObjectsFolderServiceTests
 				Assert.That(db.Objects.Any(), Is.False);
 				Assert.That(sfm.ObjectIndex.Objects, Is.Empty);
 			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
+
+	[Test]
+	public async Task ImportAsync_ParksUnloadableCustomObjectUnderRemovedAndMarksItUnavailable()
+	{
+		var source = FindSmallestNonVehicleSourceDat();
+		if (source == null)
+		{
+			Assert.Ignore("No source DAT files are available to import");
+		}
+
+		var root = Directory.CreateTempSubdirectory("object-file-unloadable").FullName;
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+
+			// Truncate the file immediately after its headers so they still parse but the object
+			// body cannot be decoded - the corrupt-object case that used to be retried forever.
+			var headerLength = S5Header.StructLength + ObjectHeader.StructLength;
+			var bytes = File.ReadAllBytes(source!)[..headerLength];
+			var fileName = Path.GetFileName(source!);
+			var destination = Path.Combine(sfm.ObjectsCustomFolder, fileName);
+			File.WriteAllBytes(destination, bytes);
+
+			using var connection = new SqliteConnection("DataSource=:memory:");
+			connection.Open();
+
+			var options = new DbContextOptionsBuilder<LocoDbContext>()
+				.UseSqlite(connection)
+				.Options;
+
+			using var db = new LocoDbContext(options);
+			_ = db.Database.EnsureCreated();
+
+			var service = new ObjectsFolderService(
+				db,
+				sfm,
+				NullLogger<ObjectsFolderService>.Instance,
+				NullLoggerFactory.Instance);
+
+			var result = await service.ImportAsync(destination, CancellationToken.None);
+
+			var removedPath = Path.Combine(sfm.ObjectsRemovedFolder, ServerFolderManager.CustomFolderName, fileName);
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(result.Status, Is.EqualTo(GameDataImportStatus.Unavailable));
+				Assert.That(File.Exists(destination), Is.False, "the unloadable file should have left the Custom folder");
+				Assert.That(File.Exists(removedPath), Is.True, "the unloadable file should be parked under Removed");
+				Assert.That(sfm.ObjectIndex.Objects, Is.Empty);
+			}
+
+			Assert.That((await db.Objects.SingleAsync()).Availability, Is.EqualTo(ObjectAvailability.Unavailable));
 		}
 		finally
 		{

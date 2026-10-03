@@ -1,6 +1,7 @@
 using Dat.FileParsing;
 using Definitions;
 using Definitions.Database;
+using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using Index;
 using Microsoft.EntityFrameworkCore;
@@ -70,10 +71,13 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		// OpenLoco folder before it is indexed or imported, so a file's location always matches its content.
 		(absolutePath, relativePath, entry) = EnsureCorrectObjectFolder(absolutePath, relativePath, entry);
 
+		// UpsertDatabaseEntryAsync returns Failed (rather than throwing) when the object cannot be
+		// loaded - either its headers are unusable or its body cannot be decoded. Such an object is
+		// parked in the Removed folder instead of being retried on every startup.
 		var dbStatus = await UpsertDatabaseEntryAsync(bytes, entry, relativePath, ct).ConfigureAwait(false);
 		if (dbStatus == GameDataImportStatus.Failed)
 		{
-			return new GameDataImportResult(GameDataImportStatus.Failed, "Could not add the object to the database", entry);
+			return await ParkUnloadableCustomObjectAsync(absolutePath, entry, "The object could not be loaded", persistIndex, ct).ConfigureAwait(false);
 		}
 
 		// Only update the local index once the database succeeded so the two never point at
@@ -216,11 +220,26 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		_ = await Db.Objects.AddAsync(tblObject, ct).ConfigureAwait(false);
 		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 
-		var (_, locoObject) = SawyerStreamReader.LoadFullObject(bytes, _ssrLogger, relativePath);
+		// The full object can fail to parse even though its headers were fine (for example a corrupt
+		// RLE image table). The row created above is kept and marked unavailable rather than deleted:
+		// the caller parks the file, and the row records that the object exists but cannot be loaded
+		// so it is never served or offered for download.
+		LocoObject? locoObject;
+		try
+		{
+			(_, locoObject) = SawyerStreamReader.LoadFullObject(bytes, _ssrLogger, relativePath);
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			tblObject.Availability = ObjectAvailability.Unavailable;
+			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+			Logger.LogWarning(ex, "Failed to parse object \"{RelativePath}\"", relativePath);
+			return GameDataImportStatus.Failed;
+		}
+
 		if (locoObject == null)
 		{
-			// Roll back the half-created object so a malformed file doesn't leave broken rows behind.
-			_ = Db.Objects.Remove(tblObject);
+			tblObject.Availability = ObjectAvailability.Unavailable;
 			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 			return GameDataImportStatus.Failed;
 		}
@@ -249,6 +268,89 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 	}
 
 	/// <summary>
+	/// Parks a <c>Custom</c> folder DAT file that cannot be loaded so it is not retried on every
+	/// startup: the file is moved into the category's <c>Removed</c> folder, its object-index entry
+	/// is dropped and any database row for it is marked <see cref="ObjectAvailability.Unavailable"/>
+	/// (the row is kept so curated metadata and references survive). Only files under the Custom
+	/// folder are moved - Original/OpenLoco files are server-managed and are never relocated
+	/// automatically.
+	/// </summary>
+	private async Task<GameDataImportResult> ParkUnloadableCustomObjectAsync(
+		string absolutePath,
+		ObjectIndexEntry entry,
+		string reason,
+		bool persistIndex,
+		CancellationToken ct)
+	{
+		if (!IsUnder(absolutePath, Sfm.ObjectsCustomFolder))
+		{
+			return new GameDataImportResult(GameDataImportStatus.Failed, reason, entry);
+		}
+
+		string? parked;
+		try
+		{
+			parked = ServerFolderManager.MoveToRemovedFolder(Sfm.ObjectsFolder, absolutePath);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			Logger.LogError(ex, "Failed to move unloadable object \"{Path}\" into the Removed folder", absolutePath);
+			return new GameDataImportResult(GameDataImportStatus.Failed, $"Could not unload object: {reason}", entry);
+		}
+
+		// Keep the database row(s) but mark them unavailable so curated metadata (authors, tags,
+		// packs) and scenario references survive while the object stops being served/downloaded.
+		if (entry.DatChecksum is { } checksum)
+		{
+			var rows = await Db.DatObjects
+				.Include(x => x.Object)
+				.Where(x => x.DatName == entry.DisplayName && x.DatChecksum == checksum)
+				.ToListAsync(ct)
+				.ConfigureAwait(false);
+
+			if (rows.Count > 0)
+			{
+				foreach (var row in rows)
+				{
+					row.Object.Availability = ObjectAvailability.Unavailable;
+				}
+
+				_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+			}
+		}
+
+		// Drop the file's index entry so it stops being served and is not reported missing.
+		var indexEntry = FindIndexEntryByFilePath(absolutePath) ?? entry;
+		lock (Sfm.ObjectIndex)
+		{
+			Sfm.ObjectIndex.RemoveEntry(indexEntry);
+		}
+
+		if (persistIndex && parked != null)
+		{
+			await Sfm.ObjectIndex.SaveIndexAsync(Sfm.IndexFile).ConfigureAwait(false);
+		}
+
+		if (parked != null)
+		{
+			Logger.LogInformation(
+				"Parked unloadable object \"{DisplayName}\": moved \"{SourcePath}\" to \"{DestinationPath}\" ({Reason})",
+				entry.DisplayName, absolutePath, parked, reason);
+		}
+		else
+		{
+			Logger.LogInformation(
+				"Parked unloadable object \"{DisplayName}\": \"{SourcePath}\" was already in the Removed folder ({Reason})",
+				entry.DisplayName, absolutePath, reason);
+		}
+
+		return new GameDataImportResult(
+			GameDataImportStatus.Unavailable,
+			$"Object {entry.DisplayName} could not be loaded and was moved to the Removed folder",
+			entry);
+	}
+
+	/// <summary>
 	/// Reassesses the Objects folder against the object index and database: stale index entries are
 	/// dropped (and their database objects marked unavailable), objects missing from the database
 	/// are backfilled, and DAT files that aren't in the index are imported. The index is persisted
@@ -260,6 +362,7 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		var missing = 0;
 		var backfilled = 0;
 		var added = 0;
+		var parked = 0;
 		var duplicates = 0;
 
 		// 0. Objects sitting in the wrong folder are moved to the folder their content says they belong
@@ -322,6 +425,11 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 				changed = true;
 				backfilled++;
 			}
+			else if (result?.Status is GameDataImportStatus.Unavailable)
+			{
+				changed = true;
+				parked++;
+			}
 			else if (result?.Status is GameDataImportStatus.Duplicate)
 			{
 				duplicates++;
@@ -338,6 +446,11 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 				changed = true;
 				added++;
 			}
+			else if (result?.Status is GameDataImportStatus.Unavailable)
+			{
+				changed = true;
+				parked++;
+			}
 			else if (result?.Status is GameDataImportStatus.Duplicate)
 			{
 				duplicates++;
@@ -350,8 +463,8 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		}
 
 		Logger.LogInformation(
-			"Objects reconciliation complete: relocated={Relocated}, added={Added}, database backfilled={Backfilled}, marked unavailable={Missing}, duplicates ignored={Duplicates}",
-			relocated, added, backfilled, missing, duplicates);
+			"Objects reconciliation complete: relocated={Relocated}, added={Added}, database backfilled={Backfilled}, marked unavailable={Missing}, parked unloadable={Parked}, duplicates ignored={Duplicates}",
+			relocated, added, backfilled, missing, parked, duplicates);
 	}
 
 	/// <summary>

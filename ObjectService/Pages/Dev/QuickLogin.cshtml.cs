@@ -4,22 +4,28 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ObjectService.Frontend;
+using ObjectService.Identity;
 
 namespace ObjectService.Pages.Dev;
 
+/// <summary>
+/// Development-only convenience that signs the system admin in without the developer typing
+/// credentials. It is the only UI authentication shortcut; the API has its own
+/// (<see cref="DevAuthenticationHandler"/>) gated by <c>ObjectService:DisableAuthentication</c>.
+/// </summary>
 [AllowAnonymous]
 public class QuickLoginModel : PageModel
 {
 	private readonly FrontendApiClient _api;
 	private readonly IWebHostEnvironment _environment;
-	private readonly IConfiguration _config;
+	private readonly AdminUserProvider _admin;
 	private readonly ILogger<QuickLoginModel> _logger;
 
-	public QuickLoginModel(FrontendApiClient api, IWebHostEnvironment environment, IConfiguration config, ILogger<QuickLoginModel> logger)
+	public QuickLoginModel(FrontendApiClient api, IWebHostEnvironment environment, AdminUserProvider admin, ILogger<QuickLoginModel> logger)
 	{
 		_api = api;
 		_environment = environment;
-		_config = config;
+		_admin = admin;
 		_logger = logger;
 	}
 
@@ -30,40 +36,46 @@ public class QuickLoginModel : PageModel
 			return Forbid();
 		}
 
-		// Dev credentials come from configuration (see appsettings.Development.json); there is no code
-		// default so a deployment can never accidentally ship working dev credentials.
-		var devUserEmail = _config["DevAuth:Email"];
-		var devPassword = _config["DevAuth:Password"];
-		if (string.IsNullOrWhiteSpace(devUserEmail) || string.IsNullOrWhiteSpace(devPassword))
+		// The system admin is resolved once for the process (see AdminUserProvider). The password comes
+		// from configuration (user-secrets / environment) or, when none is set, from the throwaway
+		// password generated at startup — either way no credential is committed or typed by the user.
+		var admin = _admin.Settings;
+		if (admin is null)
 		{
-			return BadRequest("Dev quick-login is not configured.");
+			return BadRequest("Dev quick-login is not available: the system admin is not configured.");
 		}
 
 		using var client = _api.CreateClient();
 
-		// Ensure the dev admin user/role exists (development-only API endpoint).
-		using var bootstrapResponse = await client.PostAsync("/dev/quick-login", null);
-		if (!bootstrapResponse.IsSuccessStatusCode)
-		{
-			return BadRequest("Failed to create dev user");
-		}
-
-		// Sign in via the Identity API.
-		var loginPayload = new DtoLoginRequest(devUserEmail, devPassword);
+		// The Identity /login endpoint resolves the supplied value as the USERNAME — it calls
+		// PasswordSignInAsync(login.Email, ...), so the field is named "Email" but is matched against
+		// UserName. Sign in with the admin's user name.
+		var loginPayload = new DtoLoginRequest(admin.UserName, admin.Password);
 		using var cookieResponse = await client.PostAsJsonAsync($"{Routes.Prefix}{Routes.IdentityLogin}?useCookies=true", loginPayload);
 		if (!cookieResponse.IsSuccessStatusCode)
 		{
+			var body = await cookieResponse.Content.ReadAsStringAsync();
+			_logger.LogWarning(
+				"Dev quick-login failed to sign in {Email} ({StatusCode}): {Body}",
+				admin.Email, (int)cookieResponse.StatusCode, body);
 			return BadRequest("Failed to sign in dev user");
 		}
 
 		ForwardSetCookieHeaders(cookieResponse);
 		await StoreBearerTokenAsync(client, loginPayload);
 
-		// Redirect back to the referring page, or to the admin dashboard.
+		// Redirect back to the referring page when it points at this host, otherwise to the account page
+		// (the Referer header is an absolute URL, so it must be reduced to a local path first).
 		var returnUrl = Request.Headers.Referer.ToString();
+		if (Uri.TryCreate(returnUrl, UriKind.Absolute, out var referer)
+			&& string.Equals(referer.Authority, Request.Host.Value, StringComparison.OrdinalIgnoreCase))
+		{
+			returnUrl = referer.PathAndQuery;
+		}
+
 		if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
 		{
-			returnUrl = "/manage";
+			returnUrl = "/account/manage";
 		}
 
 		return Redirect(returnUrl);

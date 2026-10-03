@@ -260,8 +260,10 @@ public static class ObjectValidation
 		// name would incorrectly satisfy the dependency.
 		static bool IsSatisfiedBy(ObjectModelHeader dependency, ObjectModelHeader candidate)
 		{
-			var isVanilla = dependency.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG;
-			return isVanilla || candidate.DatChecksum == dependency.DatChecksum;
+			var dependencyIsVanilla = dependency.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG;
+			return dependencyIsVanilla
+				? candidate.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG
+				: candidate.DatChecksum == dependency.DatChecksum;
 		}
 
 		static void ValidateDependentObjects(IEnumerable<ObjectModelHeader> fileObjects, Func<ObjectModelHeader, IEnumerable<ObjectModelHeader>> objectDependencyResolver, List<string> validationErrors)

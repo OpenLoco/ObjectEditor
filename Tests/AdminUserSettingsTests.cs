@@ -61,4 +61,21 @@ public class AdminUserSettingsTests
 			Assert.That(settings.UserName, Is.EqualTo(AdminUserSettings.DefaultUserName));
 		}
 	}
+
+	[Test]
+	public void CreateDevelopmentFallback_ProducesAPasswordThatMeetsTheIdentityPolicy()
+	{
+		var settings = AdminUserSettings.CreateDevelopmentFallback();
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(settings.Email, Is.EqualTo(AdminUserSettings.DefaultEmail));
+			Assert.That(settings.UserName, Is.EqualTo(AdminUserSettings.DefaultUserName));
+			Assert.That(settings.Password.Length, Is.GreaterThanOrEqualTo(12));
+			Assert.That(settings.Password.Any(char.IsDigit), Is.True);
+			Assert.That(settings.Password.Any(char.IsLower), Is.True);
+			Assert.That(settings.Password.Any(char.IsUpper), Is.True);
+			Assert.That(settings.Password.Any(c => !char.IsLetterOrDigit(c)), Is.True);
+		}
+	}
 }

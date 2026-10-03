@@ -18,6 +18,7 @@ using ObjectService.Identity;
 using ObjectService.Services;
 using ObjectService.RouteHandlers;
 using Scalar.AspNetCore;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -84,6 +85,11 @@ var paletteMap = new PaletteMap(paletteMapFile);
 
 builder.Services.AddSingleton(serverFolderManager);
 builder.Services.AddSingleton(paletteMap);
+
+// The system admin identity (email/username/password) is resolved once for the whole process so the
+// startup bootstrap (DatabaseInitializer) and the development-only quick-login always agree on the
+// same account.
+builder.Services.AddSingleton<AdminUserProvider>();
 
 // The GameData folder services are shared by the startup synchronisation and the file watchers, and
 // are always registered so the files on disk and the database are reconciled whenever the server
@@ -201,6 +207,21 @@ if (disableAuth)
 	apiAuthenticationSchemes.Add(DevAuthenticationHandler.SchemeName);
 }
 
+// Secrets are never committed to appsettings*.json. JwtSettings:Key must be supplied via user-secrets
+// (development) or an environment variable (deployment). In Development a random key is generated so
+// the app still starts with no setup; it changes on restart, which is harmless because no issued token
+// depends on it (clients authenticate with Identity bearer tokens, not JWTs).
+var jwtKey = builder.Configuration["JwtSettings:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+	if (!builder.Environment.IsDevelopment())
+	{
+		throw new InvalidOperationException("JwtSettings:Key is not configured. Provide it via user-secrets or an environment variable.");
+	}
+
+	jwtKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+}
+
 var authenticationBuilder = builder.Services.AddAuthentication()
 .AddJwtBearer(options =>
 {
@@ -212,7 +233,7 @@ var authenticationBuilder = builder.Services.AddAuthentication()
 		ValidateIssuerSigningKey = true,
 		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
 		ValidAudience = builder.Configuration["JwtSettings:Audience"],
-		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"] ?? throw new InvalidOperationException("JWT Key not configured"))),
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
 	};
 });
 
@@ -296,6 +317,12 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
 var app = builder.Build();
 
+// Make the active environment obvious at startup: appsettings.Development.json and user-secrets only
+// load when this is "Development".
+app.Logger.LogInformation(
+	"Object Service starting in the '{Environment}' environment (content root: {ContentRoot})",
+	app.Environment.EnvironmentName, app.Environment.ContentRootPath);
+
 app.UseForwardedHeaders();
 
 app.UseHttpLogging();
@@ -314,57 +341,6 @@ _ = app
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapRazorPages();
-
-// Development-only bootstrap endpoint used by the quick-login page. It ensures the
-// local dev admin exists and has the Admin role, then the page signs in via the
-// standard Identity /login endpoint.
-if (app.Environment.IsDevelopment())
-{
-	_ = app.MapPost("/dev/quick-login", async (UserManager<TblUser> userManager, RoleManager<TblUserRole> roleManager, IConfiguration config) =>
-	{
-		// Dev credentials are configuration-driven (see appsettings.Development.json); there is no code
-		// default so a deployment can never accidentally ship working dev credentials.
-		var devUserEmail = config["DevAuth:Email"];
-		var devPassword = config["DevAuth:Password"];
-		if (string.IsNullOrWhiteSpace(devUserEmail) || string.IsNullOrWhiteSpace(devPassword))
-		{
-			return Results.Problem(
-				"Dev quick-login is not configured. Set DevAuth:Email and DevAuth:Password (development only).",
-				statusCode: StatusCodes.Status503ServiceUnavailable);
-		}
-
-		var devUserName = config["DevAuth:UserName"] ?? devUserEmail;
-
-		var user = await userManager.FindByEmailAsync(devUserEmail);
-		if (user == null)
-		{
-			user = new TblUser
-			{
-				UserName = devUserName,
-				Email = devUserEmail,
-				EmailConfirmed = true,
-			};
-
-			var createResult = await userManager.CreateAsync(user, devPassword);
-			if (!createResult.Succeeded)
-			{
-				return Results.Problem(string.Join("; ", createResult.Errors.Select(e => e.Description)), statusCode: StatusCodes.Status400BadRequest);
-			}
-		}
-
-		if (!await roleManager.RoleExistsAsync("Admin"))
-		{
-			_ = await roleManager.CreateAsync(new TblUserRole { Name = "Admin" });
-		}
-
-		if (!await userManager.IsInRoleAsync(user, "Admin"))
-		{
-			_ = await userManager.AddToRoleAsync(user, "Admin");
-		}
-
-		return Results.Ok();
-	}).AllowAnonymous();
-}
 
 _ = app.MapApiRoutes()
 	.RequireRateLimiting(tokenPolicy);

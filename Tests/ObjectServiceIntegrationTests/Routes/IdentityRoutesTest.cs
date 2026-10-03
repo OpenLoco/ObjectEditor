@@ -19,6 +19,19 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	}
 
 	[Test]
+	public async Task Login_AsSystemAdminByUsername_ShouldSucceed()
+	{
+		// The Identity /login endpoint authenticates by user name (the request field is confusingly
+		// named "Email"). The system admin's user name is the configured AdminUser:Username, which
+		// defaults to "LeftofZen" and is what the dev quick-login uses.
+		var loginRequest = new { Email = "LeftofZen", Password = "TestAdminPassword123!@#" };
+
+		var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.IdentityLogin}?useCookies=false", loginRequest);
+
+		Assert.That(response.IsSuccessStatusCode, Is.True);
+	}
+
+	[Test]
 	[Ignore("Not applicable for identity endpoints")]
 	public override async Task ListAsync()
 	{

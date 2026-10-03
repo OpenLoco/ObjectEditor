@@ -68,11 +68,18 @@ Every entity stored from a `GameData` folder has its own route group, following 
 - A single shared `GameDataWatcherLock` serialises file operations across all seven folders so the object index and SQLite database are never written concurrently.
 - Schema changes are delivered as EF migrations (`Definitions/Migrations`). `DatabaseInitializer` calls `Migrate()` on startup; databases created before migrations were adopted have the baseline recorded in `__EFMigrationsHistory` first (see `MigrationInitializer`), so they are never re-created. The file-entity tables (`Music`, `SoundEffects`, `Tutorials`, `Graphics`) are part of the baseline.
 
-### Configuration
-- **`AdminUser:Password`** is required to bootstrap the system admin account. It is never defaulted in code: when it is missing the admin is simply not created (an **error** is logged outside Development), so deployments must supply it via user-secrets or environment variables. `AdminUser:Email` / `AdminUser:Username` fall back to a non-secret display identity.
-- **`DevAuth:Email` / `DevAuth:Password`** configure the development-only `/dev/quick-login` endpoint and the quick-login page. The endpoint is only mapped when the environment is Development and returns `503` when unset.
-- Development-only values for both live in `appsettings.Development.json`; `appsettings.json` intentionally contains neither.
-- `ObjectService:DisableAuthentication` enables the dev authentication scheme, which impersonates the admin user for `/v2` requests. It is **only honoured in the Development environment** and is deliberately excluded for `/v2/users`, `/v2/roles` and `/v2/identity` so identity flows are exercised for real.
+### Configuration and secrets
+No secrets are committed to `appsettings*.json`. Supply them through **user-secrets** locally and **environment variables** when deployed:
+
+```
+dotnet user-secrets set "AdminUser:Password" "<password>" --project ObjectService
+dotnet user-secrets set "JwtSettings:Key" "<at-least-32-characters>" --project ObjectService
+```
+
+- **`AdminUser:Password`** bootstraps the system admin account. It is never defaulted in code: outside Development a missing password means the admin is simply not created (an **error** is logged), so deployments must supply it. `AdminUser:Email` / `AdminUser:Username` fall back to a non-secret display identity.
+- In **Development only**, when no `AdminUser:Password` is set, `AdminUserProvider` generates a random throwaway password at startup so the admin still exists and the **Dev Login** button works with no setup. The generated value is never logged, persisted or sent to a client. The same fallback applies to `JwtSettings:Key` so the app still starts without configuration.
+- The **Dev Login** button (Development only) signs the system admin in through the standard Identity login endpoint, obtaining the same cookie and bearer token as a normal login. There is no separate `DevAuth` account or endpoint.
+- `ObjectService:DisableAuthentication` enables `DevAuthenticationHandler`, which impersonates the admin user for `/v2` requests. It is **only honoured in the Development environment** and is deliberately excluded for `/v2/users`, `/v2/roles` and `/v2/identity` so identity flows are exercised for real.
 
 ### Web Server
 - The API is rate-limited to a burst limit of [20 requests per second](https://github.com/OpenLoco/ObjectEditor/blob/master/ObjectService/ObjectServiceRateLimitOptions.cs) with 10 tokens replenished every second. This is a global limit, regardless of client. This will be [changed in the future](https://github.com/OpenLoco/ObjectEditor/issues/76).

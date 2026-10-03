@@ -35,6 +35,7 @@ public class TblObjectTrackStation : DbSubObject, IConvertibleToTable<TblObjectT
 			Flags = obj.Flags,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
+			PlatformType = obj.PlatformType,
 			CompatibleTrackObjects = obj.CompatibleTrackObjects,
 			CargoOffsets = obj.CargoOffsets,
 			DiagonalCargoOffsetBytes = obj.DiagonalCargoOffsetBytes,

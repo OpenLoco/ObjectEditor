@@ -90,31 +90,38 @@ public static class DatabaseInitializer
 			}
 		}
 
-		// Ensure system admin user. The password is never defaulted in code: without AdminUser:Password the
-		// system admin is not bootstrapped at all (see AdminUserSettings).
-		var adminSettings = AdminUserSettings.FromConfiguration(config);
+		// Ensure the system admin user. The account is resolved once for the whole process by
+		// AdminUserProvider: a configured password always wins, and in Development a random throwaway
+		// password is generated when none is configured so the Dev Login button works with no setup.
+		var adminProvider = scope.ServiceProvider.GetRequiredService<AdminUserProvider>();
+		var adminSettings = adminProvider.Settings;
 		TblUser? adminUser = null;
 
 		if (adminSettings is null)
 		{
-			if (app.Environment.IsDevelopment())
-			{
-				logger.LogWarning(
-					"AdminUser:Password is not configured; the system admin account was not bootstrapped. " +
-					"Configure AdminUser:Password (user-secrets, environment variable or appsettings) to create it.");
-			}
-			else
-			{
-				logger.LogError(
-					"AdminUser:Password is not configured; the system admin account was NOT bootstrapped. " +
-					"Configure AdminUser:Password via user-secrets or environment variables.");
-			}
+			logger.LogError(
+				"AdminUser:Password is not configured; the system admin account was NOT bootstrapped. " +
+				"Configure AdminUser:Password via user-secrets or environment variables.");
 		}
 		else
 		{
+			if (adminProvider.UsesGeneratedPassword)
+			{
+				logger.LogInformation(
+					"No AdminUser:Password configured; bootstrapped the Development system admin {Username} with a " +
+					"generated throwaway password. Use the Dev Login button to sign in, or set AdminUser:Password " +
+					"(user-secrets) to use a specific password.",
+					adminSettings.UserName);
+			}
+
 			logger.LogInformation("Ensuring admin user: {Username} / {Email}", adminSettings.UserName, adminSettings.Email);
 
-			adminUser = await userManager.FindByEmailAsync(adminSettings.Email);
+			// Look up the admin by email first, then by username. The username fallback keeps this
+			// idempotent when the stored email differs from the configured one, which would otherwise
+			// make CreateAsync below fail with a duplicate-user-name error.
+			adminUser = await userManager.FindByEmailAsync(adminSettings.Email)
+				?? await userManager.FindByNameAsync(adminSettings.UserName);
+
 			if (adminUser == null)
 			{
 				adminUser = new TblUser
@@ -141,7 +148,53 @@ public static class DatabaseInitializer
 			}
 			else
 			{
-				logger.LogInformation("Admin user {Username} already exists (Id={Id})", adminSettings.UserName, adminUser.Id);
+				logger.LogInformation("Admin user {Username} already exists (Id={Id})", adminUser.UserName, adminUser.Id);
+
+				// Keep the login username config-driven: the Identity /login endpoint authenticates by
+				// username, so the dev quick-login signs in with adminSettings.UserName.
+				if (!string.Equals(adminUser.UserName, adminSettings.UserName, StringComparison.Ordinal))
+				{
+					var renamed = await userManager.SetUserNameAsync(adminUser, adminSettings.UserName);
+					if (renamed.Succeeded)
+					{
+						logger.LogInformation("Set the admin username to the configured value {Username}", adminSettings.UserName);
+					}
+					else
+					{
+						logger.LogError(
+							"Failed to set the admin username to {Username}: {Errors}",
+							adminSettings.UserName, string.Join(", ", renamed.Errors.Select(e => e.Description)));
+					}
+				}
+
+				// The resolved password is the source of truth for the system admin, so keep the stored
+				// hash in sync. This is what lets a freshly configured AdminUser:Password user-secret (or
+				// a regenerated Development fallback) actually sign in against an existing database.
+				if (!await userManager.CheckPasswordAsync(adminUser, adminSettings.Password))
+				{
+					var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
+					var reset = await userManager.ResetPasswordAsync(adminUser, token, adminSettings.Password);
+					if (reset.Succeeded)
+					{
+						logger.LogInformation(
+							"Reset the stored password for {Username} to match the configured AdminUser:Password",
+							adminSettings.UserName);
+					}
+					else
+					{
+						logger.LogError(
+							"Failed to reset the password for {Username}: {Errors}. Check AdminUser:Password meets the password policy.",
+							adminSettings.UserName, string.Join(", ", reset.Errors.Select(e => e.Description)));
+					}
+				}
+
+				// A locked-out admin cannot sign in even with the right password; clear it.
+				if (await userManager.IsLockedOutAsync(adminUser))
+				{
+					_ = await userManager.SetLockoutEndDateAsync(adminUser, null);
+					_ = await userManager.ResetAccessFailedCountAsync(adminUser);
+					logger.LogInformation("Cleared lockout for {Username}", adminSettings.UserName);
+				}
 			}
 
 			// Ensure admin role assignment

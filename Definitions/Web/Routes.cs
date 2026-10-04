@@ -19,6 +19,7 @@ public static class Routes
 	public const string File = "/file";
 	public const string Images = "/images";
 	public const string ImageId = "/{imageId:int}";
+	public const string ImageMetadata = "/metadata";
 	public const string Missing = "/missing";
 	public const string Mine = "/mine";
 

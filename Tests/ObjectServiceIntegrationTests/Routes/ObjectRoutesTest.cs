@@ -877,6 +877,40 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
 	}
 
+	[Test]
+	public async Task GetObjectImageMetadataAsync_ReturnsNotFound_WhenObjectDoesNotExist()
+	{
+		// act
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/9999{Definitions.Web.Routes.Images}{Definitions.Web.Routes.ImageMetadata}");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
+
+	[Test]
+	public async Task GetObjectImageMetadataAsync_ReturnsForbidden_ForRestrictedObjectSource()
+	{
+		// arrange - a GoG-sourced object cannot expose its images (or their metadata)
+		using (var db = GetDbContext())
+		{
+			_ = await db.Objects.AddAsync(new TblObject
+			{
+				Id = 4,
+				Name = "restricted-name-4",
+				ObjectType = ObjectType.Vehicle,
+				ObjectSource = ObjectSource.LocomotionGoG,
+				Availability = ObjectAvailability.Available,
+			});
+			_ = await db.SaveChangesAsync();
+		}
+
+		// act
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/4{Definitions.Web.Routes.Images}{Definitions.Web.Routes.ImageMetadata}");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+	}
+
 	/// <summary>
 	/// Builds a PUT body. Every <c>Objects</c> column and the sub-object are the request's business;
 	/// which DAT file(s) an object is built from is not, so <c>DatObjects</c> is empty here and the server

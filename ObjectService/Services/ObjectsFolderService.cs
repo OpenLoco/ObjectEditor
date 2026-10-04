@@ -17,15 +17,18 @@ namespace ObjectService.Services;
 public sealed class ObjectsFolderService : GameDataFolderServiceBase
 {
 	private readonly ILogger _ssrLogger;
+	private readonly IObjectImageCache _imageCache;
 
 	public ObjectsFolderService(
 		LocoDbContext db,
 		ServerFolderManager sfm,
 		ILogger<ObjectsFolderService> logger,
-		ILoggerFactory loggerFactory)
+		ILoggerFactory loggerFactory,
+		IObjectImageCache imageCache)
 		: base(db, sfm, logger)
 	{
 		_ssrLogger = loggerFactory.CreateLogger("SawyerStreamReader");
+		_imageCache = imageCache;
 	}
 
 	public override Task<GameDataImportResult> ImportAsync(string absolutePath, CancellationToken ct)
@@ -263,6 +266,13 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 
 		_ = await DbSubObjectHelper.AddOrUpdate(Db, tblObject, locoObject.Object).ConfigureAwait(false);
 		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+		// The object is fully decoded here, so warm the image cache (thumbnail + metadata) while it is free
+		// to do so. Vanilla Locomotion content is never exposed through the API, so it is not worth warming.
+		if (locoObject.ImageTable is { } imageTable && entry.ObjectSource is not (ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam))
+		{
+			await ObjectImageRender.WarmAsync(_imageCache, xxHash3, imageTable.GraphicsElements, ct).ConfigureAwait(false);
+		}
 
 		return GameDataImportStatus.Added;
 	}

@@ -121,6 +121,12 @@ public static class ServiceCollectionExtensions
 	{
 		_ = services.AddSingleton<GameDataWatcherLock>();
 
+		// The object folder service warms the rendered-image cache at import time. Register the cache here so
+		// any host that imports game data (including tests building their own container) can resolve it.
+		// AddMemoryCache is idempotent - a caller may register it first with a size limit and that wins.
+		_ = services.AddMemoryCache();
+		_ = services.AddSingleton<IObjectImageCache, ObjectImageCache>();
+
 		// One entity-specific import service per GameData folder - a game object, scenario,
 		// landscape, tutorial, sound effect, music file and graphics file are all distinct entities.
 		// Each is also registered as IGameDataFileService so the startup sync can reconcile them all.

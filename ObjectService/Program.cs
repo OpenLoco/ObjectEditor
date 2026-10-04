@@ -70,6 +70,24 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 
 builder.Services.AddScoped<FrontendApiClient>(); builder.Services.AddScoped<ObjectExplorerService>(); builder.Services.AddObjectEditorServices();
 
+// Rendered object images are content-addressed by the source DAT's xxHash3 and cached in two tiers: an
+// in-process memory cache (L1, bounded by a byte size limit) in front of a disk cache under
+// GameData/Cache/images (L2, survives restarts). The image cache itself is registered by
+// AddGameDataFolderServices; here we only configure the memory tier's byte limit (default 256 MB).
+var imageCacheBytes = builder.Configuration.GetValue<long?>("ObjectService:ImageCache:MemoryCacheSizeBytes") ?? 256L * 1024 * 1024;
+builder.Services.AddMemoryCache(options => options.SizeLimit = imageCacheBytes);
+
+// Output caching for the small, immutable image responses. Combined with the long-lived ETag/Cache-Control
+// headers the route handlers set, this means an object image is decoded at most once per expiry window
+// regardless of how many clients ask for it. Bounded so it can never grow without limit.
+builder.Services.AddOutputCache(options =>
+{
+	options.SizeLimit = 64L * 1024 * 1024;
+	options.AddPolicy("ObjectImages", policy => policy
+		.Expire(TimeSpan.FromHours(24))
+		.SetVaryByRouteValue("id", "imageId"));
+});
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // this breaks the client side, even if the same converter is added...
@@ -328,6 +346,7 @@ app.UseForwardedHeaders();
 app.UseHttpLogging();
 app.UseRateLimiter();
 app.UseStaticFiles();
+app.UseOutputCache();
 
 app.UseAuthentication();
 app.UseAuthorization();

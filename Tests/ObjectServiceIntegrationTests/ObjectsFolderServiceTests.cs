@@ -6,6 +6,7 @@ using Definitions.ObjectModels.Types;
 using Index;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using ObjectService.Services;
@@ -20,6 +21,18 @@ namespace ObjectService.Tests.Integration;
 [TestFixture]
 public class ObjectsFolderServiceTests
 {
+	/// <summary>Builds the service under test with a real (but throwaway) image cache rooted at the temp folder.</summary>
+	static ObjectsFolderService CreateService(LocoDbContext db, ServerFolderManager sfm)
+		=> new(
+			db,
+			sfm,
+			NullLogger<ObjectsFolderService>.Instance,
+			NullLoggerFactory.Instance,
+			new ObjectImageCache(
+				sfm,
+				new MemoryCache(new MemoryCacheOptions { SizeLimit = 8 * 1024 * 1024 }),
+				NullLogger<ObjectImageCache>.Instance));
+
 	private static string? FindSmallestSourceDat()
 	{
 		if (!Directory.Exists(TestConstants.BaseSteamObjDataPath))
@@ -94,11 +107,7 @@ public class ObjectsFolderServiceTests
 			using var db = new LocoDbContext(options);
 			_ = db.Database.EnsureCreated();
 
-			var service = new ObjectsFolderService(
-				db,
-				sfm,
-				NullLogger<ObjectsFolderService>.Instance,
-				NullLoggerFactory.Instance);
+			var service = CreateService(db, sfm);
 
 			var result = await service.ImportAsync(destination, CancellationToken.None);
 
@@ -159,11 +168,7 @@ public class ObjectsFolderServiceTests
 			using var db = new LocoDbContext(options);
 			_ = db.Database.EnsureCreated();
 
-			var service = new ObjectsFolderService(
-				db,
-				sfm,
-				NullLogger<ObjectsFolderService>.Instance,
-				NullLoggerFactory.Instance);
+			var service = CreateService(db, sfm);
 
 			var result = await service.ImportAsync(destination, CancellationToken.None);
 
@@ -212,11 +217,7 @@ public class ObjectsFolderServiceTests
 			using var db = new LocoDbContext(options);
 			_ = db.Database.EnsureCreated();
 
-			var service = new ObjectsFolderService(
-				db,
-				sfm,
-				NullLogger<ObjectsFolderService>.Instance,
-				NullLoggerFactory.Instance);
+			var service = CreateService(db, sfm);
 
 			var result = await service.ImportAsync(destination, CancellationToken.None);
 
@@ -263,11 +264,7 @@ public class ObjectsFolderServiceTests
 			using var db = new LocoDbContext(options);
 			_ = db.Database.EnsureCreated();
 
-			var service = new ObjectsFolderService(
-				db,
-				sfm,
-				NullLogger<ObjectsFolderService>.Instance,
-				NullLoggerFactory.Instance);
+			var service = CreateService(db, sfm);
 
 			var import = await service.ImportAsync(destination, CancellationToken.None);
 			Assert.That(import.Status, Is.EqualTo(GameDataImportStatus.Added));
@@ -324,11 +321,7 @@ public class ObjectsFolderServiceTests
 			using var db = new LocoDbContext(options);
 			_ = db.Database.EnsureCreated();
 
-			var service = new ObjectsFolderService(
-				db,
-				sfm,
-				NullLogger<ObjectsFolderService>.Instance,
-				NullLoggerFactory.Instance);
+			var service = CreateService(db, sfm);
 
 			await service.ReconcileAsync(CancellationToken.None);
 
@@ -373,11 +366,7 @@ public class ObjectsFolderServiceTests
 			using var db = new LocoDbContext(options);
 			_ = db.Database.EnsureCreated();
 
-			var service = new ObjectsFolderService(
-				db,
-				sfm,
-				NullLogger<ObjectsFolderService>.Instance,
-				NullLoggerFactory.Instance);
+			var service = CreateService(db, sfm);
 
 			_ = await service.ImportAsync(destination, CancellationToken.None);
 			Assert.That((await db.Objects.SingleAsync()).Availability, Is.EqualTo(ObjectAvailability.Available));
@@ -470,11 +459,7 @@ public class ObjectsFolderServiceTests
 			using var db = new LocoDbContext(options);
 			_ = db.Database.EnsureCreated();
 
-			var service = new ObjectsFolderService(
-				db,
-				sfm,
-				NullLogger<ObjectsFolderService>.Instance,
-				NullLoggerFactory.Instance);
+			var service = CreateService(db, sfm);
 
 			// Seed the index exactly as it would have been before the relocation existed: the file is in
 			// Custom but its content says OpenLoco.

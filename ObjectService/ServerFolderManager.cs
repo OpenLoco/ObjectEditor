@@ -129,6 +129,11 @@ public class ServerFolderManager
 			EnsureDirectoryExists(Path.Combine(categoryFolder, OpenLocoFolderName));
 			EnsureDirectoryExists(Path.Combine(categoryFolder, RemovedFolderName));
 		}
+
+		// Derived artefacts (e.g. rendered object images) are cached here. The folder can be deleted at
+		// any time - everything in it is regenerated on demand - so it never needs to be backed up.
+		EnsureDirectoryExists(CacheFolder);
+		EnsureDirectoryExists(ObjectImagesCacheFolder);
 	}
 
 	/// <summary>
@@ -152,6 +157,15 @@ public class ServerFolderManager
 	public const string OriginalFolderName = "Original";
 	public const string CustomFolderName = "Custom";
 	public const string OpenLocoFolderName = "OpenLoco";
+
+	/// <summary>
+	/// Folder for derived/cached artefacts (rendered object images and their metadata). Everything under
+	/// it is regenerated on demand from the source game-data files, so it is safe to delete at any time.
+	/// </summary>
+	public const string CacheFolderName = "Cache";
+
+	/// <summary>Subfolder of <see cref="CacheFolderName"/> holding rendered object image tables.</summary>
+	public const string CachedImagesFolderName = "images";
 
 	/// <summary>
 	/// Subfolder every category folder gets for files that have been "deleted" through the API. Files are
@@ -231,6 +245,19 @@ public class ServerFolderManager
 	#region GameData
 
 	public string GameDataFolder => Path.Combine(RootDirectory, GameDataFolderName);
+
+	#endregion
+
+	#region Cache
+
+	/// <summary>Root of the derived/cached artefacts folder (safe to delete; regenerated on demand).</summary>
+	public string CacheFolder => Path.Combine(GameDataFolder, CacheFolderName);
+
+	/// <summary>Folder holding rendered object image tables, keyed by the object file's xxHash3.</summary>
+	public string ObjectImagesCacheFolder => Path.Combine(CacheFolder, CachedImagesFolderName);
+
+	/// <summary>Per-object image cache folder for the given file content hash (xxHash3).</summary>
+	public string GetObjectImagesCacheFolder(ulong xxHash3) => Path.Combine(ObjectImagesCacheFolder, xxHash3.ToString("x16"));
 
 	#endregion
 

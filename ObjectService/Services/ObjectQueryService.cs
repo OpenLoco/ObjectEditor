@@ -72,17 +72,54 @@ public enum ObjectUpdateOutcome
 /// </summary>
 public record ObjectUpdateResult(ObjectUpdateOutcome Outcome, DtoObjectPostResponse? Descriptor = null, string? ErrorMessage = null);
 
+/// <summary>
+/// The outcome of resolving one of an object's resources (its images or its DAT file). <see cref="Forbidden"/>
+/// means the object exists but its source/availability forbids exposing the resource (vanilla Locomotion
+/// assets and unavailable objects).
+/// </summary>
+public enum ObjectResourceOutcome
+{
+	Ok,
+	NotFound,
+	Forbidden,
+}
+
+/// <summary>Rendered image bytes plus the content version (the source file's xxHash3) used for caching.</summary>
+public record ObjectImageResult(ObjectResourceOutcome Outcome, byte[]? Bytes = null, ulong Version = 0);
+
+/// <summary>Rendered image-table metadata plus the content version (xxHash3).</summary>
+public record ObjectImageMetadataResult(ObjectResourceOutcome Outcome, ObjectImageMetadata? Metadata = null, ulong Version = 0);
+
+/// <summary>The primary DAT file path, or the reason it cannot be exposed.</summary>
+public record ObjectFileResult(ObjectResourceOutcome Outcome, string? FilePath = null);
+
 public interface IObjectQueryService
 {
 	Task<IEnumerable<DtoObjectEntry>> ListAsync(CancellationToken ct);
 	Task<IEnumerable<DtoObjectEntry>> ListMineAsync(UniqueObjectId ownerUserId, CancellationToken ct);
-	Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct);
+
+	/// <summary>
+	/// The object descriptor. When <paramref name="includeDatBytes"/> is <see langword="true"/> the raw DAT
+	/// bytes are base64-attached to each DatObject (a full file read + base64 encode); callers that only
+	/// need metadata (e.g. the web frontend) should pass <see langword="false"/>.
+	/// </summary>
+	Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, bool includeDatBytes, CancellationToken ct);
+
 	Task<UploadResult> UploadDatAsync(DtoObjectPost request, CancellationToken ct);
 	Task<ObjectUpdateResult> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct);
 	Task<ObjectDeleteResult> DeleteObjectAsync(UniqueObjectId id, CancellationToken ct);
-	Task<byte[]?> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct);
-	Task<byte[]?> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct);
-	Task<string?> GetFilePathAsync(UniqueObjectId id, CancellationToken ct);
+
+	/// <summary>The whole image table as a zip, or the reason it cannot be exposed.</summary>
+	Task<ObjectImageResult> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct);
+
+	/// <summary>One rendered image (frame), or the reason it cannot be exposed.</summary>
+	Task<ObjectImageResult> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct);
+
+	/// <summary>The image-table metadata (frame count and dims), or the reason it cannot be exposed.</summary>
+	Task<ObjectImageMetadataResult> GetImageMetadataAsync(UniqueObjectId id, CancellationToken ct);
+
+	/// <summary>The primary DAT file path, or the reason it cannot be exposed.</summary>
+	Task<ObjectFileResult> GetFilePathAsync(UniqueObjectId id, CancellationToken ct);
 }
 
 public class ObjectQueryService : IObjectQueryService
@@ -93,6 +130,7 @@ public class ObjectQueryService : IObjectQueryService
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly IHttpContextAccessor _httpContextAccessor;
 	private readonly UserManager<TblUser> _userManager;
+	private readonly IObjectImageCache _imageCache;
 
 	public ObjectQueryService(
 		LocoDbContext db,
@@ -100,7 +138,8 @@ public class ObjectQueryService : IObjectQueryService
 		ILogger<ObjectQueryService> logger,
 		ILoggerFactory loggerFactory,
 		IHttpContextAccessor httpContextAccessor,
-		UserManager<TblUser> userManager)
+		UserManager<TblUser> userManager,
+		IObjectImageCache imageCache)
 	{
 		_db = db;
 		_sfm = sfm;
@@ -108,6 +147,7 @@ public class ObjectQueryService : IObjectQueryService
 		_loggerFactory = loggerFactory;
 		_httpContextAccessor = httpContextAccessor;
 		_userManager = userManager;
+		_imageCache = imageCache;
 	}
 
 	public async Task<IEnumerable<DtoObjectEntry>> ListAsync(CancellationToken ct) => await _db.Objects.Include(x => x.DatObjects).Select(x => x.ToDtoEntry()).ToListAsync(ct);
@@ -119,7 +159,7 @@ public class ObjectQueryService : IObjectQueryService
 			.Select(x => x.ToDtoEntry())
 			.ToListAsync(ct);
 
-	public async Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, CancellationToken ct)
+	public async Task<DtoObjectPostResponse?> GetByIdAsync(UniqueObjectId id, bool includeDatBytes, CancellationToken ct)
 	{
 		var eObj = await _db.Objects.Where(x => x.Id == id).Include(x => x.Licence).Include(x => x.DatObjects).Include(x => x.StringTable).Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks)).SingleOrDefaultAsync(ct);
 		if (eObj == null)
@@ -129,7 +169,11 @@ public class ObjectQueryService : IObjectQueryService
 
 		var subObject = DbSubObjectHelper.GetDbSubForType(_db, eObj.Object.ObjectType, eObj.Object.Id);
 		var descriptor = eObj.ToDtoDescriptor(subObject);
-		await PopulateDatFileBytesAsync(descriptor, ct);
+		if (includeDatBytes)
+		{
+			await PopulateDatFileBytesAsync(descriptor, ct);
+		}
+
 		return descriptor;
 	}
 
@@ -360,124 +404,192 @@ public class ObjectQueryService : IObjectQueryService
 		}
 	}
 
-	public async Task<byte[]?> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct)
+	public async Task<ObjectImageResult> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var obj = await _db.Objects.AsNoTracking().Include(x => x.DatObjects).SingleOrDefaultAsync(x => x.Id == id, ct);
-		if (obj == null)
+		var (_, dat, outcome) = await ResolvePrimaryDatAsync(id, ct);
+		if (outcome != ObjectResourceOutcome.Ok)
 		{
-			return null;
+			return new(outcome);
 		}
 
-		var datEntry = obj.DatObjects.FirstOrDefault();
-		if (datEntry == null || !_sfm.ObjectIndex.TryFind((datEntry.DatName, datEntry.DatChecksum), out var indexEntry) || indexEntry == null || string.IsNullOrEmpty(indexEntry.FileName))
+		if (dat == null)
 		{
-			return null;
+			return new(ObjectResourceOutcome.NotFound);
 		}
 
-		var objectFilePath = Path.Combine(_sfm.ObjectsFolder, indexEntry.FileName);
-		if (!File.Exists(objectFilePath))
+		var cached = await _imageCache.GetZipAsync(dat.xxHash3, ct);
+		if (cached != null)
 		{
-			return null;
+			return new(ObjectResourceOutcome.Ok, cached, dat.xxHash3);
 		}
 
-		var datBytes = await File.ReadAllBytesAsync(objectFilePath, ct);
-		var result = SawyerStreamReader.LoadFullObject(datBytes, _logger);
-		if (result.LocoObject?.ImageTable == null)
+		if (!TryResolveObjectFilePath(dat, out var objectFilePath))
 		{
-			return null;
+			return new(ObjectResourceOutcome.NotFound);
+		}
+
+		var elements = await LoadImageElementsAsync(objectFilePath, ct);
+		if (elements == null)
+		{
+			return new(ObjectResourceOutcome.NotFound);
 		}
 
 		var palette = PaletteMapLoader.LoadDefault();
-
-		var elements = result.LocoObject.ImageTable.GraphicsElements;
 		var tempZipPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".zip");
 		using var zipStream = new FileStream(tempZipPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 		using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
 		{
 			for (var i = 0; i < elements.Count; i++)
 			{
-				var element = elements[i];
-
 				var entry = archive.CreateEntry(i + ".png", CompressionLevel.Optimal);
 				await using var entryStream = entry.Open();
-				await element.ToRgba(palette).SaveAsPngAsync(entryStream, ct);
+				await elements[i].ToRgba(palette).SaveAsPngAsync(entryStream, ct);
 			}
 		}
+
 		zipStream.Position = 0;
 		using var ms = new MemoryStream();
 		await zipStream.CopyToAsync(ms, ct);
-		return ms.ToArray();
+		var zip = ms.ToArray();
+		await _imageCache.SetZipAsync(dat.xxHash3, zip, ct);
+		return new(ObjectResourceOutcome.Ok, zip, dat.xxHash3);
 	}
 
-	public async Task<byte[]?> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct)
+	public async Task<ObjectImageResult> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct)
+	{
+		var (_, dat, outcome) = await ResolvePrimaryDatAsync(id, ct);
+		if (outcome != ObjectResourceOutcome.Ok)
+		{
+			return new(outcome);
+		}
+
+		if (dat == null)
+		{
+			return new(ObjectResourceOutcome.NotFound);
+		}
+
+		var cached = await _imageCache.GetPngAsync(dat.xxHash3, imageId, ct);
+		if (cached != null)
+		{
+			return new(ObjectResourceOutcome.Ok, cached, dat.xxHash3);
+		}
+
+		if (!TryResolveObjectFilePath(dat, out var objectFilePath))
+		{
+			return new(ObjectResourceOutcome.NotFound);
+		}
+
+		var elements = await LoadImageElementsAsync(objectFilePath, ct);
+		if (elements == null || imageId < 0 || imageId >= elements.Count || elements[imageId] == null)
+		{
+			return new(ObjectResourceOutcome.NotFound);
+		}
+
+		var png = await ObjectImageRender.RenderFramePngAsync(elements[imageId], ct);
+		await _imageCache.SetPngAsync(dat.xxHash3, imageId, png, ct);
+		return new(ObjectResourceOutcome.Ok, png, dat.xxHash3);
+	}
+
+	public async Task<ObjectImageMetadataResult> GetImageMetadataAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var (_, dat, outcome) = await ResolvePrimaryDatAsync(id, ct);
+		if (outcome != ObjectResourceOutcome.Ok)
+		{
+			return new(outcome);
+		}
+
+		if (dat == null)
+		{
+			return new(ObjectResourceOutcome.NotFound);
+		}
+
+		var cached = await _imageCache.GetMetadataAsync(dat.xxHash3, ct);
+		if (cached != null)
+		{
+			return new(ObjectResourceOutcome.Ok, cached, dat.xxHash3);
+		}
+
+		if (!TryResolveObjectFilePath(dat, out var objectFilePath))
+		{
+			return new(ObjectResourceOutcome.NotFound);
+		}
+
+		var elements = await LoadImageElementsAsync(objectFilePath, ct);
+		if (elements == null)
+		{
+			return new(ObjectResourceOutcome.NotFound);
+		}
+
+		var metadata = ObjectImageRender.BuildMetadata(elements);
+		await _imageCache.SetMetadataAsync(dat.xxHash3, metadata, ct);
+		return new(ObjectResourceOutcome.Ok, metadata, dat.xxHash3);
+	}
+
+	public async Task<ObjectFileResult> GetFilePathAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var (_, dat, outcome) = await ResolvePrimaryDatAsync(id, ct);
+		if (outcome != ObjectResourceOutcome.Ok)
+		{
+			return new(outcome);
+		}
+
+		if (dat == null || !TryResolveObjectFilePath(dat, out var objectFilePath))
+		{
+			return new(ObjectResourceOutcome.NotFound);
+		}
+
+		return new(ObjectResourceOutcome.Ok, objectFilePath);
+	}
+
+	/// <summary>
+	/// Loads an object row and its primary DAT mapping, enforcing the automatic image/file exposure rules:
+	/// vanilla Locomotion (Steam/GoG) content and unavailable objects are <see cref="ObjectResourceOutcome.Forbidden"/>.
+	/// </summary>
+	async Task<(TblObject? Obj, TblDatObject? Dat, ObjectResourceOutcome Outcome)> ResolvePrimaryDatAsync(UniqueObjectId id, CancellationToken ct)
 	{
 		var obj = await _db.Objects.AsNoTracking().Include(x => x.DatObjects).SingleOrDefaultAsync(x => x.Id == id, ct);
 		if (obj == null)
 		{
-			return null;
+			return (null, null, ObjectResourceOutcome.NotFound);
 		}
 
-		var datEntry = obj.DatObjects.FirstOrDefault();
-		if (datEntry == null || !_sfm.ObjectIndex.TryFind((datEntry.DatName, datEntry.DatChecksum), out var indexEntry) || indexEntry == null || string.IsNullOrEmpty(indexEntry.FileName))
+		if (obj.Availability == ObjectAvailability.Unavailable || obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			return null;
+			return (obj, null, ObjectResourceOutcome.Forbidden);
 		}
 
-		var objectFilePath = Path.Combine(_sfm.ObjectsFolder, indexEntry.FileName);
-		if (!File.Exists(objectFilePath))
-		{
-			return null;
-		}
-
-		var datBytes = await File.ReadAllBytesAsync(objectFilePath, ct);
-		var result = SawyerStreamReader.LoadFullObject(datBytes, _logger);
-		if (result.LocoObject?.ImageTable == null)
-		{
-			return null;
-		}
-
-		var palette = PaletteMapLoader.LoadDefault();
-
-		var elements = result.LocoObject.ImageTable.GraphicsElements;
-		if (imageId < 0 || imageId >= elements.Count)
-		{
-			return null;
-		}
-
-		var element = elements[imageId];
-		if (element == null)
-		{
-			return null;
-		}
-
-		// Trim the image to its non-transparent bounding box in its native representation,
-		// decoding to RGBA only if it is palette-indexed (so no full-image round-trip is needed).
-		using var image = element.TrimmedToRgba(palette);
-		using var ms = new MemoryStream();
-		await image.SaveAsPngAsync(ms, ct);
-		return ms.ToArray();
+		return (obj, obj.DatObjects.FirstOrDefault(), ObjectResourceOutcome.Ok);
 	}
 
-	public async Task<string?> GetFilePathAsync(UniqueObjectId id, CancellationToken ct)
+	/// <summary>Resolves the on-disk path of an object's primary DAT file via the object index.</summary>
+	bool TryResolveObjectFilePath(TblDatObject dat, out string path)
 	{
-		var obj = await _db.Objects.Include(x => x.DatObjects).Where(x => x.Id == id).SingleOrDefaultAsync(ct);
-		if (obj == null)
+		path = string.Empty;
+		if (!_sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null || string.IsNullOrEmpty(entry.FileName))
 		{
+			return false;
+		}
+
+		path = Path.Combine(_sfm.ObjectsFolder, entry.FileName);
+		return File.Exists(path);
+	}
+
+	/// <summary>Full-loads a DAT file and returns its image-table elements, or <see langword="null"/> when it has no image table.</summary>
+	async Task<IReadOnlyList<GraphicsElement>?> LoadImageElementsAsync(string objectFilePath, CancellationToken ct)
+	{
+		byte[] datBytes;
+		try
+		{
+			datBytes = await File.ReadAllBytesAsync(objectFilePath, ct);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			_logger.LogWarning(ex, "Could not read object file {Path}", objectFilePath);
 			return null;
 		}
 
-		var dat = obj.DatObjects.First();
-		if (!_sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
-		{
-			return null;
-		}
-
-		if (string.IsNullOrEmpty(entry.FileName))
-		{
-			return null;
-		}
-
-		return Path.Combine(_sfm.ObjectsFolder, entry.FileName);
+		var result = SawyerStreamReader.LoadFullObject(datBytes, _logger);
+		return result.LocoObject?.ImageTable?.GraphicsElements;
 	}
 
 	public async Task<UploadResult> UploadDatAsync(DtoObjectPost request, CancellationToken ct)
@@ -614,6 +726,13 @@ public class ObjectQueryService : IObjectQueryService
 
 		_ = await DbSubObjectHelper.AddOrUpdate(_db, tblObject, LocoObject.Object);
 		_ = await _db.SaveChangesAsync(ct);
+
+		// The object is fully decoded at this point, so warm the image cache now (thumbnail + metadata) to
+		// spare the first browse/detail request from decoding it again.
+		if (LocoObject.ImageTable is { } imageTable)
+		{
+			await ObjectImageRender.WarmAsync(_imageCache, xxHash3, imageTable.GraphicsElements, ct);
+		}
 
 		_sfm.ObjectIndex.AddEntry(new ObjectIndexEntry(hdrs.S5.Name, relativeFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 		_ = _sfm.ObjectIndex.SaveIndexAsync(_sfm.IndexFile);

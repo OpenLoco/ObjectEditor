@@ -1,6 +1,4 @@
-using Definitions;
 using Definitions.DTO;
-using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using ObjectService.Services;
@@ -31,8 +29,10 @@ public class ObjectRouteHandler : ITableRouteHandler
 		_ = resourceRoute.MapGet(Routes.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(Routes.Images, GetObjectImagesAsync);
 
+		// Output cache the small immutable image responses (see the "ObjectImages" policy in Program.cs).
 		var imagesRoute = resourceRoute.MapGroup(Routes.Images);
-		_ = imagesRoute.MapGet(Routes.ImageId, GetObjectImageAsync);
+		_ = imagesRoute.MapGet(Routes.ImageMetadata, GetObjectImageMetadataAsync).CacheOutput("ObjectImages");
+		_ = imagesRoute.MapGet(Routes.ImageId, GetObjectImageAsync).CacheOutput("ObjectImages");
 	}
 
 	async Task<IResult> CreateDatAsync([FromBody] DtoObjectPost request, [FromServices] IObjectQueryService query, CancellationToken ct)
@@ -41,10 +41,10 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return result.Success ? Results.Created($"{Routes.Prefix}{BaseRoute}/{result.Descriptor!.Id}", result.Descriptor) : Results.Problem(result.ErrorMessage, statusCode: result.StatusCode);
 	}
 
-	async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
+	async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct, [FromQuery] bool includeDatBytes = true)
 	{
 		logger.LogInformation("[Read] Object {ObjectId}", id);
-		var d = await query.GetByIdAsync(id, ct);
+		var d = await query.GetByIdAsync(id, includeDatBytes, ct);
 		return d != null ? Results.Ok(d) : Results.NotFound();
 	}
 
@@ -97,56 +97,67 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return Results.Ok(await query.ListMineAsync(userId, ct));
 	}
 
-	async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
+	async Task<IResult> GetObjectImagesAsync(HttpContext context, [FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, CancellationToken ct)
 	{
-		var descriptor = await query.GetByIdAsync(id, ct);
-		if (descriptor == null)
+		var result = await query.GetImagesZipAsync(id, ct);
+		return result.Outcome switch
 		{
-			return Results.NotFound();
-		}
-
-		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
-		{
-			logger.LogWarning("Object {ObjectId} cannot expose images due to source/availability restrictions", id);
-			return Results.Forbid();
-		}
-
-		var zip = await query.GetImagesZipAsync(id, ct);
-		return zip != null ? Results.File(zip, "application/zip", $"{id}_images.zip") : Results.NotFound();
+			ObjectResourceOutcome.Ok => ServeBytesWithCache(context, result.Bytes!, result.Version, "application/zip", $"{id}_images.zip", "zip"),
+			ObjectResourceOutcome.Forbidden => Results.Forbid(),
+			_ => Results.NotFound(),
+		};
 	}
 
-	async Task<IResult> GetObjectImageAsync([FromRoute] UniqueObjectId id, [FromRoute] int imageId, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
+	async Task<IResult> GetObjectImageAsync(HttpContext context, [FromRoute] UniqueObjectId id, [FromRoute] int imageId, [FromServices] IObjectQueryService query, CancellationToken ct)
 	{
-		var descriptor = await query.GetByIdAsync(id, ct);
-		if (descriptor == null)
+		var result = await query.GetImagePngAsync(id, imageId, ct);
+		return result.Outcome switch
 		{
-			return Results.NotFound();
-		}
+			ObjectResourceOutcome.Ok => ServeBytesWithCache(context, result.Bytes!, result.Version, "image/png", null, imageId.ToString()),
+			ObjectResourceOutcome.Forbidden => Results.Forbid(),
+			_ => Results.NotFound(),
+		};
+	}
 
-		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+	async Task<IResult> GetObjectImageMetadataAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, CancellationToken ct)
+	{
+		var result = await query.GetImageMetadataAsync(id, ct);
+		return result.Outcome switch
 		{
-			logger.LogWarning("Object {ObjectId} cannot expose images due to source/availability restrictions", id);
-			return Results.Forbid();
-		}
-
-		var png = await query.GetImagePngAsync(id, imageId, ct);
-		return png != null ? Results.File(png, "image/png") : Results.NotFound();
+			ObjectResourceOutcome.Ok => Results.Ok(result.Metadata),
+			ObjectResourceOutcome.Forbidden => Results.Forbid(),
+			_ => Results.NotFound(),
+		};
 	}
 
 	async Task<IResult> GetObjectFileAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, CancellationToken ct)
 	{
-		var descriptor = await query.GetByIdAsync(id, ct);
-		if (descriptor == null)
+		var result = await query.GetFilePathAsync(id, ct);
+		return result.Outcome switch
 		{
-			return Results.NotFound();
+			ObjectResourceOutcome.Ok when result.FilePath is not null
+				=> Results.File(result.FilePath, "application/octet-stream", Path.GetFileName(result.FilePath)),
+			ObjectResourceOutcome.Forbidden => Results.Forbid(),
+			_ => Results.NotFound(),
+		};
+	}
+
+	/// <summary>
+	/// Writes immutable binary content with a long-lived cache policy and an ETag derived from the content
+	/// version (the source DAT file's xxHash3), so a browser never re-requests an unchanged object image.
+	/// The same version always produces the same bytes, so the entry is safe to cache forever - a different
+	/// file (or an edited object) has a different hash and therefore a different ETag.
+	/// </summary>
+	static IResult ServeBytesWithCache(HttpContext context, byte[] bytes, ulong version, string contentType, string? fileName, string variant)
+	{
+		var etag = $"\"{version:x16}-{variant}\"";
+		if (context.Request.Headers.IfNoneMatch == etag)
+		{
+			return Results.StatusCode(StatusCodes.Status304NotModified);
 		}
 
-		if (descriptor.Availability == ObjectAvailability.Unavailable || descriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
-		{
-			return Results.Forbid();
-		}
-
-		var path = await query.GetFilePathAsync(id, ct);
-		return path != null && File.Exists(path) ? Results.File(path, "application/octet-stream", Path.GetFileName(path)) : Results.NotFound();
+		context.Response.Headers.ETag = etag;
+		context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+		return fileName is null ? Results.File(bytes, contentType) : Results.File(bytes, contentType, fileName);
 	}
 }

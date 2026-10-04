@@ -91,7 +91,7 @@ public sealed record ObjectImageViewModel(
 	int Index,
 	int Width,
 	int Height,
-	string DataUrl);
+	string Url);
 
 public sealed record ObjectFileEntryViewModel(
 	string DatName,

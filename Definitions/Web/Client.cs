@@ -50,14 +50,19 @@ public static class Client
 			logger: logger,
 			cancellationToken: cancellationToken);
 
-	public static async Task<DtoObjectPostResponse?> GetObjectAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
-		=> await ClientHelpers.GetAsync<DtoObjectPostResponse>(
+	public static async Task<DtoObjectPostResponse?> GetObjectAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default, bool includeDatBytes = true)
+	{
+		// The raw DAT bytes are base64-attached server-side by default (one full file read + encode per
+		// call). Callers that only need metadata should pass includeDatBytes: false to skip that work.
+		var route = ApiVersion + Routes.Objects + $"/{id}" + (includeDatBytes ? string.Empty : "?includeDatBytes=false");
+		return await ClientHelpers.SendRequestAsync(
 			client,
-			ApiVersion,
-			Routes.Objects,
-			id,
+			route,
+			ct => client.GetAsync(route, ct),
+			ClientHelpers.ReadJsonContentAsync<DtoObjectPostResponse>,
 			logger,
 			cancellationToken);
+	}
 
 	public static async Task<DtoObjectPostResponse?> UpdateObjectAsync(HttpClient client, UniqueObjectId id, DtoObjectPostResponse request, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
@@ -95,6 +100,18 @@ public static class Client
 			ClientHelpers.ReadBinaryContentAsync,
 			logger,
 			cancellationToken) ?? default;
+
+	public static async Task<DtoObjectImageMetadata?> GetObjectImageMetadataAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
+	{
+		var route = ApiVersion + Routes.Objects + $"/{id}{Routes.Images}{Routes.ImageMetadata}";
+		return await ClientHelpers.SendRequestAsync(
+			client,
+			route,
+			ct => client.GetAsync(route, ct),
+			ClientHelpers.ReadJsonContentAsync<DtoObjectImageMetadata>,
+			logger,
+			cancellationToken);
+	}
 
 	public static async Task<byte[]?> GetScenarioFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null, CancellationToken cancellationToken = default)
 		=> await ClientHelpers.SendRequestAsync(

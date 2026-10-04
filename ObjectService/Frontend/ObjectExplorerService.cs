@@ -2,8 +2,6 @@ using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels.Types;
 using Definitions.Web;
-using SixLabors.ImageSharp;
-using System.IO.Compression;
 using System.Text.Json;
 
 namespace ObjectService.Frontend;
@@ -78,7 +76,8 @@ public sealed class ObjectExplorerService
 	public async Task<ObjectDetailViewModel?> GetObjectAsync(UniqueObjectId id, CancellationToken cancellationToken = default)
 	{
 		using var client = _apiClient.CreateClient();
-		var obj = await Client.GetObjectAsync(client, id, cancellationToken: cancellationToken);
+		// The web frontend only needs the descriptor metadata, never the base64-inlined DAT bytes.
+		var obj = await Client.GetObjectAsync(client, id, cancellationToken: cancellationToken, includeDatBytes: false);
 
 		if (obj == null)
 		{
@@ -177,39 +176,19 @@ public sealed class ObjectExplorerService
 
 	async Task<IReadOnlyList<ObjectImageViewModel>> GetImagesFromApiAsync(HttpClient client, UniqueObjectId id, CancellationToken cancellationToken)
 	{
-		var zipBytes = await Client.GetObjectImagesAsync(client, id, cancellationToken: cancellationToken);
-		if (zipBytes == null || zipBytes.Length == 0)
+		// Only the lightweight metadata is fetched here; each frame is then rendered by the browser from its
+		// own (immutable, cacheable) URL instead of being base64-inlined. Reading the metadata - rather than
+		// unzipping and re-decoding every PNG - keeps the details page cheap.
+		var metadata = await Client.GetObjectImageMetadataAsync(client, id, cancellationToken: cancellationToken);
+		if (metadata == null || metadata.Frames.Count == 0)
 		{
 			return [];
 		}
 
-		using var memoryStream = new MemoryStream(zipBytes, writable: false);
-		using var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Read, false);
-		var images = new List<ObjectImageViewModel>();
-
-		foreach (var entry in zipArchive.Entries.OrderBy(x => x.FullName, StringComparer.OrdinalIgnoreCase))
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-
-			if (!entry.FullName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-			{
-				continue;
-			}
-
-			await using var entryStream = entry.Open();
-			await using var pngStream = new MemoryStream();
-			await entryStream.CopyToAsync(pngStream, cancellationToken);
-			var pngBytes = pngStream.ToArray();
-
-			using var image = Image.Load(pngBytes);
-			images.Add(new ObjectImageViewModel(
-				ParseImageIndex(entry.Name),
-				image.Width,
-				image.Height,
-				$"data:image/png;base64,{Convert.ToBase64String(pngBytes)}"));
-		}
-
-		return [.. images.OrderBy(x => x.Index)];
+		var baseUrl = $"{Routes.Prefix}{Routes.Objects}/{id}{Routes.Images}";
+		return [.. metadata.Frames
+			.OrderBy(x => x.Index)
+			.Select(frame => new ObjectImageViewModel(frame.Index, frame.Width, frame.Height, $"{baseUrl}/{frame.Index}"))];
 	}
 
 	static bool IsDownloadable(DtoObjectEntry row)
@@ -245,11 +224,6 @@ public sealed class ObjectExplorerService
 	static bool ContainsInsensitive(string? value, string search)
 		=> !string.IsNullOrWhiteSpace(value)
 			&& value.Contains(search, StringComparison.OrdinalIgnoreCase);
-
-	static int ParseImageIndex(string fileName)
-		=> int.TryParse(Path.GetFileNameWithoutExtension(fileName), out var index)
-			? index
-			: int.MaxValue;
 
 	static int LanguagePriority(LanguageId language)
 		=> language switch

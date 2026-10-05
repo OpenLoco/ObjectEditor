@@ -15,6 +15,12 @@ public abstract class GameDataFileRouteHandler<TService, TListEntry, TDescriptor
 {
 	public abstract string BaseRoute { get; }
 
+	/// <summary>
+	/// Scalar/OpenAPI grouping tag. Defaults to the pluralised handler name; the concrete game-data
+	/// handlers below override it because their names are already plural (or uncountable).
+	/// </summary>
+	public virtual string TagName => RouteHelpers.MakeNicePlural(GetType().Name);
+
 	public Delegate ListDelegate => ListAsync;
 	public Delegate CreateDelegate => CreateAsync;
 	public Delegate ReadDelegate => ReadAsync;
@@ -62,22 +68,34 @@ public abstract class GameDataFileRouteHandler<TService, TListEntry, TDescriptor
 public sealed class MusicRouteHandler : GameDataFileRouteHandler<IMusicService, DtoMusicListEntry, DtoMusicDescriptor>
 {
 	public override string BaseRoute => Routes.Music;
+
+	// "Music" is uncountable, so it must not be pluralised to "Musics".
+	public override string TagName => "Music";
 }
 
 /// <summary>Routes for sound effects (<c>/v2/soundeffects</c>).</summary>
 public sealed class SoundEffectsRouteHandler : GameDataFileRouteHandler<ISoundEffectsService, DtoSoundEffectListEntry, DtoSoundEffectDescriptor>
 {
 	public override string BaseRoute => Routes.SoundEffects;
+
+	// The handler name is already plural; without this the tag would be "SoundEffectss".
+	public override string TagName => "SoundEffects";
 }
 
 /// <summary>Routes for tutorials (<c>/v2/tutorials</c>).</summary>
 public sealed class TutorialsRouteHandler : GameDataFileRouteHandler<ITutorialsService, DtoTutorialListEntry, DtoTutorialDescriptor>
 {
 	public override string BaseRoute => Routes.Tutorials;
+
+	// The handler name is already plural; without this the tag would be "Tutorialss".
+	public override string TagName => "Tutorials";
 }
 
 /// <summary>Routes for graphics files (<c>/v2/graphics</c>).</summary>
 public sealed class GraphicsRouteHandler : GameDataFileRouteHandler<IGraphicsService, DtoGraphicsListEntry, DtoGraphicsDescriptor>
 {
 	public override string BaseRoute => Routes.Graphics;
+
+	// The handler name is already plural; without this the tag would be "Graphicss".
+	public override string TagName => "Graphics";
 }

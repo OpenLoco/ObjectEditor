@@ -15,7 +15,7 @@ public static class BaseTableRouteHandler
 	{
 		var baseRoute = parentRoute
 			.MapGroup(handler.BaseRoute)
-			.WithTags(RouteHelpers.MakeNicePlural(handler.GetType().Name));
+			.WithTags(handler.TagName);
 
 		_ = baseRoute.MapGet(string.Empty, handler.ListDelegate);
 
@@ -47,7 +47,7 @@ public static class BaseTableRouteHandler
 
 		var baseRoute = parentRoute
 			.MapGroup(handler.BaseRoute)
-			.WithTags(RouteHelpers.MakeNicePlural(handler.GetType().Name));
+			.WithTags(handler.TagName);
 
 		var createEndpoint = baseRoute.MapPost(string.Empty, handler.CreateDelegate);
 		if (createPolicy is not null)

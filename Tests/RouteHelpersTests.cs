@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using ObjectService.RouteHandlers;
+using ObjectService.RouteHandlers.TableHandlers;
 
 namespace ObjectService.Tests;
 
@@ -253,6 +254,21 @@ public class RouteHelpersTests
 		Assert.That(RouteHelpers.MakeNicePlural("ObjectRouteHandler"), Is.EqualTo("Objects"));
 		Assert.That(RouteHelpers.MakeNicePlural("Tag"), Is.EqualTo("Tags"));
 		Assert.That(RouteHelpers.MakeNicePlural("UserRouteHandler"), Is.EqualTo("Users"));
+	}
+
+	[Test]
+	public void TagName_UsesExplicitName_ForHandlersWithAlreadyPluralNames()
+	{
+		// Regression test: MakeNicePlural blindly appends "s", which previously produced the
+		// double-pluralised Scalar tags "Graphicss", "Musics", "SoundEffectss" and "Tutorialss".
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(((ITableRouteHandler)new ObjectRouteHandler()).TagName, Is.EqualTo("Objects"));
+			Assert.That(new MusicRouteHandler().TagName, Is.EqualTo("Music"));
+			Assert.That(new GraphicsRouteHandler().TagName, Is.EqualTo("Graphics"));
+			Assert.That(new SoundEffectsRouteHandler().TagName, Is.EqualTo("SoundEffects"));
+			Assert.That(new TutorialsRouteHandler().TagName, Is.EqualTo("Tutorials"));
+		}
 	}
 	[Test]
 	public void TryGetSafePathUnderRoot_AcceptsAbsolutePathInsideRoot()

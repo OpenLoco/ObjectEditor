@@ -33,7 +33,7 @@ public static class MigrationInitializer
 
 		if (!await HasAnyUserTableAsync(db).ConfigureAwait(false))
 		{
-			// Brand new (or just-deleted) database: Migrate() will build the schema from the baseline.
+			// Brand new database: Migrate() will build the schema from the baseline.
 			return;
 		}
 

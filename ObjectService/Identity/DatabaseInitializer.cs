@@ -17,16 +17,7 @@ public static class DatabaseInitializer
 		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
 		var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TblUser>>();
 		var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TblUserRole>>();
-		var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 		var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DatabaseInitializer");
-
-		// Recreate DB from scratch when the dev flag is on
-		var deleteDbOnStartup = config.GetValue<bool?>("ObjectService:DeleteDatabaseOnStartup") ?? false;
-		if (deleteDbOnStartup)
-		{
-			logger.LogWarning("ObjectService:DeleteDatabaseOnStartup is true — dropping and recreating database");
-			await db.Database.EnsureDeletedAsync();
-		}
 
 		// Bring the schema up to date. Databases created before migrations were adopted have no
 		// __EFMigrationsHistory table, so the baseline migration is recorded as applied first; from then on

@@ -345,7 +345,7 @@ public static class Client
 
 	public static async Task<DtoUserEntry?> SetCurrentUserDisplayNameAsync(HttpClient client, string displayName, ILogger? logger = null, CancellationToken cancellationToken = default)
 	{
-		var route = ApiVersion + Routes.Users + Routes.Me;
+		var route = ApiVersion + Routes.IdentityManageProfile;
 		return await ClientHelpers.SendRequestAsync(
 			client,
 			route,
@@ -362,7 +362,7 @@ public static class Client
 	{
 		try
 		{
-			var route = ApiVersion + Routes.Users + Routes.Me;
+			var route = ApiVersion + Routes.IdentityManageAccount;
 			using var response = await client.DeleteAsync(route, cancellationToken);
 			return response.IsSuccessStatusCode;
 		}

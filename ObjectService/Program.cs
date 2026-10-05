@@ -46,9 +46,14 @@ builder.Services.AddOpenApi(options =>
 
 		return Task.CompletedTask;
 	});
+
+	// Declare the "Bearer" security scheme so it appears in the generated document, and mark the
+	// operations that actually require authorization (group-level RequireAuthorization included) with
+	// that scheme, so the Scalar API reference matches the real routes.
+	_ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+	_ = options.AddOperationTransformer<BearerOperationTransformer>();
 });
 
-// (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks()
 	.AddCheck<ObjectServiceHealthCheck>("object-service");
@@ -352,8 +357,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // ASP.NET Identity's built-in endpoints, mounted under /v2/identity so the whole API is versioned.
-var identityEndpoints = app.MapGroup($"{Routes.Prefix}{Routes.Identity}");
-_ = identityEndpoints.MapIdentityApi<TblUser>();
+// Tagged explicitly so the API reference groups them under "Identity" rather than a generated
+// fallback name.
+var identityEndpoints = app.MapGroup($"{Routes.Prefix}{Routes.Identity}").WithTags("Identity");
+_ = identityEndpoints.MapLocoIdentityApi<TblUser>();
+// Self-service account routes (display name, delete own account) live next to Identity's own manage
+// endpoints rather than under the admin-only /v2/users record area.
+IdentityManageRouteHandler.MapRoutes(identityEndpoints);
 
 _ = app
 	.MapHealthChecks("/health")

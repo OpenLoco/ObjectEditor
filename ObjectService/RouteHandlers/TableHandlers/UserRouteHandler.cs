@@ -2,13 +2,14 @@ using Definitions.DTO.Identity;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using ObjectService.Services;
-using System.Security.Claims;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 /// <summary>
-/// Identity-backed user management routes. All work is delegated to <see cref="IUserService"/>;
-/// this type only maps HTTP concerns (routing, request bodies, current-user claims) onto it.
+/// Database-administration routes for user records, mounted under <c>/v2/users</c>. All work is
+/// delegated to <see cref="IUserService"/>; this type only maps HTTP concerns (routing, request
+/// bodies) onto it. Self-service account routes for the signed-in user live under
+/// <c>/v2/identity/manage</c> (<see cref="IdentityManageRouteHandler"/>).
 /// </summary>
 public class UserRouteHandler : ITableRouteHandler
 {
@@ -36,19 +37,6 @@ public class UserRouteHandler : ITableRouteHandler
 		_ = resourceRoute.MapPost(Routes.PasswordReset, ForcePasswordResetAsync).RequireAuthorization("AdminOnly");
 	}
 
-	/// <summary>
-	/// Registers the self-service account write routes (<c>/v2/users/me</c>). This is called from the
-	/// write-path registration so the writes are not mapped as part of the read routes; they remain
-	/// available to any authenticated user and are not disabled by
-	/// <c>ObjectService:BackendReadOnly</c>.
-	/// </summary>
-	public void MapAdditionalWriteRoutes(IEndpointRouteBuilder parentRoute)
-	{
-		var baseRoute = parentRoute.MapGroup(BaseRoute);
-		_ = baseRoute.MapDelete(Routes.Me, DeleteCurrentUserAsync);
-		_ = baseRoute.MapPut(Routes.Me, UpdateCurrentUserAsync);
-	}
-
 	async Task<IResult> ListAsync([FromServices] IUserService svc, CancellationToken ct)
 		=> Results.Ok(await svc.ListAsync(ct));
 
@@ -65,22 +53,6 @@ public class UserRouteHandler : ITableRouteHandler
 
 	async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] IUserService svc, CancellationToken ct)
 		=> ToResult(await svc.DeleteAsync(id, ct));
-
-	async Task<IResult> DeleteCurrentUserAsync(HttpContext httpContext, [FromServices] IUserService svc, CancellationToken ct)
-	{
-		var userId = GetCurrentUserId(httpContext);
-		return userId.HasValue
-			? ToResult(await svc.DeleteAsync(userId.Value, ct))
-			: Results.Unauthorized();
-	}
-
-	async Task<IResult> UpdateCurrentUserAsync(HttpContext httpContext, [FromBody] DtoUserEntry request, [FromServices] IUserService svc, CancellationToken ct)
-	{
-		var userId = GetCurrentUserId(httpContext);
-		return userId.HasValue
-			? ToResult(await svc.UpdateDisplayNameAsync(userId.Value, request.UserName, ct))
-			: Results.Unauthorized();
-	}
 
 	async Task<IResult> GetDetailAsync([FromRoute] UniqueObjectId id, [FromServices] IUserService svc, CancellationToken ct)
 	{
@@ -105,9 +77,6 @@ public class UserRouteHandler : ITableRouteHandler
 		var token = await svc.ForcePasswordResetAsync(id, ct);
 		return token != null ? Results.Ok(token) : Results.NotFound();
 	}
-
-	static UniqueObjectId? GetCurrentUserId(HttpContext context)
-		=> ulong.TryParse(context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : null;
 
 	static IResult ToResult<T>(UserOperationResult<T> result)
 	{

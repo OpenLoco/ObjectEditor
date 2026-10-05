@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ObjectService.Frontend;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Http.Headers;
 
 namespace ObjectService.Pages.Account;
 
@@ -72,15 +71,9 @@ public sealed class RegisterModel : PageModel
 			ForwardSetCookieHeaders(cookieResponse);
 		}
 
-		var accessToken = await StoreBearerTokenAsync(client, loginPayload);
-
-		// The framework /register endpoint uses the email as the username, so set the
-		// chosen username explicitly for the newly signed-in user.
-		if (accessToken != null)
-		{
-			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-			_ = await Client.SetCurrentUserDisplayNameAsync(client, UserName.Trim());
-		}
+		// Store the bearer token cookie for subsequent API calls. The chosen username was set at
+		// registration (the /register endpoint honours it), so no follow-up rename is needed.
+		_ = await StoreBearerTokenAsync(client, loginPayload);
 
 		RegistrationSuccess = true;
 		return Page();

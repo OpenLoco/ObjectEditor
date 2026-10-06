@@ -1,0 +1,338 @@
+/* ==========================================================================
+   pages.css — feature-specific styling
+   ========================================================================== */
+
+/* ==========================================================================
+   Theme studio (nine-colour palette editor)
+   ========================================================================== */
+
+.theme-studio {
+    display: grid;
+    gap: 20px;
+}
+
+.theme-studio[hidden] {
+    display: none;
+}
+
+.theme-studio-header {
+    display: grid;
+    gap: 10px;
+}
+
+.theme-studio-header h2 {
+    margin: 0;
+}
+
+.theme-palette-form {
+    display: grid;
+    gap: 18px;
+}
+
+.theme-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.palette-field {
+    gap: 10px;
+}
+
+.palette-input-row {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+}
+
+.palette-input-row input[type="color"] {
+    width: 56px;
+    height: 48px;
+    padding: 4px;
+    border: 1px solid var(--field-border);
+    border-radius: 14px;
+    background: var(--field-bg);
+    cursor: pointer;
+}
+
+.palette-input-row input[type="text"] {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--field-border);
+    border-radius: 14px;
+    background: var(--field-bg);
+    font: inherit;
+    color: var(--text);
+}
+
+.palette-input-invalid {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.theme-palette-mode {
+    display: inline-flex;
+    gap: 8px;
+}
+
+.theme-palette-mode-button {
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+}
+
+.theme-palette-mode-button.theme-palette-mode-active {
+    background: var(--accent);
+    border-color: var(--accent-border-strong);
+    color: var(--button-primary-text);
+}
+
+.theme-studio-status {
+    margin: 0;
+}
+
+.theme-studio-status[data-state="error"] {
+    color: var(--danger);
+}
+
+/* ==========================================================================
+   Master tabs (primary category navigation)
+   ========================================================================== */
+
+.master-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.master-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    transition:
+        background-color 140ms ease,
+        color 140ms ease,
+        transform 140ms ease;
+}
+
+.master-tab:hover {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    transform: translateY(-1px);
+}
+
+.master-tab-active,
+.master-tab-active:hover {
+    background: var(--accent);
+    border-color: transparent;
+}
+
+.master-tab-separator {
+    display: inline-flex;
+    align-self: center;
+    width: 1px;
+    height: 28px;
+    margin: 0 8px;
+    background: var(--border);
+    border-radius: 1px;
+}
+
+/* ==========================================================================
+   Object explorer (master-detail)
+   ========================================================================== */
+
+.object-type-sidebar {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-title {
+    margin: 0 0 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text);
+}
+
+.object-type-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.object-type-link {
+    display: block;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--text);
+    transition:
+        background-color 120ms ease,
+        color 120ms ease;
+}
+
+.object-type-link:hover {
+    background: var(--surface-subtle);
+    color: var(--accent-strong);
+}
+
+.object-type-link-active {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-weight: 700;
+}
+
+.object-type-sub-list {
+    margin: 2px 0 4px 12px;
+    padding: 0 0 0 14px;
+    border-left: 2px solid var(--border);
+    list-style: none;
+}
+
+.object-type-sub-list .object-type-link {
+    font-size: 0.84rem;
+    padding: 5px 12px;
+}
+
+.object-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.card-img-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border-soft);
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.card-header {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* ==========================================================================
+   Auth / account pages
+   ========================================================================== */
+
+.auth-panel {
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.auth-form .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-form .field span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.auth-form input {
+    background: var(--field-bg);
+    border: 1.5px solid var(--field-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.auth-form input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.auth-alt {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 0.95rem;
+}
+
+.auth-alt a {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   DAT object list (object edit form)
+   ========================================================================== */
+
+.dat-objects {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--field-bg);
+    border: 1px solid var(--field-border);
+    border-radius: 0.25rem;
+}
+
+.dat-object-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    background: var(--surface-subtle);
+    border-radius: 0.25rem;
+}
+
+.dat-object-item code {
+    padding: 0.25rem 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    background: var(--accent-soft-strong);
+    border-radius: 0.2rem;
+}
+
+

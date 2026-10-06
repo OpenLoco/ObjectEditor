@@ -172,8 +172,9 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		{
 			duplicateObj!.ModifiedDate = entry.ModifiedDate;
 
-			// A file that reappears (e.g. restored from the Removed folder) makes the object available again.
-			duplicateObj.Availability = ObjectAvailability.Available;
+			// A file that reappears (e.g. restored from the Removed folder) makes the object available
+			// again - unless it is non-Custom content (vanilla/OpenLoco are never available).
+			duplicateObj.Availability = ObjectAvailabilityRules.ForFile(duplicateObj.ObjectSource, fileExists: true);
 
 			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 
@@ -207,7 +208,7 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 			ObjectSource = entry.ObjectSource,
 			ObjectType = entry.ObjectType,
 			VehicleType = entry.VehicleType,
-			Availability = ObjectAvailability.Available,
+			Availability = ObjectAvailabilityRules.ForFile(entry.ObjectSource, fileExists: true),
 			CreatedDate = entry.CreatedDate,
 			ModifiedDate = entry.ModifiedDate,
 			UploadedDate = DateOnly.FromDateTime(DateTime.UtcNow.Date),
@@ -268,8 +269,8 @@ public sealed class ObjectsFolderService : GameDataFolderServiceBase
 		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 
 		// The object is fully decoded here, so warm the image cache (thumbnail + metadata) while it is free
-		// to do so. Vanilla Locomotion content is never exposed through the API, so it is not worth warming.
-		if (locoObject.ImageTable is { } imageTable && entry.ObjectSource is not (ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam))
+		// to do so. Only Custom content is ever exposed through the API, so it is not worth warming otherwise.
+		if (locoObject.ImageTable is { } imageTable && entry.ObjectSource == ObjectSource.Custom)
 		{
 			await ObjectImageRender.WarmAsync(_imageCache, xxHash3, imageTable.GraphicsElements, ct).ConfigureAwait(false);
 		}

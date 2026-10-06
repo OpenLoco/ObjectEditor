@@ -1,3 +1,4 @@
+using Definitions;
 using Definitions.Database;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,16 +20,23 @@ public sealed class TutorialsFolderService(LocoDbContext db, ServerFolderManager
 
 		var name = Path.GetRelativePath(Sfm.TutorialsFolder, absolutePath);
 		var modified = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(absolutePath));
+		var source = GetObjectSource(absolutePath, Sfm.TutorialsFolder);
 
 		var existing = await Db.Tutorials.FirstOrDefaultAsync(x => x.Name == name, ct).ConfigureAwait(false);
 		if (existing != null)
 		{
-			if (existing.ModifiedDate == modified)
+			// The file is present (we are importing it); only Custom content can be available.
+			var availability = ObjectAvailabilityRules.ForFile(existing.ObjectSource, fileExists: true);
+			var dateChanged = existing.ModifiedDate != modified;
+			var availabilityChanged = existing.Availability != availability;
+
+			if (!dateChanged && !availabilityChanged)
 			{
 				return new GameDataImportResult(GameDataImportStatus.Skipped, $"Tutorial {name} is already up to date");
 			}
 
 			existing.ModifiedDate = modified;
+			existing.Availability = availability;
 			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 			return new GameDataImportResult(GameDataImportStatus.Updated, $"Updated tutorial {name}");
 		}
@@ -36,9 +44,10 @@ public sealed class TutorialsFolderService(LocoDbContext db, ServerFolderManager
 		_ = await Db.Tutorials.AddAsync(new TblTutorial
 		{
 			Name = name,
-			ObjectSource = GetObjectSource(absolutePath, Sfm.TutorialsFolder),
+			ObjectSource = source,
 			CreatedDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(absolutePath)),
 			ModifiedDate = modified,
+			Availability = ObjectAvailabilityRules.ForFile(source, fileExists: true),
 		}, ct).ConfigureAwait(false);
 		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 
@@ -56,12 +65,14 @@ public sealed class TutorialsFolderService(LocoDbContext db, ServerFolderManager
 			return new GameDataImportResult(GameDataImportStatus.Skipped, "Tutorial was not present in the database");
 		}
 
-		_ = Db.Tutorials.Remove(existing);
+		// The file is gone, but the database is the source of truth: keep the row and mark it
+		// unavailable so metadata and references survive.
+		existing.Availability = ObjectAvailability.Unavailable;
 		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 
-		Logger.LogInformation("Removed tutorial {Name} from the database", name);
+		Logger.LogInformation("Marked tutorial {Name} unavailable (its file was removed)", name);
 
-		return new GameDataImportResult(GameDataImportStatus.Removed, $"Tutorial {name} removed");
+		return new GameDataImportResult(GameDataImportStatus.Removed, $"Tutorial {name} marked unavailable");
 	}
 
 	public override async Task ReconcileAsync(CancellationToken ct)
@@ -77,6 +88,8 @@ public sealed class TutorialsFolderService(LocoDbContext db, ServerFolderManager
 			}
 		}
 
-		Logger.LogInformation("Tutorials reconciliation complete: {Count} file(s) added/updated", changed);
+		var availabilityChanged = await SyncAvailabilityWithDiskAsync(Db.Tutorials, Sfm.TutorialsFolder, Sfm.TutorialsFolder, _ => true, ct).ConfigureAwait(false);
+
+		Logger.LogInformation("Tutorials reconciliation complete: {Count} file(s) added/updated, {Changed} row(s) had their availability updated", changed, availabilityChanged);
 	}
 }

@@ -1,3 +1,4 @@
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
@@ -42,6 +43,7 @@ public class ScenarioService : IScenarioService
 				f.Description,
 				f.UploadedDate,
 				f.ObjectSource,
+				f.Availability,
 				f.Licence?.ToDtoEntry(),
 				f.Authors.Count,
 				f.Tags.Count,
@@ -124,8 +126,10 @@ public class ScenarioService : IScenarioService
 			return false;
 		}
 
-		// Park the scenario file under Scenarios/Removed before dropping the row, so it is not
-		// re-imported by the next reconciliation.
+		// Park the scenario file under Scenarios/Removed before marking the row unavailable, so it is
+		// not re-imported by the next reconciliation. The database is the source of truth, so the row
+		// is kept (marked unavailable) rather than deleted - metadata and pack references survive, and
+		// re-adding the file restores it.
 		if (!string.IsNullOrWhiteSpace(scenario.Name)
 			&& RouteHelpers.TryGetSafeRelativePathUnderRoot(_sfm.ScenariosFolder, scenario.Name, out var fullPath, out _)
 			&& File.Exists(fullPath))
@@ -133,7 +137,7 @@ public class ScenarioService : IScenarioService
 			_ = ServerFolderManager.MoveToRemovedFolder(_sfm.ScenariosFolder, fullPath);
 		}
 
-		_ = _db.Scenarios.Remove(scenario);
+		scenario.Availability = ObjectAvailability.Unavailable;
 		_ = await _db.SaveChangesAsync(ct).ConfigureAwait(false);
 		return true;
 	}
@@ -146,6 +150,12 @@ public class ScenarioService : IScenarioService
 			.ConfigureAwait(false);
 
 		if (scenario is null || string.IsNullOrWhiteSpace(scenario.Name))
+		{
+			return null;
+		}
+
+		// Only available Custom content is downloadable; vanilla and OpenLoco scenarios are never served.
+		if (!ObjectAvailabilityRules.IsDownloadable(scenario.ObjectSource, scenario.Availability))
 		{
 			return null;
 		}
@@ -172,6 +182,7 @@ public class ScenarioService : IScenarioService
 			file.Name,
 			file.Description,
 			file.ObjectSource,
+			file.Availability,
 			file.CreatedDate,
 			file.ModifiedDate,
 			file.UploadedDate,

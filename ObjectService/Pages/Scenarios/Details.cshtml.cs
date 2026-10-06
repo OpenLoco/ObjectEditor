@@ -1,3 +1,4 @@
+using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels.Types;
 using Definitions.Web;
@@ -93,6 +94,8 @@ public sealed class DetailsModel : PageModel
 			Name.Trim(),
 			Description?.Trim(),
 			ObjectSource,
+			// Availability is server-owned (it reflects whether the file is on disk); the API ignores it on update.
+			Scenario?.Availability ?? ObjectAvailability.Available,
 			CreatedDate,
 			ModifiedDate,
 			UploadedDate,

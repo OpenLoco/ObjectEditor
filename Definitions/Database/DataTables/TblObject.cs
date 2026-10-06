@@ -3,13 +3,11 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
-public class TblObject : DbCoreObject
+public class TblObject : DbFileObject
 {
 	public ObjectType ObjectType { get; set; } // don't need to set explicitly - can be inferred from T type
 
 	public VehicleType? VehicleType { get; set; }
-
-	public ObjectAvailability Availability { get; set; }
 
 	public ICollection<TblObjectPack> ObjectPacks { get; set; } = [];
 

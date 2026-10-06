@@ -88,6 +88,7 @@ TblScenario {
   DateOnly ModifiedDate
   DateOnly UploadedDate
   ObjectSource ObjectSource
+  ObjectAvailability Availability
 }
 
 TblScenarioPack {
@@ -107,6 +108,7 @@ TblMusic {
   DateOnly CreatedDate
   DateOnly ModifiedDate
   DateOnly UploadedDate
+  ObjectAvailability Availability
 }
 
 TblSoundEffect {
@@ -117,6 +119,7 @@ TblSoundEffect {
   DateOnly CreatedDate
   DateOnly ModifiedDate
   DateOnly UploadedDate
+  ObjectAvailability Availability
 }
 
 TblTutorial {
@@ -127,6 +130,7 @@ TblTutorial {
   DateOnly CreatedDate
   DateOnly ModifiedDate
   DateOnly UploadedDate
+  ObjectAvailability Availability
 }
 
 TblGraphics {
@@ -137,6 +141,7 @@ TblGraphics {
   DateOnly CreatedDate
   DateOnly ModifiedDate
   DateOnly UploadedDate
+  ObjectAvailability Availability
 }
 
 
@@ -156,6 +161,21 @@ TblLicence {
   string Text
 }
 ```
+
+## File-backed entities and availability
+
+The game object and the files dropped into the `GameData` folders (scenarios, landscapes, music, sound
+effects, tutorials and graphics) are all backed by a file on disk, so they share the `DbFileObject`
+base and its `Availability` (`ObjectAvailability`) column. Object/scenario **packs** are *not* file
+entities and stay on `DbCoreObject`.
+
+The database is the source of truth for these rows: when a file disappears the row is **kept** and
+marked `Unavailable` (rather than deleted), so curated metadata and any pack/scenario references
+survive; when the file reappears the row is marked `Available` again. Only `Custom` content can ever
+be `Available`: vanilla Locomotion (Steam/GoG) and OpenLoco content is placed on the server by hand and
+is never downloadable, so its availability is always `Unavailable` (see `ObjectAvailabilityRules`).
+Only game objects previously had this column - `20261005013618_GameDataFileAvailability` adds it to
+`Scenarios`, `Music`, `SoundEffects`, `Tutorials` and `Graphics`.
 
 ## Object data structure
 

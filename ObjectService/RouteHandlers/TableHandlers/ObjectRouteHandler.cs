@@ -1,6 +1,7 @@
 using Definitions.DTO;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ObjectService.Services;
 using System.Security.Claims;
 
@@ -37,20 +38,30 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	async Task<IResult> CreateDatAsync([FromBody] DtoObjectPost request, [FromServices] IObjectQueryService query, CancellationToken ct)
 	{
-		var result = await query.UploadDatAsync(request, ct);
-		return result.Success ? Results.Created($"{Routes.Prefix}{BaseRoute}/{result.Descriptor!.Id}", result.Descriptor) : Results.Problem(result.ErrorMessage, statusCode: result.StatusCode);
+		try
+		{
+			var result = await query.UploadDatAsync(request, ct);
+			return result.Success ? Results.Created($"{Routes.Prefix}{BaseRoute}/{result.Descriptor!.Id}", result.Descriptor) : Results.Problem(result.ErrorMessage, statusCode: result.StatusCode);
+		}
+		catch (DbUpdateException ex) when (DbExceptionHelpers.IsUniqueConstraintViolation(ex))
+		{
+			// A concurrent upload of the same content can slip past the pre-insert duplicate check and
+			// be rejected by the unique DatObjects.xxHash3 index instead. Return the same "already
+			// exists" response the non-racing path uses rather than letting it surface as a 500.
+			return Results.Problem("Object with identical content already exists.", statusCode: StatusCodes.Status202Accepted);
+		}
 	}
 
 	async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct, [FromQuery] bool includeDatBytes = true)
 	{
-		logger.LogInformation("[Read] Object {ObjectId}", id);
+		logger.LogDebug("[Read] Object {ObjectId}", id);
 		var d = await query.GetByIdAsync(id, includeDatBytes, ct);
 		return d != null ? Results.Ok(d) : Results.NotFound();
 	}
 
 	async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectPostResponse request, [FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
-		logger.LogInformation("[Update] Object {ObjectId}", id);
+		logger.LogDebug("[Update] Object {ObjectId}", id);
 		var result = await query.UpdateAsync(id, request, ct);
 
 		return result.Outcome switch
@@ -60,6 +71,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			ObjectUpdateOutcome.Forbidden => Results.Problem(result.ErrorMessage, statusCode: StatusCodes.Status403Forbidden),
 			ObjectUpdateOutcome.InvalidRequest => Results.Problem(result.ErrorMessage, statusCode: StatusCodes.Status400BadRequest),
 			ObjectUpdateOutcome.NameConflict => Results.Problem(result.ErrorMessage, statusCode: StatusCodes.Status409Conflict),
+			_ => Results.Problem("Unexpected update outcome.", statusCode: StatusCodes.Status500InternalServerError),
 		};
 	}
 
@@ -77,12 +89,13 @@ public class ObjectRouteHandler : ITableRouteHandler
 			ObjectDeleteOutcome.Removed => Results.Ok(),
 			ObjectDeleteOutcome.NotFound => Results.NotFound(),
 			ObjectDeleteOutcome.Forbidden => Results.Problem(result.ErrorMessage, statusCode: StatusCodes.Status403Forbidden),
+			_ => Results.Problem("Unexpected delete outcome.", statusCode: StatusCodes.Status500InternalServerError),
 		};
 	}
 
 	async Task<IResult> ListAsync([FromServices] IObjectQueryService query, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken ct)
 	{
-		logger.LogInformation("[List] Objects");
+		logger.LogDebug("[List] Objects");
 		return Results.Ok(await query.ListAsync(ct));
 	}
 
@@ -97,9 +110,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return Results.Ok(await query.ListMineAsync(userId, ct));
 	}
 
-	async Task<IResult> GetObjectImagesAsync(HttpContext context, [FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, CancellationToken ct)
+	async Task<IResult> GetObjectImagesAsync(HttpContext context, [FromRoute] UniqueObjectId id, [FromServices] IObjectImageService images, CancellationToken ct)
 	{
-		var result = await query.GetImagesZipAsync(id, ct);
+		var result = await images.GetImagesZipAsync(id, ct);
 		return result.Outcome switch
 		{
 			ObjectResourceOutcome.Ok => ServeBytesWithCache(context, result.Bytes!, result.Version, "application/zip", $"{id}_images.zip", "zip"),
@@ -108,9 +121,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 		};
 	}
 
-	async Task<IResult> GetObjectImageAsync(HttpContext context, [FromRoute] UniqueObjectId id, [FromRoute] int imageId, [FromServices] IObjectQueryService query, CancellationToken ct)
+	async Task<IResult> GetObjectImageAsync(HttpContext context, [FromRoute] UniqueObjectId id, [FromRoute] int imageId, [FromServices] IObjectImageService images, CancellationToken ct)
 	{
-		var result = await query.GetImagePngAsync(id, imageId, ct);
+		var result = await images.GetImagePngAsync(id, imageId, ct);
 		return result.Outcome switch
 		{
 			ObjectResourceOutcome.Ok => ServeBytesWithCache(context, result.Bytes!, result.Version, "image/png", null, imageId.ToString()),
@@ -119,9 +132,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 		};
 	}
 
-	async Task<IResult> GetObjectImageMetadataAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectQueryService query, CancellationToken ct)
+	async Task<IResult> GetObjectImageMetadataAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectImageService images, CancellationToken ct)
 	{
-		var result = await query.GetImageMetadataAsync(id, ct);
+		var result = await images.GetImageMetadataAsync(id, ct);
 		return result.Outcome switch
 		{
 			ObjectResourceOutcome.Ok => Results.Ok(result.Metadata),

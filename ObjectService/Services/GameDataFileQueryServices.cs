@@ -1,3 +1,4 @@
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
@@ -26,7 +27,7 @@ public interface IGameDataFileQueryService<TListEntry, TDescriptor>
 /// keeps its own service, DTOs and route.
 /// </summary>
 public abstract class GameDataFileQueryService<TEntity, TListEntry, TDescriptor> : IGameDataFileQueryService<TListEntry, TDescriptor>
-	where TEntity : DbCoreObject
+	where TEntity : DbFileObject
 	where TDescriptor : class, IGameFileDescriptor
 {
 	private readonly LocoDbContext _db;
@@ -130,34 +131,54 @@ public abstract class GameDataFileQueryService<TEntity, TListEntry, TDescriptor>
 			return false;
 		}
 
-		// Park the file under the category's Removed folder before dropping the row, so a file that is
-		// still on disk is not silently re-imported by the next reconciliation.
-		var path = await GetFilePathAsync(id, ct).ConfigureAwait(false);
+		// Park the file under the category's Removed folder so a file that is still on disk is not
+		// silently re-imported by the next reconciliation. The database is the source of truth, so the
+		// row is kept and marked unavailable rather than deleted - curated metadata and any references
+		// survive, and the row is restored if the file is re-added. The file is located regardless of
+		// availability so a non-downloadable file can still be parked.
+		var path = await ResolveFilePathAsync(id, ct).ConfigureAwait(false);
 		if (path != null)
 		{
 			_ = ServerFolderManager.MoveToRemovedFolder(_folder, path);
 		}
 
-		_ = Set.Remove(file);
+		file.Availability = ObjectAvailability.Unavailable;
 		_ = await _db.SaveChangesAsync(ct).ConfigureAwait(false);
 		return true;
 	}
 
+	/// <summary>
+	/// The on-disk path to serve for a file download, or <see langword="null"/> when the entity is not
+	/// downloadable (only available <see cref="ObjectSource.Custom"/> content is ever served).
+	/// </summary>
 	public async Task<string?> GetFilePathAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var name = await Set
+		var (path, downloadable) = await ResolveFileAsync(id, ct).ConfigureAwait(false);
+		return downloadable ? path : null;
+	}
+
+	/// <summary>Resolves the on-disk path regardless of downloadability (used when parking a removed file).</summary>
+	private async Task<string?> ResolveFilePathAsync(UniqueObjectId id, CancellationToken ct)
+		=> (await ResolveFileAsync(id, ct).ConfigureAwait(false)).Path;
+
+	private async Task<(string? Path, bool Downloadable)> ResolveFileAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var file = await Set
 			.AsNoTracking()
 			.Where(f => f.Id == id)
-			.Select(f => f.Name)
+			.Select(f => new { f.Name, f.ObjectSource, f.Availability })
 			.FirstOrDefaultAsync(ct)
 			.ConfigureAwait(false);
 
-		if (string.IsNullOrWhiteSpace(name) || !RouteHelpers.TryGetSafeRelativePathUnderRoot(_folder, name, out var fullPath, out _))
+		if (file is null
+			|| string.IsNullOrWhiteSpace(file.Name)
+			|| !RouteHelpers.TryGetSafeRelativePathUnderRoot(_folder, file.Name, out var fullPath, out _)
+			|| !File.Exists(fullPath))
 		{
-			return null;
+			return (null, false);
 		}
 
-		return File.Exists(fullPath) ? fullPath : null;
+		return (fullPath, ObjectAvailabilityRules.IsDownloadable(file.ObjectSource, file.Availability));
 	}
 }
 
@@ -172,10 +193,10 @@ public sealed class MusicService(LocoDbContext db, ServerFolderManager sfm)
 	protected override DbSet<TblMusic> Set => Db.Music;
 
 	protected override DtoMusicListEntry ToListEntry(TblMusic entity)
-		=> new(entity.Id, entity.Name, entity.Description, entity.UploadedDate, entity.ObjectSource, entity.Licence?.ToDtoEntry(), entity.Authors.Count, entity.Tags.Count);
+		=> new(entity.Id, entity.Name, entity.Description, entity.UploadedDate, entity.ObjectSource, entity.Availability, entity.Licence?.ToDtoEntry(), entity.Authors.Count, entity.Tags.Count);
 
 	protected override DtoMusicDescriptor ToDescriptor(TblMusic entity)
-		=> new(entity.Id, entity.Name, entity.Description, entity.ObjectSource, entity.CreatedDate, entity.ModifiedDate, entity.UploadedDate, entity.Licence?.ToDtoEntry(), [.. entity.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())], [.. entity.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())]);
+		=> new(entity.Id, entity.Name, entity.Description, entity.ObjectSource, entity.Availability, entity.CreatedDate, entity.ModifiedDate, entity.UploadedDate, entity.Licence?.ToDtoEntry(), [.. entity.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())], [.. entity.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())]);
 }
 
 /// <summary>Read/update/delete queries for sound effects.</summary>
@@ -189,10 +210,10 @@ public sealed class SoundEffectsService(LocoDbContext db, ServerFolderManager sf
 	protected override DbSet<TblSoundEffect> Set => Db.SoundEffects;
 
 	protected override DtoSoundEffectListEntry ToListEntry(TblSoundEffect entity)
-		=> new(entity.Id, entity.Name, entity.Description, entity.UploadedDate, entity.ObjectSource, entity.Licence?.ToDtoEntry(), entity.Authors.Count, entity.Tags.Count);
+		=> new(entity.Id, entity.Name, entity.Description, entity.UploadedDate, entity.ObjectSource, entity.Availability, entity.Licence?.ToDtoEntry(), entity.Authors.Count, entity.Tags.Count);
 
 	protected override DtoSoundEffectDescriptor ToDescriptor(TblSoundEffect entity)
-		=> new(entity.Id, entity.Name, entity.Description, entity.ObjectSource, entity.CreatedDate, entity.ModifiedDate, entity.UploadedDate, entity.Licence?.ToDtoEntry(), [.. entity.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())], [.. entity.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())]);
+		=> new(entity.Id, entity.Name, entity.Description, entity.ObjectSource, entity.Availability, entity.CreatedDate, entity.ModifiedDate, entity.UploadedDate, entity.Licence?.ToDtoEntry(), [.. entity.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())], [.. entity.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())]);
 }
 
 /// <summary>Read/update/delete queries for tutorials.</summary>
@@ -206,10 +227,10 @@ public sealed class TutorialsService(LocoDbContext db, ServerFolderManager sfm)
 	protected override DbSet<TblTutorial> Set => Db.Tutorials;
 
 	protected override DtoTutorialListEntry ToListEntry(TblTutorial entity)
-		=> new(entity.Id, entity.Name, entity.Description, entity.UploadedDate, entity.ObjectSource, entity.Licence?.ToDtoEntry(), entity.Authors.Count, entity.Tags.Count);
+		=> new(entity.Id, entity.Name, entity.Description, entity.UploadedDate, entity.ObjectSource, entity.Availability, entity.Licence?.ToDtoEntry(), entity.Authors.Count, entity.Tags.Count);
 
 	protected override DtoTutorialDescriptor ToDescriptor(TblTutorial entity)
-		=> new(entity.Id, entity.Name, entity.Description, entity.ObjectSource, entity.CreatedDate, entity.ModifiedDate, entity.UploadedDate, entity.Licence?.ToDtoEntry(), [.. entity.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())], [.. entity.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())]);
+		=> new(entity.Id, entity.Name, entity.Description, entity.ObjectSource, entity.Availability, entity.CreatedDate, entity.ModifiedDate, entity.UploadedDate, entity.Licence?.ToDtoEntry(), [.. entity.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())], [.. entity.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())]);
 }
 
 /// <summary>Read/update/delete queries for graphics files.</summary>
@@ -223,9 +244,9 @@ public sealed class GraphicsService(LocoDbContext db, ServerFolderManager sfm)
 	protected override DbSet<TblGraphics> Set => Db.Graphics;
 
 	protected override DtoGraphicsListEntry ToListEntry(TblGraphics entity)
-		=> new(entity.Id, entity.Name, entity.Description, entity.UploadedDate, entity.ObjectSource, entity.Licence?.ToDtoEntry(), entity.Authors.Count, entity.Tags.Count);
+		=> new(entity.Id, entity.Name, entity.Description, entity.UploadedDate, entity.ObjectSource, entity.Availability, entity.Licence?.ToDtoEntry(), entity.Authors.Count, entity.Tags.Count);
 
 	protected override DtoGraphicsDescriptor ToDescriptor(TblGraphics entity)
-		=> new(entity.Id, entity.Name, entity.Description, entity.ObjectSource, entity.CreatedDate, entity.ModifiedDate, entity.UploadedDate, entity.Licence?.ToDtoEntry(), [.. entity.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())], [.. entity.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())]);
+		=> new(entity.Id, entity.Name, entity.Description, entity.ObjectSource, entity.Availability, entity.CreatedDate, entity.ModifiedDate, entity.UploadedDate, entity.Licence?.ToDtoEntry(), [.. entity.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())], [.. entity.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())]);
 }
 

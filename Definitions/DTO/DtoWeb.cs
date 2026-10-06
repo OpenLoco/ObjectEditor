@@ -71,6 +71,7 @@ public record DtoScenarioDescriptor(
 	string Name,
 	string? Description,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
 	DateOnly UploadedDate,
@@ -97,6 +98,7 @@ public record DtoScenarioListEntry(
 	string? Description,
 	DateOnly UploadedDate,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DtoLicenceEntry? Licence,
 	int AuthorCount,
 	int TagCount,
@@ -122,6 +124,7 @@ public interface IGameFileDescriptor : IHasId
 	string Name { get; }
 	string? Description { get; }
 	ObjectSource ObjectSource { get; }
+	ObjectAvailability Availability { get; }
 	DateOnly? CreatedDate { get; }
 	DateOnly? ModifiedDate { get; }
 	DtoLicenceEntry? Licence { get; }
@@ -135,6 +138,7 @@ public record DtoMusicDescriptor(
 	string Name,
 	string? Description,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
 	DateOnly UploadedDate,
@@ -149,6 +153,7 @@ public record DtoMusicListEntry(
 	string? Description,
 	DateOnly UploadedDate,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DtoLicenceEntry? Licence,
 	int AuthorCount,
 	int TagCount) : IHasId;
@@ -159,6 +164,7 @@ public record DtoSoundEffectDescriptor(
 	string Name,
 	string? Description,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
 	DateOnly UploadedDate,
@@ -173,6 +179,7 @@ public record DtoSoundEffectListEntry(
 	string? Description,
 	DateOnly UploadedDate,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DtoLicenceEntry? Licence,
 	int AuthorCount,
 	int TagCount) : IHasId;
@@ -184,6 +191,7 @@ public record DtoTutorialDescriptor(
 	string Name,
 	string? Description,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
 	DateOnly UploadedDate,
@@ -198,6 +206,7 @@ public record DtoTutorialListEntry(
 	string? Description,
 	DateOnly UploadedDate,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DtoLicenceEntry? Licence,
 	int AuthorCount,
 	int TagCount) : IHasId;
@@ -208,6 +217,7 @@ public record DtoGraphicsDescriptor(
 	string Name,
 	string? Description,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
 	DateOnly UploadedDate,
@@ -222,6 +232,7 @@ public record DtoGraphicsListEntry(
 	string? Description,
 	DateOnly UploadedDate,
 	ObjectSource ObjectSource,
+	ObjectAvailability Availability,
 	DtoLicenceEntry? Licence,
 	int AuthorCount,
 	int TagCount) : IHasId;

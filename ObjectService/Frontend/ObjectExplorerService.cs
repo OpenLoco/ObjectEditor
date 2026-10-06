@@ -192,14 +192,11 @@ public sealed class ObjectExplorerService
 	}
 
 	static bool IsDownloadable(DtoObjectEntry row)
-		=> row.Availability == ObjectAvailability.Available
-			&& row.DatChecksum.HasValue
+		=> row.DatChecksum.HasValue
 			&& IsDownloadAllowed(row.ObjectSource, row.Availability);
 
 	static bool IsDownloadAllowed(ObjectSource objectSource, ObjectAvailability availability)
-		=> availability != ObjectAvailability.Unavailable
-			&& objectSource is not ObjectSource.LocomotionGoG
-			&& objectSource is not ObjectSource.LocomotionSteam;
+		=> ObjectAvailabilityRules.IsDownloadable(objectSource, availability);
 
 	static string ResolveDisplayName(DtoObjectPostResponse dto)
 	{

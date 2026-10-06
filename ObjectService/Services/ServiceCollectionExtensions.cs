@@ -126,6 +126,7 @@ public static class ServiceCollectionExtensions
 		// AddMemoryCache is idempotent - a caller may register it first with a size limit and that wins.
 		_ = services.AddMemoryCache();
 		_ = services.AddSingleton<IObjectImageCache, ObjectImageCache>();
+		_ = services.AddScoped<IObjectImageService, ObjectImageService>();
 
 		// One entity-specific import service per GameData folder - a game object, scenario,
 		// landscape, tutorial, sound effect, music file and graphics file are all distinct entities.

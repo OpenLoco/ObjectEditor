@@ -1,6 +1,9 @@
+using Definitions;
 using Definitions.Database;
 using Definitions.ObjectModels.Types;
 using Index;
+using Microsoft.EntityFrameworkCore;
+using ObjectService.RouteHandlers;
 
 namespace ObjectService.Services;
 
@@ -9,6 +12,9 @@ public enum GameDataImportStatus
 {
 	Added,
 	Updated,
+
+	/// <summary>The file is gone; its database row was kept and marked
+	/// <see cref="ObjectAvailability.Unavailable"/> (never deleted).</summary>
 	Removed,
 
 	/// <summary>The file's content (<c>xxHash3</c>) is already present: it is a duplicate of an existing
@@ -138,5 +144,53 @@ public abstract class GameDataFolderServiceBase : IGameDataFileService
 	{
 		var relative = Path.GetRelativePath(folder, path);
 		return !relative.StartsWith("..", StringComparison.Ordinal) && !Path.IsPathRooted(relative);
+	}
+
+	/// <summary>
+	/// Reconciles the availability of this entity's database rows against the files on disk. The
+	/// database is the source of truth, so a row is never deleted: a row whose file is missing is
+	/// marked <see cref="ObjectAvailability.Unavailable"/> and kept (curated metadata such as tags,
+	/// authors and licence, plus any pack/scenario references, survive), and a row whose file is
+	/// present is (re)marked <see cref="ObjectAvailability.Available"/>. A row is only considered when
+	/// <paramref name="ownsName"/> accepts its name and the name resolves to a path inside
+	/// <paramref name="scanFolder"/>: scenarios and landscapes share the <c>Scenarios</c> table but
+	/// store their names relative to different roots, so each service must ignore rows that belong to
+	/// a sibling folder. Rows with an unresolvable or unsafe name are left untouched.
+	/// </summary>
+	/// <returns>The number of rows whose availability changed.</returns>
+	protected async Task<int> SyncAvailabilityWithDiskAsync<TEntity>(
+		DbSet<TEntity> set,
+		string nameRoot,
+		string scanFolder,
+		Func<string, bool> ownsName,
+		CancellationToken ct)
+		where TEntity : DbFileObject
+	{
+		var changed = 0;
+
+		foreach (var row in await set.ToListAsync(ct).ConfigureAwait(false))
+		{
+			if (string.IsNullOrWhiteSpace(row.Name)
+				|| !ownsName(row.Name)
+				|| !RouteHelpers.TryGetSafeRelativePathUnderRoot(nameRoot, row.Name, out var fullPath, out _)
+				|| !IsUnder(fullPath, scanFolder))
+			{
+				continue;
+			}
+
+			var availability = ObjectAvailabilityRules.ForFile(row.ObjectSource, File.Exists(fullPath));
+			if (row.Availability != availability)
+			{
+				row.Availability = availability;
+				changed++;
+			}
+		}
+
+		if (changed > 0)
+		{
+			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+		}
+
+		return changed;
 	}
 }

@@ -1,4 +1,5 @@
 using Common;
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.ObjectModels.Types;
@@ -51,10 +52,10 @@ public class GameDataFileRoutesTests
 
 	private static async Task AddFilesAsync(LocoDbContext db, ServerFolderManager sfm)
 	{
-		await WriteFileAsync(sfm.MusicFolder, "Custom/music.dat", db.Music, new TblMusic { Id = 1, Name = "Custom/music.dat", ObjectSource = ObjectSource.Custom });
-		await WriteFileAsync(sfm.SoundEffectsFolder, "Custom/sound.dat", db.SoundEffects, new TblSoundEffect { Id = 1, Name = "Custom/sound.dat", ObjectSource = ObjectSource.Custom });
-		await WriteFileAsync(sfm.TutorialsFolder, "Custom/tutorial.dat", db.Tutorials, new TblTutorial { Id = 1, Name = "Custom/tutorial.dat", ObjectSource = ObjectSource.Custom });
-		await WriteFileAsync(sfm.GraphicsFolder, "Custom/graphics.dat", db.Graphics, new TblGraphics { Id = 1, Name = "Custom/graphics.dat", ObjectSource = ObjectSource.Custom });
+		await WriteFileAsync(sfm.MusicFolder, "Custom/music.dat", db.Music, new TblMusic { Id = 1, Name = "Custom/music.dat", ObjectSource = ObjectSource.Custom, Availability = ObjectAvailability.Available });
+		await WriteFileAsync(sfm.SoundEffectsFolder, "Custom/sound.dat", db.SoundEffects, new TblSoundEffect { Id = 1, Name = "Custom/sound.dat", ObjectSource = ObjectSource.Custom, Availability = ObjectAvailability.Available });
+		await WriteFileAsync(sfm.TutorialsFolder, "Custom/tutorial.dat", db.Tutorials, new TblTutorial { Id = 1, Name = "Custom/tutorial.dat", ObjectSource = ObjectSource.Custom, Availability = ObjectAvailability.Available });
+		await WriteFileAsync(sfm.GraphicsFolder, "Custom/graphics.dat", db.Graphics, new TblGraphics { Id = 1, Name = "Custom/graphics.dat", ObjectSource = ObjectSource.Custom, Availability = ObjectAvailability.Available });
 
 		_ = await db.SaveChangesAsync();
 	}
@@ -88,6 +89,7 @@ public class GameDataFileRoutesTests
 		{
 			Assert.That(entries.GetArrayLength(), Is.EqualTo(1));
 			Assert.That(entries[0].GetProperty("name").GetString(), Is.EqualTo($"Custom/{kind}.dat"));
+			Assert.That(entries[0].GetProperty("availability").GetInt32(), Is.EqualTo((int)ObjectAvailability.Available));
 			Assert.That(entries[0].GetProperty("authorCount").GetInt32(), Is.EqualTo(0));
 			Assert.That(entries[0].GetProperty("tagCount").GetInt32(), Is.EqualTo(0));
 		}
@@ -106,6 +108,7 @@ public class GameDataFileRoutesTests
 			Assert.That(root.GetProperty("id").GetUInt64(), Is.EqualTo(1));
 			Assert.That(root.GetProperty("name").GetString(), Is.EqualTo("Custom/music.dat"));
 			Assert.That(root.GetProperty("objectSource").GetInt32(), Is.EqualTo((int)ObjectSource.Custom));
+			Assert.That(root.GetProperty("availability").GetInt32(), Is.EqualTo((int)ObjectAvailability.Available));
 			Assert.That(root.GetProperty("authors").GetArrayLength(), Is.EqualTo(0));
 			Assert.That(root.GetProperty("tags").GetArrayLength(), Is.EqualTo(0));
 		}
@@ -119,6 +122,8 @@ public class GameDataFileRoutesTests
 			"Custom/renamed.dat",
 			"updated description",
 			ObjectSource.OpenLoco,
+			// Availability is server-owned; the API must ignore this and keep the stored value.
+			ObjectAvailability.Unavailable,
 			DateOnly.FromDateTime(new DateTime(2020, 1, 1)),
 			DateOnly.FromDateTime(new DateTime(2024, 12, 15)),
 			DateOnly.UtcToday,
@@ -137,17 +142,23 @@ public class GameDataFileRoutesTests
 			Assert.That(updated.Name, Is.EqualTo("Custom/renamed.dat"));
 			Assert.That(updated.Description, Is.EqualTo("updated description"));
 			Assert.That(updated.ObjectSource, Is.EqualTo(ObjectSource.OpenLoco));
+			Assert.That(updated.Availability, Is.EqualTo(ObjectAvailability.Available), "availability is server-owned and must not be overwritten by a client");
 		}
 	}
 
 	[Test]
-	public async Task DeleteAsync_RemovesTheMusicRow()
+	public async Task DeleteAsync_MarksTheMusicRowUnavailable()
 	{
 		using var response = await _http.DeleteAsync($"{Definitions.Web.Routes.Prefix}{Definitions.Web.Routes.Music}/1");
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
 		using var db = GetDbContext();
-		Assert.That(await db.Music.AnyAsync(x => x.Id == 1), Is.False);
+		var row = await db.Music.SingleOrDefaultAsync(x => x.Id == 1);
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(row, Is.Not.Null, "the row must be kept - the database is the source of truth");
+			Assert.That(row!.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
+		}
 	}
 
 	[Test]

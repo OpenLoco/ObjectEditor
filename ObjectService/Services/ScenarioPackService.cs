@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using Common;
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
@@ -185,6 +186,13 @@ public class ScenarioPackService : IScenarioPackService
 		{
 			foreach (var scenario in pack.Scenarios)
 			{
+				// Only available Custom content is downloadable; a pack must never leak the bytes of
+				// vanilla (Steam/GoG) or OpenLoco scenario files.
+				if (!ObjectAvailabilityRules.IsDownloadable(scenario.ObjectSource, scenario.Availability))
+				{
+					continue;
+				}
+
 				if (!RouteHelpers.TryGetSafeRelativePathUnderRoot(_sfm.ScenariosFolder, scenario.Name, out var fullPath, out var entryName))
 				{
 					continue;

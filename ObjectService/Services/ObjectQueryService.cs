@@ -6,7 +6,6 @@ using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
@@ -15,8 +14,6 @@ using Index;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ObjectService.RouteHandlers;
-using SixLabors.ImageSharp;
-using System.IO.Compression;
 using System.IO.Hashing;
 
 namespace ObjectService.Services;
@@ -109,15 +106,6 @@ public interface IObjectQueryService
 	Task<ObjectUpdateResult> UpdateAsync(UniqueObjectId id, DtoObjectPostResponse request, CancellationToken ct);
 	Task<ObjectDeleteResult> DeleteObjectAsync(UniqueObjectId id, CancellationToken ct);
 
-	/// <summary>The whole image table as a zip, or the reason it cannot be exposed.</summary>
-	Task<ObjectImageResult> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct);
-
-	/// <summary>One rendered image (frame), or the reason it cannot be exposed.</summary>
-	Task<ObjectImageResult> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct);
-
-	/// <summary>The image-table metadata (frame count and dims), or the reason it cannot be exposed.</summary>
-	Task<ObjectImageMetadataResult> GetImageMetadataAsync(UniqueObjectId id, CancellationToken ct);
-
 	/// <summary>The primary DAT file path, or the reason it cannot be exposed.</summary>
 	Task<ObjectFileResult> GetFilePathAsync(UniqueObjectId id, CancellationToken ct);
 }
@@ -150,10 +138,11 @@ public class ObjectQueryService : IObjectQueryService
 		_imageCache = imageCache;
 	}
 
-	public async Task<IEnumerable<DtoObjectEntry>> ListAsync(CancellationToken ct) => await _db.Objects.Include(x => x.DatObjects).Select(x => x.ToDtoEntry()).ToListAsync(ct);
+	public async Task<IEnumerable<DtoObjectEntry>> ListAsync(CancellationToken ct) => await _db.Objects.AsNoTracking().Include(x => x.DatObjects).Select(x => x.ToDtoEntry()).ToListAsync(ct);
 
 	public async Task<IEnumerable<DtoObjectEntry>> ListMineAsync(UniqueObjectId ownerUserId, CancellationToken ct)
 		=> await _db.Objects
+			.AsNoTracking()
 			.Where(x => x.OwnerUserId == ownerUserId)
 			.Include(x => x.DatObjects)
 			.Select(x => x.ToDtoEntry())
@@ -185,7 +174,7 @@ public class ObjectQueryService : IObjectQueryService
 	/// </summary>
 	async Task PopulateDatFileBytesAsync(DtoObjectPostResponse descriptor, CancellationToken ct)
 	{
-		if (descriptor.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG || descriptor.Availability == ObjectAvailability.Unavailable)
+		if (!ObjectAvailabilityRules.IsDownloadable(descriptor.ObjectSource, descriptor.Availability))
 		{
 			return;
 		}
@@ -197,8 +186,8 @@ public class ObjectQueryService : IObjectQueryService
 				continue;
 			}
 
-			var objectFilePath = Path.Combine(_sfm.ObjectsFolder, indexEntry.FileName);
-			if (!File.Exists(objectFilePath))
+			if (!RouteHelpers.TryGetSafePathUnderRoot(_sfm.ObjectsFolder, indexEntry.FileName, out var objectFilePath, out _)
+				|| !File.Exists(objectFilePath))
 			{
 				continue;
 			}
@@ -263,7 +252,12 @@ public class ObjectQueryService : IObjectQueryService
 		obj.Description = request.Description;
 		obj.CreatedDate = request.CreatedDate;
 		obj.ModifiedDate = request.ModifiedDate;
-		obj.Availability = request.Availability;
+
+		// Availability is only meaningful for Custom content: vanilla Locomotion and OpenLoco objects are
+		// never available, so a request cannot mark them so.
+		obj.Availability = obj.ObjectSource == ObjectSource.Custom
+			? request.Availability
+			: ObjectAvailability.Unavailable;
 
 		if (request.Licence == null)
 		{
@@ -404,192 +398,20 @@ public class ObjectQueryService : IObjectQueryService
 		}
 	}
 
-	public async Task<ObjectImageResult> GetImagesZipAsync(UniqueObjectId id, CancellationToken ct)
-	{
-		var (_, dat, outcome) = await ResolvePrimaryDatAsync(id, ct);
-		if (outcome != ObjectResourceOutcome.Ok)
-		{
-			return new(outcome);
-		}
-
-		if (dat == null)
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var cached = await _imageCache.GetZipAsync(dat.xxHash3, ct);
-		if (cached != null)
-		{
-			return new(ObjectResourceOutcome.Ok, cached, dat.xxHash3);
-		}
-
-		if (!TryResolveObjectFilePath(dat, out var objectFilePath))
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var elements = await LoadImageElementsAsync(objectFilePath, ct);
-		if (elements == null)
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var palette = PaletteMapLoader.LoadDefault();
-		var tempZipPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".zip");
-		using var zipStream = new FileStream(tempZipPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
-		using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
-		{
-			for (var i = 0; i < elements.Count; i++)
-			{
-				var entry = archive.CreateEntry(i + ".png", CompressionLevel.Optimal);
-				await using var entryStream = entry.Open();
-				await elements[i].ToRgba(palette).SaveAsPngAsync(entryStream, ct);
-			}
-		}
-
-		zipStream.Position = 0;
-		using var ms = new MemoryStream();
-		await zipStream.CopyToAsync(ms, ct);
-		var zip = ms.ToArray();
-		await _imageCache.SetZipAsync(dat.xxHash3, zip, ct);
-		return new(ObjectResourceOutcome.Ok, zip, dat.xxHash3);
-	}
-
-	public async Task<ObjectImageResult> GetImagePngAsync(UniqueObjectId id, int imageId, CancellationToken ct)
-	{
-		var (_, dat, outcome) = await ResolvePrimaryDatAsync(id, ct);
-		if (outcome != ObjectResourceOutcome.Ok)
-		{
-			return new(outcome);
-		}
-
-		if (dat == null)
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var cached = await _imageCache.GetPngAsync(dat.xxHash3, imageId, ct);
-		if (cached != null)
-		{
-			return new(ObjectResourceOutcome.Ok, cached, dat.xxHash3);
-		}
-
-		if (!TryResolveObjectFilePath(dat, out var objectFilePath))
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var elements = await LoadImageElementsAsync(objectFilePath, ct);
-		if (elements == null || imageId < 0 || imageId >= elements.Count || elements[imageId] == null)
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var png = await ObjectImageRender.RenderFramePngAsync(elements[imageId], ct);
-		await _imageCache.SetPngAsync(dat.xxHash3, imageId, png, ct);
-		return new(ObjectResourceOutcome.Ok, png, dat.xxHash3);
-	}
-
-	public async Task<ObjectImageMetadataResult> GetImageMetadataAsync(UniqueObjectId id, CancellationToken ct)
-	{
-		var (_, dat, outcome) = await ResolvePrimaryDatAsync(id, ct);
-		if (outcome != ObjectResourceOutcome.Ok)
-		{
-			return new(outcome);
-		}
-
-		if (dat == null)
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var cached = await _imageCache.GetMetadataAsync(dat.xxHash3, ct);
-		if (cached != null)
-		{
-			return new(ObjectResourceOutcome.Ok, cached, dat.xxHash3);
-		}
-
-		if (!TryResolveObjectFilePath(dat, out var objectFilePath))
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var elements = await LoadImageElementsAsync(objectFilePath, ct);
-		if (elements == null)
-		{
-			return new(ObjectResourceOutcome.NotFound);
-		}
-
-		var metadata = ObjectImageRender.BuildMetadata(elements);
-		await _imageCache.SetMetadataAsync(dat.xxHash3, metadata, ct);
-		return new(ObjectResourceOutcome.Ok, metadata, dat.xxHash3);
-	}
-
 	public async Task<ObjectFileResult> GetFilePathAsync(UniqueObjectId id, CancellationToken ct)
 	{
-		var (_, dat, outcome) = await ResolvePrimaryDatAsync(id, ct);
+		var (_, dat, outcome) = await ObjectResourceResolver.ResolvePrimaryDatAsync(_db, id, ct).ConfigureAwait(false);
 		if (outcome != ObjectResourceOutcome.Ok)
 		{
 			return new(outcome);
 		}
 
-		if (dat == null || !TryResolveObjectFilePath(dat, out var objectFilePath))
+		if (dat == null || !ObjectResourceResolver.TryResolveObjectFilePath(_sfm, dat, out var objectFilePath))
 		{
 			return new(ObjectResourceOutcome.NotFound);
 		}
 
 		return new(ObjectResourceOutcome.Ok, objectFilePath);
-	}
-
-	/// <summary>
-	/// Loads an object row and its primary DAT mapping, enforcing the automatic image/file exposure rules:
-	/// vanilla Locomotion (Steam/GoG) content and unavailable objects are <see cref="ObjectResourceOutcome.Forbidden"/>.
-	/// </summary>
-	async Task<(TblObject? Obj, TblDatObject? Dat, ObjectResourceOutcome Outcome)> ResolvePrimaryDatAsync(UniqueObjectId id, CancellationToken ct)
-	{
-		var obj = await _db.Objects.AsNoTracking().Include(x => x.DatObjects).SingleOrDefaultAsync(x => x.Id == id, ct);
-		if (obj == null)
-		{
-			return (null, null, ObjectResourceOutcome.NotFound);
-		}
-
-		if (obj.Availability == ObjectAvailability.Unavailable || obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
-		{
-			return (obj, null, ObjectResourceOutcome.Forbidden);
-		}
-
-		return (obj, obj.DatObjects.FirstOrDefault(), ObjectResourceOutcome.Ok);
-	}
-
-	/// <summary>Resolves the on-disk path of an object's primary DAT file via the object index.</summary>
-	bool TryResolveObjectFilePath(TblDatObject dat, out string path)
-	{
-		path = string.Empty;
-		if (!_sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null || string.IsNullOrEmpty(entry.FileName))
-		{
-			return false;
-		}
-
-		path = Path.Combine(_sfm.ObjectsFolder, entry.FileName);
-		return File.Exists(path);
-	}
-
-	/// <summary>Full-loads a DAT file and returns its image-table elements, or <see langword="null"/> when it has no image table.</summary>
-	async Task<IReadOnlyList<GraphicsElement>?> LoadImageElementsAsync(string objectFilePath, CancellationToken ct)
-	{
-		byte[] datBytes;
-		try
-		{
-			datBytes = await File.ReadAllBytesAsync(objectFilePath, ct);
-		}
-		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-		{
-			_logger.LogWarning(ex, "Could not read object file {Path}", objectFilePath);
-			return null;
-		}
-
-		var result = SawyerStreamReader.LoadFullObject(datBytes, _logger);
-		return result.LocoObject?.ImageTable?.GraphicsElements;
 	}
 
 	public async Task<UploadResult> UploadDatAsync(DtoObjectPost request, CancellationToken ct)

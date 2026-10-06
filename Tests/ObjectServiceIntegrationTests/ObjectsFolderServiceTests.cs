@@ -1,3 +1,4 @@
+using Dat.FileParsing;
 using Dat.Tests;
 using Dat.Types;
 using Definitions;
@@ -343,10 +344,12 @@ public class ObjectsFolderServiceTests
 	[Test]
 	public async Task RemoveThenReImport_FlipsAvailabilityAndRestoresTheObject()
 	{
-		var source = FindSmallestSourceDat();
+		// Availability only flips for Custom content (vanilla/OpenLoco are never available), so use a
+		// Custom object.
+		var source = FindCustomSourceDat();
 		if (source == null)
 		{
-			Assert.Ignore("No source DAT files are available to import");
+			Assert.Ignore("No Custom source DAT files are available to import");
 		}
 
 		var root = Directory.CreateTempSubdirectory("object-file-roundtrip").FullName;
@@ -397,6 +400,72 @@ public class ObjectsFolderServiceTests
 		}
 	}
 
+	[Test]
+	public async Task ImportAsync_MarksNonCustomObjectsUnavailable()
+	{
+		if (!Directory.Exists(TestConstants.BaseSteamObjDataPath))
+		{
+			Assert.Ignore("No Steam source DAT files are available to import");
+		}
+
+		// Find a source DAT whose content identifies it as non-Custom (vanilla Steam/GoG or OpenLoco).
+		string? source = null;
+		foreach (var file in Directory.GetFiles(TestConstants.BaseSteamObjDataPath, "*.dat").OrderBy(x => new FileInfo(x).Length))
+		{
+			try
+			{
+				var entry = ObjectIndex.GetDatFileInfoFromBytes(file, Path.GetFileName(file), File.ReadAllBytes(file), NullLogger.Instance);
+				if (entry is not null && entry.ObjectSource != ObjectSource.Custom)
+				{
+					source = file;
+					break;
+				}
+			}
+			catch (Exception)
+			{
+				// Unreadable file - keep looking.
+			}
+		}
+
+		if (source == null)
+		{
+			Assert.Ignore("No non-Custom source DAT files are available to import");
+		}
+
+		var root = Directory.CreateTempSubdirectory("object-file-noncustom").FullName;
+		try
+		{
+			var sfm = new ServerFolderManager(root);
+			var destination = Path.Combine(sfm.ObjectsCustomFolder, Path.GetFileName(source));
+			File.Copy(source, destination);
+
+			using var connection = new SqliteConnection("DataSource=:memory:");
+			connection.Open();
+
+			var options = new DbContextOptionsBuilder<LocoDbContext>()
+				.UseSqlite(connection)
+				.Options;
+
+			using var db = new LocoDbContext(options);
+			_ = db.Database.EnsureCreated();
+
+			var service = CreateService(db, sfm);
+			var result = await service.ImportAsync(destination, CancellationToken.None);
+
+			using (Assert.EnterMultipleScope())
+			{
+				Assert.That(result.Status, Is.EqualTo(GameDataImportStatus.Added));
+				var dbObject = await db.Objects.SingleAsync();
+				Assert.That(dbObject.ObjectSource, Is.Not.EqualTo(ObjectSource.Custom));
+				Assert.That(dbObject.Availability, Is.EqualTo(ObjectAvailability.Unavailable), "non-Custom content is never available");
+			}
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
+
 	private const string ServerObjectsFolder = @"Q:\Games\Locomotion\Server\GameData\Objects";
 
 	/// <summary>
@@ -426,6 +495,44 @@ public class ObjectsFolderServiceTests
 				{
 					// Unreadable file - keep looking.
 				}
+			}
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// Finds a DAT file whose content identifies it as a <b>Custom</b> object (not vanilla or OpenLoco)
+	/// that actually loads, wherever it currently lives. Availability can only flip for Custom content.
+	/// </summary>
+	private static string? FindCustomSourceDat()
+	{
+		var root = Path.Combine(ServerObjectsFolder, ServerFolderManager.CustomFolderName);
+		if (!Directory.Exists(root))
+		{
+			return null;
+		}
+
+		foreach (var file in Directory.GetFiles(root, "*.dat").OrderBy(x => new FileInfo(x).Length).Take(200))
+		{
+			try
+			{
+				var bytes = File.ReadAllBytes(file);
+				var entry = ObjectIndex.GetDatFileInfoFromBytes(file, Path.GetFileName(file), bytes, NullLogger.Instance);
+				if (entry?.ObjectSource != ObjectSource.Custom)
+				{
+					continue;
+				}
+
+				// The import decodes the whole object, so only pick a file that loads cleanly.
+				if (SawyerStreamReader.LoadFullObject(bytes, NullLogger.Instance, file).LocoObject != null)
+				{
+					return file;
+				}
+			}
+			catch (Exception)
+			{
+				// Unreadable file - keep looking.
 			}
 		}
 

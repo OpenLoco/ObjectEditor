@@ -1,5 +1,6 @@
 using Dat.FileParsing;
 using Dat.Types.SCV5;
+using Definitions;
 using Definitions.Database;
 using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
@@ -63,16 +64,23 @@ public abstract class ScenarioFolderServiceBase : GameDataFolderServiceBase
 
 		var name = Path.GetRelativePath(_nameRoot, absolutePath);
 		var modified = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(absolutePath));
+		var source = GetObjectSource(absolutePath);
 
 		var existing = await Db.Scenarios.FirstOrDefaultAsync(x => x.Name == name, ct).ConfigureAwait(false);
 		if (existing != null)
 		{
-			if (existing.ModifiedDate == modified)
+			// The file is present (we are importing it); only Custom content can be available.
+			var availability = ObjectAvailabilityRules.ForFile(existing.ObjectSource, fileExists: true);
+			var dateChanged = existing.ModifiedDate != modified;
+			var availabilityChanged = existing.Availability != availability;
+
+			if (!dateChanged && !availabilityChanged)
 			{
 				return new GameDataImportResult(GameDataImportStatus.Skipped, $"Scenario {name} is already up to date");
 			}
 
 			existing.ModifiedDate = modified;
+			existing.Availability = availability;
 			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 			return new GameDataImportResult(GameDataImportStatus.Updated, $"Updated scenario {name}");
 		}
@@ -81,10 +89,11 @@ public abstract class ScenarioFolderServiceBase : GameDataFolderServiceBase
 		{
 			Name = name,
 			Description = null,
-			ObjectSource = GetObjectSource(absolutePath),
+			ObjectSource = source,
 			CreatedDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(absolutePath)),
 			ModifiedDate = modified,
 			UploadedDate = DateOnly.FromDateTime(DateTime.UtcNow.Date),
+			Availability = ObjectAvailabilityRules.ForFile(source, fileExists: true),
 			Authors = [],
 			Tags = [],
 			ScenarioPacks = [],
@@ -107,12 +116,14 @@ public abstract class ScenarioFolderServiceBase : GameDataFolderServiceBase
 			return new GameDataImportResult(GameDataImportStatus.Skipped, "Scenario was not present in the database");
 		}
 
-		_ = Db.Scenarios.Remove(existing);
+		// The file is gone, but the database is the source of truth: keep the row and mark it
+		// unavailable so metadata and pack references survive.
+		existing.Availability = ObjectAvailability.Unavailable;
 		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
 
-		Logger.LogInformation("Removed scenario {Name} from the database after its file was deleted", name);
+		Logger.LogInformation("Marked scenario {Name} unavailable (its file was removed)", name);
 
-		return new GameDataImportResult(GameDataImportStatus.Removed, $"Scenario {name} removed");
+		return new GameDataImportResult(GameDataImportStatus.Removed, $"Scenario {name} marked unavailable");
 	}
 
 	public override async Task ReconcileAsync(CancellationToken ct)
@@ -128,7 +139,13 @@ public abstract class ScenarioFolderServiceBase : GameDataFolderServiceBase
 			}
 		}
 
-		Logger.LogInformation("Scenario reconciliation complete: {Count} file(s) added/updated", changed);
+		// Scenarios and landscapes share the Scenarios table but store names relative to different
+		// roots, so only rows that resolve into this service's scan folder and that this service owns
+		// are considered. A row is never deleted: its availability simply reflects whether its file is
+		// present.
+		var availabilityChanged = await SyncAvailabilityWithDiskAsync(Db.Scenarios, _nameRoot, _scanFolder, OwnsScenarioRow, ct).ConfigureAwait(false);
+
+		Logger.LogInformation("Scenario reconciliation complete: {Count} file(s) added/updated, {Changed} row(s) had their availability updated", changed, availabilityChanged);
 	}
 
 	static bool TryReadHeader(byte[] bytes, out S5FileHeader? header)
@@ -153,24 +170,25 @@ public abstract class ScenarioFolderServiceBase : GameDataFolderServiceBase
 	}
 
 	ObjectSource GetObjectSource(string absolutePath)
-	{
-		if (IsUnder(absolutePath, Path.Combine(_scanFolder, ServerFolderManager.OpenLocoFolderName)))
-		{
-			return ObjectSource.OpenLoco;
-		}
+		=> GameDataFolderServiceBase.GetObjectSource(absolutePath, _scanFolder);
 
-		if (IsUnder(absolutePath, Path.Combine(_scanFolder, ServerFolderManager.OriginalFolderName)))
-		{
-			return ObjectSource.LocomotionSteam;
-		}
-
-		return ObjectSource.Custom;
-	}
+	/// <summary>
+	/// Whether a <c>Scenarios</c>-table row named <paramref name="name"/> belongs to this service.
+	/// Scenarios and landscapes share the table; scenario names are relative to the Scenarios folder,
+	/// but a landscape is named <c>Landscapes/...</c> relative to GameData. The default accepts every
+	/// name (landscapes are already filtered by their scan-folder path check); the scenario service
+	/// overrides this to skip the landscape prefix so it never deletes a landscape row.
+	/// </summary>
+	protected virtual bool OwnsScenarioRow(string name) => true;
 }
 
 /// <summary>The service for <c>GameData/Scenarios</c>.</summary>
 public sealed class ScenariosFolderService(LocoDbContext db, ServerFolderManager sfm, ILogger<ScenariosFolderService> logger)
-	: ScenarioFolderServiceBase(db, sfm, logger, sfm.ScenariosFolder, sfm.ScenariosFolder);
+	: ScenarioFolderServiceBase(db, sfm, logger, sfm.ScenariosFolder, sfm.ScenariosFolder)
+{
+	protected override bool OwnsScenarioRow(string name)
+		=> !name.Replace('\\', '/').StartsWith(ServerFolderManager.LandscapesFolderName + "/", StringComparison.OrdinalIgnoreCase);
+}
 
 /// <summary>
 /// The service for <c>GameData/Landscapes</c>. Names are stored relative to GameData (rather than

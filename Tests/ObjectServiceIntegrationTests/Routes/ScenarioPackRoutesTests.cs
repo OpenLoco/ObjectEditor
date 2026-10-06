@@ -1,7 +1,9 @@
 using Common;
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
+using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,8 +37,10 @@ public class ScenarioPackRoutesTests : BaseRouteHandlerTestFixture
 
 		var safeRelativePath = Path.Combine(ServerFolderManager.CustomFolderName, "pack-safe.SC5");
 		var secondSafeRelativePath = Path.Combine(ServerFolderManager.CustomFolderName, "pack-extra.SC5");
+		var nonCustomRelativePath = Path.Combine(ServerFolderManager.OriginalFolderName, "pack-non-custom.SC5");
 		await File.WriteAllBytesAsync(Path.Combine(sfm.ScenariosFolder, safeRelativePath), [1, 2, 3, 4]);
 		await File.WriteAllBytesAsync(Path.Combine(sfm.ScenariosFolder, secondSafeRelativePath), [4, 3, 2, 1]);
+		await File.WriteAllBytesAsync(Path.Combine(sfm.ScenariosFolder, nonCustomRelativePath), [9, 9, 9, 9]);
 
 		await File.WriteAllBytesAsync(Path.Combine(rootFolder, "outside.SC5"), [7, 7, 7]);
 		await File.WriteAllBytesAsync(Path.Combine(sfm.ScenariosFolder, @"..\outside-windows.SC5"), [6, 6, 6]);
@@ -50,9 +54,11 @@ public class ScenarioPackRoutesTests : BaseRouteHandlerTestFixture
 				Description = "Safe and unsafe scenarios",
 				Scenarios =
 				[
-					new TblScenario { Id = 1, Name = safeRelativePath },
-					new TblScenario { Id = 2, Name = Path.Combine("..", "outside.SC5") },
-					new TblScenario { Id = 3, Name = @"..\outside-windows.SC5" },
+					new TblScenario { Id = 1, Name = safeRelativePath, Availability = ObjectAvailability.Available },
+					new TblScenario { Id = 2, Name = Path.Combine("..", "outside.SC5"), Availability = ObjectAvailability.Available },
+					new TblScenario { Id = 3, Name = @"..\outside-windows.SC5", Availability = ObjectAvailability.Available },
+					// A vanilla (non-Custom) file must never be served, even if it claims to be available.
+					new TblScenario { Id = 5, Name = nonCustomRelativePath, ObjectSource = ObjectSource.LocomotionSteam, Availability = ObjectAvailability.Available },
 				],
 			},
 			new TblScenarioPack
@@ -62,7 +68,7 @@ public class ScenarioPackRoutesTests : BaseRouteHandlerTestFixture
 				Description = "Only safe scenarios",
 				Scenarios =
 				[
-					new TblScenario { Id = 4, Name = secondSafeRelativePath },
+					new TblScenario { Id = 4, Name = secondSafeRelativePath, Availability = ObjectAvailability.Available },
 				],
 			},
 		]);

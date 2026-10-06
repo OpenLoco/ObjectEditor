@@ -1,3 +1,4 @@
+using Definitions;
 using Definitions.Database;
 using Definitions.ObjectModels.Types;
 using Microsoft.Data.Sqlite;
@@ -34,7 +35,7 @@ public class GameDataFileServicesTests
 		return (sfm, db, connection, root);
 	}
 
-	private static async Task AssertPersistsAndRemovesAsync(IGameDataFileService service, string categoryFolder, IQueryable<DbCoreObject> query)
+	private static async Task AssertPersistsAndRemovesAsync(IGameDataFileService service, string categoryFolder, IQueryable<DbFileObject> query)
 	{
 		var path = Path.Combine(categoryFolder, ServerFolderManager.CustomFolderName, "file.dat");
 		await File.WriteAllTextAsync(path, "content");
@@ -48,6 +49,7 @@ public class GameDataFileServicesTests
 		{
 			Assert.That(row.Name, Is.EqualTo(Path.GetRelativePath(categoryFolder, path)));
 			Assert.That(row.ObjectSource, Is.EqualTo(ObjectSource.Custom));
+			Assert.That(row.Availability, Is.EqualTo(ObjectAvailability.Available));
 		}
 
 		// re-importing an unchanged file is a no-op
@@ -62,7 +64,10 @@ public class GameDataFileServicesTests
 		using (Assert.EnterMultipleScope())
 		{
 			Assert.That(remove.Status, Is.EqualTo(GameDataImportStatus.Removed));
-			Assert.That(await query.AnyAsync(), Is.False);
+
+			// The row is kept (the database is the source of truth) and marked unavailable.
+			Assert.That(await query.CountAsync(), Is.EqualTo(1));
+			Assert.That((await query.SingleAsync()).Availability, Is.EqualTo(ObjectAvailability.Unavailable));
 		}
 	}
 

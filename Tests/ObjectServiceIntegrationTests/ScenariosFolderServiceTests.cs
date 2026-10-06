@@ -1,3 +1,4 @@
+using Definitions;
 using Definitions.Database;
 using Definitions.ObjectModels.Types;
 using Microsoft.Data.Sqlite;
@@ -94,7 +95,10 @@ public class ScenariosFolderServiceTests
 				using (Assert.EnterMultipleScope())
 				{
 					Assert.That(remove.Status, Is.EqualTo(GameDataImportStatus.Removed));
-					Assert.That(db.Scenarios.Any(), Is.False);
+
+					// The row is kept (the database is the source of truth) and marked unavailable.
+					var rowAfterRemove = await db.Scenarios.SingleAsync();
+					Assert.That(rowAfterRemove.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
 				}
 			}
 		}

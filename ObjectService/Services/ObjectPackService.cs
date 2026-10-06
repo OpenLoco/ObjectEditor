@@ -188,12 +188,7 @@ public class ObjectPackService : IObjectPackService
 		{
 			foreach (var obj in pack.Objects)
 			{
-				if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
-				{
-					continue;
-				}
-
-				if (obj.Availability == ObjectAvailability.Unavailable)
+				if (!ObjectAvailabilityRules.IsDownloadable(obj.ObjectSource, obj.Availability))
 				{
 					continue;
 				}

@@ -58,6 +58,11 @@ public class ServerFolderManager
 	string RootDirectory { get; init; }
 
 	public ServerFolderManager(string rootDirectory)
+		: this(rootDirectory, loadIndexSynchronously: true)
+	{
+	}
+
+	private ServerFolderManager(string rootDirectory, bool loadIndexSynchronously)
 	{
 		if (!Directory.Exists(rootDirectory))
 		{
@@ -70,12 +75,34 @@ public class ServerFolderManager
 		// loaded/created and files can be written without any further existence checks.
 		CreateDataFolders();
 
+		if (loadIndexSynchronously)
+		{
+			// Loading the index is asynchronous I/O. Run the async API on the thread pool so this
+			// cannot deadlock on a caller's SynchronizationContext (this replaces the obsolete
+			// synchronous wrapper); async callers should use <see cref="CreateAsync"/> instead.
+			Task.Run(LoadOrCreateIndexAsync).GetAwaiter().GetResult();
+		}
+	}
+
+	/// <summary>
+	/// Creates the folder manager, building the folder structure and loading (or creating) the object
+	/// index without blocking a thread. Prefer this over the constructor in async code paths.
+	/// </summary>
+	public static async Task<ServerFolderManager> CreateAsync(string rootDirectory)
+	{
+		var sfm = new ServerFolderManager(rootDirectory, loadIndexSynchronously: false);
+		await sfm.LoadOrCreateIndexAsync().ConfigureAwait(false);
+		return sfm;
+	}
+
+	private async Task LoadOrCreateIndexAsync()
+	{
 		ILogger logger = new Common.Logging.Logger();
 
 		var indexDirectory = ObjectsFolder;
 		try
 		{
-			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexDirectory, logger)!;
+			ObjectIndex = await ObjectIndex.LoadOrCreateIndexAsync(indexDirectory, logger).ConfigureAwait(false);
 		}
 		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
 		{
@@ -94,7 +121,7 @@ public class ServerFolderManager
 
 			try
 			{
-				ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexDirectory, logger)!;
+				ObjectIndex = await ObjectIndex.LoadOrCreateIndexAsync(indexDirectory, logger).ConfigureAwait(false);
 			}
 			catch (Exception retryEx) when (retryEx is IOException or UnauthorizedAccessException or JsonException)
 			{
@@ -142,7 +169,7 @@ public class ServerFolderManager
 	private static void EnsureDirectoryExists(string path)
 		=> _ = Directory.CreateDirectory(path);
 
-	public ObjectIndex ObjectIndex { get; init; }
+	public ObjectIndex ObjectIndex { get; private set; } = null!;
 
 	public const string GameDataFolderName = "GameData";
 

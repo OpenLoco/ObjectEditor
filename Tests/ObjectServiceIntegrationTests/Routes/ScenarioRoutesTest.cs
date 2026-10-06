@@ -1,4 +1,5 @@
 using Common;
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.ObjectModels.Types;
@@ -51,8 +52,8 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 		// Metadata rows; the file download route resolves these names under the Scenarios folder.
 		await db.Scenarios.AddRangeAsync(
 		[
-			new TblScenario { Id = 1, Name = Path.Combine(Custom, "zulu.SC5") },
-			new TblScenario { Id = 2, Name = Path.Combine(Custom, "alpha.SC5") },
+			new TblScenario { Id = 1, Name = Path.Combine(Custom, "zulu.SC5"), Availability = ObjectAvailability.Available },
+			new TblScenario { Id = 2, Name = Path.Combine(Custom, "alpha.SC5"), Availability = ObjectAvailability.Available },
 		]);
 	}
 
@@ -92,6 +93,7 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 			Assert.That(result!.Id, Is.EqualTo(1));
 			Assert.That(result.Name, Is.EqualTo(Path.Combine(Custom, "zulu.SC5")));
 			Assert.That(result.ObjectSource, Is.EqualTo(ObjectSource.Custom));
+			Assert.That(result.Availability, Is.EqualTo(ObjectAvailability.Available));
 		}
 	}
 
@@ -103,6 +105,8 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 			Path.Combine(Custom, "updated.SC5"),
 			"updated description",
 			ObjectSource.OpenLoco,
+			// Availability is server-owned; the API must ignore this and keep the stored value.
+			ObjectAvailability.Unavailable,
 			null,
 			null,
 			DateOnly.UtcToday,
@@ -122,6 +126,7 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 			Assert.That(updated.Name, Is.EqualTo(Path.Combine(Custom, "updated.SC5")));
 			Assert.That(updated.Description, Is.EqualTo("updated description"));
 			Assert.That(updated.ObjectSource, Is.EqualTo(ObjectSource.OpenLoco));
+			Assert.That(updated.Availability, Is.EqualTo(ObjectAvailability.Available), "availability is server-owned and must not be overwritten by a client");
 		}
 	}
 
@@ -132,7 +137,12 @@ public class ScenarioRoutesTest : BaseRouteHandlerTestFixture
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
 		using var db = GetDbContext();
-		Assert.That(await db.Scenarios.AnyAsync(x => x.Id == 1), Is.False);
+		var row = await db.Scenarios.SingleOrDefaultAsync(x => x.Id == 1);
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(row, Is.Not.Null, "the row must be kept - the database is the source of truth");
+			Assert.That(row!.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
+		}
 	}
 
 	[Test]

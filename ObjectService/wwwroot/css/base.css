@@ -8,9 +8,32 @@
 
 :root {
     color-scheme: light;
-    --radius: 22px;
-    --mono: "Cascadia Code", "Consolas", monospace;
+
+    /* Font stacks — the only two families in the system. */
     --sans: "Aptos", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+    --mono: "Cascadia Code", "Consolas", monospace;
+
+    /* Type scale — six sizes cover the whole UI. */
+    --text-xs: 0.75rem;   /* 12px — badges, eyebrows, small caps */
+    --text-sm: 0.875rem;  /* 14px — secondary / meta / data */
+    --text-base: 1rem;    /* 16px — body */
+    --text-lg: 1.25rem;   /* 20px — section headings */
+    --text-xl: 1.75rem;   /* 28px — page titles */
+    --text-display: clamp(2rem, 4vw, 3.5rem); /* hero h1 only */
+
+    /* Radius scale — four steps. */
+    --radius-sm: 8px;     /* cells, badges, code, small links */
+    --radius-md: 14px;    /* inputs, meta cells, nested cards */
+    --radius-lg: 22px;    /* panels, object cards, sidebar, header */
+    --radius-pill: 999px; /* buttons, chips, tabs, toggles */
+
+    /* Spacing scale — 4px grid, used for every gap/padding/margin. */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 24px;
+    --space-2xl: 32px;
 
     /* Fallback: light palette */
     --bg: #f4f5f7;
@@ -151,19 +174,19 @@ p {
 }
 
 h1 {
-    margin-bottom: 12px;
-    font-size: clamp(2rem, 4vw, 3.5rem);
+    margin-bottom: var(--space-md);
+    font-size: var(--text-display);
     line-height: 1.04;
 }
 
 h2 {
-    margin-bottom: 8px;
-    font-size: 1.3rem;
+    margin-bottom: var(--space-sm);
+    font-size: var(--text-lg);
 }
 
 dt {
-    margin-bottom: 6px;
-    font-size: 0.86rem;
+    margin-bottom: var(--space-sm);
+    font-size: var(--text-sm);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -172,7 +195,7 @@ dt {
 dd {
     margin: 0;
     font-family: var(--mono);
-    font-size: 0.92rem;
+    font-size: var(--text-sm);
     word-break: break-word;
 }
 

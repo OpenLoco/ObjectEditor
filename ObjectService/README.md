@@ -3,6 +3,8 @@
 # OpenLoco Object Service
 An HTTP(S) "minimal API" made with ASP.NET Core. It serves information about the object repository as well as objects from the repository. It is currently hosted at `openloco.leftofzen.dev`
 
+> **Always consult [`DESIGN.md`](DESIGN.md) before doing any UI, frontend, or design work.**
+
 ## Terminology
 - dat file - the actual byte[] of a dat file
 - object - a wrapper object around a dat file containing metadata such as tags, authors, dates, etc.

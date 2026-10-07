@@ -256,14 +256,9 @@
     }
 
     .theme-toggle,
-    .theme-studio-toggle,
     .site-header-stat,
     .health-indicator {
         width: 100%;
-    }
-
-    .palette-input-row {
-        grid-template-columns: 52px minmax(0, 1fr);
     }
 
     .detail-hero,

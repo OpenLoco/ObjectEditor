@@ -33,7 +33,7 @@
 			{
 				<div class="action-buttons">
 					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
-					<form method="post" asp-page-handler="Delete" asp-route-id="@pack.Id" style="display:inline" onsubmit="return confirm('Delete this object pack?')">
+					<form method="post" asp-page-handler="Delete" asp-route-id="@pack.Id" class="inline-form" onsubmit="return confirm('Delete this object pack?')">
 						<button type="submit" class="button button-small button-danger">Delete</button>
 					</form>
 				</div>
@@ -43,7 +43,7 @@
 
 		@if (Model.CanEdit)
 		{
-			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form" style="margin-top:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form mt-lg">
 				<input type="hidden" name="Id" value="@pack.Id" />
 
 				<div class="form-group">
@@ -80,7 +80,7 @@
 
 				<div class="form-group">
 					<label>Authors</label>
-					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+					<div class="multi-select multi-select-sm">
 						@if (Model.AvailableAuthors.Count == 0)
 						{
 							<p class="muted">No authors available.</p>
@@ -90,7 +90,7 @@
 							@foreach (var author in Model.AvailableAuthors)
 							{
 								var isSelected = pack.Authors.Any(a => a.Id == author.Id);
-								<label class="checkbox" style="display:block;">
+								<label class="checkbox checkbox-block">
 									<input type="checkbox" name="SelectedAuthorIds" value="@author.Id" checked="@isSelected" />
 									<span>@author.Name</span>
 								</label>
@@ -101,7 +101,7 @@
 
 				<div class="form-group">
 					<label>Tags</label>
-					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+					<div class="multi-select multi-select-sm">
 						@if (Model.AvailableTags.Count == 0)
 						{
 							<p class="muted">No tags available.</p>
@@ -111,7 +111,7 @@
 							@foreach (var tag in Model.AvailableTags)
 							{
 								var isSelected = pack.Tags.Any(t => t.Id == tag.Id);
-								<label class="checkbox" style="display:block;">
+								<label class="checkbox checkbox-block">
 									<input type="checkbox" name="SelectedTagIds" value="@tag.Id" checked="@isSelected" />
 									<span>@tag.Name</span>
 								</label>
@@ -122,7 +122,7 @@
 
 				<div class="form-group">
 					<label>Objects</label>
-					<div class="multi-select" style="max-height:200px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+					<div class="multi-select multi-select-lg">
 						@if (Model.AvailableObjects.Count == 0)
 						{
 							<p class="muted">No objects available.</p>
@@ -132,7 +132,7 @@
 							@foreach (var obj in Model.AvailableObjects)
 							{
 								var isSelected = pack.Objects.Any(o => o.Id == obj.Id);
-								<label class="checkbox" style="display:block;">
+								<label class="checkbox checkbox-block">
 									<input type="checkbox" name="SelectedObjectIds" value="@obj.Id" checked="@isSelected" />
 									<span>@obj.DisplayName</span>
 								</label>
@@ -141,7 +141,7 @@
 					</div>
 				</div>
 
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Save</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-form').hidden = true">Cancel</button>
 				</div>

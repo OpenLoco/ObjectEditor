@@ -33,7 +33,7 @@
 			{
 				<div class="action-buttons">
 					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
-					<form method="post" asp-page-handler="Delete" asp-route-id="@Model.Licence.Id" style="display:inline" onsubmit="return confirm('Delete this licence?')">
+					<form method="post" asp-page-handler="Delete" asp-route-id="@Model.Licence.Id" class="inline-form" onsubmit="return confirm('Delete this licence?')">
 						<button type="submit" class="button button-small button-danger">Delete</button>
 					</form>
 				</div>
@@ -41,7 +41,7 @@
 		</div>
 		@if (isAdmin)
 		{
-			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form" style="margin-top:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form mt-lg">
 				<input type="hidden" name="Id" value="@Model.Licence.Id" />
 				<div class="form-group">
 					<label for="editName">Name</label>
@@ -51,7 +51,7 @@
 					<label for="editText">Text</label>
 					<textarea id="editText" name="Text" class="form-input">@Model.Licence.Text</textarea>
 				</div>
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Save</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-form').hidden = true">Cancel</button>
 				</div>

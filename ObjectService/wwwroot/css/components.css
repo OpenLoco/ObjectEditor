@@ -782,9 +782,9 @@ th {
 }
 
 .health-indicator-unhealthy {
-    background: var(--error-soft);
-    border-color: var(--error-border);
-    color: var(--error);
+    background: var(--danger-soft);
+    border-color: var(--danger-border);
+    color: var(--danger);
 }
 
 .health-check-list {
@@ -843,10 +843,6 @@ th {
     transform: translateX(26px);
 }
 
-.theme-studio-toggle {
-    white-space: nowrap;
-}
-
 /* ── Developer stats panel ── */
 .dev-stats {
     display: grid;
@@ -863,5 +859,70 @@ th {
 .dev-stats-header .eyebrow {
     margin: 0;
 }
+
+/* ==========================================================================
+   Utilities — the small set of helpers used directly in the Razor views
+   ========================================================================== */
+
+/* Multi-select size modifiers */
+.multi-select-sm {
+    max-height: 150px;
+    padding: var(--space-sm);
+}
+
+.multi-select-lg {
+    max-height: 200px;
+    padding: var(--space-sm);
+}
+
+.checkbox-block {
+    display: block;
+}
+
+/* Inline forms (delete buttons / compact edit rows) */
+.inline-form {
+    display: inline;
+}
+
+.inline-edit-form {
+    display: inline-flex;
+    gap: var(--space-xs);
+    align-items: center;
+}
+
+.inline-edit-form-wrap {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+/* Spacing helpers */
+.mt-sm {
+    margin-top: var(--space-sm);
+}
+
+.mt-lg {
+    margin-top: var(--space-lg);
+}
+
+.mb-lg {
+    margin-bottom: var(--space-lg);
+}
+
+/* Width helpers (compact inline-edit fields) */
+.w-100 { width: 100px; }
+.w-120 { width: 120px; }
+.w-130 { width: 130px; }
+.w-150 { width: 150px; }
+.w-200 { width: 200px; }
+
+/* Muted chip (read-only mode and similar) */
+.chip-muted {
+    background: color-mix(in srgb, var(--muted) 18%, transparent);
+    border-color: color-mix(in srgb, var(--muted) 30%, transparent);
+    color: var(--muted);
+    margin-left: var(--space-sm);
+}
+
 
 

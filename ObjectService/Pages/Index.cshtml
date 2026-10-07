@@ -11,95 +11,6 @@
 	</div>
 }
 
-<section id="theme-studio-panel" class="panel theme-studio" data-theme-studio hidden>
-	<div class="theme-studio-header">
-		<div>
-			<p class="eyebrow">Theme Studio</p>
-			<h2>Nine-colour palette</h2>
-			<p class="lede">Pick one colour per type for the light palette and another nine for the dark palette. No shades are derived — what you pick is what you get. The palette is stored only in this browser.</p>
-		</div>
-	</div>
-	<form class="theme-palette-form" data-theme-palette-form>
-		<div class="theme-palette-mode" data-theme-palette-mode role="group" aria-label="Palette being edited">
-			<button type="button" class="button button-small theme-palette-mode-button" data-theme-palette-mode-button="light" aria-pressed="false">Light</button>
-			<button type="button" class="button button-small theme-palette-mode-button" data-theme-palette-mode-button="dark" aria-pressed="true">Dark</button>
-		</div>
-
-		<div class="theme-palette-grid">
-			<label class="field palette-field">
-				<span>Accent</span>
-				<div class="palette-input-row">
-					<input type="color" value="#F6C945" data-palette-picker="accent" aria-label="Accent colour picker" />
-					<input type="text" value="#F6C945" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="accent" aria-label="Accent hex colour" />
-				</div>
-			</label>
-			<label class="field palette-field">
-				<span>Surface</span>
-				<div class="palette-input-row">
-					<input type="color" value="#D9D9D6" data-palette-picker="surface" aria-label="Surface colour picker" />
-					<input type="text" value="#D9D9D6" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="surface" aria-label="Surface hex colour" />
-				</div>
-			</label>
-			<label class="field palette-field">
-				<span>Muted</span>
-				<div class="palette-input-row">
-					<input type="color" value="#8A8D8F" data-palette-picker="muted" aria-label="Muted colour picker" />
-					<input type="text" value="#8A8D8F" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="muted" aria-label="Muted hex colour" />
-				</div>
-			</label>
-			<label class="field palette-field">
-				<span>Text</span>
-				<div class="palette-input-row">
-					<input type="color" value="#808080" data-palette-picker="text" aria-label="Text colour picker" />
-					<input type="text" value="#808080" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="text" aria-label="Text hex colour" />
-				</div>
-			</label>
-			<label class="field palette-field">
-				<span>Background</span>
-				<div class="palette-input-row">
-					<input type="color" value="#2E2F33" data-palette-picker="background" aria-label="Background colour picker" />
-					<input type="text" value="#2E2F33" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="background" aria-label="Background hex colour" />
-				</div>
-			</label>
-			<label class="field palette-field">
-				<span>Contrast</span>
-				<div class="palette-input-row">
-					<input type="color" value="#9C9C9C" data-palette-picker="contrast" aria-label="Contrast colour picker" />
-					<input type="text" value="#9C9C9C" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="contrast" aria-label="Contrast hex colour" />
-				</div>
-			</label>
-			<label class="field palette-field">
-				<span>Success</span>
-				<div class="palette-input-row">
-					<input type="color" value="#4E8D57" data-palette-picker="success" aria-label="Success colour picker" />
-					<input type="text" value="#4E8D57" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="success" aria-label="Success hex colour" />
-				</div>
-			</label>
-			<label class="field palette-field">
-				<span>Warning</span>
-				<div class="palette-input-row">
-					<input type="color" value="#B97A1F" data-palette-picker="warning" aria-label="Warning colour picker" />
-					<input type="text" value="#B97A1F" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="warning" aria-label="Warning hex colour" />
-				</div>
-			</label>
-			<label class="field palette-field">
-				<span>Error</span>
-				<div class="palette-input-row">
-					<input type="color" value="#B44C43" data-palette-picker="error" aria-label="Error colour picker" />
-					<input type="text" value="#B44C43" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="error" aria-label="Error hex colour" />
-				</div>
-			</label>
-		</div>
-
-		<div class="form-actions">
-			<button type="submit" class="button button-primary">Apply palette</button>
-			<button type="button" class="button button-secondary" data-theme-palette-reset>Use default palette</button>
-		</div>
-
-		<p class="theme-studio-status muted" data-theme-palette-status aria-live="polite">Stored locally in this browser.</p>
-	</form>
-</section>
-
 @* ── Master tab bar (primary navigation) ── *@
 <nav class="master-tabs" role="tablist" aria-label="Content categories">
 	@for (var g = 0; g < Model.TabGroups.Count; g++)
@@ -362,7 +273,7 @@ else if (Model.Category == "objectpacks")
 		</div>
 		@if (Model.IsAdmin)
 		{
-			<form method="post" asp-page-handler="Create" id="create-form-objectpacks" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Create" id="create-form-objectpacks" hidden class="form mb-lg">
 				<input type="hidden" name="CrudCategory" value="objectpacks" />
 				<div class="form-group">
 					<label for="newPackName">Name</label>
@@ -372,7 +283,7 @@ else if (Model.Category == "objectpacks")
 					<label for="newPackDesc">Description</label>
 					<textarea id="newPackDesc" name="CrudDescription" placeholder="Pack description" class="form-input"></textarea>
 				</div>
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Create</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-objectpacks').hidden = true">Cancel</button>
 				</div>
@@ -415,7 +326,7 @@ else if (Model.Category == "objectpacks")
 								@if (Model.IsAdmin)
 								{
 									<td class="actions-column">
-										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this pack?')">
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this pack?')">
 											<input type="hidden" name="CrudId" value="@pack.Id" />
 											<input type="hidden" name="CrudCategory" value="objectpacks" />
 											<button type="submit" class="button button-small button-danger">Delete</button>
@@ -492,7 +403,7 @@ else if (Model.Category == "scenariopacks")
 		</div>
 		@if (Model.IsAdmin)
 		{
-			<form method="post" asp-page-handler="Create" id="create-form-scenariopacks" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Create" id="create-form-scenariopacks" hidden class="form mb-lg">
 				<input type="hidden" name="CrudCategory" value="scenariopacks" />
 				<div class="form-group">
 					<label for="newScenarioPackName">Name</label>
@@ -502,7 +413,7 @@ else if (Model.Category == "scenariopacks")
 					<label for="newScenarioPackDesc">Description</label>
 					<textarea id="newScenarioPackDesc" name="CrudDescription" placeholder="Pack description" class="form-input"></textarea>
 				</div>
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Create</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-scenariopacks').hidden = true">Cancel</button>
 				</div>
@@ -545,7 +456,7 @@ else if (Model.Category == "scenariopacks")
 								@if (Model.IsAdmin)
 								{
 									<td class="actions-column">
-										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this pack?')">
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this pack?')">
 											<input type="hidden" name="CrudId" value="@pack.Id" />
 											<input type="hidden" name="CrudCategory" value="scenariopacks" />
 											<button type="submit" class="button button-small button-danger">Delete</button>
@@ -576,13 +487,13 @@ else if (Model.Category == "authors")
 		</div>
 		@if (Model.IsAdmin)
 		{
-			<form method="post" asp-page-handler="Create" id="create-form-authors" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Create" id="create-form-authors" hidden class="form mb-lg">
 				<input type="hidden" name="CrudCategory" value="authors" />
 				<div class="form-group">
 					<label for="newAuthorName">Name</label>
 					<input id="newAuthorName" name="CrudName" type="text" placeholder="Author name" required class="form-input" />
 				</div>
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Create</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-authors').hidden = true">Cancel</button>
 				</div>
@@ -614,15 +525,15 @@ else if (Model.Category == "authors")
 								{
 									<td class="actions-column">
 										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-@author.Id');f.hidden=!f.hidden">Edit</button>
-										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this author?')">
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this author?')">
 											<input type="hidden" name="CrudId" value="@author.Id" />
 											<input type="hidden" name="CrudCategory" value="authors" />
 											<button type="submit" class="button button-small button-danger">Delete</button>
 										</form>
-										<form method="post" asp-page-handler="Edit" id="edit-@author.Id" hidden style="display:inline-flex;gap:0.25rem;align-items:center">
+										<form method="post" asp-page-handler="Edit" id="edit-@author.Id" hidden class="inline-edit-form">
 											<input type="hidden" name="CrudId" value="@author.Id" />
 											<input type="hidden" name="CrudCategory" value="authors" />
-											<input type="text" name="CrudName" value="@author.Name" required class="form-input" style="width:150px" />
+											<input type="text" name="CrudName" value="@author.Name" required class="form-input w-150" />
 											<button type="submit" class="button button-primary button-small">Save</button>
 											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-@author.Id').hidden=true">Cancel</button>
 										</form>
@@ -652,13 +563,13 @@ else if (Model.Category == "tags")
 		</div>
 		@if (Model.IsAdmin)
 		{
-			<form method="post" asp-page-handler="Create" id="create-form-tags" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Create" id="create-form-tags" hidden class="form mb-lg">
 				<input type="hidden" name="CrudCategory" value="tags" />
 				<div class="form-group">
 					<label for="newTagName">Name</label>
 					<input id="newTagName" name="CrudName" type="text" placeholder="Tag name" required class="form-input" />
 				</div>
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Create</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-tags').hidden = true">Cancel</button>
 				</div>
@@ -690,15 +601,15 @@ else if (Model.Category == "tags")
 								{
 									<td class="actions-column">
 										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-t-@tag.Id');f.hidden=!f.hidden">Edit</button>
-										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this tag?')">
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this tag?')">
 											<input type="hidden" name="CrudId" value="@tag.Id" />
 											<input type="hidden" name="CrudCategory" value="tags" />
 											<button type="submit" class="button button-small button-danger">Delete</button>
 										</form>
-										<form method="post" asp-page-handler="Edit" id="edit-t-@tag.Id" hidden style="display:inline-flex;gap:0.25rem;align-items:center">
+										<form method="post" asp-page-handler="Edit" id="edit-t-@tag.Id" hidden class="inline-edit-form">
 											<input type="hidden" name="CrudId" value="@tag.Id" />
 											<input type="hidden" name="CrudCategory" value="tags" />
-											<input type="text" name="CrudName" value="@tag.Name" required class="form-input" style="width:150px" />
+											<input type="text" name="CrudName" value="@tag.Name" required class="form-input w-150" />
 											<button type="submit" class="button button-primary button-small">Save</button>
 											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-t-@tag.Id').hidden=true">Cancel</button>
 										</form>
@@ -728,7 +639,7 @@ else if (Model.Category == "licences")
 		</div>
 		@if (Model.IsAdmin)
 		{
-			<form method="post" asp-page-handler="Create" id="create-form-licences" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Create" id="create-form-licences" hidden class="form mb-lg">
 				<input type="hidden" name="CrudCategory" value="licences" />
 				<div class="form-group">
 					<label for="newLicenceName">Name</label>
@@ -738,7 +649,7 @@ else if (Model.Category == "licences")
 					<label for="newLicenceText">Text</label>
 					<textarea id="newLicenceText" name="CrudText" placeholder="Licence text" class="form-input"></textarea>
 				</div>
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Create</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-licences').hidden = true">Cancel</button>
 				</div>
@@ -772,16 +683,16 @@ else if (Model.Category == "licences")
 								{
 									<td class="actions-column">
 										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-l-@licence.Id');f.hidden=!f.hidden">Edit</button>
-										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this licence?')">
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this licence?')">
 											<input type="hidden" name="CrudId" value="@licence.Id" />
 											<input type="hidden" name="CrudCategory" value="licences" />
 											<button type="submit" class="button button-small button-danger">Delete</button>
 										</form>
-										<form method="post" asp-page-handler="Edit" id="edit-l-@licence.Id" hidden style="display:flex;gap:0.25rem;flex-wrap:wrap">
+										<form method="post" asp-page-handler="Edit" id="edit-l-@licence.Id" hidden class="inline-edit-form-wrap">
 											<input type="hidden" name="CrudId" value="@licence.Id" />
 											<input type="hidden" name="CrudCategory" value="licences" />
-											<input type="text" name="CrudName" value="@licence.Name" required class="form-input" style="width:150px" />
-											<input type="text" name="CrudText" value="@licence.Text" class="form-input" style="width:200px" />
+											<input type="text" name="CrudName" value="@licence.Name" required class="form-input w-150" />
+											<input type="text" name="CrudText" value="@licence.Text" class="form-input w-200" />
 											<button type="submit" class="button button-primary button-small">Save</button>
 											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-l-@licence.Id').hidden=true">Cancel</button>
 										</form>
@@ -811,7 +722,7 @@ else if (Model.Category == "objectsmissing")
 		</div>
 		@if (Model.IsAdmin)
 		{
-			<form method="post" asp-page-handler="Create" id="create-form-objectsmissing" hidden class="form" style="margin-bottom:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Create" id="create-form-objectsmissing" hidden class="form mb-lg">
 				<input type="hidden" name="CrudCategory" value="objectsmissing" />
 				<div class="form-group">
 					<label for="newMissingDatName">Dat Name</label>
@@ -830,7 +741,7 @@ else if (Model.Category == "objectsmissing")
 						}
 					</select>
 				</div>
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Create</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-objectsmissing').hidden = true">Cancel</button>
 				</div>
@@ -866,17 +777,17 @@ else if (Model.Category == "objectsmissing")
 								{
 									<td class="actions-column">
 										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-m-@missing.Id');f.hidden=!f.hidden">Edit</button>
-										<form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete this missing object entry?')">
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this missing object entry?')">
 											<input type="hidden" name="CrudId" value="@missing.Id" />
 											<input type="hidden" name="CrudCategory" value="objectsmissing" />
 											<button type="submit" class="button button-small button-danger">Delete</button>
 										</form>
-										<form method="post" asp-page-handler="Edit" id="edit-m-@missing.Id" hidden style="display:flex;gap:0.25rem;flex-wrap:wrap">
+										<form method="post" asp-page-handler="Edit" id="edit-m-@missing.Id" hidden class="inline-edit-form-wrap">
 											<input type="hidden" name="CrudId" value="@missing.Id" />
 											<input type="hidden" name="CrudCategory" value="objectsmissing" />
-											<input type="text" name="CrudName" value="@missing.DatName" required class="form-input" style="width:120px" />
-											<input type="number" name="CrudChecksum" value="@missing.DatChecksum" required class="form-input" style="width:100px" />
-											<select name="CrudObjectType" required class="form-input" style="width:130px">
+											<input type="text" name="CrudName" value="@missing.DatName" required class="form-input w-120" />
+											<input type="number" name="CrudChecksum" value="@missing.DatChecksum" required class="form-input w-100" />
+											<select name="CrudObjectType" required class="form-input w-130">
 												@foreach (var ot in Model.ObjectTypes)
 												{
 													<option value="@((int)ot)" selected="@(ot == missing.ObjectType)">@ot</option>

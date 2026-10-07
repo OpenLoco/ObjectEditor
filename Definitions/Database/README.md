@@ -191,9 +191,10 @@ Every game object - all 34 `ObjectType` values - is stored in three parts:
    does not follow the `Obj<ObjectType>` naming pattern is `ObjectType.InterfaceSkin`, whose table is
    `ObjInterface` (`TblObjectInterface`).
 3. **File rows**: `DatObjects` (`TblDatObject`), the metadata of the actual `.dat` file(s) on disk:
-   `DatName` + `DatChecksum` (unique together), `xxHash3`, and the required `ObjectId` / `Object` FK back to
-   the header row. This is one-to-many: a single object can be made of several files, but every file must
-   reference exactly one object.
+   `DatName` + `DatChecksum` (an index, *not* unique: a re-packed or hacked object can share the S5 name and
+   checksum while being a binary-different file), the unique `xxHash3` whole-file hash that is the
+   authoritative file identity, and the required `ObjectId` / `Object` FK back to the header row. This is
+   one-to-many: a single object can be made of several files, but every file must reference exactly one object.
 
 A header row can therefore legitimately exist without a sub-object row (a DAT that defines no type-specific
 data), but never the other way round. `ObjectsMissing` (`TblObjectMissing`) is *not* an ignore list: it

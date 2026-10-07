@@ -171,6 +171,13 @@ public static class ObjectValidation
 	{
 		foreach (var emitter in vehicle.ParticleEmitters)
 		{
+			// The emitter array is fixed-size at the DAT layer; empty (zeroed) slots carry no animation
+			// object and must not be reported as dependencies.
+			if (emitter.Type == EmitterAnimationType.None || emitter.AnimationObject is null)
+			{
+				continue;
+			}
+
 			yield return emitter.AnimationObject;
 		}
 

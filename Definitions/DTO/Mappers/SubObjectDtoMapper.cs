@@ -15,6 +15,12 @@ namespace Definitions.DTO.Mappers;
 /// </summary>
 public static class SubObjectDtoMapper
 {
+	/// <summary>
+	/// The namespace holding every <c>ToTbl...Entity</c> mapper. The reflection scan is scoped to it so it
+	/// cannot accidentally pick up an unrelated helper that happens to share the method shape.
+	/// </summary>
+	const string MapperNamespace = "Definitions.DTO.Mappers";
+
 	private static readonly ConcurrentDictionary<Type, MethodInfo> MapperCache = new();
 
 	/// <summary>
@@ -56,6 +62,7 @@ public static class SubObjectDtoMapper
 		=> [.. typeof(IDtoSubObject).Assembly
 			.GetTypes()
 			.Where(t => t.IsAbstract && t.IsSealed) // static classes
+			.Where(t => t.Namespace is { } ns && ns.StartsWith(MapperNamespace, StringComparison.Ordinal))
 			.SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static))
 			.Where(m => typeof(IDbSubObject).IsAssignableFrom(m.ReturnType)
 				&& m.GetParameters() is { Length: 2 } parameters

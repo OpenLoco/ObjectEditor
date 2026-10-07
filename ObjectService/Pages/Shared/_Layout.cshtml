@@ -100,6 +100,12 @@
 					<span class="health-indicator-dot" aria-hidden="true"></span>
 					<span>Server @healthReport.Status</span>
 				</span>
+				@if (isDevelopment && isAdmin)
+				{
+					<button type="button" class="button button-small button-secondary dev-panel-toggle" data-dev-panel-toggle aria-expanded="false" aria-controls="dev-stats-panel">
+						Developer
+					</button>
+				}
 			@if (!readOnlyMode)
 			{
 				if (isDevelopment && !isAuthenticated)
@@ -130,7 +136,7 @@
 		<main class="site-main">
 			@if (isDevelopment && isAdmin)
 			{
-				<section class="dev-stats panel" aria-label="Developer environment details">
+				<section id="dev-stats-panel" class="dev-stats panel" data-dev-panel hidden aria-label="Developer environment details">
 					<div class="dev-stats-header">
 						<p class="eyebrow">Developer mode</p>
 						<span class="chip">@HostEnvironment.EnvironmentName</span>
@@ -190,5 +196,6 @@
 		</main>
 	</div>
 	<script src="~/js/theme-toggle.js" asp-append-version="true"></script>
+	<script src="~/js/dev-panel.js" asp-append-version="true"></script>
 </body>
 </html>

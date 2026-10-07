@@ -315,6 +315,12 @@ dt {
     font-size: var(--text-base);
 }
 
+.filter-actions {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: var(--space-md);
+}
+
 /* ── Forms ── */
 .form {
     display: flex;
@@ -741,6 +747,10 @@ th {
     border-top: 0;
 }
 
+.string-group h3 {
+    font-size: var(--text-lg);
+}
+
 .string-group strong {
     font-size: var(--text-sm);
     text-transform: uppercase;
@@ -847,6 +857,10 @@ th {
 .dev-stats {
     display: grid;
     gap: var(--space-lg);
+}
+
+.dev-stats[hidden] {
+    display: none;
 }
 
 .dev-stats-header {

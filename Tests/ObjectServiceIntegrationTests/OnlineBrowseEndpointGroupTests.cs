@@ -51,13 +51,15 @@ public class OnlineBrowseEndpointGroupTests
 	public async Task GetListAsync_ReturnsScenariosFromConfiguredEndpointGroup()
 	{
 		using var scope = testWebAppFactory!.Services.CreateScope();
-		var sfm = scope.ServiceProvider.GetRequiredService<ServerFolderManager>();
-		var customFolder = Path.Combine(sfm.ScenariosFolder, ServerFolderManager.CustomFolderName);
+		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
+		await db.Scenarios.AddRangeAsync(
+		[
+			new TblScenario { Id = 1, Name = Path.Combine(ServerFolderManager.CustomFolderName, "alpine.SC5") },
+			new TblScenario { Id = 2, Name = Path.Combine(ServerFolderManager.CustomFolderName, "desert.SC5") },
+		]);
+		_ = await db.SaveChangesAsync();
 
-		await File.WriteAllTextAsync(Path.Combine(customFolder, "alpine.SC5"), "scenario");
-		await File.WriteAllTextAsync(Path.Combine(customFolder, "desert.SC5"), "scenario");
-
-		var results = await Client.GetListAsync<DtoScenarioEntry>(httpClient!, Client.ScenariosEndpointGroup);
+		var results = await Client.GetListAsync<DtoScenarioListEntry>(httpClient!, Client.ScenariosEndpointGroup);
 
 		Assert.That(results.Select(x => x.Name), Is.EqualTo(
 		[
@@ -122,19 +124,58 @@ public class OnlineBrowseEndpointGroupTests
 	}
 
 	[Test]
-	public async Task GetListAsync_ReturnsSC5FilePacksFromConfiguredEndpointGroup()
+	public async Task GetListAsync_ReturnsScenarioPacksFromConfiguredEndpointGroup()
 	{
 		using var scope = testWebAppFactory!.Services.CreateScope();
 		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
-		await db.SC5FilePacks.AddRangeAsync(
+		await db.ScenarioPacks.AddRangeAsync(
 		[
-			new TblSC5FilePack { Id = 1, Name = "Challenge Pack", Description = "Hard scenarios" },
-			new TblSC5FilePack { Id = 2, Name = "Starter Pack", Description = "Easy scenarios" },
+			new TblScenarioPack { Id = 1, Name = "Challenge Pack", Description = "Hard scenarios" },
+			new TblScenarioPack { Id = 2, Name = "Starter Pack", Description = "Easy scenarios" },
 		]);
 		_ = await db.SaveChangesAsync();
 
-		var results = await Client.GetListAsync<DtoItemPackEntry>(httpClient!, Client.SC5FilePacksEndpointGroup);
+		var results = await Client.GetListAsync<DtoItemPackEntry>(httpClient!, Client.ScenarioPacksEndpointGroup);
 
 		Assert.That(results.Select(x => x.Name), Is.EqualTo(["Challenge Pack", "Starter Pack"]));
+	}
+
+	[Test]
+	public async Task GetListAsync_ReturnsGameDataFilesFromConfiguredEndpointGroups()
+	{
+		using var scope = testWebAppFactory!.Services.CreateScope();
+		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
+		await db.Music.AddRangeAsync(
+		[
+			new TblMusic { Id = 1, Name = "Adventure Theme" },
+			new TblMusic { Id = 2, Name = "Coaster Rag" },
+		]);
+		await db.SoundEffects.AddRangeAsync(
+		[
+			new TblSoundEffect { Id = 1, Name = "Door Close" },
+			new TblSoundEffect { Id = 2, Name = "Steam Whistle" },
+		]);
+		await db.Tutorials.AddRangeAsync(
+		[
+			new TblTutorial { Id = 1, Name = "Building a Station" },
+		]);
+		await db.Graphics.AddRangeAsync(
+		[
+			new TblGraphics { Id = 1, Name = "Interface Icons" },
+		]);
+		_ = await db.SaveChangesAsync();
+
+		var music = await Client.GetListAsync<DtoMusicListEntry>(httpClient!, Client.MusicEndpointGroup);
+		var soundEffects = await Client.GetListAsync<DtoSoundEffectListEntry>(httpClient!, Client.SoundEffectsEndpointGroup);
+		var tutorials = await Client.GetListAsync<DtoTutorialListEntry>(httpClient!, Client.TutorialsEndpointGroup);
+		var graphics = await Client.GetListAsync<DtoGraphicsListEntry>(httpClient!, Client.GraphicsEndpointGroup);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(music.Select(x => x.Name), Is.EqualTo(["Adventure Theme", "Coaster Rag"]));
+			Assert.That(soundEffects.Select(x => x.Name), Is.EqualTo(["Door Close", "Steam Whistle"]));
+			Assert.That(tutorials.Select(x => x.Name), Is.EqualTo(["Building a Station"]));
+			Assert.That(graphics.Select(x => x.Name), Is.EqualTo(["Interface Icons"]));
+		}
 	}
 }

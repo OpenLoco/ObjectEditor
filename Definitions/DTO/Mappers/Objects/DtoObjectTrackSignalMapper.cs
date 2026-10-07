@@ -14,6 +14,7 @@ public static class DtoObjectTrackSignalMapper
 		CostIndex = tblobjecttracksignal.CostIndex,
 		DesignedYear = tblobjecttracksignal.DesignedYear,
 		ObsoleteYear = tblobjecttracksignal.ObsoleteYear,
+		CompatibleTrackObjects = tblobjecttracksignal.CompatibleTrackObjects,
 		Id = tblobjecttracksignal.Id,
 	};
 
@@ -28,6 +29,7 @@ public static class DtoObjectTrackSignalMapper
 		CostIndex = model.CostIndex,
 		DesignedYear = model.DesignedYear,
 		ObsoleteYear = model.ObsoleteYear,
+		CompatibleTrackObjects = model.CompatibleTrackObjects,
 		Id = model.Id,
 	};
 

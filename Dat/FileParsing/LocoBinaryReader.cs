@@ -250,6 +250,9 @@ public class LocoBinaryReader : BinaryReader
 				Type = (EmitterAnimationType)ReadByte(),
 			};
 
+			// The file always carries the full fixed-size emitter array (empty slots included) and the stream
+			// is advanced past every slot, but only slots with an animation are surfaced: the object model,
+			// database and DTOs hold the real emitters, not the DAT layer's padding.
 			if (emitterAnimation.Type != EmitterAnimationType.None)
 			{
 				yield return emitterAnimation;

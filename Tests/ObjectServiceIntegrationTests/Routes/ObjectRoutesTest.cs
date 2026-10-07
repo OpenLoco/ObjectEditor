@@ -1,17 +1,23 @@
 using Common;
 using Common.Logging;
+using Dat.Tests;
 using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Comparers;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.Web;
 using Index;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ObjectService;
 using ObjectService.Tests.Integration;
 using System.IO.Hashing;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace Tests.ObjectServiceIntegrationTests.Routes;
 
@@ -25,12 +31,12 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	TblObject>
 {
 	public override string BaseRoute
-		=> RoutesV2.Objects;
+		=> Definitions.Web.Routes.Objects;
 
 	protected override IEnumerable<TblObject> DbSeedData =>
 	[
-		new() { Id = 1, Name = "test-name-1", SubObjectId = 1, ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
-		new() { Id = 2, Name = "test-name-2", SubObjectId = 2, ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
+		new() { Id = 1, Name = "test-name-1", ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
+		new() { Id = 2, Name = "test-name-2", ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
 	];
 
 	protected override DtoObjectPost PostRequestDto
@@ -66,7 +72,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 		=> new(
 				row.Id,
 				row.Name,
-				row.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
+				row.DatObjects.FirstOrDefault()?.DatName ?? row.DatObjects.FirstOrDefault()?.Object?.Name ?? "<no-display-name>",
 				row.DatObjects.FirstOrDefault()?.DatChecksum ?? 0,
 				row.Description,
 				row.ObjectSource,
@@ -81,8 +87,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 				[.. row.Tags.Select(x => x.ToDtoEntry())],
 				[],
 				[],
-				row.StringTable.ToDtoDescriptor(row.Id)
-				//SubObject
+				row.StringTable.ToDtoDescriptor(row.Id),
+				null // SubObject
 				);
 
 	static void AssertDtoObjectDescriptorsAreEqual(DtoObjectPostResponse? expected, DtoObjectPostResponse? actual)
@@ -143,7 +149,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	{
 		// act
 		const int id = 2;
-		var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
 		var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
 
 		// assert
@@ -152,25 +158,87 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	[Test]
 	public override async Task DeleteAsync()
 	{
-		// act
+		// act - removal keeps the row (so curated metadata and references survive), parks any files under
+		// GameData/Objects/Removed and marks the object unavailable.
 		const int id = 1;
-		_ = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		var deleted = await ClientHelpers.DeleteAsync(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
 
 		// assert
+		using var db = GetDbContext();
+		var row = await db.Objects.AsNoTracking().SingleAsync(x => x.Id == id);
+		var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id);
+
 		using (Assert.EnterMultipleScope())
 		{
-			var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
-			var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
+			Assert.That(deleted, Is.True);
+			Assert.That(row.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
+			Assert.That(results, Is.Not.Null);
+			Assert.That(results!.Availability, Is.EqualTo(ObjectAvailability.Unavailable));
+		}
+	}
 
-			// assert
-			AssertDtoObjectDescriptorsAreEqual(results, descriptor);
+	[Test]
+	public async Task PostAsync_RejectsOpenLocoObjects()
+	{
+		var objDirectory = @"Q:\Games\Locomotion\Server\GameData\Objects";
+		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, new Logger());
+		var openLocoEntry = index.Objects.FirstOrDefault(x =>
+			x.ObjectSource == ObjectSource.OpenLoco
+			&& !string.IsNullOrEmpty(x.FileName)
+			&& File.Exists(Path.Combine(objDirectory, x.FileName)));
+
+		if (openLocoEntry == null)
+		{
+			Assert.Ignore("No OpenLoco object is available to attempt an upload with");
+		}
+
+		var bytes = File.ReadAllBytes(Path.Combine(objDirectory, openLocoEntry!.FileName!));
+		var dto = new DtoObjectPost(Convert.ToBase64String(bytes), XxHash3.HashToUInt64(bytes), ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
+
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", dto);
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+	}
+
+	[Test]
+	public async Task PostAsync_AcceptsVanillaObjectsAndStoresThemAsCustom()
+	{
+		var source = Directory.Exists(TestConstants.BaseSteamObjDataPath)
+			? Directory.GetFiles(TestConstants.BaseSteamObjDataPath, "*.dat").OrderBy(x => new FileInfo(x).Length).FirstOrDefault()
+			: null;
+
+		if (source == null)
+		{
+			Assert.Ignore("No vanilla DAT files are available to upload");
+		}
+
+		var bytes = File.ReadAllBytes(source!);
+		var dto = new DtoObjectPost(Convert.ToBase64String(bytes), XxHash3.HashToUInt64(bytes), ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
+
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", dto);
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
+
+		var descriptor = await response.Content.ReadFromJsonAsync<DtoObjectPostResponse>();
+		Assert.That(descriptor, Is.Not.Null);
+
+		using (Assert.EnterMultipleScope())
+		{
+			// A file that claims to be vanilla is accepted (the header cannot be rewritten) but is
+			// stored in the Custom folder as a custom object.
+			Assert.That(descriptor!.ObjectSource, Is.EqualTo(ObjectSource.Custom));
+
+			using var scope = testWebAppFactory.Services.CreateScope();
+			var sfm = scope.ServiceProvider.GetRequiredService<ServerFolderManager>();
+			Assert.That(sfm.ObjectIndex.TryFind((descriptor.DisplayName, descriptor.DatChecksum!.Value), out var uploadedEntry), Is.True);
+			Assert.That(uploadedEntry!.FileName, Does.StartWith(ServerFolderManager.CustomFolderName));
 		}
 	}
 
 	[Test]
 	public override async Task PostAsync()
 	{
-		var objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects"; // this is naughty for a test but it'll do
+		var objDirectory = @"Q:\Games\Locomotion\Server\GameData\Objects"; // this is naughty for a test but it'll do
 		var logger = new Logger();
 		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
 		_ = index.TryFind(7051740550869341430, out var entry); // randomly selected and hardcoded object
@@ -183,7 +251,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 
 		// act
 		var dtoUploadDat = new DtoObjectPost(base64Bytes, xxHash3, ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
-		var results = await ClientHelpers.PostAsync<DtoObjectPost, DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
+		var results = await ClientHelpers.PostAsync<DtoObjectPost, DtoObjectPostResponse>(HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, dtoUploadDat);
 
 		// assert
 		var expectedStringTable = new Dictionary<string, Dictionary<LanguageId, string>>()
@@ -228,9 +296,265 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			[], // tags
 			[], // object packs
 			[new DtoDatObjectEntry(1, "AZVOG15C", 3072098364, 7051740550869341430, 3)], // dat objects
-			new DtoStringTableDescriptor(expectedStringTable, 3));
+			new DtoStringTableDescriptor(expectedStringTable, 3),
+			null); // SubObject
 
 		AssertDtoObjectDescriptorsAreEqual(results, expected);
+
+		// The uploaded file must be indexed with a path relative to the Objects folder (not an absolute
+		// path), so that file reads and object-pack downloads resolve consistently.
+		using var scope = testWebAppFactory.Services.CreateScope();
+		var sfm = scope.ServiceProvider.GetRequiredService<ServerFolderManager>();
+		Assert.That(sfm.ObjectIndex.TryFind((entry.DisplayName, 3072098364), out var uploadedEntry), Is.True);
+		Assert.That(uploadedEntry, Is.Not.Null);
+		Assert.That(Path.IsPathRooted(uploadedEntry!.FileName), Is.False);
+		Assert.That(File.Exists(Path.Combine(sfm.ObjectsFolder, uploadedEntry.FileName!)), Is.True);
+	}
+
+	[Test]
+	public async Task PutAsync_WithSubObject_PersistsSubObjectChanges()
+	{
+		// arrange - an Airport object with an existing sub-object row
+		const ulong objectId = 100;
+		using (var seedDb = GetDbContext())
+		{
+			var airportObject = new TblObject
+			{
+				Id = objectId,
+				Name = "airport-object",
+				ObjectType = ObjectType.Airport,
+				ObjectSource = ObjectSource.Custom,
+				Availability = ObjectAvailability.Available,
+			};
+
+			_ = await seedDb.Objects.AddAsync(airportObject);
+			_ = await seedDb.SaveChangesAsync();
+
+			_ = await seedDb.ObjAirport.AddAsync(new TblObjectAirport { Parent = airportObject, MinX = 1 });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var request = new DtoObjectPostResponse(
+			Id: objectId,
+			Name: "airport-object",
+			DisplayName: "airport-object",
+			DatChecksum: null,
+			Description: "updated via sub-object",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Airport,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: new DtoObjectAirport { Id = 1, MinX = -5, RequiredClearEdges = 7 });
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var subObject = await verifyDb.ObjAirport.AsNoTracking().SingleAsync(x => x.Parent.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(subObject.MinX, Is.EqualTo((sbyte)-5), "the sub-object edit must be persisted, not discarded");
+			Assert.That(subObject.RequiredClearEdges, Is.EqualTo(7u));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithoutSubObject_RemovesTheExistingSubObject()
+	{
+		// arrange - PUT replaces the whole resource, so omitting the sub-object must remove it
+		const ulong objectId = 103;
+		using (var seedDb = GetDbContext())
+		{
+			var airportObject = new TblObject
+			{
+				Id = objectId,
+				Name = "airport-remove-object",
+				ObjectType = ObjectType.Airport,
+				ObjectSource = ObjectSource.Custom,
+				Availability = ObjectAvailability.Available,
+			};
+
+			_ = await seedDb.Objects.AddAsync(airportObject);
+			_ = await seedDb.SaveChangesAsync();
+
+			_ = await seedDb.ObjAirport.AddAsync(new TblObjectAirport { Parent = airportObject, MinX = 4 });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var request = new DtoObjectPostResponse(
+			Id: objectId,
+			Name: "airport-remove-object",
+			DisplayName: "airport-remove-object",
+			DatChecksum: null,
+			Description: "sub-object omitted",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Airport,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(await verifyDb.ObjAirport.AsNoTracking().AnyAsync(x => x.Parent.Id == objectId), Is.False);
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithStringTable_AddsUpdatesAndRemovesRows()
+	{
+		// arrange - an object with two existing string-table rows
+		const ulong objectId = 101;
+		using (var seedDb = GetDbContext())
+		{
+			_ = await seedDb.Objects.AddAsync(new TblObject
+			{
+				Id = objectId,
+				Name = "stringtable-object",
+				ObjectType = ObjectType.Vehicle,
+				ObjectSource = ObjectSource.Custom,
+				Availability = ObjectAvailability.Available,
+			});
+			_ = await seedDb.SaveChangesAsync();
+
+			await seedDb.StringTable.AddRangeAsync(
+				new TblStringTableRow { Name = "Name", Language = LanguageId.English_UK, Text = "old name", ObjectId = objectId },
+				new TblStringTableRow { Name = "Removed", Language = LanguageId.English_UK, Text = "delete me", ObjectId = objectId });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var stringTable = new DtoStringTableDescriptor(
+			new Dictionary<string, Dictionary<LanguageId, string>>
+			{
+				["Name"] = new() { [LanguageId.English_UK] = "new name" },
+				["Extra"] = new() { [LanguageId.French] = "bonjour" },
+			},
+			objectId);
+
+		var request = new DtoObjectPostResponse(
+			Id: objectId,
+			Name: "stringtable-object",
+			DisplayName: "stringtable-object",
+			DatChecksum: null,
+			Description: "string table edit",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Vehicle,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: stringTable,
+			SubObject: null);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var rows = await verifyDb.StringTable.AsNoTracking().Where(r => r.ObjectId == objectId).ToListAsync();
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(rows, Has.Count.EqualTo(2));
+			Assert.That(rows.Single(r => r.Name == "Name" && r.Language == LanguageId.English_UK).Text, Is.EqualTo("new name"));
+			Assert.That(rows.Single(r => r.Name == "Extra" && r.Language == LanguageId.French).Text, Is.EqualTo("bonjour"));
+			Assert.That(rows.Any(r => r.Name == "Removed"), Is.False, "rows the request omits must be removed");
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithEmptyStringTable_ClearsTheRows()
+	{
+		// arrange - PUT replaces the whole resource, so omitting every row must clear the table (clients
+		// are expected to send the rows they want to keep).
+		const ulong objectId = 102;
+		using (var seedDb = GetDbContext())
+		{
+			_ = await seedDb.Objects.AddAsync(new TblObject
+			{
+				Id = objectId,
+				Name = "stringtable-preserve-object",
+				ObjectType = ObjectType.Vehicle,
+				ObjectSource = ObjectSource.Custom,
+				Availability = ObjectAvailability.Available,
+			});
+			_ = await seedDb.SaveChangesAsync();
+
+			_ = await seedDb.StringTable.AddAsync(
+				new TblStringTableRow { Name = "Name", Language = LanguageId.English_UK, Text = "keep me", ObjectId = objectId });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var request = new DtoObjectPostResponse(
+			Id: objectId,
+			Name: "stringtable-preserve-object",
+			DisplayName: "stringtable-preserve-object",
+			DatChecksum: null,
+			Description: "metadata only edit",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Vehicle,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null);
+
+		// act
+		_ = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var rows = await verifyDb.StringTable.AsNoTracking().Where(r => r.ObjectId == objectId).ToListAsync();
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(rows, Is.Empty, "an empty string table means the client sent no rows, so all rows are removed");
+		}
 	}
 
 	[Test]
@@ -261,12 +585,13 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Tags: [],
 			ObjectPacks: [],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], id)
+			StringTable: new DtoStringTableDescriptor([], id),
+			SubObject: null
 		);
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, id, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, id, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -312,12 +637,13 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Tags: [],
 			ObjectPacks: [],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], objectId)
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null
 		);
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -366,12 +692,13 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Tags: [],
 			ObjectPacks: [],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], objectId)
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null
 		);
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -421,12 +748,13 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			],
 			ObjectPacks: [],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], objectId)
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null
 		);
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -476,12 +804,13 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 				new DtoItemPackEntry(pack2.Id, pack2.Name, pack2.Description, null, null, DateOnly.UtcToday, null)
 			],
 			DatObjects: [],
-			StringTable: new DtoStringTableDescriptor([], objectId)
+			StringTable: new DtoStringTableDescriptor([], objectId),
+			SubObject: null
 		);
 
 		// act
 		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
-			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
 		using (Assert.EnterMultipleScope())
@@ -491,6 +820,338 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Assert.That(result.ObjectPacks.Count, Is.EqualTo(2));
 			Assert.That(result.ObjectPacks.Any(p => p.Id == pack1.Id), Is.True);
 			Assert.That(result.ObjectPacks.Any(p => p.Id == pack2.Id), Is.True);
+		}
+	}
+
+	[Test]
+	public async Task GetObjectImageAsync_ReturnsForbidden_ForRestrictedObjectSource()
+	{
+		// arrange - a GoG-sourced object cannot expose its images
+		using (var db = GetDbContext())
+		{
+			_ = await db.Objects.AddAsync(new TblObject
+			{
+				Id = 3,
+				Name = "restricted-name-3",
+				ObjectType = ObjectType.Vehicle,
+				ObjectSource = ObjectSource.LocomotionGoG,
+				Availability = ObjectAvailability.Available,
+			});
+			_ = await db.SaveChangesAsync();
+		}
+
+		// act
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/3{Definitions.Web.Routes.Images}/0");
+
+		// assert - Forbid proves the generic /images/{imageId} route reached the handler
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+	}
+
+	[Test]
+	public async Task GetObjectImageAsync_ReturnsNotFound_WhenImageIndexDoesNotExist()
+	{
+		// act - object 1 exists but has no DatObjects, so it has no images
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/1{Definitions.Web.Routes.Images}/0");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
+
+	[Test]
+	public async Task GetObjectImageAsync_ReturnsNotFound_WhenObjectDoesNotExist()
+	{
+		// act
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/9999{Definitions.Web.Routes.Images}/0");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
+
+	[Test]
+	public async Task GetObjectImageAsync_ReturnsNotFound_ForNonNumericImageId()
+	{
+		// act - the {imageId:int} route constraint rejects non-numeric ids
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/1{Definitions.Web.Routes.Images}/not-a-number");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
+
+	[Test]
+	public async Task GetObjectImageMetadataAsync_ReturnsNotFound_WhenObjectDoesNotExist()
+	{
+		// act
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/9999{Definitions.Web.Routes.Images}{Definitions.Web.Routes.ImageMetadata}");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
+
+	[Test]
+	public async Task GetObjectImageMetadataAsync_ReturnsForbidden_ForRestrictedObjectSource()
+	{
+		// arrange - a GoG-sourced object cannot expose its images (or their metadata)
+		using (var db = GetDbContext())
+		{
+			_ = await db.Objects.AddAsync(new TblObject
+			{
+				Id = 4,
+				Name = "restricted-name-4",
+				ObjectType = ObjectType.Vehicle,
+				ObjectSource = ObjectSource.LocomotionGoG,
+				Availability = ObjectAvailability.Available,
+			});
+			_ = await db.SaveChangesAsync();
+		}
+
+		// act
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/4{Definitions.Web.Routes.Images}{Definitions.Web.Routes.ImageMetadata}");
+
+		// assert
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+	}
+
+	/// <summary>
+	/// Builds a PUT body. Every <c>Objects</c> column and the sub-object are the request's business;
+	/// which DAT file(s) an object is built from is not, so <c>DatObjects</c> is empty here and the server
+	/// ignores it.
+	/// </summary>
+	static DtoObjectPostResponse PutRequest(
+		ulong id,
+		string name,
+		ObjectType objectType,
+		ObjectSource objectSource = ObjectSource.Custom,
+		VehicleType? vehicleType = null,
+		IDtoSubObject? subObject = null,
+		string? description = null)
+		=> new(
+			Id: id,
+			Name: name,
+			DisplayName: name,
+			DatChecksum: null,
+			Description: description,
+			ObjectSource: objectSource,
+			ObjectType: objectType,
+			VehicleType: vehicleType,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], id),
+			SubObject: subObject);
+
+	async Task SeedObjectAsync(ulong id, string name, ObjectType objectType = ObjectType.Vehicle, ObjectSource objectSource = ObjectSource.Custom)
+	{
+		using var seedDb = GetDbContext();
+		_ = await seedDb.Objects.AddAsync(new TblObject
+		{
+			Id = id,
+			Name = name,
+			ObjectType = objectType,
+			ObjectSource = objectSource,
+			Availability = ObjectAvailability.Available,
+		});
+		_ = await seedDb.SaveChangesAsync();
+	}
+
+	string ObjectRoute(ulong id)
+		=> $"{Definitions.Web.Routes.Prefix}{BaseRoute}/{id}";
+
+	[Test]
+	public async Task PutAsync_AppliesEveryChangeableHeaderRowColumn()
+	{
+		// arrange - PUT replaces the whole Objects row, not just the curated metadata (ObjectSource is the
+		// one exception, see PutAsync_DoesNotChangeTheObjectSource)
+		const ulong objectId = 110;
+		await SeedObjectAsync(objectId, "before-rename", ObjectType.Airport);
+
+		var request = PutRequest(objectId, "after-rename", ObjectType.Vehicle, vehicleType: VehicleType.Train, description: "header rewrite");
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(row.Name, Is.EqualTo("after-rename"), "Name must be applied");
+			Assert.That(row.ObjectType, Is.EqualTo(ObjectType.Vehicle), "ObjectType must be applied");
+			Assert.That(row.ObjectSource, Is.EqualTo(ObjectSource.Custom), "ObjectSource stays as the server set it");
+			Assert.That(row.VehicleType, Is.EqualTo(VehicleType.Train), "VehicleType must be applied");
+			Assert.That(row.Description, Is.EqualTo("header rewrite"));
+			Assert.That(result!.Name, Is.EqualTo("after-rename"));
+			Assert.That(result.VehicleType, Is.EqualTo(VehicleType.Train));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_ChangingObjectType_MovesTheSubObjectToTheNewTypeTable()
+	{
+		// arrange - an Airport object with a sub-object row of its own type
+		const ulong objectId = 111;
+		await SeedObjectAsync(objectId, "type-change-object", ObjectType.Airport);
+
+		using (var seedDb = GetDbContext())
+		{
+			var parent = await seedDb.Objects.SingleAsync(x => x.Id == objectId);
+			_ = await seedDb.ObjAirport.AddAsync(new TblObjectAirport { Parent = parent, MinX = 3 });
+			_ = await seedDb.SaveChangesAsync();
+		}
+
+		var request = PutRequest(objectId, "type-change-object", ObjectType.Vehicle,
+			subObject: new DtoObjectVehicle { Id = 6, Type = VehicleType.Bus, NumCarComponents = 4 });
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
+			HttpClient!, Definitions.Web.Routes.Prefix, BaseRoute, objectId, request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var vehicle = await verifyDb.ObjVehicle.AsNoTracking().SingleAsync(x => x.Parent.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null, "the type change must be accepted");
+			Assert.That(await verifyDb.ObjAirport.AsNoTracking().AnyAsync(x => x.Parent.Id == objectId), Is.False, "the previous type's row must not be left behind");
+			Assert.That(vehicle.NumCarComponents, Is.EqualTo((byte)4));
+			Assert.That(result!.SubObject, Is.TypeOf<DtoObjectVehicle>());
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithAnotherTypesSubObject_ReturnsBadRequest()
+	{
+		// arrange - writing vehicle data into an airport object would leave an orphan row behind
+		const ulong objectId = 112;
+		await SeedObjectAsync(objectId, "mismatched-sub-object", ObjectType.Airport);
+
+		var request = PutRequest(objectId, "renamed-by-rejected-request", ObjectType.Airport,
+			description: "must not be applied",
+			subObject: new DtoObjectVehicle { Id = 7, Type = VehicleType.Train });
+
+		// act
+		using var response = await HttpClient!.PutAsJsonAsync(ObjectRoute(objectId), request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+			Assert.That(await verifyDb.ObjVehicle.AsNoTracking().AnyAsync(x => x.Parent.Id == objectId), Is.False);
+			Assert.That(row.Name, Is.EqualTo("mismatched-sub-object"), "a rejected request must not half-apply");
+			Assert.That(row.Description, Is.Null, "a rejected request must not half-apply");
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithTakenName_ReturnsConflict()
+	{
+		// arrange - Objects.Name is unique
+		const ulong objectId = 113;
+		const ulong takenByObjectId = 114;
+		await SeedObjectAsync(objectId, "first-object");
+		await SeedObjectAsync(takenByObjectId, "second-object");
+
+		var request = PutRequest(objectId, "second-object", ObjectType.Vehicle);
+
+		// act
+		using var response = await HttpClient!.PutAsJsonAsync(ObjectRoute(objectId), request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+			Assert.That(row.Name, Is.EqualTo("first-object"), "the stored name must survive a rejected rename");
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_WithoutName_ReturnsBadRequest()
+	{
+		const ulong objectId = 115;
+		await SeedObjectAsync(objectId, "name-less-request");
+
+		var request = PutRequest(objectId, "   ", ObjectType.Vehicle);
+
+		// act
+		using var response = await HttpClient!.PutAsJsonAsync(ObjectRoute(objectId), request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+			Assert.That(row.Name, Is.EqualTo("name-less-request"));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_VanillaObject_ReturnsForbidden()
+	{
+		// arrange - vanilla (original Locomotion) objects can never be edited by anyone
+		const ulong objectId = 116;
+		await SeedObjectAsync(objectId, "vanilla-object", ObjectType.Vehicle, ObjectSource.LocomotionSteam);
+
+		var request = PutRequest(objectId, "renamed-vanilla", ObjectType.Vehicle, ObjectSource.Custom);
+
+		// act
+		using var response = await HttpClient!.PutAsJsonAsync(ObjectRoute(objectId), request);
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var row = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == objectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+			Assert.That(row.Name, Is.EqualTo("vanilla-object"));
+			Assert.That(row.ObjectSource, Is.EqualTo(ObjectSource.LocomotionSteam));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_DoesNotChangeTheObjectSource()
+	{
+		// arrange - the source says where an object came from, which only the server knows: uploads always
+		// store Custom, and Steam/GoG/OpenLoco objects are placed in the server folders by hand
+		const ulong openLocoObjectId = 117;
+		const ulong customObjectId = 118;
+		await SeedObjectAsync(openLocoObjectId, "openloco-object", ObjectType.Vehicle, ObjectSource.OpenLoco);
+		await SeedObjectAsync(customObjectId, "custom-object", ObjectType.Vehicle, ObjectSource.Custom);
+
+		// act - a request claiming a different source, in both directions
+		using var demotedToCustom = await HttpClient!.PutAsJsonAsync(ObjectRoute(openLocoObjectId),
+			PutRequest(openLocoObjectId, "openloco-object", ObjectType.Vehicle, ObjectSource.Custom));
+		using var promotedToOpenLoco = await HttpClient!.PutAsJsonAsync(ObjectRoute(customObjectId),
+			PutRequest(customObjectId, "custom-object", ObjectType.Vehicle, ObjectSource.OpenLoco));
+
+		// assert
+		using var verifyDb = GetDbContext();
+		var demotedRow = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == openLocoObjectId);
+		var promotedRow = await verifyDb.Objects.AsNoTracking().SingleAsync(x => x.Id == customObjectId);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(demotedToCustom.StatusCode, Is.EqualTo(HttpStatusCode.OK), "the request is applied, only the source is ignored");
+			Assert.That(promotedToOpenLoco.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+			Assert.That(demotedRow.ObjectSource, Is.EqualTo(ObjectSource.OpenLoco), "an OpenLoco object cannot be demoted to Custom");
+			Assert.That(promotedRow.ObjectSource, Is.EqualTo(ObjectSource.Custom), "a custom object cannot be promoted to OpenLoco");
 		}
 	}
 }

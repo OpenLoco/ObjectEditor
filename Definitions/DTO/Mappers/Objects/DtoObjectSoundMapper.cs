@@ -8,6 +8,7 @@ public static class DtoObjectSoundMapper
 	{
 		ShouldLoop = tblobjectsound.ShouldLoop,
 		Volume = tblobjectsound.Volume,
+		SoundObjectData = tblobjectsound.SoundObjectData,
 		Id = tblobjectsound.Id,
 	};
 
@@ -16,6 +17,7 @@ public static class DtoObjectSoundMapper
 		Parent = parent,
 		ShouldLoop = model.ShouldLoop,
 		Volume = model.Volume,
+		SoundObjectData = model.SoundObjectData,
 		Id = model.Id,
 	};
 

@@ -27,12 +27,7 @@ public static class RouteHelpers
 			return false;
 		}
 
-		var rootFullPath = Path.GetFullPath(rootPath);
-		if (!rootFullPath.EndsWith(Path.DirectorySeparatorChar))
-		{
-			rootFullPath += Path.DirectorySeparatorChar;
-		}
-
+		var rootFullPath = GetRootFullPath(rootPath);
 		var combinedPath = Path.Combine(rootFullPath, relativePath);
 		var candidateFullPath = Path.GetFullPath(combinedPath);
 		if (!candidateFullPath.StartsWith(rootFullPath, PathComparison))
@@ -43,6 +38,56 @@ public static class RouteHelpers
 		fullPath = candidateFullPath;
 		normalizedRelativePath = string.Join('/', segments);
 		return true;
+	}
+
+	/// <summary>
+	/// Resolves <paramref name="path"/> against <paramref name="rootPath"/>, accepting both relative
+	/// paths (resolved underneath the root) and absolute paths (which must already point inside the
+	/// root). The object index stores relative paths for scanned files but absolute paths for
+	/// uploaded files, so consumers that read index entries need to handle both.
+	/// </summary>
+	public static bool TryGetSafePathUnderRoot(string rootPath, string? path, out string fullPath, out string normalizedRelativePath)
+	{
+		if (string.IsNullOrWhiteSpace(path))
+		{
+			fullPath = string.Empty;
+			normalizedRelativePath = string.Empty;
+			return false;
+		}
+
+		if (!Path.IsPathRooted(path))
+		{
+			return TryGetSafeRelativePathUnderRoot(rootPath, path, out fullPath, out normalizedRelativePath);
+		}
+
+		fullPath = string.Empty;
+		normalizedRelativePath = string.Empty;
+
+		var rootFullPath = GetRootFullPath(rootPath);
+		var candidateFullPath = Path.GetFullPath(path);
+		if (!candidateFullPath.StartsWith(rootFullPath, PathComparison))
+		{
+			return false;
+		}
+
+		var relativePath = Path.GetRelativePath(rootFullPath, candidateFullPath);
+		var segments = relativePath.Split(PathSeparators, StringSplitOptions.RemoveEmptyEntries);
+		if (segments.Length == 0 || segments.Any(x => x is "." or ".."))
+		{
+			return false;
+		}
+
+		fullPath = candidateFullPath;
+		normalizedRelativePath = string.Join('/', segments);
+		return true;
+	}
+
+	static string GetRootFullPath(string rootPath)
+	{
+		var rootFullPath = Path.GetFullPath(rootPath);
+		return rootFullPath.EndsWith(Path.DirectorySeparatorChar)
+			? rootFullPath
+			: rootFullPath + Path.DirectorySeparatorChar;
 	}
 
 	public static string MakeSafeHttpDownloadFileName(string? baseName, string extension, string fallbackBaseName)

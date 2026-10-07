@@ -2,7 +2,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Definitions.Database;
 
-[Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false], IsUnique = true)]
+// A binary-different file can carry the same S5 name and checksum (e.g. a re-packed/hacked object),
+// so the (DatName, DatChecksum) pair is an index, not a unique key. xxHash3 over the whole file is the
+// authoritative identity: two files with the same hash are the same file and only the oldest is kept.
+[Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false])]
 [Index(nameof(xxHash3), IsUnique = true)]
 public class TblDatObject : DbIdObject
 {

@@ -40,7 +40,7 @@ public class ViewModelTests
 		{
 			new FileSystemItem("Pack", null, 10, FileLocation: FileLocation.Online) { OnlineApiEndpointGroup = OnlineApiEndpointGroup.ObjectPacks },
 			new FileSystemItem("Scenario", null, 11, FileLocation: FileLocation.Online) { OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios },
-			new FileSystemItem("SC5 Pack", null, 12, FileLocation: FileLocation.Online) { OnlineApiEndpointGroup = OnlineApiEndpointGroup.SC5FilePacks },
+			new FileSystemItem("SC5 Pack", null, 12, FileLocation: FileLocation.Online) { OnlineApiEndpointGroup = OnlineApiEndpointGroup.ScenarioPacks },
 			new FileSystemItem("Tag", null, 13, FileLocation: FileLocation.Online) { OnlineApiEndpointGroup = OnlineApiEndpointGroup.Tags },
 			new FileSystemItem("Author", null, 14, FileLocation: FileLocation.Online) { OnlineApiEndpointGroup = OnlineApiEndpointGroup.Authors },
 			new FileSystemItem("Licence", null, 15, FileLocation: FileLocation.Online) { OnlineApiEndpointGroup = OnlineApiEndpointGroup.Licences },

@@ -11,6 +11,10 @@ public static class DtoObjectSteamMapper
 		SpriteHeightNegative = tblobjectsteam.SpriteHeightNegative,
 		SpriteHeightPositive = tblobjectsteam.SpriteHeightPositive,
 		Flags = tblobjectsteam.Flags,
+		ImageOffset = tblobjectsteam.ImageOffset,
+		FrameInfoType0 = tblobjectsteam.FrameInfoType0,
+		FrameInfoType1 = tblobjectsteam.FrameInfoType1,
+		SoundEffects = tblobjectsteam.SoundEffects,
 		Id = tblobjectsteam.Id,
 	};
 
@@ -22,6 +26,10 @@ public static class DtoObjectSteamMapper
 		SpriteHeightNegative = model.SpriteHeightNegative,
 		SpriteHeightPositive = model.SpriteHeightPositive,
 		Flags = model.Flags,
+		ImageOffset = model.ImageOffset,
+		FrameInfoType0 = model.FrameInfoType0,
+		FrameInfoType1 = model.FrameInfoType1,
+		SoundEffects = model.SoundEffects,
 		Id = model.Id,
 	};
 

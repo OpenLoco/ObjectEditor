@@ -384,7 +384,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 					Model.DatInfo.S5Header.Name,
 					Model.DatInfo.S5Header.Checksum),
 				ObjectType: Model.DatInfo.S5Header.ObjectType.Convert(),
-				VehicleType: null,
+				VehicleType: metadataModel.VehicleType,
 				Availability: metadataModel.Availability,
 				CreatedDate: metadataModel.CreatedDate.HasValue
 					? DateOnly.FromDateTime(metadataModel.CreatedDate.Value.UtcDateTime)
@@ -398,7 +398,8 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				Tags: metadataModel.Tags,
 				ObjectPacks: metadataModel.ObjectPacks,
 				DatObjects: metadataModel.DatObjects,
-				StringTable: new DtoStringTableDescriptor([], objectId)
+				StringTable: new DtoStringTableDescriptor(Model.LocoObject.StringTable.Table, objectId),
+				SubObject: metadataModel.SubObject
 			);
 
 			var result = await EditorContext.ObjectServiceClient.UpdateObjectAsync(objectId, dtoRequest);

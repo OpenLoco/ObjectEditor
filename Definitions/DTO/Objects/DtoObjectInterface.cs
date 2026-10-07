@@ -21,7 +21,7 @@ public class DtoObjectInterface : IDtoSubObject
 	public Colour TopToolbarSecondaryColour { get; set; }
 	public Colour TopToolbarTertiaryColour { get; set; }
 	public Colour TopToolbarQuaternaryColour { get; set; }
-	public Colour PlayerInfoToolbarColour { get; set; }
+	public Colour CompanyInfoToolbarColour { get; set; }
 	public Colour TimeToolbarColour { get; set; }
 	public UniqueObjectId Id { get; set; }
 }

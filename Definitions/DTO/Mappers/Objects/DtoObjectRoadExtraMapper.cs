@@ -10,6 +10,7 @@ public static class DtoObjectRoadExtraMapper
 		CostIndex = tblobjectroadextra.CostIndex,
 		BuildCostFactor = tblobjectroadextra.BuildCostFactor,
 		SellCostFactor = tblobjectroadextra.SellCostFactor,
+		RoadPieces = tblobjectroadextra.RoadPieces,
 		Id = tblobjectroadextra.Id,
 	};
 
@@ -20,6 +21,7 @@ public static class DtoObjectRoadExtraMapper
 		CostIndex = model.CostIndex,
 		BuildCostFactor = model.BuildCostFactor,
 		SellCostFactor = model.SellCostFactor,
+		RoadPieces = model.RoadPieces,
 		Id = model.Id,
 	};
 

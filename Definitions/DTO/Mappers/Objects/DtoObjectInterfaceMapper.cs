@@ -22,7 +22,7 @@ public static class DtoObjectInterfaceMapper
 		TopToolbarSecondaryColour = tblobjectinterface.TopToolbarSecondaryColour,
 		TopToolbarTertiaryColour = tblobjectinterface.TopToolbarTertiaryColour,
 		TopToolbarQuaternaryColour = tblobjectinterface.TopToolbarQuaternaryColour,
-		PlayerInfoToolbarColour = tblobjectinterface.CompanyInfoToolbarColour,
+		CompanyInfoToolbarColour = tblobjectinterface.CompanyInfoToolbarColour,
 		TimeToolbarColour = tblobjectinterface.TimeToolbarColour,
 		Id = tblobjectinterface.Id,
 	};
@@ -46,7 +46,7 @@ public static class DtoObjectInterfaceMapper
 		TopToolbarSecondaryColour = model.TopToolbarSecondaryColour,
 		TopToolbarTertiaryColour = model.TopToolbarTertiaryColour,
 		TopToolbarQuaternaryColour = model.TopToolbarQuaternaryColour,
-		CompanyInfoToolbarColour = model.PlayerInfoToolbarColour,
+		CompanyInfoToolbarColour = model.CompanyInfoToolbarColour,
 		TimeToolbarColour = model.TimeToolbarColour,
 		Id = model.Id,
 	};

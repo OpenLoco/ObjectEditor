@@ -25,7 +25,7 @@
 				<label for="search">Search</label>
 				<input type="text" id="search" name="search" placeholder="Search by username or email…" value="@Model.Search" />
 			</div>
-			<div class="filter-group">
+			<div class="filter-group filter-actions">
 				<button type="submit" class="button button-primary">Filter</button>
 				<a href="@Url.Page("/Manage/Users/Index")" class="button button-secondary">Clear</a>
 			</div>
@@ -65,7 +65,6 @@
 		}
 	</div>
 
-	<a asp-page="/Manage/Index" class="button button-secondary">Back to Dashboard</a>
+	<a asp-page="/Index" class="button button-secondary">Back to Dashboard</a>
 </div>
 
-<link rel="stylesheet" href="~/css/manage.css" asp-append-version="true" />

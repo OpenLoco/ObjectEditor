@@ -127,9 +127,6 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 			new() { Type = typeof(FileSystemItem), DisplayName = "Index data", IconName = nameof(FileSystemItem) },
 			new() { Type = typeof (ObjectMetadata), DisplayName = "Metadata", IconName = nameof(ObjectMetadata) }
 		};
-
-		//Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
-		//Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
 	}
 }
 
@@ -171,7 +168,51 @@ public class DesignerOnlineBrowseResultsViewModel : FolderTreeViewModel
 				new FileSystemItem("Highland Corridor", null, default, null, null, FileLocation.Online, ObjectType: ObjectType.ScenarioText),
 				new FileSystemItem("Three Seas Express", null, default, null, null, FileLocation.Online, ObjectType: ObjectType.ScenarioText)
 			],
-			OnlineApiEndpointGroup.SC5FilePacks));
+			OnlineApiEndpointGroup.ScenarioPacks));
+
+		CurrentOnlineBrowseResults.Add(new OnlineGameFileBrowseResult(
+			default,
+			"Main Theme (Remix)",
+			"A re-orchestrated take on the classic OpenLoco main menu theme.",
+			new DateOnly(2025, 9, 21),
+			ObjectSource.Custom,
+			new DtoLicenceEntry(default, "CC BY 4.0", "Use freely with attribution."),
+			2,
+			3,
+			OnlineApiEndpointGroup.Music));
+
+		CurrentOnlineBrowseResults.Add(new OnlineGameFileBrowseResult(
+			default,
+			"Steam Whistle Pack",
+			"Additional whistle sound effects for steam locomotives.",
+			new DateOnly(2025, 8, 3),
+			ObjectSource.OpenLoco,
+			new DtoLicenceEntry(default, "GPL-3.0", "Copyleft, share alike."),
+			1,
+			2,
+			OnlineApiEndpointGroup.SoundEffects));
+
+		CurrentOnlineBrowseResults.Add(new OnlineGameFileBrowseResult(
+			default,
+			"Building a Station",
+			"An interactive tutorial walking new players through constructing their first station.",
+			new DateOnly(2025, 6, 17),
+			ObjectSource.Custom,
+			null,
+			1,
+			0,
+			OnlineApiEndpointGroup.Tutorials));
+
+		CurrentOnlineBrowseResults.Add(new OnlineGameFileBrowseResult(
+			default,
+			"Interface Icons",
+			"High-resolution replacement icons for the in-game toolbar.",
+			new DateOnly(2025, 5, 29),
+			ObjectSource.Custom,
+			new DtoLicenceEntry(default, "CC0 1.0", "Public domain dedication."),
+			1,
+			1,
+			OnlineApiEndpointGroup.Graphics));
 
 		CurrentOnlineBrowseResults.Add(new OnlineLicenceBrowseResult(
 			default,
@@ -236,7 +277,11 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		ObjectOnlineBrowseTarget,
 		new(OnlineApiEndpointGroup.ObjectPacks, "Object packs", "Object packs", Client.ObjectPacksEndpointGroup),
 		new(OnlineApiEndpointGroup.Scenarios, "Scenarios", "Scenarios", Client.ScenariosEndpointGroup),
-		new(OnlineApiEndpointGroup.SC5FilePacks, "SC5 file packs", "SC5 file packs", Client.SC5FilePacksEndpointGroup),
+		new(OnlineApiEndpointGroup.ScenarioPacks, "Scenario packs", "Scenario packs", Client.ScenarioPacksEndpointGroup),
+		new(OnlineApiEndpointGroup.Music, "Music", "Music tracks", Client.MusicEndpointGroup),
+		new(OnlineApiEndpointGroup.SoundEffects, "Sound effects", "Sound effects", Client.SoundEffectsEndpointGroup),
+		new(OnlineApiEndpointGroup.Tutorials, "Tutorials", "Tutorials", Client.TutorialsEndpointGroup),
+		new(OnlineApiEndpointGroup.Graphics, "Graphics", "Graphics", Client.GraphicsEndpointGroup),
 		new(OnlineApiEndpointGroup.Tags, "Tags", "Tags", Client.TagsEndpointGroup),
 		new(OnlineApiEndpointGroup.Authors, "Authors", "Authors", Client.AuthorsEndpointGroup),
 		new(OnlineApiEndpointGroup.Licences, "Licences", "Licences", Client.LicencesEndpointGroup),
@@ -707,7 +752,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		var items = selectedGroup switch
 		{
 			OnlineApiEndpointGroup.Objects => await GetOnlineObjectDirectoryItemsAsync(useExistingIndex),
-			OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+			OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioListEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
 				.OrderBy(x => x.Name)
 				.Select(CreateOnlineScenarioFileSystemItem)],
 			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
@@ -733,7 +778,19 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		IReadOnlyList<object> items = selectedGroup switch
 		{
 			OnlineApiEndpointGroup.ObjectPacks => [.. (await GetOnlineObjectPackBrowseResultsAsync()).Cast<object>()],
-			OnlineApiEndpointGroup.SC5FilePacks => [.. (await GetOnlineSC5FilePackBrowseResultsAsync()).Cast<object>()],
+			OnlineApiEndpointGroup.ScenarioPacks => [.. (await GetOnlineScenarioPackBrowseResultsAsync()).Cast<object>()],
+			OnlineApiEndpointGroup.Music => [.. (await EditorContext.ObjectServiceClient.GetMusicListEntriesAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineGameFileBrowseResult(x.Id, x.Name, x.Description, x.UploadedDate, x.ObjectSource, x.Licence, x.AuthorCount, x.TagCount, OnlineApiEndpointGroup.Music))],
+			OnlineApiEndpointGroup.SoundEffects => [.. (await EditorContext.ObjectServiceClient.GetSoundEffectListEntriesAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineGameFileBrowseResult(x.Id, x.Name, x.Description, x.UploadedDate, x.ObjectSource, x.Licence, x.AuthorCount, x.TagCount, OnlineApiEndpointGroup.SoundEffects))],
+			OnlineApiEndpointGroup.Tutorials => [.. (await EditorContext.ObjectServiceClient.GetTutorialListEntriesAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineGameFileBrowseResult(x.Id, x.Name, x.Description, x.UploadedDate, x.ObjectSource, x.Licence, x.AuthorCount, x.TagCount, OnlineApiEndpointGroup.Tutorials))],
+			OnlineApiEndpointGroup.Graphics => [.. (await EditorContext.ObjectServiceClient.GetGraphicsListEntriesAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineGameFileBrowseResult(x.Id, x.Name, x.Description, x.UploadedDate, x.ObjectSource, x.Licence, x.AuthorCount, x.TagCount, OnlineApiEndpointGroup.Graphics))],
 			OnlineApiEndpointGroup.Tags => [.. (await EditorContext.ObjectServiceClient.GetTagsAsync())
 				.OrderBy(x => x.Name)
 				.Select(x => (object)new OnlineTagBrowseResult(x.Id, x.Name))],
@@ -797,22 +854,22 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 				descriptor => descriptor.Items.OrderBy(x => x.DisplayName).Select(CreateOnlineObjectFileSystemItem))))];
 	}
 
-	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetOnlineSC5FilePackBrowseResultsAsync()
+	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetOnlineScenarioPackBrowseResultsAsync()
 	{
 		if (EditorContext.ObjectServiceClient == null)
 		{
 			return [];
 		}
 
-		var packs = (await EditorContext.ObjectServiceClient.GetSC5FilePacksAsync())
+		var packs = (await EditorContext.ObjectServiceClient.GetScenarioPacksAsync())
 			.OrderBy(x => x.Name)
 			.ToList();
 
 		return [.. await Task.WhenAll(packs.Select(async pack =>
 			CreateOnlineItemPackBrowseResult(
 				pack,
-				await EditorContext.ObjectServiceClient.GetSC5FilePackAsync(pack.Id),
-				OnlineApiEndpointGroup.SC5FilePacks,
+				await EditorContext.ObjectServiceClient.GetScenarioPackAsync(pack.Id),
+				OnlineApiEndpointGroup.ScenarioPacks,
 				descriptor => descriptor.Items.OrderBy(x => x.Name).Select(CreateOnlineScenarioFileSystemItem))))];
 	}
 
@@ -854,6 +911,12 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	}
 
 	static FileSystemItem CreateOnlineScenarioFileSystemItem(DtoScenarioEntry item)
+		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
+		{
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
+		};
+
+	static FileSystemItem CreateOnlineScenarioFileSystemItem(DtoScenarioListEntry item)
 		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
 		{
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
@@ -927,7 +990,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		var fileBytes = pack.Group switch
 		{
 			OnlineApiEndpointGroup.ObjectPacks => await EditorContext.ObjectServiceClient.GetObjectPackFileAsync(pack.Id),
-			OnlineApiEndpointGroup.SC5FilePacks => await EditorContext.ObjectServiceClient.GetSC5FilePackFileAsync(pack.Id),
+			OnlineApiEndpointGroup.ScenarioPacks => await EditorContext.ObjectServiceClient.GetScenarioPackFileAsync(pack.Id),
 			_ => null,
 		};
 

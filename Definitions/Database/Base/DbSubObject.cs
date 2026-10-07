@@ -1,3 +1,4 @@
+using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
@@ -36,6 +37,9 @@ using Definitions.ObjectModels.Objects.Wall;
 using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
+using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace Definitions.Database;
 
@@ -44,32 +48,99 @@ public interface IConvertibleToTable<TTable, TDat>
 	static abstract TTable FromObject(TblObject tblObj, TDat datObo);
 }
 
+/// <summary>
+/// Marker interface for the per-object-type DTOs that carry every object property. Implementations are
+/// declared to System.Text.Json as polymorphic derived types so that a single sub-object property can
+/// round-trip the concrete object data (with a <c>$type</c> discriminator) over the API.
+/// </summary>
+[JsonPolymorphic]
+[JsonDerivedType(typeof(DtoObjectAirport), "airport")]
+[JsonDerivedType(typeof(DtoObjectBridge), "bridge")]
+[JsonDerivedType(typeof(DtoObjectBuilding), "building")]
+[JsonDerivedType(typeof(DtoObjectCargo), "cargo")]
+[JsonDerivedType(typeof(DtoObjectCliffEdge), "cliffEdge")]
+[JsonDerivedType(typeof(DtoObjectClimate), "climate")]
+[JsonDerivedType(typeof(DtoObjectCompetitor), "competitor")]
+[JsonDerivedType(typeof(DtoObjectCurrency), "currency")]
+[JsonDerivedType(typeof(DtoObjectDock), "dock")]
+[JsonDerivedType(typeof(DtoObjectHillShapes), "hillShapes")]
+[JsonDerivedType(typeof(DtoObjectIndustry), "industry")]
+[JsonDerivedType(typeof(DtoObjectInterface), "interface")]
+[JsonDerivedType(typeof(DtoObjectLand), "land")]
+[JsonDerivedType(typeof(DtoObjectLevelCrossing), "levelCrossing")]
+[JsonDerivedType(typeof(DtoObjectRegion), "region")]
+[JsonDerivedType(typeof(DtoObjectRoad), "road")]
+[JsonDerivedType(typeof(DtoObjectRoadExtra), "roadExtra")]
+[JsonDerivedType(typeof(DtoObjectRoadStation), "roadStation")]
+[JsonDerivedType(typeof(DtoObjectScaffolding), "scaffolding")]
+[JsonDerivedType(typeof(DtoObjectScenarioText), "scenarioText")]
+[JsonDerivedType(typeof(DtoObjectSnow), "snow")]
+[JsonDerivedType(typeof(DtoObjectSound), "sound")]
+[JsonDerivedType(typeof(DtoObjectSteam), "steam")]
+[JsonDerivedType(typeof(DtoObjectStreetLight), "streetLight")]
+[JsonDerivedType(typeof(DtoObjectTownNames), "townNames")]
+[JsonDerivedType(typeof(DtoObjectTrack), "track")]
+[JsonDerivedType(typeof(DtoObjectTrackExtra), "trackExtra")]
+[JsonDerivedType(typeof(DtoObjectTrackSignal), "trackSignal")]
+[JsonDerivedType(typeof(DtoObjectTrackStation), "trackStation")]
+[JsonDerivedType(typeof(DtoObjectTree), "tree")]
+[JsonDerivedType(typeof(DtoObjectTunnel), "tunnel")]
+[JsonDerivedType(typeof(DtoObjectVehicle), "vehicle")]
+[JsonDerivedType(typeof(DtoObjectWall), "wall")]
+[JsonDerivedType(typeof(DtoObjectWater), "water")]
 public interface IDtoSubObject : IHasId
 {
-	//IDbSubObject ToTbl();
 }
 
 public interface IDbSubObject : IHasId
 {
 	public abstract TblObject Parent { get; set; }
-	//IDtoSubObject ToDto();
 }
 
-[Index(nameof(Id), IsUnique = true)]
 public abstract class DbSubObject : DbIdObject, IDbSubObject
 {
 	public required TblObject Parent { get; set; }
-
-	//public abstract IDtoSubObject ToDto();
 }
 
 public abstract class DtoSubObject : DbIdObject, IDtoSubObject
 {
-	//public abstract IDbSubObject ToTbl();
 }
 
 public static class DbSubObjectHelper
 {
+	/// <summary>
+	/// The suffix of the sub-object table belonging to <paramref name="objectType"/>: the table is always
+	/// <c>Obj&lt;suffix&gt;</c> and its entity <c>TblObject&lt;suffix&gt;</c>. Every type is named after the
+	/// enum member except <see cref="ObjectType.InterfaceSkin"/>, whose table is <c>ObjInterface</c>.
+	/// </summary>
+	public static string GetTableSuffix(ObjectType objectType)
+		=> objectType == ObjectType.InterfaceSkin ? "Interface" : objectType.ToString();
+
+	private static readonly ConcurrentDictionary<ObjectType, Type> subObjectTableTypes = new();
+
+	/// <summary>
+	/// The CLR type of <paramref name="objectType"/>'s sub-object table, resolved through the
+	/// <c>Obj&lt;ObjectType&gt;</c> DbSet convention.
+	/// </summary>
+	/// <exception cref="NotImplementedException"><paramref name="objectType"/> has no sub-object table.</exception>
+	public static Type GetSubObjectTableType(ObjectType objectType)
+		=> subObjectTableTypes.GetOrAdd(objectType, static type => typeof(LocoDbContext)
+			.GetProperty("Obj" + GetTableSuffix(type), BindingFlags.Public | BindingFlags.Instance)
+			?.PropertyType.GetGenericArguments()[0]
+			?? throw new NotImplementedException($"{type} has no sub-object table"));
+
+	/// <summary>
+	/// Returns <see langword="true"/> when <paramref name="dto"/> carries the sub-object that
+	/// <paramref name="objectType"/> uses, so a request cannot write e.g. airport data into a vehicle.
+	/// </summary>
+	public static bool IsSubObjectOfType(IDtoSubObject dto, ObjectType objectType)
+	{
+		ArgumentNullException.ThrowIfNull(dto);
+
+		var mapper = SubObjectDtoMapper.FindMapperOrNull(dto.GetType());
+		return mapper != null && mapper.ReturnType == GetSubObjectTableType(objectType);
+	}
+
 	static async Task<string> AddOrUpdate<TSubObject, TDat>(LocoDbContext db, DbSet<TSubObject> subObjTable, TblObject parentObj, ILocoStruct datObj)
 		where TSubObject : class, IDbSubObject, IConvertibleToTable<TSubObject, TDat>
 		where TDat : ILocoStruct
@@ -82,12 +153,23 @@ public static class DbSubObjectHelper
 		where TSubObject : class, IDbSubObject, IConvertibleToTable<TSubObject, TDat>
 		where TDat : ILocoStruct
 	{
-		var existingSubObj = await subObjTable.SingleOrDefaultAsync(x => x.Id == parentObj.SubObjectId);
+		// A parent object owns at most one row per sub-object table; the row is linked back via DbSubObject.Parent
+		// (a required FK with cascade delete), so the object id is the only source of truth.
+		var existingSubObj = await subObjTable.SingleOrDefaultAsync(x => x.Parent.Id == parentObj.Id);
 		if (existingSubObj != null)
 		{
-			subObj.Parent = parentObj;
-			existingSubObj = subObj; // update it
-			parentObj.SubObjectId = existingSubObj.Id;
+			// Copy the incoming values onto the tracked entity so they are actually persisted. The
+			// existing row keeps its own primary key, which the incoming object does not carry.
+			var entry = db.Entry(existingSubObj);
+			foreach (var property in entry.Properties)
+			{
+				if (property.Metadata.IsKey() || property.Metadata.PropertyInfo is not { } propertyInfo)
+				{
+					continue;
+				}
+
+				property.CurrentValue = propertyInfo.GetValue(subObj);
+			}
 
 			return $"Updated {parentObj.Id}-{existingSubObj.Id}";
 		}
@@ -95,7 +177,6 @@ public static class DbSubObjectHelper
 		{
 			var newSubObj = await subObjTable.AddAsync(subObj);
 			_ = await db.SaveChangesAsync(); // must save object to obtain an id
-			parentObj.SubObjectId = newSubObj.Entity.Id;
 
 			return $"Added {parentObj.Id}-{newSubObj.Entity.Id}";
 		}
@@ -181,6 +262,56 @@ public static class DbSubObjectHelper
 			_ => throw new NotImplementedException(),
 		};
 
+	/// <summary>
+	/// Returns the tracked sub-object row for <paramref name="parentId"/> from the object's own sub-object
+	/// table, or <see langword="null"/> when it has none. Used to remove a sub-object when a PUT omits it.
+	/// </summary>
+	/// <remarks>
+	/// Every game object has a header row in <c>Objects</c> and at most one row in the sub-object table
+	/// named after its <see cref="ObjectType"/>, which links back via the required
+	/// <see cref="DbSubObject.Parent"/> FK. The single exception to the naming convention is
+	/// <see cref="ObjectType.InterfaceSkin"/>, whose table is <c>ObjInterface</c>.
+	/// </remarks>
+	public static async Task<DbSubObject?> GetSubObjectRowAsync(LocoDbContext db, ObjectType objectType, UniqueObjectId parentId)
+		=> objectType switch
+		{
+			ObjectType.Airport => await db.ObjAirport.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Bridge => await db.ObjBridge.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Building => await db.ObjBuilding.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Cargo => await db.ObjCargo.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.CliffEdge => await db.ObjCliffEdge.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Climate => await db.ObjClimate.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Competitor => await db.ObjCompetitor.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Currency => await db.ObjCurrency.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Dock => await db.ObjDock.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.HillShapes => await db.ObjHillShapes.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Industry => await db.ObjIndustry.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.InterfaceSkin => await db.ObjInterface.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Land => await db.ObjLand.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.LevelCrossing => await db.ObjLevelCrossing.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Region => await db.ObjRegion.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.RoadExtra => await db.ObjRoadExtra.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Road => await db.ObjRoad.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.RoadStation => await db.ObjRoadStation.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Scaffolding => await db.ObjScaffolding.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.ScenarioText => await db.ObjScenarioText.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Snow => await db.ObjSnow.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Sound => await db.ObjSound.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Steam => await db.ObjSteam.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.StreetLight => await db.ObjStreetLight.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.TownNames => await db.ObjTownNames.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.TrackExtra => await db.ObjTrackExtra.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Track => await db.ObjTrack.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.TrackSignal => await db.ObjTrackSignal.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.TrackStation => await db.ObjTrackStation.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Tree => await db.ObjTree.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Tunnel => await db.ObjTunnel.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Vehicle => await db.ObjVehicle.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Water => await db.ObjWater.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			ObjectType.Wall => await db.ObjWall.SingleOrDefaultAsync(x => x.Parent.Id == parentId),
+			_ => throw new NotImplementedException(),
+		};
+
 	public static IDtoSubObject? GetDbSubForType(LocoDbContext db, ObjectType objectType, UniqueObjectId parentId)
 		=> objectType switch
 		{
@@ -220,44 +351,4 @@ public static class DbSubObjectHelper
 			ObjectType.Wall => db.ObjWall.SingleOrDefault(x => x.Parent.Id == parentId)?.ToDto(),
 			_ => throw new NotImplementedException(),
 		};
-
-	public static dynamic GetDbSetForType(LocoDbContext db, ObjectType objectType)
-	=> objectType switch
-	{
-		ObjectType.Airport => db.ObjAirport,
-		ObjectType.Bridge => db.ObjBridge,
-		ObjectType.Building => db.ObjBuilding,
-		ObjectType.Cargo => db.ObjCargo,
-		ObjectType.CliffEdge => db.ObjCliffEdge,
-		ObjectType.Climate => db.ObjClimate,
-		ObjectType.Competitor => db.ObjCompetitor,
-		ObjectType.Currency => db.ObjCurrency,
-		ObjectType.Dock => db.ObjDock,
-		ObjectType.HillShapes => db.ObjHillShapes,
-		ObjectType.Industry => db.ObjIndustry,
-		ObjectType.InterfaceSkin => db.ObjInterface,
-		ObjectType.Land => db.ObjLand,
-		ObjectType.LevelCrossing => db.ObjLevelCrossing,
-		ObjectType.Region => db.ObjRegion,
-		ObjectType.RoadExtra => db.ObjRoadExtra,
-		ObjectType.Road => db.ObjRoad,
-		ObjectType.RoadStation => db.ObjRoadStation,
-		ObjectType.Scaffolding => db.ObjScaffolding,
-		ObjectType.ScenarioText => db.ObjScenarioText,
-		ObjectType.Snow => db.ObjSnow,
-		ObjectType.Sound => db.ObjSound,
-		ObjectType.Steam => db.ObjSteam,
-		ObjectType.StreetLight => db.ObjStreetLight,
-		ObjectType.TownNames => db.ObjTownNames,
-		ObjectType.TrackExtra => db.ObjTrackExtra,
-		ObjectType.Track => db.ObjTrack,
-		ObjectType.TrackSignal => db.ObjTrackSignal,
-		ObjectType.TrackStation => db.ObjTrackStation,
-		ObjectType.Tree => db.ObjTree,
-		ObjectType.Tunnel => db.ObjTunnel,
-		ObjectType.Vehicle => db.ObjVehicle,
-		ObjectType.Water => db.ObjWater,
-		ObjectType.Wall => db.ObjWall,
-		_ => throw new NotImplementedException(),
-	};
 }

@@ -77,6 +77,40 @@ public record OnlineLicenceBrowseResult(
 		=> !string.IsNullOrWhiteSpace(Text);
 }
 
+/// <summary>
+/// Browse result shared by the game-data file endpoint groups (music, sound effects,
+/// tutorials and graphics) whose list DTOs all expose the same shape.
+/// </summary>
+public record OnlineGameFileBrowseResult(
+	UniqueObjectId Id,
+	string Name,
+	string? Description,
+	DateOnly UploadedDate,
+	ObjectSource ObjectSource,
+	DtoLicenceEntry? Licence,
+	int AuthorCount,
+	int TagCount,
+	OnlineApiEndpointGroup Group) : IOnlineBrowseResultItem
+{
+	public string LicenceName
+		=> Licence?.Name ?? "Unspecified";
+
+	public bool HasDescription
+		=> !string.IsNullOrWhiteSpace(Description);
+
+	public bool HasAuthors
+		=> AuthorCount > 0;
+
+	public bool HasTags
+		=> TagCount > 0;
+
+	public string AuthorsText
+		=> AuthorCount == 1 ? "1 author" : $"{AuthorCount} authors";
+
+	public string TagsText
+		=> TagCount == 1 ? "1 tag" : $"{TagCount} tags";
+}
+
 public record OnlineMissingObjectBrowseResult(
 	UniqueObjectId Id,
 	string DatName,

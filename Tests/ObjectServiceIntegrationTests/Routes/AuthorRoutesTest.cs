@@ -37,7 +37,7 @@ public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<
 		=> new(1, "Charles");
 
 	public override string BaseRoute
-		=> RoutesV2.Authors;
+		=> Definitions.Web.Routes.Authors;
 
 	protected override DbSet<TblAuthor> GetTable(LocoDbContext context)
 		=> context.Authors;
@@ -47,5 +47,22 @@ public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<
 
 	protected override DtoAuthorEntry ToDtoEntryFunc(TblAuthor row)
 		=> row.ToDtoEntry();
+
+	[Test]
+	public async Task Descriptor_ReturnsAuthorWithRelationships()
+	{
+		var descriptor = await Client.GetAuthorDescriptorAsync(HttpClient!, 1);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(descriptor, Is.Not.Null);
+			Assert.That(descriptor!.Id, Is.EqualTo(1));
+			Assert.That(descriptor.Name, Is.EqualTo("Alice"));
+			Assert.That(descriptor.Objects, Is.Empty);
+			Assert.That(descriptor.ObjectPacks, Is.Empty);
+			Assert.That(descriptor.Scenarios, Is.Empty);
+			Assert.That(descriptor.ScenarioPacks, Is.Empty);
+		}
+	}
 
 }

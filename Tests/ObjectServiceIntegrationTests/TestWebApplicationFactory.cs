@@ -12,28 +12,18 @@ namespace ObjectService.Tests.Integration;
 public class TestWebApplicationFactory<TProgram>
 : WebApplicationFactory<TProgram> where TProgram : class
 {
+	/// <summary>Overridden by tests that need to start the app with write routes disabled.</summary>
+	protected virtual bool BackendReadOnly => false;
+
+	/// <summary>Overridden by tests that need to start the app with the frontend in read-only mode.</summary>
+	protected virtual bool FrontendReadOnly => false;
+
 	static DirectoryInfo? MakeServerFolderManagerTestDirectories()
 	{
-		var testDirectory = Directory.CreateTempSubdirectory("ObjectServiceTest");
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original//GoG"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original//Steam"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Landscapes"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Graphics//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Graphics//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Music//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Music//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//SoundEffects//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//SoundEffects//Original"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Tutorials//Custom"));
-		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Tutorials//Original"));
-		return testDirectory;
+		// The ServerFolderManager now creates the full
+		// GameData/<category>/{Original,Custom,OpenLoco} structure on construction,
+		// so tests only need a writable root directory.
+		return Directory.CreateTempSubdirectory("ObjectServiceTest");
 	}
 
 	static void CreateDummyPaletteFile(string path)
@@ -55,8 +45,17 @@ public class TestWebApplicationFactory<TProgram>
 				new("ObjectService:RootFolder", testFolder.FullName),
 				new("ObjectService:PaletteMapFile", dummyPaletteFile),
 				new("ObjectService:ShowScalar", "False"),
+				// Tests exercise the admin bootstrap, so a password must be supplied explicitly: there is no
+				// code default (see AdminUserSettings). The username deliberately keeps the built-in default
+				// so DevAuthenticationHandler finds the admin deterministically.
+				new("AdminUser:Email", "test-admin@localhost"),
+				new("AdminUser:Password", "TestAdminPassword123!@#"),
 				new("ObjectService:DisableAuthentication", "True"),
-				new("ObjectService:BackendReadOnly", "False"),
+				new("ObjectService:FrontendReadOnly", FrontendReadOnly.ToString()),
+				new("ObjectService:BackendReadOnly", BackendReadOnly.ToString()),
+				// Route tests don't exercise the file watcher, and it must not share the single
+				// in-memory SQLite connection while requests are in flight.
+				new("ObjectService:EnableFileWatcher", "False"),
 			])
 			.Build();
 
@@ -83,7 +82,7 @@ public class TestWebApplicationFactory<TProgram>
 			var sp = services.BuildServiceProvider();
 			using var scope = sp.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
-			_ = db.Database.EnsureCreated();
+			db.Database.Migrate();
 		});
 	}
 }

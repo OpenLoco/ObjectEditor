@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Common;
 
 namespace Definitions.DTO;
 
@@ -16,5 +17,10 @@ public class DtoObjectAirport : IDtoSubObject
 	public int8_t MaxY { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
+	public BuildingComponents BuildingComponents { get; set; } = new();
+	public List<AirportBuilding> BuildingPositions { get; set; } = [];
+	public List<MovementNode> MovementNodes { get; set; } = [];
+	public List<MovementEdge> MovementEdges { get; set; } = [];
+	public uint32_t RequiredClearEdges { get; set; }
 	public UniqueObjectId Id { get; set; }
 }

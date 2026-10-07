@@ -2,29 +2,28 @@ using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels.Types;
 using Definitions.Web;
-using SixLabors.ImageSharp;
-using System.IO.Compression;
+using System.Text.Json;
 
 namespace ObjectService.Frontend;
 
 public sealed class ObjectExplorerService
 {
-	readonly IHttpClientFactory _httpClientFactory;
-	readonly IHttpContextAccessor _httpContextAccessor;
+	static readonly JsonSerializerOptions s_subObjectJsonOptions = new() { WriteIndented = true };
 
-	public ObjectExplorerService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+	readonly FrontendApiClient _apiClient;
+
+	public ObjectExplorerService(FrontendApiClient apiClient)
 	{
-		_httpClientFactory = httpClientFactory;
-		_httpContextAccessor = httpContextAccessor;
+		_apiClient = apiClient;
 	}
 
 	public async Task<ObjectBrowsePageViewModel> GetObjectsAsync(ObjectBrowseQuery request, CancellationToken cancellationToken = default)
 	{
-		using var client = CreateApiClient();
+		using var client = _apiClient.CreateClient();
 		var pageSize = Math.Clamp(request.PageSize, 12, 100);
 		var requestedPage = Math.Max(request.Page, 1);
 		var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
-		var objects = (await Client.GetObjectListAsync(client)).ToList();
+		var objects = (await Client.GetObjectListAsync(client, cancellationToken: cancellationToken)).ToList();
 
 		var totalCount = objects.Count;
 		IEnumerable<DtoObjectEntry> query = objects;
@@ -76,8 +75,9 @@ public sealed class ObjectExplorerService
 
 	public async Task<ObjectDetailViewModel?> GetObjectAsync(UniqueObjectId id, CancellationToken cancellationToken = default)
 	{
-		using var client = CreateApiClient();
-		var obj = await Client.GetObjectAsync(client, id);
+		using var client = _apiClient.CreateClient();
+		// The web frontend only needs the descriptor metadata, never the base64-inlined DAT bytes.
+		var obj = await Client.GetObjectAsync(client, id, cancellationToken: cancellationToken, includeDatBytes: false);
 
 		if (obj == null)
 		{
@@ -114,6 +114,12 @@ public sealed class ObjectExplorerService
 				? "No renderable images were returned by the public API for this object."
 				: "Images are not available for vanilla or unavailable objects.";
 
+		// The full object-specific property data (the sub-object) is returned by the public API as part of
+		// the descriptor. The frontend only formats it for display; it never reads DAT files itself.
+		var subObjectJson = obj.SubObject is null
+			? null
+			: JsonSerializer.Serialize(obj.SubObject, s_subObjectJsonOptions);
+
 		return new ObjectDetailViewModel(
 			obj.Id,
 			obj.Name,
@@ -134,7 +140,8 @@ public sealed class ObjectExplorerService
 			files,
 			stringTableGroups,
 			images,
-			imageTableMessage);
+			imageTableMessage,
+			subObjectJson);
 	}
 
 	ObjectListItemViewModel MapBrowseItem(DtoObjectEntry row)
@@ -169,66 +176,27 @@ public sealed class ObjectExplorerService
 
 	async Task<IReadOnlyList<ObjectImageViewModel>> GetImagesFromApiAsync(HttpClient client, UniqueObjectId id, CancellationToken cancellationToken)
 	{
-		var zipBytes = await Client.GetObjectImagesAsync(client, id);
-		if (zipBytes == null || zipBytes.Length == 0)
+		// Only the lightweight metadata is fetched here; each frame is then rendered by the browser from its
+		// own (immutable, cacheable) URL instead of being base64-inlined. Reading the metadata - rather than
+		// unzipping and re-decoding every PNG - keeps the details page cheap.
+		var metadata = await Client.GetObjectImageMetadataAsync(client, id, cancellationToken: cancellationToken);
+		if (metadata == null || metadata.Frames.Count == 0)
 		{
 			return [];
 		}
 
-		using var memoryStream = new MemoryStream(zipBytes, writable: false);
-		using var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Read, false);
-		var images = new List<ObjectImageViewModel>();
-
-		foreach (var entry in zipArchive.Entries.OrderBy(x => x.FullName, StringComparer.OrdinalIgnoreCase))
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-
-			if (!entry.FullName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-			{
-				continue;
-			}
-
-			await using var entryStream = entry.Open();
-			await using var pngStream = new MemoryStream();
-			await entryStream.CopyToAsync(pngStream, cancellationToken);
-			var pngBytes = pngStream.ToArray();
-
-			using var image = Image.Load(pngBytes);
-			images.Add(new ObjectImageViewModel(
-				ParseImageIndex(entry.Name),
-				image.Width,
-				image.Height,
-				$"data:image/png;base64,{Convert.ToBase64String(pngBytes)}"));
-		}
-
-		return [.. images.OrderBy(x => x.Index)];
-	}
-
-	HttpClient CreateApiClient()
-	{
-		var httpContext = _httpContextAccessor.HttpContext ?? throw new InvalidOperationException("An active HTTP request is required to create the ObjectService API client.");
-		var client = _httpClientFactory.CreateClient();
-		client.BaseAddress = new Uri($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}/");
-
-		// Forward the bearer token from the access_token cookie to API calls
-		var accessToken = httpContext.Request.Cookies["access_token"];
-		if (!string.IsNullOrEmpty(accessToken))
-		{
-			client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-		}
-
-		return client;
+		var baseUrl = $"{Routes.Prefix}{Routes.Objects}/{id}{Routes.Images}";
+		return [.. metadata.Frames
+			.OrderBy(x => x.Index)
+			.Select(frame => new ObjectImageViewModel(frame.Index, frame.Width, frame.Height, $"{baseUrl}/{frame.Index}"))];
 	}
 
 	static bool IsDownloadable(DtoObjectEntry row)
-		=> row.Availability == ObjectAvailability.Available
-			&& row.DatChecksum.HasValue
+		=> row.DatChecksum.HasValue
 			&& IsDownloadAllowed(row.ObjectSource, row.Availability);
 
 	static bool IsDownloadAllowed(ObjectSource objectSource, ObjectAvailability availability)
-		=> availability != ObjectAvailability.Unavailable
-			&& objectSource is not ObjectSource.LocomotionGoG
-			&& objectSource is not ObjectSource.LocomotionSteam;
+		=> ObjectAvailabilityRules.IsDownloadable(objectSource, availability);
 
 	static string ResolveDisplayName(DtoObjectPostResponse dto)
 	{
@@ -253,11 +221,6 @@ public sealed class ObjectExplorerService
 	static bool ContainsInsensitive(string? value, string search)
 		=> !string.IsNullOrWhiteSpace(value)
 			&& value.Contains(search, StringComparison.OrdinalIgnoreCase);
-
-	static int ParseImageIndex(string fileName)
-		=> int.TryParse(Path.GetFileNameWithoutExtension(fileName), out var index)
-			? index
-			: int.MaxValue;
 
 	static int LanguagePriority(LanguageId language)
 		=> language switch

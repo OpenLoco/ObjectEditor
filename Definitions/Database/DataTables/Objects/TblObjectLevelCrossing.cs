@@ -5,7 +5,7 @@ namespace Definitions.Database;
 public class TblObjectLevelCrossing : DbSubObject, IConvertibleToTable<TblObjectLevelCrossing, LevelCrossingObject>
 {
 	public uint16_t DesignedYear { get; set; }
-	public int16_t CostFactor { get; set; }
+	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
 	public uint8_t ClosedAnimationFrameInterval { get; set; }
@@ -18,7 +18,7 @@ public class TblObjectLevelCrossing : DbSubObject, IConvertibleToTable<TblObject
 		{
 			Parent = tbl,
 			DesignedYear = obj.DesignedYear,
-			CostFactor = obj.BuildCostFactor,
+			BuildCostFactor = obj.BuildCostFactor,
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
 			ClosedAnimationFrameInterval = obj.ClosedAnimationFrameInterval,

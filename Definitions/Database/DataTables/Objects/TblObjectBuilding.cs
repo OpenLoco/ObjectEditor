@@ -1,5 +1,7 @@
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
@@ -17,19 +19,14 @@ public class TblObjectBuilding : DbSubObject, IConvertibleToTable<TblObjectBuild
 	public uint8_t GeneratorFunction { get; set; }
 	public uint8_t AverageNumberOnMap { get; set; }
 
-	//public uint8_t NumBuildingParts { get; set; }
-	//public uint8_t NumBuildingVariations { get; set; }
-	//List<uint8_t> BuildingHeights { get; set; }
-	//List<BuildingPartAnimation> BuildingAnimations { get; set; }
-	//List<List<uint8_t>> BuildingVariations { get; set; }
-	//public uint8_t[] ProducedQuantity { get; set; }
-	//List<S5Header> ProducedCargo { get; set; }
-	//List<S5Header> RequiredCargo { get; set; }
-	//List<uint8_t> var_A6 { get; set; }
-	//List<uint8_t> var_A8 { get; set; }
-	//public uint8_t TownAmenityCategory { get; set; }
-	//public uint8_t NumElevatorSequences { get; set; }
-	//List<uint8_t[]> _ElevatorHeightSequences // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
+	public BuildingComponents BuildingComponents { get; set; } = new();
+	public List<uint8_t> ProducedQuantity { get; set; } = [];
+	public List<ObjectModelHeader> ProducedCargoType { get; set; } = [];
+	public List<ObjectModelHeader> ConsumedCargoType { get; set; } = [];
+	public List<uint8_t> ProducedCargoQuantity { get; set; } = [];
+	public List<uint8_t> ConsumedCargoQuantity { get; set; } = [];
+	public TownAmenityCategory TownAmenityCategory { get; set; }
+	public List<uint8_t[]> ElevatorHeightSequences { get; set; } = [];
 
 	public static TblObjectBuilding FromObject(TblObject tbl, BuildingObject obj)
 		=> new()
@@ -46,5 +43,13 @@ public class TblObjectBuilding : DbSubObject, IConvertibleToTable<TblObjectBuild
 			Colours = obj.Colours,
 			GeneratorFunction = obj.GeneratorFunction,
 			AverageNumberOnMap = obj.AverageNumberOnMap,
+			BuildingComponents = obj.BuildingComponents,
+			ProducedQuantity = obj.ProducedQuantity,
+			ProducedCargoType = obj.ProducedCargoType,
+			ConsumedCargoType = obj.ConsumedCargoType,
+			ProducedCargoQuantity = obj.ProducedCargoQuantity,
+			ConsumedCargoQuantity = obj.ConsumedCargoQuantity,
+			TownAmenityCategory = obj.TownAmenityCategory,
+			ElevatorHeightSequences = obj.ElevatorHeightSequences,
 		};
 }

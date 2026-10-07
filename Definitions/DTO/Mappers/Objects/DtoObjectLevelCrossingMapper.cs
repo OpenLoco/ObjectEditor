@@ -6,26 +6,28 @@ public static class DtoObjectLevelCrossingMapper
 {
 	public static DtoObjectLevelCrossing ToDto(this TblObjectLevelCrossing tblobjectlevelcrossing) => new()
 	{
-		CostFactor = tblobjectlevelcrossing.CostFactor,
+		BuildCostFactor = tblobjectlevelcrossing.BuildCostFactor,
 		SellCostFactor = tblobjectlevelcrossing.SellCostFactor,
 		CostIndex = tblobjectlevelcrossing.CostIndex,
-		AnimationSpeed = tblobjectlevelcrossing.ClosedAnimationFrameInterval,
-		ClosingFrames = tblobjectlevelcrossing.ClosedAnimationFrameCount,
-		ClosedFrames = tblobjectlevelcrossing.TransitionAnimationFrameCount,
+		ClosedAnimationFrameInterval = tblobjectlevelcrossing.ClosedAnimationFrameInterval,
+		ClosedAnimationFrameCount = tblobjectlevelcrossing.ClosedAnimationFrameCount,
+		TransitionAnimationFrameCount = tblobjectlevelcrossing.TransitionAnimationFrameCount,
 		DesignedYear = tblobjectlevelcrossing.DesignedYear,
+		TransitionAnimationDelayBitmask = tblobjectlevelcrossing.TransitionAnimationDelayBitmask,
 		Id = tblobjectlevelcrossing.Id,
 	};
 
 	public static TblObjectLevelCrossing ToTblObjectLevelCrossingEntity(this DtoObjectLevelCrossing model, TblObject parent) => new()
 	{
 		Parent = parent,
-		CostFactor = model.CostFactor,
+		BuildCostFactor = model.BuildCostFactor,
 		SellCostFactor = model.SellCostFactor,
 		CostIndex = model.CostIndex,
-		ClosedAnimationFrameInterval = model.AnimationSpeed,
-		ClosedAnimationFrameCount = model.ClosingFrames,
-		TransitionAnimationFrameCount = model.ClosedFrames,
+		ClosedAnimationFrameInterval = model.ClosedAnimationFrameInterval,
+		ClosedAnimationFrameCount = model.ClosedAnimationFrameCount,
+		TransitionAnimationFrameCount = model.TransitionAnimationFrameCount,
 		DesignedYear = model.DesignedYear,
+		TransitionAnimationDelayBitmask = model.TransitionAnimationDelayBitmask,
 		Id = model.Id,
 	};
 

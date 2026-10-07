@@ -63,6 +63,7 @@
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
     <ProjectReference Include="..\GuiUpdater\GuiUpdater.csproj" />
     <ProjectReference Include="..\Index\Index.csproj" />
+    <ProjectReference Include="..\ObjectService\ObjectService.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 

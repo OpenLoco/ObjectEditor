@@ -55,213 +55,25 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>@ViewData["Title"] - OpenLoco Object Service</title>
-	<script>
+<script>
 (() => {
-    const storageKey = "object-service-theme";
-    const paletteStorageKey = "object-service-theme-palette";
+    // Set the theme before first paint to avoid a flash. The palette itself
+    // is pure CSS (see base.css); this only flips data-theme on <html>.
     const root = document.documentElement;
-    const paletteFields = ["accent", "surface", "muted", "text", "background", "contrast", "success", "warning", "error"];
-
-    // One colour per palette type, for each theme. Light and dark are
-    // completely independent nine-colour palettes — no shades are derived.
-    const defaultPalette = {
-        light: {
-            accent: "#C07A1E",
-            surface: "#FFFFFF",
-            muted: "#6B7280",
-            text: "#1F2430",
-            background: "#F4F5F7",
-            contrast: "#E3E6EA",
-            success: "#2E7D32",
-            warning: "#B97A1F",
-            error: "#C0392B",
-        },
-        dark: {
-            accent: "#F6C945",
-            surface: "#3A3D44",
-            muted: "#8A8D8F",
-            text: "#E8E8E8",
-            background: "#2E2F33",
-            contrast: "#6E7280",
-            success: "#46F65A",
-            warning: "#F6C945",
-            error: "#F64646",
-        },
-    };
-
-    const normaliseHex = (value) => {
-        if (typeof value !== "string") {
-            return null;
-        }
-
-        const trimmed = value.trim();
-        if (/^#?[0-9a-fA-F]{6}$/.test(trimmed) === false) {
-            return null;
-        }
-
-        return `#${trimmed.replace("#", "").toUpperCase()}`;
-    };
-
-    const rgba = (hex, alpha) => {
-        const value = normaliseHex(hex);
-        if (value === null) {
-            return null;
-        }
-
-        const red = parseInt(value.slice(1, 3), 16);
-        const green = parseInt(value.slice(3, 5), 16);
-        const blue = parseInt(value.slice(5, 7), 16);
-        return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
-    };
-
-    const normalisePaletteSet = (candidate) => {
-        if (candidate === null || typeof candidate !== "object") {
-            return null;
-        }
-
-        const palette = {};
-        for (const field of paletteFields) {
-            const value = normaliseHex(candidate[field]);
-            if (value === null) {
-                return null;
-            }
-            palette[field] = value;
-        }
-        return palette;
-    };
-
-    const normalisePalette = (candidate) => {
-        if (candidate === null || typeof candidate !== "object") {
-            return null;
-        }
-
-        const light = normalisePaletteSet(candidate.light);
-        const dark = normalisePaletteSet(candidate.dark);
-        if (light === null || dark === null) {
-            return null;
-        }
-
-        return { light, dark };
-    };
-
-    // Each theme token is one of the nine colours, occasionally at an alpha.
-    // No brightness shades are generated from the base colours.
-    const buildTokens = (palette) => {
-        const c = palette;
-        return {
-            bg: c.background,
-            "bg-accent": c.surface,
-            "bg-end": c.surface,
-            panel: rgba(c.contrast, 0.84),
-            "panel-strong": c.contrast,
-            "panel-glass": rgba(c.contrast, 0.74),
-            "surface-raised": rgba(c.contrast, 0.68),
-            "surface-subtle": rgba(c.surface, 0.58),
-            "surface-table": rgba(c.surface, 0.72),
-            border: rgba(c.background, 0.18),
-            "border-soft": rgba(c.background, 0.08),
-            "field-border": rgba(c.background, 0.22),
-            "field-bg": rgba(c.contrast, 0.9),
-            text: c.text,
-            muted: c.muted,
-            accent: c.accent,
-            "accent-strong": c.text,
-            "accent-soft": rgba(c.accent, 0.18),
-            "accent-soft-strong": rgba(c.accent, 0.12),
-            "accent-border": rgba(c.accent, 0.34),
-            "accent-border-strong": rgba(c.accent, 0.42),
-            success: c.success,
-            "success-soft": rgba(c.success, 0.14),
-            "success-border": rgba(c.success, 0.26),
-            warning: c.warning,
-            "warning-soft": rgba(c.warning, 0.14),
-            "warning-border": rgba(c.warning, 0.26),
-            error: c.error,
-            "error-soft": rgba(c.error, 0.12),
-            "error-border": rgba(c.error, 0.28),
-            danger: c.error,
-            "danger-soft": rgba(c.error, 0.12),
-            "danger-border": rgba(c.error, 0.28),
-            "disabled-bg": rgba(c.muted, 0.18),
-            "disabled-border": rgba(c.muted, 0.3),
-            "button-primary-text": c.text,
-            "page-glow-accent": rgba(c.surface, 0.22),
-            "page-glow-warning": rgba(c.background, 0.2),
-            "image-grid-accent": rgba(c.accent, 0.08),
-            "image-grid-warning": rgba(c.warning, 0.08),
-            "image-shadow": rgba(c.background, 0.18),
-            shadow: `0 18px 48px ${rgba(c.background, 0.14)}`,
-        };
-    };
-    const applyPalette = (element, theme, palette) => {
-        const set = palette[theme] ?? palette.light;
-        const tokens = buildTokens(set);
-        for (const [name, value] of Object.entries(tokens)) {
-            element.style.setProperty(`--${name}`, value);
-        }
-        element.style.setProperty("color-scheme", theme);
-    };
-
-    const readStorage = (key) => {
-        try {
-            return window.localStorage.getItem(key);
-        } catch {
-            return null;
-        }
-    };
-
-    const writeStorage = (key, value) => {
-        try {
-            window.localStorage.setItem(key, value);
-        } catch {
-        }
-    };
-
-    const removeStorage = (key) => {
-        try {
-            window.localStorage.removeItem(key);
-        } catch {
-        }
-    };
-
-    const getStoredPalette = (key) => {
-        const rawPalette = readStorage(key);
-        if (rawPalette === null) {
-            return null;
-        }
-
-        try {
-            return normalisePalette(JSON.parse(rawPalette));
-        } catch {
-            return null;
-        }
-    };
-
-    window.objectServiceThemeTools = {
-        applyPalette,
-        buildTokens,
-        defaultPalette,
-        getStoredPalette,
-        normaliseHex,
-        normalisePalette,
-        paletteFields,
-        readStorage,
-        removeStorage,
-        writeStorage,
-    };
-
-    const storedTheme = readStorage(storageKey);
-    if (storedTheme === "light" || storedTheme === "dark") {
-        root.dataset.theme = storedTheme;
-    } else {
-        root.dataset.theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    try {
+        const stored = localStorage.getItem("object-service-theme");
+        root.dataset.theme = stored === "light" || stored === "dark"
+            ? stored
+            : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    } catch {
+        root.dataset.theme = "light";
     }
-
-    const storedPalette = getStoredPalette(paletteStorageKey);
-    applyPalette(root, root.dataset.theme, storedPalette ?? defaultPalette);
 })();
 </script>
-	<link rel="stylesheet" href="~/css/object-explorer.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/pages.css" asp-append-version="true" />
 </head>
 <body>
 	<div class="site-shell">
@@ -288,12 +100,18 @@
 					<span class="health-indicator-dot" aria-hidden="true"></span>
 					<span>Server @healthReport.Status</span>
 				</span>
+				@if (isDevelopment && isAdmin)
+				{
+					<button type="button" class="button button-small button-secondary dev-panel-toggle" data-dev-panel-toggle aria-expanded="false" aria-controls="dev-stats-panel">
+						Developer
+					</button>
+				}
 			@if (!readOnlyMode)
 			{
 				if (isDevelopment && !isAuthenticated)
 				{
-				<form method="post" asp-page="/Dev/QuickLogin" style="display: inline;">
-					<button type="submit" class="button button-secondary" style="background-color: var(--accent); color: var(--button-primary-text); font-weight: 500;">
+				<form method="post" asp-page="/Dev/QuickLogin" class="inline-form">
+					<button type="submit" class="button button-primary">
 						Dev Login
 					</button>
 				</form>
@@ -301,14 +119,11 @@
 			}
 			else
 			{
-				<span class="chip" style="background-color: var(--muted); color: var(--contrast); margin-left: 0.5rem;" title="The server is in read-only mode — browsing and downloads are available, but logins and account features are disabled.">
+				<span class="chip chip-muted" title="The server is in read-only mode — browsing and downloads are available, but logins and account features are disabled.">
 					Read-only mode
 				</span>
 			}
-				<button type="button" class="button button-secondary theme-studio-toggle" data-theme-studio-toggle aria-controls="theme-studio-panel" aria-expanded="false" hidden>
-					Theme palette
-				</button>
-				<div class="theme-switch" data-theme-switch data-theme="light">
+			<div class="theme-switch" data-theme-switch data-theme="light">
 					<span class="theme-switch-label theme-switch-label-light">Light</span>
 					<button type="button" class="theme-toggle" data-theme-toggle role="switch" aria-checked="false" aria-label="Toggle between light and dark mode">
 						<span class="theme-toggle-thumb" aria-hidden="true"></span>
@@ -321,7 +136,7 @@
 		<main class="site-main">
 			@if (isDevelopment && isAdmin)
 			{
-				<section class="dev-stats panel" aria-label="Developer environment details">
+				<section id="dev-stats-panel" class="dev-stats panel" data-dev-panel hidden aria-label="Developer environment details">
 					<div class="dev-stats-header">
 						<p class="eyebrow">Developer mode</p>
 						<span class="chip">@HostEnvironment.EnvironmentName</span>
@@ -381,5 +196,6 @@
 		</main>
 	</div>
 	<script src="~/js/theme-toggle.js" asp-append-version="true"></script>
+	<script src="~/js/dev-panel.js" asp-append-version="true"></script>
 </body>
 </html>

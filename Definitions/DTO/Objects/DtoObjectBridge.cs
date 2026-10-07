@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Objects.Bridge;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
@@ -18,5 +19,7 @@ public class DtoObjectBridge : IDtoSubObject
 	public int16_t SellCostFactor { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
+	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
+	public List<ObjectModelHeader> CompatibleRoadObjects { get; set; } = [];
 	public UniqueObjectId Id { get; set; }
 }

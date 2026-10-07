@@ -43,16 +43,9 @@ public static class SawyerStreamReader
 			logger?.LogError("{Name} had incorrect checksum. Header={Checksum} Computed={ComputedChecksum}", hdrs.S5.Name, hdrs.S5.Checksum, computedChecksum);
 		}
 
-		if (hdrs.S5.IsVanilla())
+		foreach (var failedValidation in ValidateS5Header(hdrs.S5, new ValidationContext(hdrs)))
 		{
-			if (OriginalObjectFiles.Names.TryGetValue(hdrs.S5.Name.Trim(), out var fileInfo))
-			{
-				logger?.LogDebug("{Name} is a vanilla object with checksums [Steam={SteamChecksum} GoG={GoGChecksum}]", hdrs.S5.Name, fileInfo.SteamChecksum, fileInfo.GoGChecksum);
-			}
-			else
-			{
-				logger?.LogWarning("{Name} is marked as vanilla but is not in the original object list!", hdrs.S5.Name);
-			}
+			logger?.LogWarning("\"{Name}\" failed header validation: {failedValidation}", hdrs.S5.Name, failedValidation);
 		}
 
 		return (hdrs.S5, hdrs.Obj, decodedData);
@@ -135,24 +128,28 @@ public static class SawyerStreamReader
 		}
 	}
 
+	static IEnumerable<ValidationResult> ValidateS5Header(S5Header s5Header, ValidationContext validationContext)
+	{
+		if (s5Header.ObjectSource == DatObjectSource.Vanilla && !s5Header.IsVanilla())
+		{
+			yield return new ValidationResult($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
+		}
+	}
+
 	static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
 	{
 		var warnings = new List<string>();
 
 		try
 		{
-			if (s5Header.ObjectSource == DatObjectSource.Vanilla)
+			foreach (var failedValidation in ValidateS5Header(s5Header, new ValidationContext(s5Header)))
 			{
-				var s5Name = s5Header.Name;
-				if (!s5Header.IsVanilla())
-				{
-					warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
-				}
+				warnings.Add($"\"{s5Header.Name}\" failed header validation: {failedValidation}");
 			}
 
 			foreach (var failedValidation in locoStruct.Validate(new ValidationContext(locoStruct)))
 			{
-				warnings.Add($"\"{s5Header.Name}\" failed validation: {failedValidation}");
+				warnings.Add($"\"{s5Header.Name}\" failed object validation: {failedValidation}");
 			}
 
 			if (warnings.Count != 0)

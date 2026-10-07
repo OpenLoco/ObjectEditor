@@ -32,7 +32,7 @@ public class TrackViewModel(TrackObject model)
 		set => Model.StationTrackPieces = value;
 	}
 
-	public Speed16 CurveSpeed
+	public Speed16 MaxCurveSpeed
 	{
 		get => Model.MaxCurveSpeed;
 		set => Model.MaxCurveSpeed = value;

@@ -2,12 +2,52 @@ using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Identity;
 using Definitions.Web;
+using Microsoft.AspNetCore.Mvc;
+using ObjectService.Services;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
-public class AuthorRouteHandler : CrudRouteHandler<DtoAuthorEntry, TblAuthor> { public AuthorRouteHandler() : base(RoutesV2.Authors) { } }
-public class TagRouteHandler : CrudRouteHandler<DtoTagEntry, TblTag> { public TagRouteHandler() : base(RoutesV2.Tags) { } }
-public class LicenceRouteHandler : CrudRouteHandler<DtoLicenceEntry, TblLicence> { public LicenceRouteHandler() : base(RoutesV2.Licences) { } }
-public class UserRouteHandler : CrudRouteHandler<DtoUserEntry, TblUser> { public UserRouteHandler() : base(RoutesV2.Users) { } }
-public class RoleRouteHandler : CrudRouteHandler<DtoRoleEntry, TblUserRole> { public RoleRouteHandler() : base(RoutesV2.Roles) { } }
-public class ObjectMissingRouteHandler : CrudRouteHandler<DtoObjectMissingEntry, TblObjectMissing> { public ObjectMissingRouteHandler() : base(RoutesV2.Objects + RoutesV2.Missing) { } }
+public class AuthorRouteHandler : CrudRouteHandler<DtoAuthorEntry, TblAuthor>
+{
+	public AuthorRouteHandler() : base(Routes.Authors) { }
+
+	public override void MapAdditionalRoutes(IEndpointRouteBuilder baseRoute)
+		=> baseRoute.MapGroup(Routes.ResourceRoute).MapGet(Routes.Descriptor, GetDescriptorAsync);
+
+	async Task<IResult> GetDescriptorAsync([FromRoute] UniqueObjectId id, [FromServices] IReferenceDataService svc, CancellationToken ct)
+	{
+		var dto = await svc.GetAuthorAsync(id, ct);
+		return dto != null ? Results.Ok(dto) : Results.NotFound();
+	}
+}
+
+public class TagRouteHandler : CrudRouteHandler<DtoTagEntry, TblTag>
+{
+	public TagRouteHandler() : base(Routes.Tags) { }
+
+	public override void MapAdditionalRoutes(IEndpointRouteBuilder baseRoute)
+		=> baseRoute.MapGroup(Routes.ResourceRoute).MapGet(Routes.Descriptor, GetDescriptorAsync);
+
+	async Task<IResult> GetDescriptorAsync([FromRoute] UniqueObjectId id, [FromServices] IReferenceDataService svc, CancellationToken ct)
+	{
+		var dto = await svc.GetTagAsync(id, ct);
+		return dto != null ? Results.Ok(dto) : Results.NotFound();
+	}
+}
+
+public class LicenceRouteHandler : CrudRouteHandler<DtoLicenceEntry, TblLicence>
+{
+	public LicenceRouteHandler() : base(Routes.Licences) { }
+
+	public override void MapAdditionalRoutes(IEndpointRouteBuilder baseRoute)
+		=> baseRoute.MapGroup(Routes.ResourceRoute).MapGet(Routes.Descriptor, GetDescriptorAsync);
+
+	async Task<IResult> GetDescriptorAsync([FromRoute] UniqueObjectId id, [FromServices] IReferenceDataService svc, CancellationToken ct)
+	{
+		var dto = await svc.GetLicenceAsync(id, ct);
+		return dto != null ? Results.Ok(dto) : Results.NotFound();
+	}
+}
+
+public class RoleRouteHandler : CrudRouteHandler<DtoRoleEntry, TblUserRole> { public RoleRouteHandler() : base(Routes.Roles) { } }
+public class ObjectMissingRouteHandler : CrudRouteHandler<DtoObjectMissingEntry, TblObjectMissing> { public ObjectMissingRouteHandler() : base(Routes.Objects + Routes.Missing) { } }

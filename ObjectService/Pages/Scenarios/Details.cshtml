@@ -10,7 +10,7 @@
 	<section class="panel">
 		<h1>Scenario not found</h1>
 		<p>The scenario you are looking for does not exist.</p>
-		<a class="button button-secondary" asp-page="/Index" asp-route-category="sc5files">Back to scenario list</a>
+		<a class="button button-secondary" asp-page="/Index" asp-route-category="scenarios">Back to scenario list</a>
 	</section>
 	return;
 }
@@ -26,7 +26,7 @@
 
 <section class="detail-hero panel">
 	<div>
-		<a class="back-link" asp-page="/Index" asp-route-category="sc5files">Back to scenarios</a>
+		<a class="back-link" asp-page="/Index" asp-route-category="scenarios">Back to scenarios</a>
 		<div class="admin-page-header">
 			<h1>@scenario.Name</h1>
 			<div class="action-buttons">
@@ -34,7 +34,7 @@
 				@if (Model.CanEdit)
 				{
 					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
-					<form method="post" asp-page-handler="Delete" asp-route-id="@scenario.Id" style="display:inline" onsubmit="return confirm('Delete this scenario?')">
+					<form method="post" asp-page-handler="Delete" asp-route-id="@scenario.Id" class="inline-form" onsubmit="return confirm('Delete this scenario?')">
 						<button type="submit" class="button button-small button-danger">Delete</button>
 					</form>
 				}
@@ -45,7 +45,7 @@
 
 		@if (Model.CanEdit)
 		{
-			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form" style="margin-top:1rem; padding:1rem; background:var(--color-surface); border:1px solid var(--color-muted); border-radius:0.5rem;">
+			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form mt-lg">
 				<input type="hidden" name="Id" value="@scenario.Id" />
 
 				<div class="form-group">
@@ -85,11 +85,11 @@
 
 				<div class="form-group">
 					<label>Authors</label>
-					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+					<div class="multi-select multi-select-sm">
 						@foreach (var author in Model.AvailableAuthors)
 						{
 							var isSelected = scenario.Authors.Any(a => a.Id == author.Id);
-							<label class="checkbox" style="display:block;">
+							<label class="checkbox checkbox-block">
 								<input type="checkbox" name="SelectedAuthorIds" value="@author.Id" checked="@isSelected" />
 								<span>@author.Name</span>
 							</label>
@@ -99,11 +99,11 @@
 
 				<div class="form-group">
 					<label>Tags</label>
-					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+					<div class="multi-select multi-select-sm">
 						@foreach (var tag in Model.AvailableTags)
 						{
 							var isSelected = scenario.Tags.Any(t => t.Id == tag.Id);
-							<label class="checkbox" style="display:block;">
+							<label class="checkbox checkbox-block">
 								<input type="checkbox" name="SelectedTagIds" value="@tag.Id" checked="@isSelected" />
 								<span>@tag.Name</span>
 							</label>
@@ -112,8 +112,8 @@
 				</div>
 
 				<div class="form-group">
-					<label>SC5 File Packs</label>
-					<div class="multi-select" style="max-height:150px;overflow-y:auto;border:1px solid var(--color-muted);border-radius:0.25rem;padding:0.5rem;">
+					<label>Scenario Packs</label>
+					<div class="multi-select multi-select-sm">
 						@if (Model.AvailablePacks.Count == 0)
 						{
 							<p class="muted">No packs available.</p>
@@ -122,8 +122,8 @@
 						{
 							@foreach (var pack in Model.AvailablePacks)
 							{
-								var isSelected = scenario.SC5FilePacks.Any(p => p.Id == pack.Id);
-								<label class="checkbox" style="display:block;">
+								var isSelected = scenario.ScenarioPacks.Any(p => p.Id == pack.Id);
+								<label class="checkbox checkbox-block">
 									<input type="checkbox" name="SelectedPackIds" value="@pack.Id" checked="@isSelected" />
 									<span>@pack.Name</span>
 								</label>
@@ -132,7 +132,7 @@
 					</div>
 				</div>
 
-				<div class="form-actions" style="margin-top:0.5rem;">
+				<div class="form-actions mt-sm">
 					<button type="submit" class="button button-primary button-small">Save</button>
 					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-form').hidden = true">Cancel</button>
 				</div>
@@ -224,8 +224,8 @@
 				</p>
 			</div>
 			<div>
-				<h3>SC5 File Packs</h3>
-				<p>@(scenario.SC5FilePacks.Count > 0 ? string.Join(", ", scenario.SC5FilePacks.Select(p => p.Name)) : "No packs linked")</p>
+				<h3>Scenario Packs</h3>
+				<p>@(scenario.ScenarioPacks.Count > 0 ? string.Join(", ", scenario.ScenarioPacks.Select(p => p.Name)) : "No packs linked")</p>
 			</div>
 		</div>
 	</section>

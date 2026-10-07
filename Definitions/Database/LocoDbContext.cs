@@ -94,11 +94,20 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 
 	#endregion
 
-	#region Other
+	#region GameDataFiles
+
+	public DbSet<TblMusic> Music => Set<TblMusic>();
+	public DbSet<TblSoundEffect> SoundEffects => Set<TblSoundEffect>();
+	public DbSet<TblTutorial> Tutorials => Set<TblTutorial>();
+	public DbSet<TblGraphics> Graphics => Set<TblGraphics>();
+	public DbSet<TblScenario> Scenarios => Set<TblScenario>();
+
+	#endregion
+
+	#region Packs
 
 	public DbSet<TblObjectPack> ObjectPacks => Set<TblObjectPack>();
-	public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();
-	public DbSet<TblSC5FilePack> SC5FilePacks => Set<TblSC5FilePack>();
+	public DbSet<TblScenarioPack> ScenarioPacks => Set<TblScenarioPack>();
 
 	#endregion
 
@@ -108,7 +117,8 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 	public LocoDbContext(DbContextOptions<LocoDbContext> options) : base(options)
 	{ }
 
-	public const string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco-test.db";
+	//public const string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco-test.db";
+	public const string DefaultDb = "Q:\\Games\\Locomotion\\Server\\loco.db";
 
 	protected override void OnConfiguring(DbContextOptionsBuilder builder)
 	{
@@ -130,46 +140,104 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		return null;
 	}
 
+	protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+	{
+		base.ConfigureConventions(configurationBuilder);
+
+		JsonColumnConvention.Configure(configurationBuilder);
+	}
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
 
-		//_ = modelBuilder.Entity<TblObject>()
-		//	.HasAlternateKey(o => new { o.SubObjectId, o.ObjectType });
-
-		// Configure the one-to-many relationship
-		//modelBuilder.Entity<OrderItem>()
-		//	.HasOne(oi => oi.Order) // OrderItem has one Order
-		//	.WithMany(o => o.OrderItems) // Order has many OrderItems
-		//	.HasForeignKey(oi => new { oi.OrderNumber, oi.CustomerCode }); // The composite foreign key on OrderItem
+		// Complex object-model properties (lists, nested objects, dictionaries, jagged arrays) are stored as JSON.
+		JsonColumnConvention.Apply(modelBuilder);
 
 		_ = modelBuilder.Entity<TblObject>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
-		_ = modelBuilder.Entity<TblSC5File>()
+		_ = modelBuilder.Entity<TblScenario>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 		_ = modelBuilder.Entity<TblObjectPack>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
-		_ = modelBuilder.Entity<TblSC5FilePack>()
+		_ = modelBuilder.Entity<TblScenarioPack>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblMusic>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblSoundEffect>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblTutorial>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblGraphics>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 	}
 
 	public bool DoesObjectExist(string datName, uint datChecksum, out TblObject? existingObject)
 	{
-		// there's a unique constraint on the composite key index (DatName, DatChecksum), so check existence first so no exceptions
-		// this isn't necessary since we're already filtering in LINQ, but if we were adding to a non-empty database, this would be necessary
+		// The (DatName, DatChecksum) index is deliberately not unique: two binary-different files can
+		// share the same S5 name and checksum, so this returns the first match rather than requiring one.
+		// xxHash3 (see DoesObjectWithHashExist) is the authoritative identity of a file.
 		var existingEntityInDb = DatObjects
-			.SingleOrDefault(e => e.DatName == datName && e.DatChecksum == datChecksum)?.Object;
+			.Where(e => e.DatName == datName && e.DatChecksum == datChecksum)
+			.Select(e => e.Object)
+			.FirstOrDefault();
 
 		var existingEntityInChangeTracker = ChangeTracker.Entries()
 			.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblDatObject))
 			.Select(e => e.Entity as TblDatObject)
-			.SingleOrDefault(e => e!.DatName == datName && e.DatChecksum == datChecksum)?.Object;
+			.FirstOrDefault(e => e!.DatName == datName && e.DatChecksum == datChecksum)?.Object;
 
 		existingObject = existingEntityInDb ?? existingEntityInChangeTracker;
 		return existingObject != null;
+	}
+
+	/// <summary>
+	/// Finds the object already backed by a file with the given whole-file hash. <c>xxHash3</c> is the
+	/// authoritative file identity, so a match means the file is a duplicate of one we already have and
+	/// no new object/row should be created for it.
+	/// </summary>
+	public bool DoesObjectWithHashExist(ulong xxHash3, out TblObject? existingObject)
+	{
+		existingObject = DatObjects
+			.Where(e => e.xxHash3 == xxHash3)
+			.Select(e => e.Object)
+			.FirstOrDefault();
+
+		return existingObject != null;
+	}
+
+	/// <summary>
+	/// Builds an object name from the S5 name and checksum. Because several binary-different objects may
+	/// share that pair, the whole-file hash is appended when the plain name is already taken so the
+	/// unique <c>Objects.Name</c> constraint still holds.
+	/// </summary>
+	public Task<string> GetUniqueObjectNameAsync(string s5Name, uint checksum, ulong xxHash3, CancellationToken ct = default)
+	{
+		var baseName = $"{s5Name}_{checksum}";
+		return GetUniqueObjectNameCoreAsync(baseName, xxHash3, ct);
+	}
+
+	private async Task<string> GetUniqueObjectNameCoreAsync(string baseName, ulong xxHash3, CancellationToken ct)
+	{
+		if (!await Objects.AnyAsync(x => x.Name == baseName, ct))
+		{
+			return baseName;
+		}
+
+		var disambiguated = $"{baseName}_{xxHash3}";
+		for (var suffix = 0; await Objects.AnyAsync(x => x.Name == disambiguated, ct); suffix++)
+		{
+			disambiguated = $"{baseName}_{xxHash3}_{suffix}";
+		}
+
+		return disambiguated;
 	}
 }

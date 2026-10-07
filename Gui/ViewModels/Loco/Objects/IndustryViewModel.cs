@@ -115,7 +115,7 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("Farm")]
-	public uint8_t FarmIdealSize
+	public uint8_t FarmNumFields
 	{
 		get => Model.FarmNumFields;
 		set => Model.FarmNumFields = value;

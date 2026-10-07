@@ -39,7 +39,7 @@ public class MainWindowViewModel : ViewModelBase
 		[
 			new ScriptDescriptor(
 				"Export all tables",
-				"Exports authors, tags, licences, SC5 files and packs, object packs, and object metadata to JSON files in the JSON directory.",
+				"Exports authors, tags, licences, scenarios and packs, object packs, and object metadata to JSON files in the JSON directory.",
 				DatabaseExportService.ExportAllAsync),
 		];
 

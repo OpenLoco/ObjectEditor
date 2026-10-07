@@ -37,7 +37,7 @@ public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<
 		=> new(1, "Constitution", "Do no evil");
 
 	public override string BaseRoute
-		=> RoutesV2.Licences;
+		=> Definitions.Web.Routes.Licences;
 
 	protected override DbSet<TblLicence> GetTable(LocoDbContext context)
 		=> context.Licences;
@@ -47,4 +47,20 @@ public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<
 
 	protected override DtoLicenceEntry ToDtoEntryFunc(TblLicence row)
 		=> row.ToDtoEntry();
+
+	[Test]
+	public async Task Descriptor_ReturnsLicenceWithRelationships()
+	{
+		var descriptor = await Client.GetLicenceDescriptorAsync(HttpClient!, 1);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(descriptor, Is.Not.Null);
+			Assert.That(descriptor!.Id, Is.EqualTo(1));
+			Assert.That(descriptor.Name, Is.EqualTo("Gandalf-EULA"));
+			Assert.That(descriptor.Text, Is.EqualTo("You shall not pass"));
+			Assert.That(descriptor.Objects, Is.Empty);
+			Assert.That(descriptor.ObjectPacks, Is.Empty);
+		}
+	}
 }

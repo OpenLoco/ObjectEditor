@@ -1,5 +1,7 @@
 using Definitions.Database;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Dock;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
@@ -9,11 +11,9 @@ public class DtoObjectDock : IDtoSubObject
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
 	public DockObjectFlags Flags { get; set; }
-	public uint8_t NumBuildingPartAnimations { get; set; }
-	public uint8_t NumBuildingVariationParts { get; set; }
+	public BuildingComponents BuildingComponents { get; set; } = new();
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-	public coord_t BoatPositionX { get; set; }
-	public coord_t BoatPositionY { get; set; }
+	public Pos2 BoatPosition { get; set; } = new();
 	public UniqueObjectId Id { get; set; }
 }

@@ -1,24 +1,16 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Graphics;
-using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+using Definitions.Web;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using ObjectService;
 using ObjectService.Frontend;
 using ObjectService.Identity;
 using ObjectService.Services;
 using ObjectService.RouteHandlers;
 using Scalar.AspNetCore;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,27 +19,7 @@ builder.Logging.AddConsole();
 
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
-builder.Services.AddOpenApi(options =>
-{
-	_ = options.AddDocumentTransformer((document, context, cancellationToken) =>
-	{
-		document.Info.Title = "OpenLoco Object Service";
-		document.Info.Version = "2.0";
-		document.Info.Contact = new OpenApiContact
-		{
-			Name = "Left of Zen",
-			Email = "leftofzen@openloco.io"
-		};
-
-		document.Servers?.Clear();
-		document.Servers?.Add(new OpenApiServer() { Url = "https://openloco.leftofzen.dev" });
-
-		return Task.CompletedTask;
-	});
-});
-
-// (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddObjectServiceOpenApi();
 builder.Services.AddHealthChecks()
 	.AddCheck<ObjectServiceHealthCheck>("object-service");
 builder.Services.AddProblemDetails();
@@ -66,7 +38,25 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 	}
 });
 
-builder.Services.AddScoped<ObjectExplorerService>(); builder.Services.AddObjectEditorServices();
+builder.Services.AddScoped<FrontendApiClient>(); builder.Services.AddScoped<ObjectExplorerService>(); builder.Services.AddObjectEditorServices();
+
+// Rendered object images are content-addressed by the source DAT's xxHash3 and cached in two tiers: an
+// in-process memory cache (L1, bounded by a byte size limit) in front of a disk cache under
+// GameData/Cache/images (L2, survives restarts). The image cache itself is registered by
+// AddGameDataFolderServices; here we only configure the memory tier's byte limit (default 256 MB).
+var imageCacheBytes = builder.Configuration.GetValue<long?>("ObjectService:ImageCache:MemoryCacheSizeBytes") ?? 256L * 1024 * 1024;
+builder.Services.AddMemoryCache(options => options.SizeLimit = imageCacheBytes);
+
+// Output caching for the small, immutable image responses. Combined with the long-lived ETag/Cache-Control
+// headers the route handlers set, this means an object image is decoded at most once per expiry window
+// regardless of how many clients ask for it. Bounded so it can never grow without limit.
+builder.Services.AddOutputCache(options =>
+{
+	options.SizeLimit = 64L * 1024 * 1024;
+	options.AddPolicy("ObjectImages", policy => policy
+		.Expire(TimeSpan.FromHours(24))
+		.SetVaryByRouteValue("id", "imageId"));
+});
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -78,11 +68,29 @@ var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
 ArgumentNullException.ThrowIfNull(objRoot);
 ArgumentNullException.ThrowIfNull(paletteMapFile);
 
-var serverFolderManager = new ServerFolderManager(objRoot);
+var serverFolderManager = await ServerFolderManager.CreateAsync(objRoot);
 var paletteMap = new PaletteMap(paletteMapFile);
 
 builder.Services.AddSingleton(serverFolderManager);
 builder.Services.AddSingleton(paletteMap);
+
+// The system admin identity (email/username/password) is resolved once for the whole process so the
+// startup bootstrap (DatabaseInitializer) and the development-only quick-login always agree on the
+// same account.
+builder.Services.AddSingleton<AdminUserProvider>();
+
+// The GameData folder services are shared by the startup synchronisation and the file watchers, and
+// are always registered so the files on disk and the database are reconciled whenever the server
+// starts - even when the file watcher is turned off.
+builder.Services.AddGameDataFolderServices();
+
+// Watches the whole GameData folder tree for files dropped in at runtime. A single service owns
+// one watcher per category folder; DAT files are indexed into objectIndex.json and the database
+// and scenarios are added to the database so changes appear on the live service without a restart.
+if (builder.Configuration.GetValue("ObjectService:EnableFileWatcher", true))
+{
+	builder.Services.AddGameDataFileWatchers();
+}
 
 //var server = new Server(new ServerSettings(objRoot, paletteMapFile));
 //builder.Services.AddSingleton(server);
@@ -104,129 +112,12 @@ builder.Services.AddHttpLogging(logging =>
 	logging.CombineLogs = true;
 });
 
-const string tokenPolicy = "token";
+const string tokenPolicy = ServiceRegistrationExtensions.RateLimitPolicyName;
 
-var rateLimiterSection = builder.Configuration.GetSection("ObjectService:RateLimiter");
-ArgumentNullException.ThrowIfNull(rateLimiterSection);
-var rateLimiter = new RateLimitOptions();
-rateLimiterSection.Bind(rateLimiter);
+builder.Services.AddObjectServiceForwardedHeaders();
+builder.Services.AddObjectServiceRateLimiting(builder.Configuration);
 
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-	options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-});
-
-builder.Services.AddRateLimiter(rlOptions => rlOptions
-	.AddTokenBucketLimiter(policyName: tokenPolicy, options =>
-	{
-		options.TokenLimit = rateLimiter.TokenLimit;
-		options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-		options.QueueLimit = rateLimiter.QueueLimit;
-		options.ReplenishmentPeriod = TimeSpan.FromSeconds(rateLimiter.ReplenishmentPeriod);
-		options.TokensPerPeriod = rateLimiter.TokensReplenishedPerPeriod;
-		options.AutoReplenishment = rateLimiter.AutoReplenishment;
-		rlOptions.OnRejected = (context, cancellationToken) =>
-		{
-			if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-			{
-				context.HttpContext.Response.Headers.RetryAfter = retryAfter.TotalSeconds.ToString();
-			}
-
-			context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-			_ = context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", cancellationToken);
-
-			return new ValueTask();
-		};
-	}));
-
-builder.Services
-	.AddIdentityApiEndpoints<TblUser>()
-	.AddRoles<TblUserRole>()
-	.AddEntityFrameworkStores<LocoDbContext>();
-
-// Relax default password rules for development.
-// Override via appsettings or user secrets in production.
-builder.Services.Configure<IdentityOptions>(options =>
-{
-	options.Password.RequireDigit = true;
-	options.Password.RequireLowercase = true;
-	options.Password.RequireUppercase = true;
-	options.Password.RequireNonAlphanumeric = true;
-	options.Password.RequiredLength = 12;
-});
-
-// Configure bearer token expiration from settings
-builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, options =>
-{
-	var durationInMinutes = builder.Configuration.GetValue<int?>("JwtSettings:DurationInMinutes") ?? 60;
-	options.BearerTokenExpiration = TimeSpan.FromMinutes(durationInMinutes);
-});
-
-builder.Services.AddAuthentication()
-.AddJwtBearer(options =>
-{
-	options.TokenValidationParameters = new TokenValidationParameters
-	{
-		ValidateIssuer = true,
-		ValidateAudience = true,
-		ValidateLifetime = true,
-		ValidateIssuerSigningKey = true,
-		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-		ValidAudience = builder.Configuration["JwtSettings:Audience"],
-		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"] ?? throw new InvalidOperationException("JWT Key not configured"))),
-	};
-});
-
-builder.Services.AddAuthorization(options =>
-{
-	// Configure the default policy to accept Identity cookies, Identity Bearer tokens, and JWT tokens.
-	// This allows both page-based cookie auth (from SignInManager) and API bearer token auth.
-	options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-		.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
-		.RequireAuthenticatedUser()
-		.Build();
-
-	// Policy: user must own the object (id from route) or be an Admin
-	options.AddPolicy("CanEditObject", policy =>
-		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
-			.RequireAuthenticatedUser()
-			.AddRequirements(new ObjectOwnershipRequirement()));
-
-	// Admin-only policy (for user/role management)
-	options.AddPolicy("AdminOnly", policy =>
-		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
-			.RequireRole("Admin"));
-	// Curator policy – any user with at least one curator permission (or Admin)
-	options.AddPolicy("Curator", policy =>
-		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
-			.RequireAuthenticatedUser()
-			.RequireAssertion(context =>
-				context.User.IsInRole("Admin") ||
-				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.TagsManage) ||
-				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.LicenceManage) ||
-				context.User.HasClaim(LocoPermissions.ClaimType, LocoPermissions.AuthorManage)));
-
-	// Individual permission policies for fine-grained control when needed
-	options.AddPolicy("CanManageTags", policy =>
-		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
-			.RequireAuthenticatedUser()
-			.AddRequirements(new PermissionRequirement(LocoPermissions.TagsManage)));
-
-	options.AddPolicy("CanManageLicences", policy =>
-		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
-			.RequireAuthenticatedUser()
-			.AddRequirements(new PermissionRequirement(LocoPermissions.LicenceManage)));
-
-	options.AddPolicy("CanManageAuthors", policy =>
-		policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
-			.RequireAuthenticatedUser()
-			.AddRequirements(new PermissionRequirement(LocoPermissions.AuthorManage)));
-});
-
-// Register the ownership authorization handler
-builder.Services.AddScoped<IAuthorizationHandler, ObjectOwnershipHandler>();
-// Register the permission authorization handler
-builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
+builder.Services.AddObjectServiceIdentity(builder.Configuration, builder.Environment);
 
 // Used for the Identity stuff to send emails to users
 // disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
@@ -234,47 +125,34 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
 var app = builder.Build();
 
+// Make the active environment obvious at startup: appsettings.Development.json and user-secrets only
+// load when this is "Development".
+app.Logger.LogInformation(
+	"Object Service starting in the '{Environment}' environment (content root: {ContentRoot})",
+	app.Environment.EnvironmentName, app.Environment.ContentRootPath);
+
+// Turn any unhandled exception into an RFC-7807 ProblemDetails response (AddProblemDetails is
+// registered above) instead of a bare 500. Placed first so it wraps the whole pipeline.
+app.UseExceptionHandler();
+
 app.UseForwardedHeaders();
 
 app.UseHttpLogging();
 app.UseRateLimiter();
 app.UseStaticFiles();
-
-// Dev-mode authentication bypass: when enabled, every API request runs as an authenticated admin.
-// Set "ObjectService:DisableAuthentication": true in appsettings.Development.json.
-// UI pages (Razor Pages) are excluded so the login/logout flow works normally;
-// developers can use the "Dev Login" button in the header for quick authentication.
-var disableAuth = builder.Configuration.GetValue<bool?>("ObjectService:DisableAuthentication") ?? false;
-if (disableAuth)
-{
-	app.Use((context, next) =>
-	{
-		// Only inject the fake identity for API endpoints.  UI pages (/Account/*,
-		// /Manage/*, etc.) should go through the normal cookie-based auth flow so
-		// that login, logout, and the header's "Log in"/user-name display all work correctly.
-		if (context.Request.Path.StartsWithSegments("/v2", StringComparison.OrdinalIgnoreCase))
-		{
-			// Inject a fake admin ClaimsPrincipal before the auth middleware runs.
-			// ASP.NET Core's UseAuthentication skips when context.User is already set.
-			var claims = new[]
-			{
-				new Claim(ClaimTypes.NameIdentifier, "0"),
-				new Claim(ClaimTypes.Name, "devadmin"),
-				new Claim(ClaimTypes.Role, "Admin"),
-			};
-			var identity = new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme);
-			context.User = new ClaimsPrincipal(identity);
-		}
-
-		return next();
-	});
-}
+app.UseOutputCache();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapIdentityApi<TblUser>();
-// app.MapPost("/register", () => Results.Ok());
+// ASP.NET Identity's built-in endpoints, mounted under /v2/identity so the whole API is versioned.
+// Tagged explicitly so the API reference groups them under "Identity" rather than a generated
+// fallback name.
+var identityEndpoints = app.MapGroup($"{Routes.Prefix}{Routes.Identity}").WithTags("Identity");
+_ = identityEndpoints.MapLocoIdentityApi<TblUser>();
+// Self-service account routes (display name, delete own account) live next to Identity's own manage
+// endpoints rather than under the admin-only /v2/users record area.
+IdentityManageRouteHandler.MapRoutes(identityEndpoints);
 
 _ = app
 	.MapHealthChecks("/health")

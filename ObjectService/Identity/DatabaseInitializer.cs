@@ -10,9 +10,6 @@ namespace ObjectService.Identity;
 /// </summary>
 public static class DatabaseInitializer
 {
-	private const string DefaultAdminEmail = "leftofzen@openloco.io";
-	private const string DefaultAdminUsername = "LeftofZen";
-	private const string DefaultAdminPassword = "3!D:Gy681%&y(HCg";
 
 	public static async Task InitializeAsync(WebApplication app)
 	{
@@ -20,39 +17,13 @@ public static class DatabaseInitializer
 		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
 		var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TblUser>>();
 		var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TblUserRole>>();
-		var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 		var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DatabaseInitializer");
 
-		// Recreate DB from scratch when the dev flag is on
-		var deleteDbOnStartup = config.GetValue<bool?>("ObjectService:DeleteDatabaseOnStartup") ?? false;
-		if (deleteDbOnStartup)
-		{
-			logger.LogWarning("ObjectService:DeleteDatabaseOnStartup is true — dropping and recreating database");
-			await db.Database.EnsureDeletedAsync();
-		}
-
-		// Ensure the database file and core schema exist
-		await db.Database.EnsureCreatedAsync();
-
-		// Add OwnerUserId column to existing databases that were created before
-		// DbCoreObject gained the OwnerUserId property. We omit the REFERENCES
-		// clause because SQLite ALTER TABLE ADD COLUMN has limited FK support;
-		// EF Core tracks the FK at the model level instead.
-		foreach (var table in new[] { "Objects", "ObjectPacks", "SC5Files", "SC5FilePacks" })
-		{
-			try
-			{
-#pragma warning disable EF1002 // table names are from a hard-coded array, no injection risk
-				await db.Database.ExecuteSqlRawAsync(
-					$"ALTER TABLE \"{table}\" ADD COLUMN \"OwnerUserId\" INTEGER NULL");
-#pragma warning restore EF1002
-				logger.LogInformation("Added OwnerUserId column to {Table} table", table);
-			}
-			catch (Exception ex)
-			{
-				logger.LogWarning(ex, "Could not add OwnerUserId column to {Table} table (may already exist)", table);
-			}
-		}
+		// Bring the schema up to date. Databases created before migrations were adopted have no
+		// __EFMigrationsHistory table, so the baseline migration is recorded as applied first; from then on
+		// EF migrations own the schema and every future model change is delivered as a migration.
+		await MigrationInitializer.EnsureBaselineHistoryAsync(db, logger);
+		await db.Database.MigrateAsync();
 
 		// Ensure Admin role
 		if (!await roleManager.RoleExistsAsync("Admin"))
@@ -73,10 +44,11 @@ public static class DatabaseInitializer
 				logger.LogInformation("Created Curator role");
 
 				// Assign curator permissions as role claims
-				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.ObjectPacksCreate));
-				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.TagsManage));
-				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.LicenceManage));
-				await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.AuthorManage));
+				foreach (var perm in LocoPermissions.Curator)
+				{
+					_ = await roleManager.AddClaimAsync(curatorRole, new System.Security.Claims.Claim(LocoPermissions.ClaimType, perm));
+				}
+
 				logger.LogInformation("Assigned curator permissions to Curator role");
 			}
 			else
@@ -92,7 +64,7 @@ public static class DatabaseInitializer
 			var existingClaims = await roleManager.GetClaimsAsync(curatorRole);
 			var existingPermissionValues = existingClaims.Where(c => c.Type == LocoPermissions.ClaimType).Select(c => c.Value).ToHashSet();
 
-			foreach (var perm in new[] { LocoPermissions.ObjectPacksCreate, LocoPermissions.TagsManage, LocoPermissions.LicenceManage, LocoPermissions.AuthorManage })
+			foreach (var perm in LocoPermissions.Curator)
 			{
 				if (!existingPermissionValues.Contains(perm))
 				{
@@ -109,85 +81,134 @@ public static class DatabaseInitializer
 			}
 		}
 
-		// Ensure system admin user
-		var adminEmail = config["AdminUser:Email"] ?? DefaultAdminEmail;
-		var adminUsername = config["AdminUser:Username"] ?? DefaultAdminUsername;
-		var adminPassword = config["AdminUser:Password"] ?? DefaultAdminPassword;
+		// Ensure the system admin user. The account is resolved once for the whole process by
+		// AdminUserProvider: a configured password always wins, and in Development a random throwaway
+		// password is generated when none is configured so the Dev Login button works with no setup.
+		var adminProvider = scope.ServiceProvider.GetRequiredService<AdminUserProvider>();
+		var adminSettings = adminProvider.Settings;
+		TblUser? adminUser = null;
 
-		logger.LogInformation("Ensuring admin user: {Username} / {Email}", adminUsername, adminEmail);
-
-		var adminUser = await userManager.FindByEmailAsync(adminEmail);
-		if (adminUser == null)
+		if (adminSettings is null)
 		{
-			adminUser = new TblUser
-			{
-				UserName = adminUsername,
-				Email = adminEmail,
-				EmailConfirmed = true,
-			};
-
-			var cr = await userManager.CreateAsync(adminUser, adminPassword);
-			if (!cr.Succeeded)
-			{
-				logger.LogError("Failed to create admin user: {Errors}", string.Join(", ", cr.Errors.Select(e => e.Description)));
-				logger.LogError("Password rules — Digit:{RD} Lower:{RL} Upper:{RU} NonAlpha:{RNA} MinLen:{MinLen}",
-					userManager.Options.Password.RequireDigit,
-					userManager.Options.Password.RequireLowercase,
-					userManager.Options.Password.RequireUppercase,
-					userManager.Options.Password.RequireNonAlphanumeric,
-					userManager.Options.Password.RequiredLength);
-				return; // let app start; admin features won't work
-			}
-
-			logger.LogInformation("Created system admin user {Username}", adminUsername);
+			logger.LogError(
+				"AdminUser:Password is not configured; the system admin account was NOT bootstrapped. " +
+				"Configure AdminUser:Password via user-secrets or environment variables.");
 		}
 		else
 		{
-			logger.LogInformation("Admin user {Username} already exists (Id={Id})", adminUsername, adminUser.Id);
-		}
-
-		// Ensure admin role assignment
-		if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
-		{
-			await userManager.AddToRoleAsync(adminUser, "Admin");
-			logger.LogInformation("Assigned Admin role to {Username}", adminUsername);
-		}
-
-		// Ensure every user has the DisplayNameChange user claim (idempotent)
-		var allUsers = await userManager.Users.ToListAsync();
-		foreach (var u in allUsers)
-		{
-			var existingUserClaims = await userManager.GetClaimsAsync(u);
-			if (!existingUserClaims.Any(c => c.Type == LocoPermissions.ClaimType && c.Value == LocoPermissions.DisplayNameChange))
+			if (adminProvider.UsesGeneratedPassword)
 			{
-				var claimResult = await userManager.AddClaimAsync(u,
-					new System.Security.Claims.Claim(LocoPermissions.ClaimType, LocoPermissions.DisplayNameChange));
-				if (claimResult.Succeeded)
+				logger.LogInformation(
+					"No AdminUser:Password configured; bootstrapped the Development system admin {Username} with a " +
+					"generated throwaway password. Use the Dev Login button to sign in, or set AdminUser:Password " +
+					"(user-secrets) to use a specific password.",
+					adminSettings.UserName);
+			}
+
+			logger.LogInformation("Ensuring admin user: {Username} / {Email}", adminSettings.UserName, adminSettings.Email);
+
+			// Look up the admin by email first, then by username. The username fallback keeps this
+			// idempotent when the stored email differs from the configured one, which would otherwise
+			// make CreateAsync below fail with a duplicate-user-name error.
+			adminUser = await userManager.FindByEmailAsync(adminSettings.Email)
+				?? await userManager.FindByNameAsync(adminSettings.UserName);
+
+			if (adminUser == null)
+			{
+				adminUser = new TblUser
 				{
-					logger.LogInformation("Granted {Permission} user claim to {Username}", LocoPermissions.DisplayNameChange, u.UserName);
-				}
-				else
+					UserName = adminSettings.UserName,
+					Email = adminSettings.Email,
+					EmailConfirmed = true,
+				};
+
+				var cr = await userManager.CreateAsync(adminUser, adminSettings.Password);
+				if (!cr.Succeeded)
 				{
-					logger.LogWarning("Failed to grant {Permission} to {Username}: {Errors}",
-						LocoPermissions.DisplayNameChange, u.UserName,
-						string.Join(", ", claimResult.Errors.Select(e => e.Description)));
+					logger.LogError("Failed to create admin user: {Errors}", string.Join(", ", cr.Errors.Select(e => e.Description)));
+					logger.LogError("Password rules — Digit:{RD} Lower:{RL} Upper:{RU} NonAlpha:{RNA} MinLen:{MinLen}",
+						userManager.Options.Password.RequireDigit,
+						userManager.Options.Password.RequireLowercase,
+						userManager.Options.Password.RequireUppercase,
+						userManager.Options.Password.RequireNonAlphanumeric,
+						userManager.Options.Password.RequiredLength);
+					return; // let app start; admin features won't work
 				}
+
+				logger.LogInformation("Created system admin user {Username}", adminSettings.UserName);
+			}
+			else
+			{
+				logger.LogInformation("Admin user {Username} already exists (Id={Id})", adminUser.UserName, adminUser.Id);
+
+				// Keep the login username config-driven: the Identity /login endpoint authenticates by
+				// username, so the dev quick-login signs in with adminSettings.UserName.
+				if (!string.Equals(adminUser.UserName, adminSettings.UserName, StringComparison.Ordinal))
+				{
+					var renamed = await userManager.SetUserNameAsync(adminUser, adminSettings.UserName);
+					if (renamed.Succeeded)
+					{
+						logger.LogInformation("Set the admin username to the configured value {Username}", adminSettings.UserName);
+					}
+					else
+					{
+						logger.LogError(
+							"Failed to set the admin username to {Username}: {Errors}",
+							adminSettings.UserName, string.Join(", ", renamed.Errors.Select(e => e.Description)));
+					}
+				}
+
+				// The resolved password is the source of truth for the system admin, so keep the stored
+				// hash in sync. This is what lets a freshly configured AdminUser:Password user-secret (or
+				// a regenerated Development fallback) actually sign in against an existing database.
+				if (!await userManager.CheckPasswordAsync(adminUser, adminSettings.Password))
+				{
+					var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
+					var reset = await userManager.ResetPasswordAsync(adminUser, token, adminSettings.Password);
+					if (reset.Succeeded)
+					{
+						logger.LogInformation(
+							"Reset the stored password for {Username} to match the configured AdminUser:Password",
+							adminSettings.UserName);
+					}
+					else
+					{
+						logger.LogError(
+							"Failed to reset the password for {Username}: {Errors}. Check AdminUser:Password meets the password policy.",
+							adminSettings.UserName, string.Join(", ", reset.Errors.Select(e => e.Description)));
+					}
+				}
+
+				// A locked-out admin cannot sign in even with the right password; clear it.
+				if (await userManager.IsLockedOutAsync(adminUser))
+				{
+					_ = await userManager.SetLockoutEndDateAsync(adminUser, null);
+					_ = await userManager.ResetAccessFailedCountAsync(adminUser);
+					logger.LogInformation("Cleared lockout for {Username}", adminSettings.UserName);
+				}
+			}
+
+			// Ensure admin role assignment
+			if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+			{
+				await userManager.AddToRoleAsync(adminUser, "Admin");
+				logger.LogInformation("Assigned Admin role to {Username}", adminSettings.UserName);
+			}
+
+			// Assign unowned objects to admin
+			var unowned = await db.Objects.Where(o => o.OwnerUserId == null).ToListAsync();
+			if (unowned.Count > 0)
+			{
+				foreach (var obj in unowned)
+				{
+					obj.OwnerUserId = adminUser.Id;
+				}
+
+				await db.SaveChangesAsync();
+				logger.LogInformation("Assigned {Count} unowned objects to admin", unowned.Count);
 			}
 		}
 
-		// Assign unowned objects to admin
-		var unowned = await db.Objects.Where(o => o.OwnerUserId == null).ToListAsync();
-		if (unowned.Count > 0)
-		{
-			foreach (var obj in unowned)
-			{
-				obj.OwnerUserId = adminUser.Id;
-			}
-
-			await db.SaveChangesAsync();
-			logger.LogInformation("Assigned {Count} unowned objects to admin", unowned.Count);
-		}
-
-		logger.LogInformation("Database initialization complete (Admin exists={Exists})", adminUser != null);
+		logger.LogInformation("Database initialization complete (Admin bootstrapped={Bootstrapped})", adminUser != null);
 	}
 }

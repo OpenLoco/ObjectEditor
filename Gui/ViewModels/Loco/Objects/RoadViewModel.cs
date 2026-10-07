@@ -24,7 +24,7 @@ public class RoadViewModel(RoadObject model)
 		set => Model.RoadPieces = value;
 	}
 
-	public Speed16 MaxSpeed
+	public Speed16 MaxCurveSpeed
 	{
 		get => Model.MaxCurveSpeed;
 		set => Model.MaxCurveSpeed = value;

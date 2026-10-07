@@ -11,6 +11,7 @@ using Definitions.ObjectModels.Types;
 using DynamicData;
 using Index;
 using Microsoft.Extensions.Logging;
+using ObjectService;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
@@ -36,6 +37,9 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
 
+	// Cached read-only state of the object service; refreshed at the start of each upload batch.
+	bool? isServerReadOnly;
+
 	public G1Dat? G1 { get; set; }
 
 	//public Dictionary<string, byte[]> Music { get; } = [];
@@ -51,6 +55,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	public const string ApplicationName = "OpenLoco Object Editor";
 	public const string SettingsFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
 	public const string LoggingFileName = "objectEditor.log";
+	public const string UserAgent = "ObjectEditor";
 	public const string ImageTableGroupsFileName = ImageTableGroupLoader.FileName;
 
 	public string DefaultConfigFolder { get; set; } = "config";
@@ -67,7 +72,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
-	public ObjectServiceClient ObjectServiceClient { get; init; }
+	public ApiClient ObjectServiceClient { get; init; }
 
 	public ObjectServiceModel ObjectServiceModel { get; init; }
 
@@ -90,7 +95,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
 		Settings.ConfigFolder = InitialiseDirectory(Settings.ConfigFolder, "config");
 
-		ObjectServiceClient = new(Settings, Logger);
+		var serverAddress = Settings.UseHttps
+			? Settings.ServerAddressHttps
+			: Settings.ServerAddressHttp;
+
+		ObjectServiceClient = new(serverAddress, Logger, UserAgent);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
 	}
 
@@ -351,7 +360,8 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				DatObjects = [.. cachedLocoObjDto.DatObjects],
 				Licence = cachedLocoObjDto.Licence,
 				Availability = cachedLocoObjDto.Availability,
-				//SubObject = cachedLocoObjDto.SubObject,
+				VehicleType = cachedLocoObjDto.VehicleType,
+				SubObject = cachedLocoObjDto.SubObject,
 			};
 
 			//if (locoObject != null)
@@ -443,83 +453,54 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.ObjDataDirectory = directory;
 		Settings.Save(SettingsFilePathName, Logger);
 
-		if (useExistingIndex && File.Exists(IndexFileName))
+		if (string.IsNullOrEmpty(IndexFileName))
 		{
-			var exception = false;
+			Logger.LogError("Index filename was null or empty.");
+			return;
+		}
 
-			try
-			{
-				var index = await ObjectIndex.LoadIndexAsync(IndexFileName).ConfigureAwait(false);
-				ArgumentNullException.ThrowIfNull(index, nameof(index));
-				ObjectIndex = index;
-				Logger.LogInformation("Loaded index for {Directory} with {Count} objects.", directory, ObjectIndex.Objects.Count);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "Failed to load index from \"{IndexFileName}\"", IndexFileName);
-				exception = true;
-			}
-
-			if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.FileName) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
-			{
-				Logger.LogWarning("Index file format has changed or otherwise appears to be malformed - recreating now.");
-				await RecreateIndex(directory, progress).ConfigureAwait(false);
-				return;
-			}
-
-			var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.FileName);
-			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-
-			var a = objectIndexFilenames.Except(allFiles);
-			var b = allFiles.Except(objectIndexFilenames);
-			if (a.Any() || b.Any())
-			{
-				Logger.LogWarning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
-				Logger.LogWarning("Objects in index but not on disk: {Value}", string.Join(',', a));
-				Logger.LogWarning("Objects on disk but not in index: {Value}", string.Join(',', b));
-				await UpdateIndex(directory, progress, a.Concat(b).Where(x => x != null)!).ConfigureAwait(false);
-			}
+		// Loading the index, comparing it against the files on disk and re-indexing the differences is
+		// shared with the server's startup synchronisation (ObjectIndex.LoadOrCreateAndSyncAsync), so
+		// both use exactly the same behaviour.
+		if (useExistingIndex)
+		{
+			Logger.LogInformation("Loading index file for {Directory}", directory);
+			ObjectIndex = await ObjectIndex.LoadOrCreateAndSyncAsync(directory, IndexFileName, Logger, progress).ConfigureAwait(false);
 		}
 		else
 		{
-			await RecreateIndex(directory, progress).ConfigureAwait(false);
-		}
-
-		async Task UpdateIndex(string directory, IProgress<float> progress, IEnumerable<string> filesToAdd)
-		{
-			Logger.LogInformation("Updating index file for {Directory}", directory);
-			_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
-
-			if (string.IsNullOrEmpty(IndexFileName))
-			{
-				Logger.LogError("Index filename was null or empty.");
-				return;
-			}
-
-			await ObjectIndex.SaveIndexAsync(IndexFileName).ConfigureAwait(false);
-			Logger.LogInformation("Index was saved to {IndexFileName}", IndexFileName);
-		}
-
-		async Task RecreateIndex(string directory, IProgress<float> progress)
-		{
 			Logger.LogInformation("Recreating index file for {Directory}", directory);
 			ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress).ConfigureAwait(false);
-
-			if (ObjectIndex == null)
-			{
-				Logger.LogError("Index was unable to be created.");
-				return;
-			}
-
-			if (string.IsNullOrEmpty(IndexFileName))
-			{
-				Logger.LogError("Index filename was null or empty.");
-				return;
-			}
-
 			await ObjectIndex.SaveIndexAsync(IndexFileName).ConfigureAwait(false);
 			Logger.LogInformation("New index was saved to {IndexFileName}", IndexFileName);
 		}
+
+		Logger.LogInformation("Indexed {Directory} with {Count} objects.", directory, ObjectIndex.Objects.Count);
+	}
+
+	/// <summary>
+	/// Determines whether the object service is currently in read-only mode, caching the result so
+	/// that a batch of uploads only queries the server once. Returns false when the status can't be
+	/// determined (e.g. the server is unreachable), leaving the result uncached so it is retried.
+	/// </summary>
+	public async Task<bool> IsServerReadOnlyAsync(bool forceRefresh = false)
+	{
+		if (!forceRefresh && isServerReadOnly.HasValue)
+		{
+			return isServerReadOnly.Value;
+		}
+
+		var status = await ObjectServiceClient.GetServerStatusAsync();
+		if (status == null)
+		{
+			// Unknown (e.g. the server is unreachable): don't claim read-only, and clear any stale
+			// value so the next check retries rather than reusing a previous result.
+			isServerReadOnly = null;
+			return false;
+		}
+
+		isServerReadOnly = status.IsReadOnly;
+		return isServerReadOnly.Value;
 	}
 
 	public async Task CheckForDatFilesNotOnServer()
@@ -544,6 +525,14 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			Logger.LogInformation("Automatic object discovery and upload to master service is {IsEnabledString}", isEnabledString);
 			if (Settings.AutoObjectDiscoveryAndUpload)
 			{
+				// Check read-only mode once up front (and refresh any cached value) so a batch of
+				// uploads doesn't repeatedly query the server.
+				if (await IsServerReadOnlyAsync(forceRefresh: true))
+				{
+					Logger.LogWarning("The object service is in read-only mode; skipping upload of {Count} new object(s).", localButNotOnline.Count);
+					return;
+				}
+
 				foreach (var dat in localButNotOnline)
 				{
 					await UploadDatToServer(dat);
@@ -558,6 +547,12 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public async Task UploadDatToServer(ObjectIndexEntry dat)
 	{
+		if (await IsServerReadOnlyAsync())
+		{
+			Logger.LogInformation("Skipping upload of {FileName}: the object service is in read-only mode.", dat.FileName);
+			return;
+		}
+
 		Logger.LogInformation("Uploading {FileName} to object repository", dat.FileName);
 		var filename = Path.Combine(Settings.ObjDataDirectory, dat.FileName ?? string.Empty);
 		var creationDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(filename));

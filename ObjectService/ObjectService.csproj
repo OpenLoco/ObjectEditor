@@ -9,6 +9,11 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateMvcApplicationPartsAssemblyAttributes>false</GenerateMvcApplicationPartsAssemblyAttributes>
     <GenerateProvideApplicationPartFactoryAttribute>false</GenerateProvideApplicationPartFactoryAttribute>
+
+    <!-- Local development secrets (AdminUser:Password, JwtSettings:Key) live in the .NET user-secrets
+         store rather than appsettings*.json, so they are never committed. `dotnet user-secrets`
+         targets this id automatically when run from the ObjectService directory. -->
+    <UserSecretsId>openloco-objectservice</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />

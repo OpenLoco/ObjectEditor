@@ -374,7 +374,7 @@ public class ObjectValidationTests
 			FrictionSound = new FrictionSound { SoundObject = Make("FRICTION", ObjectType.Sound, 0x80) },
 			SimpleMotorSound = new SimpleMotorSound { SoundObject = Make("MOTOR", ObjectType.Sound, 0x90) },
 			GearboxMotorSound = new GearboxMotorSound { SoundObject = Make("GEARBOX", ObjectType.Sound, 0xA0) },
-			ParticleEmitters = [new EmitterAnimation { AnimationObject = Make("STEAM1", ObjectType.Steam, 0xB0) }],
+			ParticleEmitters = [new EmitterAnimation { Type = EmitterAnimationType.SteamPuff1, AnimationObject = Make("STEAM1", ObjectType.Steam, 0xB0) }],
 		};
 
 		var deps = ObjectValidation.GetObjectDependencies(vehicle).Select(x => x.Name).ToList();

@@ -25,7 +25,7 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 	const UniqueObjectId AlphaPackId = 1;
 
 	public override string BaseRoute
-		=> RoutesV2.ObjectPacks;
+		=> Definitions.Web.Routes.ObjectPacks;
 
 	protected override async Task SeedDataCoreAsync(LocoDbContext db)
 	{
@@ -62,7 +62,6 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 					{
 						Id = 1,
 						Name = "safe-obj",
-						SubObjectId = 1,
 						ObjectType = ObjectType.Vehicle,
 						ObjectSource = ObjectSource.Custom,
 						Availability = ObjectAvailability.Available,
@@ -86,7 +85,6 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 					{
 						Id = 2,
 						Name = "safe-obj-2",
-						SubObjectId = 2,
 						ObjectType = ObjectType.Vehicle,
 						ObjectSource = ObjectSource.Custom,
 						Availability = ObjectAvailability.Available,
@@ -129,9 +127,31 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 			[],
 			null);
 
-		using var response = await HttpClient!.PostAsJsonAsync($"{RoutesV2.Prefix}{BaseRoute}", request);
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", request);
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
+	}
+	[Test]
+	public async Task PostAsync_WithEmptyName_ReturnsBadRequest()
+	{
+		var request = new DtoItemPackDescriptor<DtoObjectEntry>(
+			0, "   ", null, null, null, DateOnly.UtcToday, [], [], [], null);
+
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", request);
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+	}
+
+	[Test]
+	public async Task PostAsync_WithDuplicateName_ReturnsConflict()
+	{
+		// "Alpha Object Pack" is seeded by SeedDataCoreAsync.
+		var request = new DtoItemPackDescriptor<DtoObjectEntry>(
+			0, "Alpha Object Pack", null, null, null, DateOnly.UtcToday, [], [], [], null);
+
+		using var response = await HttpClient!.PostAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}", request);
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
 	}
 
 	[Test]
@@ -153,35 +173,49 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public override async Task PutAsync()
 	{
-		var request = new DtoItemPackDescriptor<DtoObjectEntry>(
+		var request = new DtoObjectPackDescriptor(
 			AlphaPackId,
 			"Updated object pack",
 			"Updated description",
 			null,
 			null,
 			DateOnly.UtcToday,
+			null,
 			[],
 			[],
-			[],
-			null);
+			[]);
 
-		using var response = await HttpClient!.PutAsJsonAsync($"{RoutesV2.Prefix}{BaseRoute}/{AlphaPackId}", request);
+		using var response = await HttpClient!.PutAsJsonAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}", request);
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+			using var db = GetDbContext();
+			var updated = await db.ObjectPacks.SingleAsync(x => x.Id == AlphaPackId);
+			Assert.That(updated.Name, Is.EqualTo("Updated object pack"));
+			Assert.That(updated.Description, Is.EqualTo("Updated description"));
+		}
 	}
 
 	[Test]
 	public override async Task DeleteAsync()
 	{
-		using var response = await HttpClient!.DeleteAsync($"{RoutesV2.Prefix}{BaseRoute}/{AlphaPackId}");
+		using var response = await HttpClient!.DeleteAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}");
 
-		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotImplemented));
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+			using var db = GetDbContext();
+			Assert.That(await db.ObjectPacks.AnyAsync(x => x.Id == AlphaPackId), Is.False);
+		}
 	}
 
 	[Test]
 	public async Task GetObjectPackFileAsync_ReturnsZipWithOnlySafeIndexedObjectEntries()
 	{
-		using var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{BaseRoute}/{AlphaPackId}{RoutesV2.File}");
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{AlphaPackId}{Definitions.Web.Routes.File}");
 		var bytes = await response.Content.ReadAsByteArrayAsync();
 		using var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read);
 
@@ -197,6 +231,67 @@ public class ObjectPackRoutesTest : BaseRouteHandlerTestFixture
 		}
 	}
 
+	[Test]
+	public async Task GetObjectPackFileAsync_IncludesObjectStoredWithAbsoluteIndexPath()
+	{
+		const UniqueObjectId packId = 10;
+		const string objectFileName = "uploaded-absolute.dat";
+
+		using var scope = testWebAppFactory.Services.CreateScope();
+		var sfm = scope.ServiceProvider.GetRequiredService<ServerFolderManager>();
+
+		// Uploaded objects are indexed with an absolute file path (unlike scanned ones, which are relative).
+		var absolutePath = Path.Combine(sfm.ObjectsCustomFolder, objectFileName);
+		await File.WriteAllBytesAsync(absolutePath, [9, 9, 9, 9]);
+		sfm.ObjectIndex.AddEntry(new ObjectIndexEntry("ABSOLUTEOBJ", absolutePath, null, 999, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
+
+		using (var db = GetDbContext())
+		{
+			await db.ObjectPacks.AddAsync(new TblObjectPack
+			{
+				Id = packId,
+				Name = "Absolute path pack",
+				Objects =
+				[
+					new TblObject
+					{
+						Id = 10,
+						Name = "absolute-obj",
+						ObjectType = ObjectType.Vehicle,
+						ObjectSource = ObjectSource.Custom,
+						Availability = ObjectAvailability.Available,
+						DatObjects =
+						[
+							new TblDatObject { Id = 10, DatName = "ABSOLUTEOBJ", DatChecksum = 999, xxHash3 = 10, ObjectId = 10 },
+						],
+					},
+				],
+			});
+			_ = await db.SaveChangesAsync();
+		}
+
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/{packId}{Definitions.Web.Routes.File}");
+		var bytes = await response.Content.ReadAsByteArrayAsync();
+		using var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(response.IsSuccessStatusCode, Is.True);
+			Assert.That(archive.Entries.Select(x => x.FullName), Is.EqualTo([$"{ServerFolderManager.CustomFolderName}/{objectFileName}"]));
+			await using var entryStream = archive.Entries.Single().Open();
+			using var entryMemoryStream = new MemoryStream();
+			await entryStream.CopyToAsync(entryMemoryStream);
+			Assert.That(entryMemoryStream.ToArray(), Is.EqualTo(new byte[] { 9, 9, 9, 9 }));
+		}
+	}
+
+	[Test]
+	public async Task GetObjectPackAsync_WithUnknownId_ReturnsNotFound()
+	{
+		using var response = await HttpClient!.GetAsync($"{Definitions.Web.Routes.Prefix}{BaseRoute}/9999");
+
+		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+	}
 	static void AssertPackDescriptorEqual(DtoItemPackDescriptor<DtoObjectEntry>? actual, DtoItemPackDescriptor<DtoObjectEntry> expected)
 	{
 		Assert.That(actual, Is.Not.Null);

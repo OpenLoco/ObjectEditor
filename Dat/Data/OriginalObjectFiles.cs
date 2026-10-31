@@ -23,7 +23,7 @@ public static class OriginalObjectFiles
 			}
 		}
 
-		if (claimedSource == DatObjectSource.OpenLoco || Names.Any(x => x.Value.OpenGraphicsName == name))
+		if (claimedSource == DatObjectSource.OpenLoco || OpenGraphicsNames.Contains(name))
 		{
 			return ObjectSource.OpenLoco;
 		}
@@ -580,4 +580,8 @@ public static class OriginalObjectFiles
 		{ "YEW", new(3054068920, 796489061, uint.MaxValue, "OGYEW") },
 		{ "YUKKA", new(1821881997, 3504266365, uint.MaxValue, "OGYUKKA") },
 	};
+
+	// Reverse lookup (built once) so GetFileSource is O(1) instead of scanning all of Names per object.
+	// Declared after Names so it is initialised from the populated dictionary.
+	static readonly HashSet<string> OpenGraphicsNames = new(Names.Values.Select(x => x.OpenGraphicsName), StringComparer.Ordinal);
 }

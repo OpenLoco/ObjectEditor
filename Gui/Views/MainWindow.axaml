@@ -219,23 +219,21 @@
 						</Style>
 					</TabControl.Styles>
 					<TabControl.ItemTemplate>
+						<!-- TabControl.ItemTemplate templates the *header content* of each tab, not a TabItem
+						     container, so this returns the header (title + close button) directly. -->
 						<DataTemplate>
-							<TabItem MaxHeight="32" Margin="0" Padding="0" BorderThickness="0">
-								<TabItem.Header>
-									<StackPanel Background="{DynamicResource ButtonBackground}" Orientation="Horizontal">
-										<TextBlock Margin="4" VerticalAlignment="Center" Text="{Binding CurrentFile.DisplayName}" TextAlignment="Left" ToolTip.Tip="{Binding CurrentFile.FileName}"/>
-										<Button VerticalAlignment="Center" BorderThickness="0" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}" FontSize="12" HotKey="Ctrl+F4" ToolTip.Tip="(Ctrl+F4)">
-											X
-										</Button>
-									</StackPanel>
-								</TabItem.Header>
-								<TabItem.ContextMenu>
+							<StackPanel Background="{DynamicResource ButtonBackground}" Orientation="Horizontal" MaxHeight="32">
+								<StackPanel.ContextMenu>
 									<ContextMenu>
 										<MenuItem Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseAllTabsCommand}" Header="Close All Tabs"/>
 										<MenuItem Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseOtherTabsCommand}" CommandParameter="{Binding}" Header="Close Other Tabs"/>
 									</ContextMenu>
-								</TabItem.ContextMenu>
-							</TabItem>
+								</StackPanel.ContextMenu>
+								<TextBlock Margin="4" VerticalAlignment="Center" Text="{Binding CurrentFile.DisplayName}" TextAlignment="Left" ToolTip.Tip="{Binding CurrentFile.FileName}"/>
+								<Button VerticalAlignment="Center" BorderThickness="0" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}" FontSize="12" HotKey="Ctrl+F4" ToolTip.Tip="(Ctrl+F4)">
+									X
+								</Button>
+							</StackPanel>
 						</DataTemplate>
 					</TabControl.ItemTemplate>
 					<TabControl.ContentTemplate>

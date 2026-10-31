@@ -34,7 +34,7 @@ public sealed class Logger : ILogger
 		}
 
 		var caller = string.IsNullOrEmpty(eventId.Name) ? string.Empty : $"[{eventId.Name}]";
-		var line = new LogLine(DateTime.Now, logLevel, caller, message);
+		var line = new LogLine(DateTimeOffset.UtcNow, logLevel, caller, message);
 		Logs.Enqueue(line);
 		LogAdded?.Invoke(this, new LogAddedEventArgs(line));
 	}

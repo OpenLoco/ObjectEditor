@@ -109,7 +109,7 @@ public static class ByteReader
 		var arr = Array.CreateInstance(elementType, arrLength);
 		for (var i = 0; i < arrLength; i++)
 		{
-			arr.SetValue(ReadT(data, elementType, offset + (i * size), isVariableLoad: isVariableLoad), i); // why pass 'i' in here?
+			arr.SetValue(ReadT(data, elementType, offset + (i * size), isVariableLoad: isVariableLoad), i);
 		}
 
 		return arr;

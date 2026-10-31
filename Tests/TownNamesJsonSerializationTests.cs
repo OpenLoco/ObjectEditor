@@ -20,7 +20,7 @@ public class TownNamesJsonSerializationTests
 		);
 
 		var json = JsonSerializer.Serialize(original, new JsonSerializerOptions { WriteIndented = true });
-		TestContext.WriteLine($"Serialized JSON:\n{json}");
+		TestContext.Out.WriteLine($"Serialized JSON:\n{json}");
 
 		var deserialized = JsonSerializer.Deserialize<TownNamesMorphemesJson>(json);
 

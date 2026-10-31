@@ -143,7 +143,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			.ToList();
 
 		// Loading object files to resolve dependencies can be slow, so do it off the UI thread.
-		var validationErrors = await Task.Run(() => ObjectValidation.ValidateSCV5(scenarioObjects, ResolveObjectDependencies));
+		var validationErrors = await Task.Run(() => ObjectValidation.ValidateSCV5(scenarioObjects, ResolveObjectDependencies, Logger));
 
 		await ShowValidationMessageBox(validationErrors, showPopupOnSuccess: true);
 	}

@@ -59,15 +59,12 @@ public static class ByteWriterT
 		}
 	}
 
-	public static T[] Write_Array<T>(Span<byte> data, int count, int offset = 0) where T : struct
+	public static void Write_Array<T>(Span<byte> data, ReadOnlySpan<T> values, int offset = 0) where T : struct
 	{
-		var arr = new T[count];
 		var typeSize = ByteHelpers.GetObjectSize(typeof(T));
-		for (var i = 0; i < count; i++)
+		for (var i = 0; i < values.Length; i++)
 		{
-			Write(data, offset + (i * typeSize), arr[i]);
+			Write(data, offset + (i * typeSize), values[i]);
 		}
-
-		return arr;
 	}
 }

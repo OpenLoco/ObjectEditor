@@ -26,7 +26,9 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 {
 	var programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 	var loggingFile = Path.Combine(programDataPath, LoggingFileName);
-	using var logStream = new StreamWriter(File.OpenWrite(loggingFile));
+	// FileMode.Create truncates the log; File.OpenWrite would leave stale trailing text from a
+	// previous, longer run appended after the new (shorter) contents.
+	using var logStream = new StreamWriter(File.Create(loggingFile));
 	Console.SetOut(logStream);
 	Console.SetError(logStream);
 

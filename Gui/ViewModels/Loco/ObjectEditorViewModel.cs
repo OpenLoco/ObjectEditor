@@ -369,6 +369,13 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			return;
 		}
 
+		var locoObject = Model.LocoObject;
+		if (locoObject?.StringTable == null)
+		{
+			Logger.LogWarning("Cannot upload metadata - the object has no string table");
+			return;
+		}
+
 		try
 		{
 			Logger.LogInformation("Uploading metadata for object {ObjectId}", objectId);
@@ -398,7 +405,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				Tags: metadataModel.Tags,
 				ObjectPacks: metadataModel.ObjectPacks,
 				DatObjects: metadataModel.DatObjects,
-				StringTable: new DtoStringTableDescriptor(Model.LocoObject.StringTable.Table, objectId),
+				StringTable: new DtoStringTableDescriptor(locoObject.StringTable.Table, objectId),
 				SubObject: metadataModel.SubObject
 			);
 

@@ -10,7 +10,7 @@ public class DbExceptionHelpersTests
 	public void IsUniqueConstraintViolation_DetectsNestedSqliteMessage()
 	{
 		var inner = new InvalidOperationException("SQLite Error 19: 'UNIQUE constraint failed: ObjectPacks.Name'.");
-		var exception = new Exception("outer", inner);
+		var exception = new InvalidOperationException("outer", inner);
 
 		Assert.That(DbExceptionHelpers.IsUniqueConstraintViolation(exception), Is.True);
 	}
@@ -24,7 +24,7 @@ public class DbExceptionHelpersTests
 	[Test]
 	public void IsUniqueConstraintViolation_IsFalseForForeignKeyViolation()
 	{
-		var exception = new Exception("outer", new InvalidOperationException("SQLite Error 19: 'FOREIGN KEY constraint failed'."));
+		var exception = new InvalidOperationException("outer", new InvalidOperationException("SQLite Error 19: 'FOREIGN KEY constraint failed'."));
 
 		Assert.That(DbExceptionHelpers.IsUniqueConstraintViolation(exception), Is.False);
 	}

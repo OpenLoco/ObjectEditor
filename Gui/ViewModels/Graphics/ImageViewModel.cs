@@ -129,7 +129,9 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	protected GraphicsElement Model { get; init; } = null!;
 
-	readonly PaletteMap paletteMap;
+	// Default to the global palette so the parameterless constructor (used by the designer and the
+	// property grid) never leaves this null; the main constructor overrides it with the supplied palette.
+	readonly PaletteMap paletteMap = PaletteMapLoader.Current;
 
 	public ImageViewModel()
 	{ }

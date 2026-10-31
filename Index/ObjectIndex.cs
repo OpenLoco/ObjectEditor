@@ -26,6 +26,11 @@ public class ObjectIndex
 	private readonly ConcurrentDictionary<ulong, ObjectIndexEntry> _byXxHash3 = new();
 	private readonly ConcurrentDictionary<(string DisplayName, uint Checksum), ObjectIndexEntry> _byNameChecksum = new();
 
+	// Guards the mutable Objects collection and the lookups so concurrent add/remove/rebuild/diff
+	// (UI, the server's startup sync and the folder watchers) cannot corrupt them or observe a torn
+	// state. Reads that only touch the ConcurrentDictionary lookups stay lock-free.
+	private readonly object syncRoot = new();
+
 	public ObjectIndex()
 	{ }
 
@@ -66,12 +71,15 @@ public class ObjectIndex
 	/// </summary>
 	public void RebuildLookups()
 	{
-		_byXxHash3.Clear();
-		_byNameChecksum.Clear();
-
-		foreach (var entry in Objects)
+		lock (syncRoot)
 		{
-			AddToLookups(entry);
+			_byXxHash3.Clear();
+			_byNameChecksum.Clear();
+
+			foreach (var entry in Objects)
+			{
+				AddToLookups(entry);
+			}
 		}
 	}
 
@@ -98,14 +106,20 @@ public class ObjectIndex
 
 	public void AddEntry(ObjectIndexEntry entry)
 	{
-		AddToLookups(entry);
-		Objects.Add(entry);
+		lock (syncRoot)
+		{
+			AddToLookups(entry);
+			Objects.Add(entry);
+		}
 	}
 
 	public void RemoveEntry(ObjectIndexEntry entry)
 	{
-		RemoveFromLookups(entry);
-		_ = Objects.Remove(entry);
+		lock (syncRoot)
+		{
+			RemoveFromLookups(entry);
+			_ = Objects.Remove(entry);
+		}
 	}
 
 	public bool TryFind((string datName, uint datChecksum) key, out ObjectIndexEntry? entry)
@@ -122,9 +136,12 @@ public class ObjectIndex
 
 	private void EnsureLookupsBuilt()
 	{
-		if (_byXxHash3.IsEmpty && _byNameChecksum.IsEmpty && Objects.Count > 0)
+		lock (syncRoot)
 		{
-			RebuildLookups();
+			if (_byXxHash3.IsEmpty && _byNameChecksum.IsEmpty && Objects.Count > 0)
+			{
+				RebuildLookups();
+			}
 		}
 	}
 
@@ -233,7 +250,7 @@ public class ObjectIndex
 	public (List<ObjectIndexEntry> MissingEntries, List<string> UnindexedFiles) DiffWithDisk(string directory, IReadOnlyCollection<string> files)
 	{
 		List<ObjectIndexEntry> snapshot;
-		lock (this)
+		lock (syncRoot)
 		{
 			snapshot = [.. Objects];
 		}
@@ -304,7 +321,13 @@ public class ObjectIndex
 
 	public void Delete(Func<ObjectIndexEntry, bool> predicate)
 	{
-		foreach (var d in Objects.Where(predicate).ToList())
+		List<ObjectIndexEntry> toRemove;
+		lock (syncRoot)
+		{
+			toRemove = [.. Objects.Where(predicate)];
+		}
+
+		foreach (var d in toRemove)
 		{
 			RemoveEntry(d);
 		}

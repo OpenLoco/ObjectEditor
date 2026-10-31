@@ -7,6 +7,9 @@
 #pragma warning disable CS8604
 #pragma warning disable CS8605
 #pragma warning disable CS8629
+// These console/helper scripts run off the UI thread (Task.Run) with no SynchronizationContext, so the
+// synchronous ObjectIndex.LoadOrCreateIndex (which itself runs on the thread pool) cannot deadlock here.
+#pragma warning disable CS0618
 
 using Common.Logging;
 using Dat.Data;

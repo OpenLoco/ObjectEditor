@@ -248,13 +248,14 @@ public static class ObjectValidation
 	/// </param>
 	public static List<string> ValidateSCV5(
 		IEnumerable<ObjectModelHeader> fileObjects,
-		Func<ObjectModelHeader, IEnumerable<ObjectModelHeader>> objectDependencyResolver)
+		Func<ObjectModelHeader, IEnumerable<ObjectModelHeader>> objectDependencyResolver,
+		ILogger? logger = null)
 	{
 		ArgumentNullException.ThrowIfNull(fileObjects);
 		ArgumentNullException.ThrowIfNull(objectDependencyResolver);
 
 		var validationErrors = new List<string>();
-		ValidateDependentObjects(fileObjects, objectDependencyResolver, validationErrors);
+		ValidateDependentObjects(fileObjects, objectDependencyResolver, validationErrors, logger);
 
 		return validationErrors;
 
@@ -273,7 +274,7 @@ public static class ObjectValidation
 				: candidate.DatChecksum == dependency.DatChecksum;
 		}
 
-		static void ValidateDependentObjects(IEnumerable<ObjectModelHeader> fileObjects, Func<ObjectModelHeader, IEnumerable<ObjectModelHeader>> objectDependencyResolver, List<string> validationErrors)
+		static void ValidateDependentObjects(IEnumerable<ObjectModelHeader> fileObjects, Func<ObjectModelHeader, IEnumerable<ObjectModelHeader>> objectDependencyResolver, List<string> validationErrors, ILogger? logger)
 		{
 			// Unique objects that are actually included in the file (dedupe and skip empty placeholders).
 			var includedObjects = fileObjects
@@ -294,9 +295,11 @@ public static class ObjectValidation
 				{
 					dependencies = objectDependencyResolver(obj) ?? [];
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
-					// A single unresolvable object shouldn't block validation of the rest of the scenario.
+					// A single unresolvable object shouldn't block validation of the rest of the scenario,
+					// but it should still be visible rather than silently swallowed.
+					logger?.LogWarning(ex, "Failed to resolve dependencies for object \\\"{Object}\\\"; treating it as having no dependencies.", obj.Name);
 					dependencies = [];
 				}
 

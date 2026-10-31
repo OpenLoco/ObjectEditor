@@ -35,7 +35,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public ObjectIndex? ObjectIndexOnline { get; set; }
 
-	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
+	public ConcurrentDictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
 
 	// Cached read-only state of the object service; refreshed at the start of each upload batch.
 	bool? isServerReadOnly;
@@ -175,7 +175,15 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	}
 
 	public async Task LoadAsync()
-		=> ImageTableGrouper.GroupConfigurations = await ImageTableGroupLoader.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName);
+	{
+		// EnsureOnDiskAndLoadAsync returns null when the default configuration resource is missing;
+		// in that case keep the existing (e.g. built-in) configuration rather than clobbering it.
+		var groupConfigurations = await ImageTableGroupLoader.EnsureOnDiskAndLoadAsync(Logger, ImageTableGroupsPathName).ConfigureAwait(false);
+		if (groupConfigurations != null)
+		{
+			ImageTableGrouper.GroupConfigurations = groupConfigurations;
+		}
+	}
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)
 	{
@@ -311,7 +319,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			Logger.LogInformation("Downloaded object \"{DisplayName}\" with unique id {Id} and added it to the local cache", filesystemItem.DisplayName, filesystemItem.Id);
 			Logger.LogDebug("{DisplayName} has authors=[{Value}], tags=[{Value2}], objectpacks=[{Value3}], licence={Licence} datobjects=[{Value4}]", filesystemItem.DisplayName, string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? []), string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? []), string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? []), cachedLocoObjDto?.Licence, string.Join(",", cachedLocoObjDto?.DatObjects?.Select(x => x.DatName) ?? []));
 
-			OnlineCache.Add(filesystemItem.Id.Value, cachedLocoObjDto!);
+			OnlineCache[filesystemItem.Id.Value] = cachedLocoObjDto!;
 		}
 		else
 		{

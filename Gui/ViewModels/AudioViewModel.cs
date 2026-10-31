@@ -56,6 +56,9 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	bool disposed;
 
+	// Serialises access to CurrentWOEvent so play/pause/stop and device disposal can't race.
+	readonly object playbackLock = new();
+
 	public AudioViewModel(ILogger logger, string soundName)
 	{
 		_ = this.WhenAnyValue(o => o.WaveStream)
@@ -64,8 +67,20 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		Logger = logger;
 		SoundName = soundName;
 		PlaySoundCommand = ReactiveCommand.Create(PlaySound);
-		PauseSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Pause());
-		StopSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Stop());
+		PauseSoundCommand = ReactiveCommand.Create(() =>
+		{
+			lock (playbackLock)
+			{
+				CurrentWOEvent?.Pause();
+			}
+		});
+		StopSoundCommand = ReactiveCommand.Create(() =>
+		{
+			lock (playbackLock)
+			{
+				CurrentWOEvent?.Stop();
+			}
+		});
 		ImportSoundCommand = ReactiveCommand.Create(ImportSound);
 		ExportSoundCommand = ReactiveCommand.Create(ExportSoundAsync);
 	}
@@ -124,7 +139,8 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	public void PlaySound()
 	{
-		if (WaveStream == null)
+		var waveStream = WaveStream;
+		if (waveStream == null)
 		{
 			return;
 		}
@@ -136,50 +152,70 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 			return;
 		}
 
-		if (CurrentWOEvent != null)
+		lock (playbackLock)
 		{
-			if (CurrentWOEvent.PlaybackState == PlaybackState.Playing)
+			if (CurrentWOEvent != null)
 			{
-				return;
-			}
+				if (CurrentWOEvent.PlaybackState == PlaybackState.Playing)
+				{
+					return;
+				}
 
-			if (CurrentWOEvent.PlaybackState == PlaybackState.Paused)
-			{
-				CurrentWOEvent.Play();
-				return;
+				if (CurrentWOEvent.PlaybackState == PlaybackState.Paused)
+				{
+					CurrentWOEvent.Play();
+					return;
+				}
 			}
 		}
 
-		// do it async to a) give user ui control and b) allow multiple sounds to play at once
-		_ = Task.Run(() =>
+		// Build and run the output device on a background thread so the UI stays responsive and the
+		// previous device gets torn down off the UI thread. Completion is driven by the PlaybackStopped
+		// event (no busy Thread.Sleep polling loop), and every device transition is guarded by the lock.
+		_ = Task.Run(async () =>
 		{
-			if (CurrentWOEvent?.PlaybackState == PlaybackState.Stopped)
+			WaveOutEvent output;
+			lock (playbackLock)
 			{
-				Thread.Sleep(100); // give time to wait until previous sound is disposed
+				CurrentWOEvent?.Dispose();
+				CurrentWOEvent = null;
+
+				Logger.LogInformation("{WaveFormat}", waveStream.WaveFormat);
+				waveStream.Position = 0;
+
+				output = new WaveOutEvent();
+				CurrentWOEvent = output;
 			}
 
-			CurrentWOEvent?.Dispose();
+			var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			void OnStopped(object? sender, StoppedEventArgs e) => stopped.TrySetResult();
 
-			using (CurrentWOEvent = new WaveOutEvent())
+			output.PlaybackStopped += OnStopped;
+			try
 			{
-				Logger.LogInformation("{WaveFormat}", WaveStream.WaveFormat);
-				WaveStream.Position = 0;
-				CurrentWOEvent.Init(WaveStream);
-				CurrentWOEvent.Play();
+				output.Init(waveStream);
+				output.Play();
+				await stopped.Task.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Failed to play sound");
+			}
+			finally
+			{
+				output.PlaybackStopped -= OnStopped;
 
-				// need to wait for music to finish
-				while (CurrentWOEvent?.PlaybackState != PlaybackState.Stopped)
+				// Only the thread that still owns the current device disposes it, so a device replaced
+				// by a newer PlaySound call is never disposed twice.
+				lock (playbackLock)
 				{
-					if (CurrentWOEvent == null)
+					if (ReferenceEquals(CurrentWOEvent, output))
 					{
-						break;
+						CurrentWOEvent = null;
+						output.Dispose();
 					}
-
-					Thread.Sleep(100);
 				}
 			}
-
-			CurrentWOEvent = null;
 		});
 	}
 
@@ -268,20 +304,27 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 	protected virtual void Dispose(bool disposing)
 	{
 		// Check to see if Dispose has already been called.
-		if (!disposed)
+		if (disposed)
 		{
-			// If disposing equals true, dispose all managed
-			// and unmanaged resources.
-			if (disposing)
+			return;
+		}
+
+		// If disposing equals true, dispose all managed and unmanaged resources.
+		if (disposing)
+		{
+			WaveOutEvent? output;
+			lock (playbackLock)
 			{
-				// Dispose managed resources.
-				CurrentWOEvent?.Stop();
+				output = CurrentWOEvent;
+				CurrentWOEvent = null;
 			}
 
-			CurrentWOEvent = null;
-
-			// Note disposing has been done.
-			disposed = true;
+			// Stop first so any pending PlaybackStopped handler completes, then dispose the device.
+			output?.Stop();
+			output?.Dispose();
 		}
+
+		// Note disposing has been done.
+		disposed = true;
 	}
 }

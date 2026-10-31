@@ -48,7 +48,10 @@ public static class VersionHelpers
 				}
 			}
 
-			var editorExe = $"{ObjectEditorUpdaterName}.exe";
+			// The updater binary has no .exe suffix on Unix-like platforms.
+			var editorExe = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+				? $"{ObjectEditorUpdaterName}.exe"
+				: ObjectEditorUpdaterName;
 			if (!File.Exists(editorExe))
 			{
 				logger.LogError("Cannot find the auto-updater executable: {EditorExe}. You'll need to manually download the update.", editorExe);

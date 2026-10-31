@@ -181,7 +181,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	public async Task PostAsync_RejectsOpenLocoObjects()
 	{
 		var objDirectory = @"Q:\Games\Locomotion\Server\GameData\Objects";
-		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, new Logger());
+		var index = await ObjectIndex.LoadOrCreateIndexAsync(objDirectory, new Logger());
 		var openLocoEntry = index.Objects.FirstOrDefault(x =>
 			x.ObjectSource == ObjectSource.OpenLoco
 			&& !string.IsNullOrEmpty(x.FileName)
@@ -240,7 +240,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	{
 		var objDirectory = @"Q:\Games\Locomotion\Server\GameData\Objects"; // this is naughty for a test but it'll do
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
+		var index = await ObjectIndex.LoadOrCreateIndexAsync(objDirectory, logger);
 		_ = index.TryFind(7051740550869341430, out var entry); // randomly selected and hardcoded object
 		Assert.That(entry, Is.Not.Null);
 

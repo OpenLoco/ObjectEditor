@@ -26,8 +26,8 @@ public static class SawyerStreamWriter
 			(ushort)hdr.Channels,
 			(uint)hdr.SampleRate,
 			(uint)hdr.AverageBytesPerSecond,
-			4, //(ushort)waveFHeader.BlockAlign,
-			16, //(ushort)waveFHeader.BitsPerSample,
+			(ushort)hdr.BlockAlign, // loco uses 4
+			(ushort)hdr.BitsPerSample, // loco uses 16
 			0x61746164, // "data"
 			(uint)pcmDataLength // data size
 			);
@@ -106,10 +106,11 @@ public static class SawyerStreamWriter
 
 		try
 		{
-			var stream = File.Create(filename);
+			// 'using' ensures the file handle is released even if Write/Flush throws (e.g. disk full),
+			// which previously leaked the stream because it was only closed on the success path.
+			using var stream = File.Create(filename);
 			stream.Write(objBytes);
 			stream.Flush();
-			stream.Close();
 		}
 		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
@@ -632,7 +633,7 @@ public static class SawyerStreamWriter
 		var palette = paletteMap ?? PaletteMapLoader.Current;
 		var g1Elements = graphicsImages.Select(x => x.ToDatG1Element32(palette)).ToList();
 
-		if (g1Elements != null && g1Elements.Count != 0)
+		if (g1Elements.Count != 0)
 		{
 			// encode if necessary
 			List<DatG1Element32> encoded = [];
@@ -673,7 +674,10 @@ public static class SawyerStreamWriter
 
 	public static void SaveG1(string filename, G1Dat g1)
 	{
-		using (var fs = File.OpenWrite(filename))
+		// FileMode.Create truncates any existing file. File.OpenWrite would open the existing file
+		// without truncating it, leaving trailing bytes from a previously larger G1 and corrupting
+		// the output whenever the new image table is smaller than the one on disk.
+		using (var fs = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None))
 		{
 			WriteImageTable(fs, g1.ImageTable.GraphicsElements);
 		}

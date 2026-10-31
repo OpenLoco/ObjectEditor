@@ -7,7 +7,7 @@ namespace Gui.ViewModels;
 
 public class DesignLogWindowViewModel : LogWindowViewModel
 {
-	public DesignLogWindowViewModel() : base([new LogLine(DateTime.Now, LogLevel.Information, "Caller", "Message")])
+	public DesignLogWindowViewModel() : base([new LogLine(DateTimeOffset.UtcNow, LogLevel.Information, "Caller", "Message")])
 	{ }
 }
 

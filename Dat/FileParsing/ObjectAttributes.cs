@@ -6,7 +6,8 @@ namespace Dat.FileParsing;
 public static class ObjectAttributes
 {
 	public static int StructSize<T>() where T : ILocoStruct
-		=> AttributeHelper.Get<LocoStructSizeAttribute>(typeof(T))!.Size;
+		=> (AttributeHelper.Get<LocoStructSizeAttribute>(typeof(T))
+			?? throw new InvalidOperationException($"Type {typeof(T)} is missing a required {nameof(LocoStructSizeAttribute)}")).Size;
 
 	//public static ObjectType ObjectType<T>() // where T : ILocoStruct
 	//	=> AttributeHelper.Get<LocoStructTypeAttribute>(typeof(T))!.ObjectType;

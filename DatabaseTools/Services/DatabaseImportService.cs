@@ -143,7 +143,9 @@ public static class DatabaseImportService
 			if (!db.Objects.Any() && File.Exists(objectMetadataJson) && Directory.Exists(settings.ObjectDirectory))
 			{
 				log("Seeding Objects");
+#pragma warning disable CS0618 // console tool with no SynchronizationContext; the sync index load is safe here
 				var index = ObjectIndex.LoadOrCreateIndex(settings.ObjectDirectory, logger);
+#pragma warning restore CS0618
 				var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText(objectMetadataJson), jsonOptions);
 				var objectMetadataDict = objectMetadata!.ToDictionary(x => x.InternalName, x => x);
 				var gameReleaseDate = new DateOnly(2004, 09, 07);

@@ -9,7 +9,13 @@ public static class RouteHelpers
 	static readonly char[] HttpUnsafeFilenameChars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\0'];
 
 	public static string MakeNicePlural(string name)
-		=> $"{name.Replace("RouteHandler", string.Empty)}s";
+	{
+		// Strip the "RouteHandler" suffix only when it is actually a suffix, so a name that merely
+		// contains the text elsewhere is not mangled.
+		const string suffix = "RouteHandler";
+		var baseName = name.EndsWith(suffix, StringComparison.Ordinal) ? name[..^suffix.Length] : name;
+		return $"{baseName}s";
+	}
 
 	public static bool TryGetSafeRelativePathUnderRoot(string rootPath, string? relativePath, out string fullPath, out string normalizedRelativePath)
 	{

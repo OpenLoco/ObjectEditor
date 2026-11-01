@@ -53,6 +53,12 @@ internal class Pos3CellEditFactory : AbstractCellEditFactory
 		{
 			var pos = (Pos3)propertyDescriptor.GetValue(target)!;
 
+			if (pv.DataContext is Pos3ViewModel existingVm)
+			{
+				existingVm.Pos = pos;
+				return true;
+			}
+
 			var model = new Pos3ViewModel { Pos = pos };
 			pv.DataContext = model;
 
@@ -119,10 +125,17 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 				? (uint16_t)designedYearProperty.GetValue(target)!
 				: (uint16_t)1950;
 
-			var currVm = (InflatableCurrencyViewModel?)cv.DataContext;
 			var divisor = currencyAttr.InflationDivisor;
 
-			var year = currVm?.Year ?? designedYear;
+			if (cv.DataContext is InflatableCurrencyViewModel existingModel)
+			{
+				existingModel.CostIndex = costIndex;
+				existingModel.Divisor = divisor;
+				existingModel.CostFactor = costFactor;
+				return true;
+			}
+
+			var year = designedYear;
 			// objects can actually set any year as designed year, even 0, so lets sanitize it
 			if (year < 1800)
 			{

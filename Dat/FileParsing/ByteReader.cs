@@ -135,36 +135,22 @@ public static class ByteReader
 		var underlyingType = t.GetEnumUnderlyingType();
 		var underlyingValue = ReadT(data, underlyingType, offset);
 
-		if (!t.IsDefined(typeof(FlagsAttribute), inherit: false))
+		// Note: a plain (non-flags) enum simply round-trips the underlying value.
+		var enumMetadata = LocoEnumMetadataCache.Get(t);
+		if (!enumMetadata.IsFlags)
 		{
 			return Enum.ToObject(t, underlyingValue);
 		}
 
-		var enumValues = Enum.GetValues(t);
-
-		if (underlyingType == typeof(int8_t) || underlyingType == typeof(int16_t) || underlyingType == typeof(int32_t))
+		// Flag members are cached once per type; OR together every member that intersects the
+		// raw value (this drops bits that don't map to a declared flag).
+		if (enumMetadata.IsSigned)
 		{
+			var value = Convert.ToInt32(underlyingValue);
 			var combinedValue = 0;
-			foreach (var enumValue in enumValues)
+			foreach (var enumValueInt in enumMetadata.SignedValues)
 			{
-				var parsed = Enum.Parse(t, enumValue.ToString()!);
-				var enumValueInt = Convert.ToInt32(parsed); // Convert to int
-				if ((enumValueInt & Convert.ToInt32(underlyingValue)) != 0) // Convert to int
-				{
-					combinedValue |= enumValueInt;
-				}
-			}
-
-			return Enum.ToObject(t, combinedValue);
-		}
-		else if (underlyingType == typeof(uint8_t) || underlyingType == typeof(uint16_t) || underlyingType == typeof(uint32_t))
-		{
-			var combinedValue = 0U;
-			foreach (var enumValue in enumValues)
-			{
-				var parsed = Enum.Parse(t, enumValue.ToString()!);
-				var enumValueInt = Convert.ToUInt32(parsed); // Convert to int
-				if ((enumValueInt & Convert.ToUInt32(underlyingValue)) != 0) // Convert to int
+				if ((enumValueInt & value) != 0)
 				{
 					combinedValue |= enumValueInt;
 				}
@@ -174,7 +160,17 @@ public static class ByteReader
 		}
 		else
 		{
-			throw new ArgumentOutOfRangeException(nameof(underlyingType), underlyingType, "unrecognised type");
+			var value = Convert.ToUInt32(underlyingValue);
+			var combinedValue = 0U;
+			foreach (var enumValueInt in enumMetadata.UnsignedValues)
+			{
+				if ((enumValueInt & value) != 0)
+				{
+					combinedValue |= enumValueInt;
+				}
+			}
+
+			return Enum.ToObject(t, combinedValue);
 		}
 	}
 
@@ -183,63 +179,27 @@ public static class ByteReader
 
 	public static ILocoStruct ReadLocoStruct(ReadOnlySpan<byte> data, Type t)
 	{
-		var properties = t.GetProperties();
-		var args = new List<object>();
+		var properties = LocoStructMetadata.GetStructProperties(t);
+		var args = new List<object>(properties.Length);
 
 		foreach (var p in properties)
 		{
-			// ignore non-loco properties on the records
-			var offsetAttr = AttributeHelper.Get<LocoStructOffsetAttribute>(p);
-			if (offsetAttr == null)
+			// ignore skipped properties (usually image ids and string ids which are only used in loco itself, not this tool)
+			if (p.IsSkipRead)
 			{
 				continue;
-			}
-
-			// ignore skipped properties (usually image ids and string ids which are only used in loco itself, not this tool
-			var skip = AttributeHelper.Get<LocoStructSkipReadAttribute>(p);
-			if (skip != null)
-			{
-				continue;
-			}
-
-			// special array handling
-			var arrLength = 0;
-			if (p.PropertyType.IsArray)
-			{
-				var arrLengthAttr = AttributeHelper.Get<LocoArrayLengthAttribute>(p) ?? throw new ArgumentOutOfRangeException(nameof(data), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
-				arrLength = arrLengthAttr.Length;
 			}
 
 			// ignore pointers/variable data - they'll be loaded later in Load()
-			var variableAttr = AttributeHelper.Get<LocoStructVariableLoadAttribute>(p);
-			if (variableAttr != null)
+			if (p.IsVariableLoad)
 			{
-				if (p.PropertyType.IsArray)
+				if (p.IsArray)
 				{
 					// todo: find a generic way to do this
-					if (p.PropertyType.GetElementType() == typeof(uint8_t))
+					var defaultArray = CreateDefaultArray(p.ElementType!, p.ArrayLength);
+					if (defaultArray != null)
 					{
-						args.Add(new uint8_t[arrLength]);
-					}
-					else if (p.PropertyType.GetElementType() == typeof(int8_t))
-					{
-						args.Add(new int8_t[arrLength]);
-					}
-					else if (p.PropertyType.GetElementType() == typeof(uint16_t))
-					{
-						args.Add(new uint16_t[arrLength]);
-					}
-					else if (p.PropertyType.GetElementType() == typeof(int16_t))
-					{
-						args.Add(new int16_t[arrLength]);
-					}
-					else if (p.PropertyType.GetElementType() == typeof(uint32_t))
-					{
-						args.Add(new uint32_t[arrLength]);
-					}
-					else if (p.PropertyType.GetElementType() == typeof(int32_t))
-					{
-						args.Add(new int32_t[arrLength]);
+						args.Add(defaultArray);
 					}
 				}
 				else
@@ -252,10 +212,47 @@ public static class ByteReader
 				continue;
 			}
 
-			args.Add(ReadT(data, p.PropertyType, offsetAttr.Offset, arrLength, variableAttr != null));
+			args.Add(ReadT(data, p.PropertyType, p.Offset, p.ArrayLength));
 		}
 
 		return (ILocoStruct?)Activator.CreateInstance(t, [.. args]) ?? throw new InvalidDataException("couldn't parse");
+	}
+
+	// Creates a zero-filled typed array for a variable-load array property, matching the loco
+	// integer aliases. Returns null for unrecognised element types (nothing was added historically).
+	static object? CreateDefaultArray(Type elementType, int length)
+	{
+		if (elementType == typeof(uint8_t))
+		{
+			return new uint8_t[length];
+		}
+
+		if (elementType == typeof(int8_t))
+		{
+			return new int8_t[length];
+		}
+
+		if (elementType == typeof(uint16_t))
+		{
+			return new uint16_t[length];
+		}
+
+		if (elementType == typeof(int16_t))
+		{
+			return new int16_t[length];
+		}
+
+		if (elementType == typeof(uint32_t))
+		{
+			return new uint32_t[length];
+		}
+
+		if (elementType == typeof(int32_t))
+		{
+			return new int32_t[length];
+		}
+
+		return null;
 	}
 
 	public static IList<ILocoStruct> ReadLocoStructArray(ReadOnlySpan<byte> data, Type t, int count, int structSize) // could get struct size from attribute, but easier just to pass in

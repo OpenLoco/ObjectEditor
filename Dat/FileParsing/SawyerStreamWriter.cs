@@ -262,16 +262,18 @@ public static class SawyerStreamWriter
 
 	static byte[] EncodeRotate(ReadOnlySpan<byte> data)
 	{
-		using var buffer = new MemoryStream();
+		// 'Rotate' encoding is a 1:1 transform (same length in and out), so index directly
+		// into a right-sized array instead of writing byte-by-byte into a MemoryStream.
+		var buffer = new byte[data.Length];
 
 		uint8_t code = 1;
 		for (var i = 0; i < data.Length; ++i)
 		{
-			buffer.WriteByte(RotateLeft(data[i], code));
+			buffer[i] = RotateLeft(data[i], code);
 			code = (uint8_t)((code + 2) & 7);
 		}
 
-		return buffer.ToArray();
+		return buffer;
 	}
 
 	static uint8_t RotateLeft(uint8_t value, uint8_t shift)
@@ -330,6 +332,11 @@ public static class SawyerStreamWriter
 			bytesTotal += bytesPreviousLine;
 
 			var value = headerOffset + bytesTotal;
+			if (value > ushort.MaxValue)
+			{
+				throw new InvalidDataException($"RLE image line offset exceeded 16-bit limit: {value} > {ushort.MaxValue}. Dimensions {width}x{height} produce too much compressed RLE data for Locomotion's G1 format.");
+			}
+
 			var low = (byte)(value & 0xFF);
 			var high = (byte)((value >> 8) & 0xFF);
 			ms.WriteByte(low);

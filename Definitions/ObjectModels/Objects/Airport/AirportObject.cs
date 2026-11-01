@@ -56,5 +56,75 @@ public class AirportObject : ILocoStruct, IHasBuildingComponents
 		{
 			yield return new ValidationResult($"-{nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
+
+		// Movement graph integrity. The node and edge tables are index-based and are read directly by
+		// Locomotion, so a stale index (a node/edge that a designer deleted or renumbered) can crash
+		// the game when the airport is used in a scenario.
+		var nodeCount = MovementNodes.Count;
+		var edgeCount = MovementEdges.Count;
+		var referencedNodes = new bool[nodeCount];
+
+		for (var i = 0; i < edgeCount; i++)
+		{
+			var edge = MovementEdges[i];
+
+			if (edge.CurrNode < nodeCount)
+			{
+				referencedNodes[edge.CurrNode] = true;
+			}
+			else
+			{
+				yield return new ValidationResult(
+					$"{nameof(MovementEdges)}[{i}].{nameof(MovementEdge.CurrNode)} ({edge.CurrNode}) is not a valid index into {nameof(MovementNodes)} ({nodeCount} entries).",
+					[nameof(MovementEdges)]);
+			}
+
+			if (edge.NextNode < nodeCount)
+			{
+				referencedNodes[edge.NextNode] = true;
+			}
+			else
+			{
+				yield return new ValidationResult(
+					$"{nameof(MovementEdges)}[{i}].{nameof(MovementEdge.NextNode)} ({edge.NextNode}) is not a valid index into {nameof(MovementNodes)} ({nodeCount} entries).",
+					[nameof(MovementEdges)]);
+			}
+
+			if (ReferencesMissingEdge(edge.MustBeClearEdges, edgeCount))
+			{
+				yield return new ValidationResult(
+					$"{nameof(MovementEdges)}[{i}].{nameof(MovementEdge.MustBeClearEdges)} references an edge index that does not exist (there are {edgeCount} edges).",
+					[nameof(MovementEdges)]);
+			}
+
+			if (ReferencesMissingEdge(edge.AtLeastOneClearEdges, edgeCount))
+			{
+				yield return new ValidationResult(
+					$"{nameof(MovementEdges)}[{i}].{nameof(MovementEdge.AtLeastOneClearEdges)} references an edge index that does not exist (there are {edgeCount} edges).",
+					[nameof(MovementEdges)]);
+			}
+		}
+
+		for (var n = 0; n < nodeCount; n++)
+		{
+			if (!referencedNodes[n])
+			{
+				yield return new ValidationResult(
+					$"{nameof(MovementNodes)}[{n}] is not referenced by any {nameof(MovementEdges)} entry (orphaned node).",
+					[nameof(MovementNodes)]);
+			}
+		}
+
+		if (ReferencesMissingEdge(RequiredClearEdges, edgeCount))
+		{
+			yield return new ValidationResult(
+				$"{nameof(RequiredClearEdges)} references an edge index that does not exist (there are {edgeCount} edges).",
+				[nameof(RequiredClearEdges)]);
+		}
 	}
+
+	// Bit i of a clear-edges bitfield refers to movement edge i, so any bit at or above the edge count
+	// names an edge that does not exist. Shift counts of 32+ are undefined for a uint, so guard them.
+	private static bool ReferencesMissingEdge(uint32_t clearEdges, int edgeCount)
+		=> edgeCount < 32 && (clearEdges >> edgeCount) != 0;
 }

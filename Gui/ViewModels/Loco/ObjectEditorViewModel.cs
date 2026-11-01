@@ -168,20 +168,25 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		}
 	}
 
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, Type?> StructToViewModelTypeCache = new();
+
 	public IViewModel? GetViewModelFromStruct(LocoObject locoObject)
 	{
 		var locoStruct = locoObject.Object;
-		var asm = Assembly
-			.GetExecutingAssembly()
-			.GetTypes()
-			.SingleOrDefault(type
-				=> type.IsClass
-				&& !type.IsAbstract
-				&& type.BaseType?.IsGenericType == true
-				&& type.BaseType.GetGenericTypeDefinition() == typeof(BaseViewModel<>)
-				&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
+		var structType = locoStruct.GetType();
 
-		if (asm == null)
+		var vmType = StructToViewModelTypeCache.GetOrAdd(structType, t =>
+			Assembly
+				.GetExecutingAssembly()
+				.GetTypes()
+				.SingleOrDefault(type
+					=> type.IsClass
+					&& !type.IsAbstract
+					&& type.BaseType?.IsGenericType == true
+					&& type.BaseType.GetGenericTypeDefinition() == typeof(BaseViewModel<>)
+					&& type.BaseType.GenericTypeArguments.Single() == t));
+
+		if (vmType == null)
 		{
 			return null;
 		}
@@ -189,12 +194,12 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		// Try to create with (locoStruct, editorContext) for ViewModels that support context-aware features
 		try
 		{
-			return (IViewModel?)Activator.CreateInstance(asm, locoStruct, EditorContext);
+			return (IViewModel?)Activator.CreateInstance(vmType, locoStruct, EditorContext);
 		}
 		catch (MissingMethodException)
 		{
 			// Fall back to single-argument constructor for ViewModels that don't need the context
-			return (IViewModel?)Activator.CreateInstance(asm, locoStruct);
+			return (IViewModel?)Activator.CreateInstance(vmType, locoStruct);
 		}
 	}
 
@@ -465,16 +470,20 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		Logger.LogInformation("Saving {Name} to {Filename}", Model.DatInfo?.S5Header.Name, filename);
 
-		// this is hacky but it should work
 		var avm = GetViewModel<AudioViewModel>();
-		if (avm != null && Model.LocoObject.Object is SoundObject)
+		if (avm != null && Model.LocoObject.Object is SoundObject soundObject)
 		{
+			avm.SynchronizeToModel();
 			var datWav = avm.GetAsDatWav(LocoAudioType.SoundEffect);
 			if (datWav == null)
 			{
 				Logger.LogError("AudioViewModel returned null data when trying to save as a sound object");
 				return;
 			}
+
+			soundObject.SoundObjectData.PcmHeader = datWav.Value.Header;
+			soundObject.SoundObjectData.Length = (uint32_t)(uint)datWav.Value.Data.Length;
+			soundObject.PcmData = datWav.Value.Data;
 		}
 
 		var objectFile = AsObjectFile();

@@ -70,7 +70,8 @@ public sealed class ObjectImageService : IObjectImageService
 			return new(ObjectResourceOutcome.NotFound);
 		}
 
-		var palette = PaletteMapLoader.LoadDefault();
+		// Use the process-wide palette map instead of re-decoding the embedded palette image.
+		var palette = PaletteMapLoader.Current;
 
 		// Build the zip in memory so the bytes can be both returned and cached in one pass.
 		using var ms = new MemoryStream();

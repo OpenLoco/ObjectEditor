@@ -38,7 +38,9 @@ public static class ObjectImageRender
 	/// <summary>Renders one frame to a trimmed PNG, decoding to RGBA only for palette-indexed frames.</summary>
 	public static async Task<byte[]> RenderFramePngAsync(GraphicsElement element, CancellationToken ct)
 	{
-		var palette = PaletteMapLoader.LoadDefault();
+		// Use the process-wide palette map: LoadDefault() re-opens and re-decodes the embedded
+		// palette image on every call, which is far too costly to do per rendered frame.
+		var palette = PaletteMapLoader.Current;
 		using var image = element.TrimmedToRgba(palette);
 		using var ms = new MemoryStream();
 		await image.SaveAsPngAsync(ms, ct);

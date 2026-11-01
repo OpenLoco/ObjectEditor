@@ -285,7 +285,10 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 	}
 
-	void SyncToSoundObject()
+	public void SynchronizeToModel()
+		=> SyncToSoundObject();
+
+	public void SyncToSoundObject()
 	{
 		if (_soundObject == null || WaveStream == null)
 		{

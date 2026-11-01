@@ -102,8 +102,12 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel, IDisposab
 
 		BuildingVariationViewModels.Clear();
 
-		MaxWidth = layers.Max(x => x.Max(y => y.Width)) + 16;
-		MaxHeight = (layers.Max(x => x.Max(y => y.Height)) * buildingHeights.Count) + buildingHeights.Sum(x => x) + buildingVariations.Max(x => x.Count) * (VerticalLayerSpacing * 2);
+		var maxElementWidth = layers.SelectMany(x => x).Select(y => (int)y.Width).DefaultIfEmpty(0).Max();
+		var maxElementHeight = layers.SelectMany(x => x).Select(y => (int)y.Height).DefaultIfEmpty(0).Max();
+		var maxVariationCount = buildingVariations.Select(v => v.Count).DefaultIfEmpty(0).Max();
+
+		MaxWidth = maxElementWidth + 16;
+		MaxHeight = (maxElementHeight * buildingHeights.Count) + buildingHeights.Sum(x => (int)x) + (maxVariationCount * VerticalLayerSpacing * 2);
 
 		var x = 0;
 		foreach (var variation in buildingVariations)

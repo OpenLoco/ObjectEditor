@@ -117,8 +117,7 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 	public LocoDbContext(DbContextOptions<LocoDbContext> options) : base(options)
 	{ }
 
-	//public const string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco-test.db";
-	public const string DefaultDb = "Q:\\Games\\Locomotion\\Server\\loco.db";
+	public const string DefaultDb = "loco.db";
 
 	protected override void OnConfiguring(DbContextOptionsBuilder builder)
 	{

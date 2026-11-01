@@ -15,52 +15,105 @@ public class PaletteMap
 		ArgumentOutOfRangeException.ThrowIfNotEqual(16, img.Width);
 		ArgumentOutOfRangeException.ThrowIfNotEqual(16, img.Height);
 
-		Palette = new (Color, byte)[img.Width * img.Height];
+		var pal = new (Color, byte)[img.Width * img.Height];
 		for (var y = 0; y < img.Height; ++y)
 		{
 			for (var x = 0; x < img.Width; ++x)
 			{
 				var index = (byte)((y * img.Width) + x);
-				Palette[index] = (Color.FromPixel(img[x, y]), index);
+				pal[index] = (Color.FromPixel(img[x, y]), index);
 			}
 		}
+
+		Palette = pal;
 	}
 
 	public PaletteMap(Color[] _palette)
 	{
 		ArgumentOutOfRangeException.ThrowIfNotEqual(256, _palette.Length);
-		Palette = new (Color, byte)[_palette.Length];
+		var pal = new (Color, byte)[_palette.Length];
 
 		for (var i = 0; i < _palette.Length; ++i)
 		{
-			Palette[i] = (_palette[i], (byte)i);
+			pal[i] = (_palette[i], (byte)i);
+		}
+
+		Palette = pal;
+	}
+
+	private (Color Color, byte Index)[] _palette = [];
+	private readonly int[] _primaryRemapSlot = new int[256];
+	private readonly int[] _secondaryRemapSlot = new int[256];
+	private (Color Color, byte Index)[] _primaryRemap = [];
+	private (Color Color, byte Index)[] _secondaryRemap = [];
+	private (Color Color, byte Index)[] _validColours = [];
+	private (Color Color, byte Index)[] _reservedColours = [];
+	private (Color Color, byte Index)[] _textRendering = [];
+	private readonly Dictionary<Rgba32, byte> _reservedColorLookup = [];
+	private (byte R, byte G, byte B, byte Index)[] _validColorBytes = [];
+
+	private void InitializeLookups()
+	{
+		_textRendering = _palette.Length >= 7 ? _palette[1..7] : [];
+		_primaryRemap = _palette.Length >= 255 ? [.. _palette[7..10], .. _palette[246..255]] : [];
+		_secondaryRemap = _palette.Length >= 214 ? _palette[202..214] : [];
+		_validColours = _palette.Length >= 246 ? [.. _palette[10..202], .. _palette[214..246]] : [];
+		_reservedColours = [Transparent, .. _textRendering, .. _primaryRemap, .. _secondaryRemap, ChunkedTransparent];
+
+		Array.Fill(_primaryRemapSlot, -1);
+		Array.Fill(_secondaryRemapSlot, -1);
+
+		for (var i = 0; i < _primaryRemap.Length; i++)
+		{
+			_primaryRemapSlot[_primaryRemap[i].Index] = i;
+		}
+
+		for (var i = 0; i < _secondaryRemap.Length; i++)
+		{
+			_secondaryRemapSlot[_secondaryRemap[i].Index] = i;
+		}
+
+		_reservedColorLookup.Clear();
+		foreach (var rc in _reservedColours)
+		{
+			_reservedColorLookup[rc.Color.ToPixel<Rgba32>()] = rc.Index;
+		}
+
+		_validColorBytes = new (byte R, byte G, byte B, byte Index)[_validColours.Length];
+		for (var i = 0; i < _validColours.Length; i++)
+		{
+			var p = _validColours[i].Color.ToPixel<Rgba32>();
+			_validColorBytes[i] = (p.R, p.G, p.B, _validColours[i].Index);
 		}
 	}
 
-	public (Color Color, byte Index)[] Palette { get; set; }
+	public (Color Color, byte Index)[] Palette
+	{
+		get => _palette;
+		set
+		{
+			_palette = value;
+			InitializeLookups();
+		}
+	}
 
 	public static (Color Color, byte Index) Transparent
 		=> (TransparentPixel, 0); //Palette[0];
 
 	public static readonly Color TransparentPixel = Color.FromPixel(new Rgba32(0, 0, 0, 0));
 
-	public (Color Color, byte Index)[] TextRendering
-		=> Palette[1..7];
+	public (Color Color, byte Index)[] TextRendering => _textRendering;
 
-	public (Color Color, byte Index)[] PrimaryRemap
-		=> [.. Palette[7..10], .. Palette[246..255]];
+	public (Color Color, byte Index)[] PrimaryRemap => _primaryRemap;
 
-	public (Color Color, byte Index)[] SecondaryRemap
-		=> Palette[202..214];
+	public (Color Color, byte Index)[] SecondaryRemap => _secondaryRemap;
 
 	public (Color Color, byte Index) ChunkedTransparent
-		=> Palette[255];
+		=> Palette.Length > 255 ? Palette[255] : default;
 
-	public (Color Color, byte Index)[] ValidColours
-		=> [.. Palette[10..202], .. Palette[214..246]];
+	public (Color Color, byte Index)[] ValidColours => _validColours;
 
-	public (Color Color, byte Index)[] ReservedColours
-		=> [Transparent, .. TextRendering, .. PrimaryRemap, .. SecondaryRemap, ChunkedTransparent];
+	public (Color Color, byte Index)[] ReservedColours => _reservedColours;
 
 	#region Colour Swatches
 
@@ -214,30 +267,7 @@ public class PaletteMap
 			for (var x = 0; x < frame.Width; x++)
 			{
 				var paletteIndex = row[x];
-				Color? colour = null;
-
-				if (paletteIndex == 0 && flags.HasFlag(GraphicsElementFlags.HasTransparency))
-				{
-					colour = Transparent.Color;
-				}
-				else if (PrimaryRemap.Index().SingleOrDefault(p => p.Item.Index == paletteIndex) is (int, (Color, byte)) itemP && itemP.Index != 0)
-				{
-					var swatch = GetRemapSwatchFromName(primary);
-					if (swatch != null)
-					{
-						colour = swatch[itemP.Index].Color;
-					}
-				}
-				else if (SecondaryRemap.Index().SingleOrDefault(s => s.Item.Index == paletteIndex) is (int, (Color, byte)) itemS && itemS.Index != 0)
-				{
-					var swatch = GetRemapSwatchFromName(secondary);
-					if (swatch != null)
-					{
-						colour = swatch[itemS.Index].Color;
-					}
-				}
-
-				image[x, y] = (colour ?? Palette[paletteIndex].Color).ToPixel<Rgba32>();
+				image[x, y] = DecodeIndexToColour(paletteIndex, flags, primary, secondary).ToPixel<Rgba32>();
 			}
 		}
 
@@ -307,30 +337,32 @@ public class PaletteMap
 
 	Color DecodeIndexToColour(byte paletteIndex, GraphicsElementFlags flags, ColourSwatch primary, ColourSwatch secondary)
 	{
-		Color? colour = null;
-
 		if (paletteIndex == 0 && flags.HasFlag(GraphicsElementFlags.HasTransparency))
 		{
-			colour = Transparent.Color;
+			return Transparent.Color;
 		}
-		else if (PrimaryRemap.Index().SingleOrDefault(p => p.Item.Index == paletteIndex) is (int, (Color, byte)) itemP && itemP.Index != 0)
+
+		var slotP = _primaryRemapSlot[paletteIndex];
+		if (slotP >= 0)
 		{
 			var swatch = GetRemapSwatchFromName(primary);
-			if (swatch != null)
+			if (swatch != null && (uint)slotP < (uint)swatch.Length)
 			{
-				colour = swatch[itemP.Index].Color;
-			}
-		}
-		else if (SecondaryRemap.Index().SingleOrDefault(s => s.Item.Index == paletteIndex) is (int, (Color, byte)) itemS && itemS.Index != 0)
-		{
-			var swatch = GetRemapSwatchFromName(secondary);
-			if (swatch != null)
-			{
-				colour = swatch[itemS.Index].Color;
+				return swatch[slotP].Color;
 			}
 		}
 
-		return colour ?? Palette[paletteIndex].Color;
+		var slotS = _secondaryRemapSlot[paletteIndex];
+		if (slotS >= 0)
+		{
+			var swatch = GetRemapSwatchFromName(secondary);
+			if (swatch != null && (uint)slotS < (uint)swatch.Length)
+			{
+				return swatch[slotS].Color;
+			}
+		}
+
+		return Palette[paletteIndex].Color;
 	}
 
 	/// <summary>
@@ -432,35 +464,7 @@ public class PaletteMap
 				else
 				{
 					var paletteIndex = imageData[index];
-					Color? colour = null;
-
-					if (SecondaryRemap.Any(x => x.Index == paletteIndex))
-					{
-						//Debugger.Break();
-					}
-
-					if (paletteIndex == 0 && flags.HasFlag(GraphicsElementFlags.HasTransparency))
-					{
-						colour = Transparent.Color;
-					}
-					else if (PrimaryRemap.Index().SingleOrDefault(x => x.Item.Index == paletteIndex) is (int, (Color, byte)) itemP && itemP.Index != 0)
-					{
-						var swatch = GetRemapSwatchFromName(primary);
-						if (swatch != null)
-						{
-							colour = swatch[itemP.Index].Color;
-						}
-					}
-					else if (SecondaryRemap.Index().SingleOrDefault(x => x.Item.Index == paletteIndex) is (int, (Color, byte)) itemS && itemS.Index != 0)
-					{
-						var swatch = GetRemapSwatchFromName(secondary);
-						if (swatch != null)
-						{
-							colour = swatch[itemS.Index].Color;
-						}
-					}
-
-					image[x, y] = (colour ?? Palette[paletteIndex].Color).ToPixel<Rgba32>();
+					image[x, y] = DecodeIndexToColour(paletteIndex, flags, primary, secondary).ToPixel<Rgba32>();
 					index++;
 				}
 			}
@@ -471,29 +475,38 @@ public class PaletteMap
 
 	byte ColorToPaletteIndex(Color c)
 	{
-		if (c.ToPixel<Rgba32>().A == 0)
+		var p = c.ToPixel<Rgba32>();
+		if (p.A == 0)
 		{
-			c = TransparentPixel;
+			return 0;
 		}
 
-		var reserved = ReservedColours.Where(cc => cc.Color == c);
-		if (reserved.Any())
+		if (_reservedColorLookup.TryGetValue(p, out var reservedIdx))
 		{
-			return reserved.First().Index;
+			return reservedIdx;
 		}
 
-		return ValidColours.MinBy(vc => DistanceSquared(c, vc.Color)).Index;
-	}
+		var bestDist = int.MaxValue;
+		byte bestIdx = 0;
+		int pr = p.R, pg = p.G, pb = p.B;
+		for (var i = 0; i < _validColorBytes.Length; i++)
+		{
+			ref readonly var vc = ref _validColorBytes[i];
+			var dr = pr - vc.R;
+			var dg = pg - vc.G;
+			var db = pb - vc.B;
+			var dist = (dr * dr) + (dg * dg) + (db * db);
+			if (dist < bestDist)
+			{
+				bestDist = dist;
+				bestIdx = vc.Index;
+				if (dist == 0)
+				{
+					break;
+				}
+			}
+		}
 
-	static int DistanceSquared(Color c1, Color c2)
-	{
-		var p1 = c1.ToPixel<Rgba32>();
-		var p2 = c2.ToPixel<Rgba32>();
-
-		var rr = p2.R - p1.R;
-		var gg = p2.G - p1.G;
-		var bb = p2.B - p1.B;
-
-		return (rr * rr) + (gg * gg) + (bb * bb);
+		return bestIdx;
 	}
 }

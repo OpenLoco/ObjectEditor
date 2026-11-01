@@ -464,6 +464,10 @@ public static class SawyerStreamReader
 	{
 		using var ms = new MemoryStream();
 
+		// Reused scratch buffer for repeat runs. A run is at most 257 - 128 = 129 bytes,
+		// so 256 is comfortably large enough and avoids a heap allocation per run.
+		Span<byte> repeatBuffer = stackalloc byte[256];
+
 		for (var i = 0; i < data.Length; ++i)
 		{
 			var rleCodeByte = data[i];
@@ -477,9 +481,8 @@ public static class SawyerStreamReader
 
 				var count = 257 - rleCodeByte;
 
-				var arr = new byte[count];
-				Array.Fill(arr, data[i]);
-				ms.Write(arr);
+				repeatBuffer[..count].Fill(data[i]);
+				ms.Write(repeatBuffer[..count]);
 			}
 			else
 			{
@@ -533,7 +536,14 @@ public static class SawyerStreamReader
 				var copySrc = 0 + buffer.Count + offset;
 				var copyLen = (data[i] & 7) + 1;
 
-				buffer.AddRange(buffer.GetRange(copySrc, copyLen));
+				// Copy the repeated bytes one at a time rather than via buffer.GetRange, which
+				// allocates a brand new List<byte> for every match (thousands per DAT file).
+				// copySrc + j always refers to a position before the current end, so the values
+				// stay valid even if the backing array grows mid-copy.
+				for (var j = 0; j < copyLen; j++)
+				{
+					buffer.Add(buffer[copySrc + j]);
+				}
 			}
 		}
 

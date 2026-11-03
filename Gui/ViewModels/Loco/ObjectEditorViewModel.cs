@@ -36,23 +36,52 @@ namespace Gui.ViewModels;
 
 public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 {
-	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
-	public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
-	public ReactiveCommand<Unit, bool> ValidateObjectCommand { get; }
-	public ReactiveCommand<Unit, bool> ValidateForOGCommand { get; }
+	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; private set; } = null!;
+	public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; private set; } = null!;
+	public ReactiveCommand<Unit, bool> ValidateObjectCommand { get; private set; } = null!;
+	public ReactiveCommand<Unit, bool> ValidateForOGCommand { get; private set; } = null!;
 
 	[Reactive]
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
 
-	public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
+	public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; private set; } = null!;
+
+	/// <summary>True when this tab holds an object that has not been written to disk yet (created by the
+	/// "New Object" wizard). In-place saving and reloading-from-disk are unavailable until it is saved.</summary>
+	public bool IsNewObject { get; private set; }
 
 	public ObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
 	{
+		InitializeCommands();
 		Load();
+	}
 
+	/// <summary>
+	/// Creates an editor tab for an object that only exists in memory (for example one produced by the
+	/// "New Object" wizard). As there is no file on disk yet, in-place saving is disabled and the user
+	/// must use "Save As" to write the object out.
+	/// </summary>
+	public ObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext, LocoUIObjectModel model)
+		: base(currentFile, editorContext)
+	{
+		ArgumentNullException.ThrowIfNull(model);
+
+		IsNewObject = true;
+
+		InitializeCommands();
+
+		ResetViewModelGroupsForReload();
+		Model = model;
+		PopulateViewModelGroups();
+
+		SaveIsVisible = false;
+	}
+
+	void InitializeCommands()
+	{
 		ExportUncompressedCommand = ReactiveCommand.CreateFromTask(SaveAsUncompressedDatAsync);
-		CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) => CopyToGameObjDataFolder(targetFolder, currentFile, editorContext));
+		CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) => CopyToGameObjDataFolder(targetFolder, CurrentFile, EditorContext));
 		ValidateObjectCommand = ReactiveCommand.Create(() => ValidateObject(showPopupOnSuccess: true));
 		ValidateForOGCommand = ReactiveCommand.Create(() => ValidateForOG(showPopupOnSuccess: true));
 
@@ -205,6 +234,28 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 	public override void Load()
 	{
+		ResetViewModelGroupsForReload();
+
+		// A brand-new object has no file to reload from, so just rebuild the view-models from the
+		// in-memory model - otherwise reloading would empty the tab.
+		if (IsNewObject)
+		{
+			PopulateViewModelGroups();
+			return;
+		}
+
+		Logger.LogInformation("Loading {DisplayName} from {FileName}", CurrentFile.DisplayName, CurrentFile.FileName);
+
+		if (EditorContext.TryLoadObject(CurrentFile, out var newObj))
+		{
+			Model = newObj!;
+			PopulateViewModelGroups();
+		}
+	}
+
+	/// <summary>Disposes the existing preview view-models (stopping any playing sounds) and resets the groups.</summary>
+	void ResetViewModelGroupsForReload()
+	{
 		// this stops any currently-playing sounds and disposes preview viewmodels
 		foreach (var vm in ViewModelGroups.SelectMany(x => x.ViewModels))
 		{
@@ -219,87 +270,83 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		}
 
 		ResetViewModelGroups("Object");
+	}
 
-		Logger.LogInformation("Loading {DisplayName} from {FileName}", CurrentFile.DisplayName, CurrentFile.FileName);
+	/// <summary>Builds the view-model groups for the current <see cref="Model"/>.</summary>
+	void PopulateViewModelGroups()
+	{
+		var objectGroup = DefaultViewModelGroup;
 
-		if (EditorContext.TryLoadObject(CurrentFile, out var newObj))
+		if (Model?.LocoObject != null)
 		{
-			Model = newObj!;
+			AddViewModelToGroup(GetViewModelFromStruct(Model.LocoObject), objectGroup);
+			AddViewModelToGroup(new StringTableViewModel(Model.LocoObject.StringTable), objectGroup);
 
-			var objectGroup = DefaultViewModelGroup;
+			var mediaGroup = AddViewModelGroup("Media");
 
-			if (Model?.LocoObject != null)
+			if (Model.LocoObject.Object is SoundObject soundObject)
 			{
-				AddViewModelToGroup(GetViewModelFromStruct(Model.LocoObject), objectGroup);
-				AddViewModelToGroup(new StringTableViewModel(Model.LocoObject.StringTable), objectGroup);
-
-				var mediaGroup = AddViewModelGroup("Media");
-
-				if (Model.LocoObject.Object is SoundObject soundObject)
+				AddViewModelToGroup(new AudioViewModel(Logger, Model.Metadata?.InternalName ?? Model.DatInfo?.S5Header.Name ?? "unk sound name", soundObject), mediaGroup);
+			}
+			else
+			{
+				if (Model.LocoObject.ImageTable != null)
 				{
-					AddViewModelToGroup(new AudioViewModel(Logger, Model.Metadata?.InternalName ?? Model.DatInfo?.S5Header.Name ?? "unk sound name", soundObject), mediaGroup);
-				}
-				else
-				{
-					if (Model.LocoObject.ImageTable != null)
+					var configFilePath = Path.Combine(EditorContext.Settings.ConfigFolder, ObjectEditorContext.ImageTableGroupsFileName);
+					AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, Model.LocoObject.ObjectType, Model.LocoObject.Object, configFilePath, EditorContext.Settings), mediaGroup);
+
+					// object-specific extra viewmodels
+					if (Model.LocoObject.ObjectType == ObjectType.Building)
 					{
-						var configFilePath = Path.Combine(EditorContext.Settings.ConfigFolder, ObjectEditorContext.ImageTableGroupsFileName);
-						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, Model.LocoObject.ObjectType, Model.LocoObject.Object, configFilePath, EditorContext.Settings), mediaGroup);
-
-						// object-specific extra viewmodels
-						if (Model.LocoObject.ObjectType == ObjectType.Building)
+						var bc = (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents;
+						if (bc != null)
 						{
-							var bc = (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents;
-							if (bc != null)
-							{
-								AddViewModelToGroup(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable), mediaGroup);
-							}
-						}
-
-					}
-
-					// no image table but custom name previewer
-					if (Model.LocoObject.ObjectType == ObjectType.TownNames)
-					{
-						var townNamesVm = GetViewModel<TownNamesViewModel>();
-						if (townNamesVm != null)
-						{
-							AddViewModelToGroup(new TownNamesPreviewViewModel(townNamesVm), mediaGroup);
+							AddViewModelToGroup(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable), mediaGroup);
 						}
 					}
 				}
 
-				if (!mediaGroup.ViewModels.Any())
+				// no image table but custom name previewer
+				if (Model.LocoObject.ObjectType == ObjectType.TownNames)
 				{
-					_ = RemoveViewModelGroup(mediaGroup);
+					var townNamesVm = GetViewModel<TownNamesViewModel>();
+					if (townNamesVm != null)
+					{
+						AddViewModelToGroup(new TownNamesPreviewViewModel(townNamesVm), mediaGroup);
+					}
 				}
 			}
 
-			if (Model?.DatInfo != null)
+			if (!mediaGroup.ViewModels.Any())
 			{
-				var objectHeaderViewModel = new ObjectModelHeaderViewModel(Model.DatInfo.S5Header.Convert());
+				_ = RemoveViewModelGroup(mediaGroup);
+			}
+		}
 
-				// an object saved as 'Vanilla' but isn't truly Vanilla will have its source auto-set to Custom
-				// but in this case, we do want to show the user this, so we'll default to Steam
-				if (Model.DatInfo.S5Header.ObjectSource == DatObjectSource.Vanilla && objectHeaderViewModel.ObjectSource == ObjectSource.Custom)
-				{
-					objectHeaderViewModel.ObjectSource = ObjectSource.LocomotionSteam;
-				}
+		if (Model?.DatInfo != null)
+		{
+			var objectHeaderViewModel = new ObjectModelHeaderViewModel(Model.DatInfo.S5Header.Convert());
 
-				AddViewModelToGroup(
-					objectHeaderViewModel,
-					objectGroup);
-
-				AddViewModelToGroup(new ObjectDatHeaderViewModel(
-					Model.DatInfo.ObjectHeader.Encoding,
-					Model.DatInfo.ObjectHeader.DataLength),
-					objectGroup);
+			// an object saved as 'Vanilla' but isn't truly Vanilla will have its source auto-set to Custom
+			// but in this case, we do want to show the user this, so we'll default to Steam
+			if (Model.DatInfo.S5Header.ObjectSource == DatObjectSource.Vanilla && objectHeaderViewModel.ObjectSource == ObjectSource.Custom)
+			{
+				objectHeaderViewModel.ObjectSource = ObjectSource.LocomotionSteam;
 			}
 
-			if (Model?.Metadata != null)
-			{
-				AddViewModelToGroup(new ObjectMetadataViewModel(EditorContext, Model.Metadata), objectGroup);
-			}
+			AddViewModelToGroup(
+				objectHeaderViewModel,
+				objectGroup);
+
+			AddViewModelToGroup(new ObjectDatHeaderViewModel(
+				Model.DatInfo.ObjectHeader.Encoding,
+				Model.DatInfo.ObjectHeader.DataLength),
+				objectGroup);
+		}
+
+		if (Model?.Metadata != null)
+		{
+			AddViewModelToGroup(new ObjectMetadataViewModel(EditorContext, Model.Metadata), objectGroup);
 		}
 	}
 

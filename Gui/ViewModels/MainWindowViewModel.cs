@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Platform.Storage;
 using Common;
 using Dat.Data;
+using Dat.Templates;
 using Definitions.ObjectModels.Graphics;
 using DynamicData;
 using Gui.Models;
@@ -45,6 +46,7 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Task> OpenTutorial { get; }
 	public ReactiveCommand<Unit, Task> OpenScores { get; }
 	public ReactiveCommand<Unit, Task> OpenLanguage { get; }
+	public ReactiveCommand<Unit, Unit> NewObjectCommand { get; }
 	public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
 	public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
 	public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
@@ -68,6 +70,8 @@ public class MainWindowViewModel : ViewModelBase
 	public Interaction<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> OpenEditorSettingsWindow { get; }
 
 	public Interaction<LogWindowViewModel, LogWindowViewModel?> OpenLogWindow { get; }
+
+	public Interaction<NewObjectWizardViewModel, NewObjectWizardViewModel?> OpenNewObjectWizard { get; }
 
 	public MainWindowViewModel()
 	{
@@ -125,6 +129,16 @@ public class MainWindowViewModel : ViewModelBase
 		OpenTutorial = ReactiveCommand.Create(() => Load<TutorialViewModel>(PlatformSpecific.DatFileTypes));
 		OpenScores = ReactiveCommand.Create(() => Load<ScoresViewModel>(PlatformSpecific.DatFileTypes));
 		OpenLanguage = ReactiveCommand.Create(() => Load<LanguageFileViewModel>(PlatformSpecific.DatFileTypes));
+
+		OpenNewObjectWizard = new();
+		NewObjectCommand = ReactiveCommand.CreateFromTask(async () =>
+		{
+			var result = await OpenNewObjectWizard.Handle(new NewObjectWizardViewModel());
+			if (result is { Confirmed: true })
+			{
+				OpenNewObject(result);
+			}
+		});
 
 		UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
 		UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
@@ -315,6 +329,24 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			CurrentTabModel.AddDocument(new ObjectEditorViewModel(fsi, EditorContext));
 		}
+	}
+
+	/// <summary>Builds a template object from the completed wizard and opens it in a new tab.</summary>
+	void OpenNewObject(NewObjectWizardViewModel wizard)
+	{
+		var name = wizard.ObjectName.Trim();
+		var displayName = wizard.EffectiveDisplayName;
+
+		EditorContext.Logger.LogInformation("Creating new {ObjectType} object \"{Name}\"", wizard.SelectedObjectType, name);
+
+		var template = NewObjectTemplateFactory.Create(name, wizard.SelectedObjectType, wizard.SelectedObjectSource, wizard.SelectedEncoding);
+		var model = new LocoUIObjectModel { LocoObject = template.LocoObject, DatInfo = template.DatInfo };
+
+		// A brand-new object has no file on disk, so there is nothing to reload or overwrite yet - the
+		// editor tab opens with in-place saving disabled until the user chooses "Save As".
+		var fileSystemItem = new FileSystemItem(displayName, null, null, null, null, FileLocation.Local, wizard.SelectedObjectSource, wizard.SelectedObjectType);
+
+		CurrentTabModel.AddDocument(new ObjectEditorViewModel(fileSystemItem, EditorContext, model));
 	}
 
 	public async Task Load<T>(IReadOnlyList<FilePickerFileType> filetypes) where T : IFileViewModel

@@ -1,0 +1,72 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Gui.ViewModels"
+	mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="440"
+	x:Class="Gui.Views.NewObjectWizardWindow"
+	x:DataType="vm:NewObjectWizardViewModel"
+	Title="New Object"
+	WindowStartupLocation="CenterOwner"
+	WindowDecorations="Full"
+	Width="520"
+	Height="440"
+	ShowInTaskbar="False">
+
+	<Design.DataContext>
+		<vm:NewObjectWizardViewModel/>
+	</Design.DataContext>
+
+	<DockPanel Margin="16">
+		<TextBlock DockPanel.Dock="Top" FontSize="16" FontWeight="SemiBold" Text="{Binding StepTitle}"/>
+		<TextBlock DockPanel.Dock="Top" Margin="0,4,0,12" Opacity="0.7" TextWrapping="Wrap"
+				   Text="Create a new object from a template. The template is a starting point - every value can be edited afterwards."/>
+
+		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
+			<Button Command="{Binding BackCommand}" Content="Back" HorizontalContentAlignment="Center" IsVisible="{Binding !IsFirstStep}" MinWidth="80"/>
+			<Button Command="{Binding NextCommand}" Content="Next" HorizontalContentAlignment="Center" IsVisible="{Binding !IsLastStep}" MinWidth="80"/>
+			<Button Command="{Binding CreateCommand}" Content="Create" HorizontalContentAlignment="Center" IsVisible="{Binding IsLastStep}" MinWidth="80"/>
+			<Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalContentAlignment="Center" MinWidth="80"/>
+		</StackPanel>
+
+		<ScrollViewer>
+			<StackPanel>
+				<!-- Step 1: pick the object type -->
+				<StackPanel IsVisible="{Binding IsTypeStep}" Spacing="8">
+					<TextBlock Text="Object type:"/>
+					<ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding ObjectTypes}" SelectedItem="{Binding SelectedObjectType}"/>
+					<TextBlock Opacity="0.7" Text="Choose the type of object you want to create." TextWrapping="Wrap"/>
+				</StackPanel>
+
+				<!-- Step 2: details -->
+				<StackPanel IsVisible="{Binding IsDetailsStep}" Spacing="8">
+					<TextBlock Text="Object name (up to 8 characters):"/>
+					<TextBox MaxLength="8" PlaceholderText="MYOBJ" Text="{Binding ObjectName}"/>
+					<TextBlock Foreground="Red" IsVisible="{Binding HasNameError}" Text="{Binding NameError}" TextWrapping="Wrap"/>
+
+					<TextBlock Margin="0,8,0,0" Text="Display name (optional, friendly name shown in the editor):"/>
+					<TextBox PlaceholderText="{Binding ObjectName}" Text="{Binding DisplayName}"/>
+
+					<TextBlock Margin="0,8,0,0" Text="Source:"/>
+					<ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding ObjectSources}" SelectedItem="{Binding SelectedObjectSource}"/>
+
+					<TextBlock Margin="0,8,0,0" Text="Compression:"/>
+					<ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Encodings}" SelectedItem="{Binding SelectedEncoding}"/>
+				</StackPanel>
+
+				<!-- Step 3: review -->
+				<StackPanel IsVisible="{Binding IsReviewStep}" Spacing="6">
+					<TextBlock FontWeight="SemiBold" Text="Review your new object:"/>
+					<TextBlock Text="{Binding EffectiveDisplayName, StringFormat='Display name: {0}'}"/>
+					<TextBlock Text="{Binding SelectedObjectTypeText, StringFormat='Object type: {0}'}"/>
+					<TextBlock Text="{Binding ObjectName, StringFormat='Object name: {0}'}"/>
+					<TextBlock Text="{Binding SelectedObjectSourceText, StringFormat='Source: {0}'}"/>
+					<TextBlock Text="{Binding SelectedEncodingText, StringFormat='Compression: {0}'}"/>
+					<TextBlock Margin="0,8,0,0" Opacity="0.7" TextWrapping="Wrap"
+							   Text="The object will be created in memory and opened in a new tab. Use 'Save As' to write it to disk."/>
+				</StackPanel>
+			</StackPanel>
+		</ScrollViewer>
+	</DockPanel>
+</Window>

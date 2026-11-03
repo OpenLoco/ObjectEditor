@@ -150,6 +150,7 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
+					<MenuItem Command="{Binding NewObjectCommand}" Header="New object..." HotKey="Ctrl+N" InputGesture="Ctrl+N"/>
 					<MenuItem Command="{Binding OpenSingleObject}" Header="Open single object (.DAT)" HotKey="Ctrl+O" InputGesture="Ctrl+O"/>
 					<MenuItem Command="{Binding OpenG1}" Header="Open G1 (.DAT)" HotKey="Ctrl+G" InputGesture="Ctrl+G"/>
 					<MenuItem Command="{Binding OpenSCV5}" Header="Open scenario/save game/landscape (.SC5/.SV5)" HotKey="Ctrl+H" InputGesture="Ctrl+H"/>

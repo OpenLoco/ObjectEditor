@@ -119,13 +119,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	[Browsable(false)]
 	public Avalonia.Rect SelectedBitmapPreviewBorder
-		=> DisplayedImage == null
-		? new Avalonia.Rect()
-			: new Avalonia.Rect(
-				XOffset - 1,
-				YOffset - 1,
-				DisplayedImage.Size.Width + 2,
-				DisplayedImage.Size.Height + 2);
+		=> selectedBitmapPreviewBorder?.Value ?? default;
 
 	protected GraphicsElement Model { get; init; } = null!;
 
@@ -137,6 +131,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 	{ }
 
 	readonly CompositeDisposable subscriptions = [];
+	readonly ObservableAsPropertyHelper<Avalonia.Rect>? selectedBitmapPreviewBorder;
 	bool disposed;
 
 	public ImageViewModel(GraphicsElement image, PaletteMap paletteMap)
@@ -150,8 +145,12 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 			.Subscribe(_ => RefreshDisplayedImage())
 			.DisposeWith(subscriptions);
 
-		_ = this.WhenAnyValue(o => o.DisplayedImage, o => o.XOffset, o => o.YOffset, o => o.Width, o => o.Height)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)))
+		selectedBitmapPreviewBorder = this.WhenAnyValue(
+				o => o.DisplayedImage, o => o.XOffset, o => o.YOffset, o => o.Width, o => o.Height,
+				(image, xOffset, yOffset, _, _) => image == null
+					? new Avalonia.Rect()
+					: new Avalonia.Rect(xOffset - 1, yOffset - 1, image.Size.Width + 2, image.Size.Height + 2))
+			.ToProperty(this, o => o.SelectedBitmapPreviewBorder)
 			.DisposeWith(subscriptions);
 	}
 
@@ -176,7 +175,6 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 		DisplayedImage?.Dispose();
 		DisplayedImage = bitmap;
-		this.RaisePropertyChanged(nameof(DisplayedImage));
 	}
 
 	/// <summary>Refreshes the displayed preview from the underlying element's source of truth. Dithering is

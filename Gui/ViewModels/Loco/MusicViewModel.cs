@@ -19,10 +19,13 @@ public class MusicViewModel : BaseFileViewModel<DummyModel>
 		=> Load();
 
 	public override void Load()
-		=> AudioViewModel = new AudioViewModel(
+	{
+		AudioViewModel?.Dispose();
+		AudioViewModel = new AudioViewModel(
 			Logger,
 			GetDisplayName(CurrentFile.DisplayName),
 			CurrentFile.FileName!);
+	}
 
 	static string GetDisplayName(string filename)
 	{

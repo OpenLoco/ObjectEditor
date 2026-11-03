@@ -13,8 +13,7 @@
 	WindowDecorations="Full"
 	Width="800"
 	Height="600"
-	ShowInTaskbar="False"
-	Closing="Window_Closing">
+	ShowInTaskbar="False">
 
 	<Design.DataContext>
 		<vm:EditorSettingsWindowViewModel/>

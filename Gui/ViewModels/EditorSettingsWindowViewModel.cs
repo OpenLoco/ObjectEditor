@@ -12,14 +12,12 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 	public EditorSettingsWindowViewModel()
 	{
 		ObjDataDirectories = [];
-		ServerAddressHttps = string.Empty;
 	}
 
 	public EditorSettingsWindowViewModel(EditorSettings settings)
 	{
 		Model = settings;
 		ObjDataDirectories = [with(settings.ObjDataDirectories)];
-		ServerAddressHttps = settings.ServerAddressHttps;
 	}
 
 	public void Commit()
@@ -155,8 +153,8 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 	[Category("Object Service"), DisplayName("HTTPS"), PropertyVisibilityCondition(nameof(UseHttps), true)]
 	public string ServerAddressHttps
 	{
-		get;
-		set;
+		get => Model.ServerAddressHttps;
+		set => Model.ServerAddressHttps = value;
 	}
 
 	#endregion

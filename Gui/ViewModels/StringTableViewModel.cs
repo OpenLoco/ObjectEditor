@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 
 namespace Gui.ViewModels;
 
@@ -18,12 +20,14 @@ public class LanguageTranslationModel(LanguageId language, string translation) :
 	public string Translation { get; set; } = translation;
 }
 
-public class StringTableViewModel : ReactiveObject, IViewModel
+public class StringTableViewModel : ReactiveObject, IViewModel, IDisposable
 {
+	readonly CompositeDisposable subscriptions = [];
+	BindingList<LanguageTranslationModel>? subscribedInnerDictionary;
+	bool disposed;
+
 	public string DisplayName
 		=> "String Table";
-
-	BindingList<LanguageTranslationModel>? subscribedInnerDictionary;
 
 	public StringTableViewModel(StringTable table)
 	{
@@ -37,10 +41,12 @@ public class StringTableViewModel : ReactiveObject, IViewModel
 		);
 
 		_ = this.WhenAnyValue(o => o.SelectedKey)
-			.Subscribe(_ => SelectedInnerDictionary = SelectedKey == null ? null : TableView[SelectedKey]);
+			.Subscribe(_ => SelectedInnerDictionary = SelectedKey == null ? null : TableView[SelectedKey])
+			.DisposeWith(subscriptions);
 
 		_ = this.WhenAnyValue(o => o.SelectedInnerDictionary)
-			.Subscribe(SubscribeToSelectedInnerDictionary);
+			.Subscribe(SubscribeToSelectedInnerDictionary)
+			.DisposeWith(subscriptions);
 	}
 
 	[Reactive]
@@ -92,4 +98,16 @@ public class StringTableViewModel : ReactiveObject, IViewModel
 		}
 	}
 
+	public void Dispose()
+	{
+		if (disposed)
+		{
+			return;
+		}
+
+		disposed = true;
+		subscribedInnerDictionary?.ListChanged -= OnSelectedInnerDictionaryChanged;
+		subscriptions.Dispose();
+		GC.SuppressFinalize(this);
+	}
 }

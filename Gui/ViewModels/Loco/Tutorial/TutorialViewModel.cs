@@ -31,6 +31,7 @@ public class TutorialViewModel : BaseFileViewModel<DummyModel>
 			return;
 		}
 
+		TutorialInputs.Clear();
 		var bytes = File.ReadAllBytes(CurrentFile.FileName).AsSpan();
 
 		// each tutorial action is 4 parts of 2 bytes each, so 8 bytes per action

@@ -1,18 +1,11 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
-namespace Gui.Views
+namespace Gui.Views;
+
+public partial class ViewModelGroupView : UserControl
 {
-	public partial class ViewModelGroupView : UserControl
+	public ViewModelGroupView()
 	{
-		public ViewModelGroupView()
-		{
-			InitializeComponent();
-		}
-
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+		InitializeComponent();
 	}
 }

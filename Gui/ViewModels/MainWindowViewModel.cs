@@ -55,7 +55,9 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Unit> DownloadLatestUpdate { get; }
 
 	public string WindowTitle
-		=> $"{ObjectEditorContext.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
+		=> windowTitle.Value;
+
+	readonly ObservableAsPropertyHelper<string> windowTitle;
 
 	[Reactive]
 	public SemanticVersion ApplicationVersion { get; set; }
@@ -160,10 +162,9 @@ public class MainWindowViewModel : ViewModelBase
 
 		#region Version
 
-		_ = this.WhenAnyValue(o => o.ApplicationVersion)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
-		_ = this.WhenAnyValue(o => o.LatestVersionText)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
+		windowTitle = this.WhenAnyValue(o => o.ApplicationVersion, o => o.LatestVersionText,
+				(applicationVersion, latestVersionText) => $"{ObjectEditorContext.ApplicationName} - {applicationVersion} ({latestVersionText})")
+			.ToProperty(this, o => o.WindowTitle);
 
 		OpenDownloadLink = ReactiveCommand.Create(VersionHelpers.OpenDownloadPage);
 		DownloadLatestUpdate = ReactiveCommand.Create(() =>

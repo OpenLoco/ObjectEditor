@@ -36,6 +36,7 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 		}
 
 		EditorContext.G1 = Model; // todo: do we still need? can we do another way?
+		ImageTableViewModel?.Dispose();
 		ImageTableViewModel = new ImageTableViewModel(Model.ImageTable, Logger, editorSettings: EditorContext.Settings);
 	}
 
@@ -46,8 +47,6 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 			Logger.LogError("G1 was null and was unable to saved");
 			return;
 		}
-
-		//Model.G1.ImageTable.GraphicsElements = [.. ImageTableViewModel.ImageViewModels.Select(x => x.ToGraphicsElement())];
 
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? Path.Combine(EditorContext.Settings.ObjDataDirectory, CurrentFile.FileName ?? string.Empty)

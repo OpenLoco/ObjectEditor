@@ -73,9 +73,7 @@ public class BridgeViewModel(BridgeObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BaseCostFactor));
-			this.RaisePropertyChanged(nameof(HeightCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BaseCostFactor), nameof(HeightCostFactor), nameof(SellCostFactor));
 		}
 	}
 

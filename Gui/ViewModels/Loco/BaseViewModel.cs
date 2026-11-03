@@ -200,6 +200,19 @@ public abstract class BaseViewModel : ReactiveObject, IViewModel, IViewModelGrou
 		disposed = true;
 	}
 
+	/// <summary>
+	/// Raises change notifications for a set of dependent properties in a single call. The object view models
+	/// use this to refresh their inflation-adjusted cost-factor properties (which the property grid caches,
+	/// so it only re-reads them when explicitly notified) whenever <c>CostIndex</c> changes.
+	/// </summary>
+	protected void RaisePropertiesChanged(params string[] propertyNames)
+	{
+		foreach (var propertyName in propertyNames)
+		{
+			this.RaisePropertyChanged(propertyName);
+		}
+	}
+
 	void AddGroup()
 	{
 		var name = NewGroupName?.Trim();

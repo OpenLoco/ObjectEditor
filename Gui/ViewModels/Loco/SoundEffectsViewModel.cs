@@ -24,6 +24,11 @@ public class SoundEffectsViewModel : BaseFileViewModel<DummyModel>
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(CurrentFile?.FileName, nameof(CurrentFile.FileName));
 
+		foreach (var audioViewModel in AudioViewModels)
+		{
+			audioViewModel.Dispose();
+		}
+
 		var soundIdNames = Enum.GetValues<DatSoundId>();
 		AudioViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.FileName)
 			.Select((x, i) => new AudioViewModel(Logger, soundIdNames[i].ToString(), x.header, x.data))

@@ -57,8 +57,7 @@ public class TrackStationViewModel(TrackStationObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor));
 		}
 	}
 
@@ -83,17 +82,8 @@ public class TrackStationViewModel(TrackStationObject model)
 		set => Model.PlatformType = value;
 	}
 
-	// unused in loco
-	//[Category("<unused>")]
-	//public uint8_t pad_0D
-	//{
-	//	get => Model.pad_0D;
-	//	set => Model.pad_0D = value;
-	//}
-
-	// unused in loco
-	//[Category("<unused>")]
-	//public uint8_t[][] DiagonalCargoOffsetBytes { get; set; } = model.DiagonalCargoOffsetBytes;
+	// pad_0D and DiagonalCargoOffsetBytes are part of the DAT layout but are unused by Locomotion,
+	// so they are intentionally not surfaced for editing.
 
 	[Category("Cargo")]
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;

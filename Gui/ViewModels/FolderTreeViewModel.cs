@@ -346,7 +346,6 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
 			indexFilterModel,
-			//new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
 		};
 
 		// todo: add in object-specific searches
@@ -442,10 +441,12 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			})
 			.DisposeWith(_subscriptions);
 
-		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true)).DisposeWith(_subscriptions);
-		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory))).DisposeWith(_subscriptions);
+		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ =>
+		{
+			await LoadDirectoryAsync(true);
+			this.RaisePropertyChanged(nameof(CurrentDirectory));
+		}).DisposeWith(_subscriptions);
 
-		//_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
 		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => RaiseBrowseModeProperties()).DisposeWith(_subscriptions);
 		_ = this.WhenAnyValue(o => o.CurrentDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true)).DisposeWith(_subscriptions);
 		_ = this.WhenAnyValue(o => o.CurrentDirectoryItems).Skip(1).Subscribe(_ => UpdateDirectoryItemsView()).DisposeWith(_subscriptions);
@@ -475,7 +476,10 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	}
 
 	protected void RemoveFilter(FilterViewModel filter)
-		=> Filters.Remove(filter);
+	{
+		filter.Dispose();
+		_ = Filters.Remove(filter);
+	}
 
 	void RaiseBrowseModeProperties()
 	{
@@ -602,10 +606,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 			CurrentOnlineBrowseResults.Clear();
 			CurrentOnlineBrowseResults.AddRange(results);
-
 		}
-
-		//UpdateDirectoryItemsView();
 	}
 
 	protected void UpdateDirectoryItemsView()
@@ -627,15 +628,12 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 						new GridLength(1, GridUnitType.Auto),
 						new()
 						{
-							//CompareAscending = FileSystemItemBase.SortAscending(x => x.Name),
-							//CompareDescending = FileSystemItemBase.SortDescending(x => x.Name),
 							IsTextSearchEnabled = true,
 							TextSearchValueSelector = x => x.ToString()
 						}),
 					x => x.SubNodes),
 				new TextColumn<FileSystemItem, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
 				new TextColumn<FileSystemItem, FileLocation?>("Origin", x => x.FileLocation),
-				//new TextColumn<FileSystemItem, string?>("Location", x => x.FileName),
 				new TextColumn<FileSystemItem, DateOnly?>("Created", x => x.CreatedDate),
 				new TextColumn<FileSystemItem, DateOnly?>("Modified", x => x.ModifiedDate),
 				new TextColumn<FileSystemItem, ObjectType?>("Type", x => x.ObjectType),

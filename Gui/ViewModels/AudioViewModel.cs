@@ -6,6 +6,8 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.IO;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -25,28 +27,22 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	ISoundData? _soundObject;
 
+	readonly CompositeDisposable subscriptions = [];
+	readonly ObservableAsPropertyHelper<string?> duration;
+
 	[Reactive]
 	WaveStream? WaveStream { get; set; }
 
 	[Reactive]
 	public string SoundName { get; init; }
 
-	public string? Duration => $"Duration: {WaveStream?.TotalTime.ToString(@"mm\:ss\.ff")}";
+	public string? Duration => duration.Value;
 
-	[Reactive]
-	public ICommand PlaySoundCommand { get; set; }
-
-	[Reactive]
-	public ICommand PauseSoundCommand { get; set; }
-
-	[Reactive]
-	public ICommand StopSoundCommand { get; set; }
-
-	[Reactive]
-	public ICommand ImportSoundCommand { get; set; }
-
-	[Reactive]
-	public ICommand ExportSoundCommand { get; set; }
+	public ICommand PlaySoundCommand { get; }
+	public ICommand PauseSoundCommand { get; }
+	public ICommand StopSoundCommand { get; }
+	public ICommand ImportSoundCommand { get; }
+	public ICommand ExportSoundCommand { get; }
 
 	public void Dispose()
 	{
@@ -61,8 +57,10 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	public AudioViewModel(ILogger logger, string soundName)
 	{
-		_ = this.WhenAnyValue(o => o.WaveStream)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(Duration)));
+		duration = this.WhenAnyValue(o => o.WaveStream)
+			.Select(stream => $"Duration: {stream?.TotalTime.ToString(@"mm\:ss\.ff")}")
+			.ToProperty(this, o => o.Duration)
+			.DisposeWith(subscriptions);
 
 		Logger = logger;
 		SoundName = soundName;
@@ -315,6 +313,8 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		// If disposing equals true, dispose all managed and unmanaged resources.
 		if (disposing)
 		{
+			subscriptions.Dispose();
+
 			WaveOutEvent? output;
 			lock (playbackLock)
 			{
@@ -325,6 +325,9 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 			// Stop first so any pending PlaybackStopped handler completes, then dispose the device.
 			output?.Stop();
 			output?.Dispose();
+
+			WaveStream?.Dispose();
+			WaveStream = null;
 		}
 
 		// Note disposing has been done.

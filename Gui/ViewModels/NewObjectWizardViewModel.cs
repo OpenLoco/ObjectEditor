@@ -49,6 +49,16 @@ public class NewObjectWizardViewModel : ViewModelBase
 
 	readonly ObservableAsPropertyHelper<string?> nameError;
 	readonly ObservableAsPropertyHelper<bool> hasNameError;
+	readonly ObservableAsPropertyHelper<bool> isTypeStep;
+	readonly ObservableAsPropertyHelper<bool> isDetailsStep;
+	readonly ObservableAsPropertyHelper<bool> isReviewStep;
+	readonly ObservableAsPropertyHelper<bool> isFirstStep;
+	readonly ObservableAsPropertyHelper<bool> isLastStep;
+	readonly ObservableAsPropertyHelper<string> stepTitle;
+	readonly ObservableAsPropertyHelper<string> effectiveDisplayName;
+	readonly ObservableAsPropertyHelper<string> selectedObjectTypeText;
+	readonly ObservableAsPropertyHelper<string> selectedObjectSourceText;
+	readonly ObservableAsPropertyHelper<string> selectedEncodingText;
 
 	/// <summary>Human-readable reason the current name is not acceptable, or null when it is fine.</summary>
 	public string? NameError => nameError.Value;
@@ -56,28 +66,22 @@ public class NewObjectWizardViewModel : ViewModelBase
 	/// <summary>True when <see cref="NameError"/> is set; convenience for binding IsVisible.</summary>
 	public bool HasNameError => hasNameError.Value;
 
-	public bool IsTypeStep => StepIndex == TypeStepIndex;
-	public bool IsDetailsStep => StepIndex == DetailsStepIndex;
-	public bool IsReviewStep => StepIndex == ReviewStepIndex;
-	public bool IsFirstStep => StepIndex == TypeStepIndex;
-	public bool IsLastStep => StepIndex == LastStepIndex;
+	public bool IsTypeStep => isTypeStep.Value;
+	public bool IsDetailsStep => isDetailsStep.Value;
+	public bool IsReviewStep => isReviewStep.Value;
+	public bool IsFirstStep => isFirstStep.Value;
+	public bool IsLastStep => isLastStep.Value;
 
 	/// <summary>A short title describing the current step.</summary>
-	public string StepTitle => StepIndex switch
-	{
-		TypeStepIndex => "Step 1 of 3: Object type",
-		DetailsStepIndex => "Step 2 of 3: Details",
-		_ => "Step 3 of 3: Review",
-	};
+	public string StepTitle => stepTitle.Value;
 
 	/// <summary>The display name the new object will use, falling back to the internal name.</summary>
-	public string EffectiveDisplayName
-		=> string.IsNullOrWhiteSpace(DisplayName) ? ObjectName.Trim() : DisplayName.Trim();
+	public string EffectiveDisplayName => effectiveDisplayName.Value;
 
 	/// <summary>Summaries of the current selections for the review step (enums bound to text).</summary>
-	public string SelectedObjectTypeText => SelectedObjectType.ToString();
-	public string SelectedObjectSourceText => SelectedObjectSource.ToString();
-	public string SelectedEncodingText => SelectedEncoding.ToString();
+	public string SelectedObjectTypeText => selectedObjectTypeText.Value;
+	public string SelectedObjectSourceText => selectedObjectSourceText.Value;
+	public string SelectedEncodingText => selectedEncodingText.Value;
 
 	public ReactiveCommand<Unit, Unit> NextCommand { get; }
 	public ReactiveCommand<Unit, Unit> BackCommand { get; }
@@ -94,19 +98,31 @@ public class NewObjectWizardViewModel : ViewModelBase
 			.Select(error => error is not null)
 			.ToProperty(this, o => o.HasNameError);
 
-		// The computed step flags aren't reactive themselves, so refresh them whenever the step changes.
-		_ = this.WhenAnyValue(o => o.StepIndex)
-			.Subscribe(_ => RaiseStepFlags());
+		var stepIndex = this.WhenAnyValue(o => o.StepIndex);
+		isTypeStep = stepIndex.Select(step => step == TypeStepIndex).ToProperty(this, o => o.IsTypeStep);
+		isDetailsStep = stepIndex.Select(step => step == DetailsStepIndex).ToProperty(this, o => o.IsDetailsStep);
+		isReviewStep = stepIndex.Select(step => step == ReviewStepIndex).ToProperty(this, o => o.IsReviewStep);
+		isFirstStep = stepIndex.Select(step => step == TypeStepIndex).ToProperty(this, o => o.IsFirstStep);
+		isLastStep = stepIndex.Select(step => step == LastStepIndex).ToProperty(this, o => o.IsLastStep);
+		stepTitle = stepIndex.Select(step => step switch
+		{
+			TypeStepIndex => "Step 1 of 3: Object type",
+			DetailsStepIndex => "Step 2 of 3: Details",
+			_ => "Step 3 of 3: Review",
+		}).ToProperty(this, o => o.StepTitle);
 
-		// The review step shows the current selections as text, so refresh those on change.
-		_ = this.WhenAnyValue(o => o.SelectedObjectType)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedObjectTypeText)));
-		_ = this.WhenAnyValue(o => o.SelectedObjectSource)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedObjectSourceText)));
-		_ = this.WhenAnyValue(o => o.SelectedEncoding)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedEncodingText)));
-		_ = this.WhenAnyValue(o => o.ObjectName, o => o.DisplayName)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(EffectiveDisplayName)));
+		selectedObjectTypeText = this.WhenAnyValue(o => o.SelectedObjectType)
+			.Select(type => type.ToString())
+			.ToProperty(this, o => o.SelectedObjectTypeText);
+		selectedObjectSourceText = this.WhenAnyValue(o => o.SelectedObjectSource)
+			.Select(source => source.ToString())
+			.ToProperty(this, o => o.SelectedObjectSourceText);
+		selectedEncodingText = this.WhenAnyValue(o => o.SelectedEncoding)
+			.Select(encoding => encoding.ToString())
+			.ToProperty(this, o => o.SelectedEncodingText);
+		effectiveDisplayName = this.WhenAnyValue(o => o.ObjectName, o => o.DisplayName,
+				(name, display) => string.IsNullOrWhiteSpace(display) ? name.Trim() : display.Trim())
+			.ToProperty(this, o => o.EffectiveDisplayName);
 
 		var canGoNext = this.WhenAnyValue(o => o.StepIndex, o => o.NameError, (step, error)
 			=> step == TypeStepIndex || (step == DetailsStepIndex && error is null));
@@ -127,16 +143,6 @@ public class NewObjectWizardViewModel : ViewModelBase
 
 	void Back()
 		=> StepIndex = Math.Max(TypeStepIndex, StepIndex - 1);
-
-	void RaiseStepFlags()
-	{
-		this.RaisePropertyChanged(nameof(IsTypeStep));
-		this.RaisePropertyChanged(nameof(IsDetailsStep));
-		this.RaisePropertyChanged(nameof(IsReviewStep));
-		this.RaisePropertyChanged(nameof(IsFirstStep));
-		this.RaisePropertyChanged(nameof(IsLastStep));
-		this.RaisePropertyChanged(nameof(StepTitle));
-	}
 
 	/// <summary>A DAT object name is at most 8 ASCII characters and must not be empty.</summary>
 	internal static string? ValidateName(string? name)

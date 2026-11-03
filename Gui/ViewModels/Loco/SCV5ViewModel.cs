@@ -25,6 +25,8 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -32,8 +34,7 @@ namespace Gui.ViewModels;
 
 public class SCV5ViewModel : BaseFileViewModel<S5File>
 {
-	//[Reactive]
-	//public S5File? Model { get; set; }
+	readonly CompositeDisposable subscriptions = [];
 
 	public RequiredObjectsListViewModel RequiredObjects { get; }
 
@@ -66,6 +67,15 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 		: base(currentFile, editorContext)
 	{
 		RequiredObjects = new RequiredObjectsListViewModel(editorContext);
+
+		// Subscribe once here rather than in Load() so that reloading the file does not accumulate handlers.
+		_ = this.WhenAnyValue(o => o.TileElementX)
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)))
+			.DisposeWith(subscriptions);
+		_ = this.WhenAnyValue(o => o.TileElementY)
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)))
+			.DisposeWith(subscriptions);
+
 		Load();
 		DownloadMissingObjectsToGameObjDataCommand = ReactiveCommand.CreateFromTask<GameObjDataFolder>(DownloadMissingObjects);
 		ValidateSCV5Command = ReactiveCommand.CreateFromTask(ValidateSCV5Async);
@@ -95,12 +105,6 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Header.Convert())).OrderBy(x => x.Name);
 		PackedObjects = [with([.. po])];
-
-		_ = this.WhenAnyValue(o => o.TileElementX)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
-
-		_ = this.WhenAnyValue(o => o.TileElementY)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
 
 		if (Model.TileElementMap != null)
 		{
@@ -419,10 +423,6 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 								rgba[idx + 0] = (byte)(111 + el.BaseZ - (els.TerrainType() * 8));
 								rgba[idx + 1] = (byte)(75 + el.BaseZ + (els.TerrainType() * 8));
 								rgba[idx + 2] = (byte)(23 + el.BaseZ + (els.TerrainType() * 8));
-
-								//rgbaValues[idx + 0] = (byte)(el.Terrain() == 1 ? 255 : 0);
-								//rgbaValues[idx + 1] = (byte)(el.Terrain() == 1 ? 255 : 0);
-								//rgbaValues[idx + 2] = (byte)(el.Terrain() == 1 ? 255 : 0);
 							}
 						}
 						else if (el.Type == ElementType.Track)
@@ -527,30 +527,13 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 		Logger.LogInformation("Saved scenario/save file to {Filename}", filename);
 	}
 
-	//public override void Save()
-	//	=> Save(CurrentFile.Filename);
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			subscriptions.Dispose();
+		}
 
-	//public override void SaveAs(SaveParameters saveParameters)
-	//{
-	//	var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.SCV5FileTypes)).Result;
-	//	if (saveFile == null)
-	//	{
-	//		return;
-	//	}
-
-	//	Save(saveFile.Path.LocalPath);
-	//}
-
-	//void Save(string filename)
-	//{
-	//	logger?.Info("Saving scenario/save/landscape to {Filename}", filename);
-
-	//	var newFile = CurrentS5File with
-	//	{
-	//		RequiredObjects = [.. RequiredObjects.Select(x => x.GetAsUnderlyingType())],
-	//	};
-
-	//	var bytes = newFile.Write();
-	//	File.WriteAllBytes(filename, bytes);
-	//}
+		base.Dispose(disposing);
+	}
 }

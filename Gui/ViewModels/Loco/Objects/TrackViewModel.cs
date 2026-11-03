@@ -52,9 +52,7 @@ public class TrackViewModel(TrackObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
-			this.RaisePropertyChanged(nameof(TunnelCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor), nameof(TunnelCostFactor));
 		}
 	}
 

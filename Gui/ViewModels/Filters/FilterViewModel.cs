@@ -13,6 +13,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reflection;
 
@@ -27,9 +29,11 @@ public class FilterTypeViewModel : ReactiveObject
 	public IBrush? BackgroundColour { get; set; }
 }
 
-public class FilterViewModel : ReactiveObject
+public class FilterViewModel : ReactiveObject, IDisposable
 {
 	private readonly ObjectEditorContext _model;
+	readonly CompositeDisposable subscriptions = [];
+	bool disposed;
 
 	[Reactive] public FilterTypeViewModel? SelectedObjectType { get; set; }
 	[Reactive] public PropertyInfo? SelectedProperty { get; set; }
@@ -93,7 +97,8 @@ public class FilterViewModel : ReactiveObject
 				AvailableProperties.AddRange(searchableProperties);
 				SelectedProperty = AvailableProperties.FirstOrDefault();
 				SelectedOperator = null;
-			});
+			})
+			.DisposeWith(subscriptions);
 
 		_ = this.WhenAnyValue(x => x.SelectedProperty)
 			.Where(x => x != null)
@@ -101,9 +106,22 @@ public class FilterViewModel : ReactiveObject
 			{
 				UpdateAvailableOperators(property!.PropertyType);
 				UpdateValueInputType(property!.PropertyType);
-			});
+			})
+			.DisposeWith(subscriptions);
 
 		RemoveFilterCommand = ReactiveCommand.Create(() => onRemove(this));
+	}
+
+	public void Dispose()
+	{
+		if (disposed)
+		{
+			return;
+		}
+
+		disposed = true;
+		subscriptions.Dispose();
+		GC.SuppressFinalize(this);
 	}
 
 	private void UpdateAvailableOperators(Type propertyType)
@@ -243,18 +261,10 @@ public class FilterViewModel : ReactiveObject
 		{
 			return BuildFilterExpression<FileSystemItem>()?.Compile();
 		}
-		//else if (SelectedObjectType.Type == typeof(MetadataModel))
-		//{
-		//	return BuildFilterExpression<MetadataModel>()?.Compile();
-		//}
+
 		// Otherwise, build a delegate that loads the object from disk
 		return entry => BuildObjectFilter(entry, isLocal);
 	}
-
-	//bool BuildMetadataFilter(ObjectIndexEntry entry)
-	//{
-	//	return BuildFilterExpression<MetadataModel>()?.Compile();
-	//}
 
 	bool BuildObjectFilter(FileSystemItem entry, bool isLocal)
 	{

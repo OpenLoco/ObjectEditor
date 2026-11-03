@@ -38,8 +38,7 @@ public class TrackSignalViewModel(TrackSignalObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor));
 		}
 	}
 

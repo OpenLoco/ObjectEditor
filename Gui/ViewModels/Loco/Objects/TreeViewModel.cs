@@ -53,8 +53,7 @@ public class TreeViewModel(TreeObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(ClearCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(ClearCostFactor));
 		}
 	}
 

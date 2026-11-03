@@ -2,7 +2,6 @@ using Common;
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
-using DynamicData.Binding;
 using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
@@ -14,12 +13,15 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 
 namespace Gui.ViewModels.Loco.Objects.Vehicle;
 
 public class VehicleViewModel : BaseViewModel<VehicleObject>
 {
 	private readonly VehicleObject model;
+	readonly CompositeDisposable subscriptions = [];
 
 	public VehicleViewModel(VehicleObject model) : base(model)
 	{
@@ -43,16 +45,6 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		DrivingSound = model.DrivingSound;
 		CrossingSounds = [with(model.CrossingSounds)];
 
-		#region Road/Track Type Binding
-
-		//_ = this.WhenAnyValue(x => x.Mode, x => x.Flags)
-		//	.Subscribe((_) => this.RaisePropertyChanged(nameof(AnyRoadOrTrackType)));
-
-		//_ = this.WhenAnyValue(x => x.AnyRoadOrTrackType)
-		//	.Subscribe((_) => this.RaisePropertyChanged(nameof(RoadOrTrackType)));
-
-		#endregion
-
 		#region Sound Properties Binding
 		_ = this.WhenAnyValue(x => x.DrivingSoundType)
 			.Subscribe((_) =>
@@ -60,24 +52,22 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 				this.RaisePropertyChanged(nameof(SimpleMotorSound));
 				this.RaisePropertyChanged(nameof(FrictionSound));
 				this.RaisePropertyChanged(nameof(GearboxMotorSound));
-			});
+			})
+			.DisposeWith(subscriptions);
 
 		_ = this.WhenAnyValue(x => x.DrivingSound)
-			.Subscribe((_) => model.DrivingSound = DrivingSound);
+			.Subscribe((_) => model.DrivingSound = DrivingSound)
+			.DisposeWith(subscriptions);
 
 		_ = this.WhenAnyValue(x => x.SimpleMotorSound)
-			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
+			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound)
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(x => x.FrictionSound)
-			.Subscribe((_) => model.FrictionSound = FrictionSound);
+			.Subscribe((_) => model.FrictionSound = FrictionSound)
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(x => x.GearboxMotorSound)
-			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound);
-
-		_ = this.WhenPropertyChanged(x => x.SimpleMotorSound)
-			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
-		_ = this.WhenPropertyChanged(x => x.FrictionSound)
-			.Subscribe((_) => model.FrictionSound = FrictionSound);
-		_ = this.WhenPropertyChanged(x => x.GearboxMotorSound)
-			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound);
+			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound)
+			.DisposeWith(subscriptions);
 
 		#endregion
 
@@ -85,9 +75,11 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 		// Bind MaxCargo changes back to model
 		_ = this.WhenAnyValue(x => x.CompatibleCargo1.MaxCargo)
-			.Subscribe(value => model.MaxCargo[0] = value);
+			.Subscribe(value => model.MaxCargo[0] = value)
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(x => x.CompatibleCargo2.MaxCargo)
-			.Subscribe(value => model.MaxCargo[1] = value);
+			.Subscribe(value => model.MaxCargo[1] = value)
+			.DisposeWith(subscriptions);
 
 		CompatibleCargo1.CargoCategories.CollectionChanged += OnCompatibleCargo1Changed;
 		CompatibleCargo2.CargoCategories.CollectionChanged += OnCompatibleCargo2Changed;
@@ -188,8 +180,6 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[ConditionTarget]
-	//bool IsTrackTypeSettable
-	//	=> !model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road);
 	public bool AnyRoadOrTrackType
 	{
 		get => model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType);
@@ -563,6 +553,36 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		Model.NumSimultaneousCargoTypes = 0;
 		Model.NumSimultaneousCargoTypes += (byte)(CompatibleCargo1.CargoCategories.Count > 0 ? 1 : 0);
 		Model.NumSimultaneousCargoTypes += (byte)(CompatibleCargo2.CargoCategories.Count > 0 ? 1 : 0);
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			CompatibleCargo1.CargoCategories.CollectionChanged -= OnCompatibleCargo1Changed;
+			CompatibleCargo2.CargoCategories.CollectionChanged -= OnCompatibleCargo2Changed;
+
+			foreach (var item in CompatibleCargo1.CargoCategories)
+			{
+				item.PropertyChanged -= OnCargoCategoryPropertyChanged;
+			}
+
+			foreach (var item in CompatibleCargo2.CargoCategories)
+			{
+				item.PropertyChanged -= OnCargoCategoryPropertyChanged;
+			}
+
+			CargoTypeSpriteOffsets.CollectionChanged -= OnCargoTypeSpriteOffsetsChanged;
+
+			foreach (var item in CargoTypeSpriteOffsets)
+			{
+				item.PropertyChanged -= OnCargoTypeSpriteOffsetPropertyChanged;
+			}
+
+			subscriptions.Dispose();
+		}
+
+		base.Dispose(disposing);
 	}
 }
 

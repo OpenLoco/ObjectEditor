@@ -33,7 +33,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		=> "Image Table";
 
 	public string ImageCount
-		=> $"Image count = {GroupedImageViewModels.Sum(x => x.Images.Count)}";
+		=> imageCount.Value;
 
 	// used in the axaml to bind the combobox to the list of swatches
 	public static ColourSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatch>();
@@ -47,46 +47,30 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	[Reactive]
 	public ColourRemapSwatchViewModel SelectedSecondarySwatch { get; set; }
 
-	[Reactive]
-	public ICommand ImportImagesCommand { get; set; }
+	public ICommand ImportImagesCommand { get; }
 
-	[Reactive]
-	public ICommand ImportJsonOffsetsCommand { get; set; }
+	public ICommand ImportJsonOffsetsCommand { get; }
 
-	[Reactive]
-	public ICommand ExportImagesCommand { get; set; }
+	public ICommand ExportImagesCommand { get; }
 
-	[Reactive]
-	public ICommand ReloadImageTableGroupingCommand { get; set; }
+	public ICommand ReloadImageTableGroupingCommand { get; }
 
-	[Reactive]
-	public ICommand ReplaceImageCommand { get; set; }
-	[Reactive]
-	public ICommand DitherImageCommand { get; set; }
-	[Reactive]
-	public ICommand DitherAllImagesCommand { get; set; }
-	[Reactive]
-	public ICommand CropImageCommand { get; set; }
-	[Reactive]
-	public ICommand DeleteImageCommand { get; set; }
-	[Reactive]
-	public ICommand InsertImageAtCommand { get; set; }
-	[Reactive]
-	public ICommand AppendImageCommand { get; set; }
+	public ICommand ReplaceImageCommand { get; }
+	public ICommand DitherImageCommand { get; }
+	public ICommand DitherAllImagesCommand { get; }
+	public ICommand CropImageCommand { get; }
+	public ICommand DeleteImageCommand { get; }
+	public ICommand InsertImageAtCommand { get; }
+	public ICommand AppendImageCommand { get; }
 
-	[Reactive]
-	public ICommand CropAllImagesCommand { get; set; }
+	public ICommand CropAllImagesCommand { get; }
 
-	[Reactive]
-	public ICommand ZeroOffsetAllImagesCommand { get; set; }
+	public ICommand ZeroOffsetAllImagesCommand { get; }
 
-	[Reactive]
-	public ICommand TranslateXOffsetAllImagesCommand { get; set; }
-	[Reactive]
-	public ICommand TranslateYOffsetAllImagesCommand { get; set; }
+	public ICommand TranslateXOffsetAllImagesCommand { get; }
+	public ICommand TranslateYOffsetAllImagesCommand { get; }
 
-	[Reactive]
-	public ICommand CenterOffsetAllImagesCommand { get; set; }
+	public ICommand CenterOffsetAllImagesCommand { get; }
 
 	[Reactive]
 	public SelectionModel<ImageViewModel> SelectionModel { get; set; }
@@ -99,6 +83,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	readonly DispatcherTimer animationTimer;
 	int currentFrameIndex;
 	readonly CompositeDisposable subscriptions = [];
+	readonly ObservableAsPropertyHelper<string> imageCount;
 	bool disposed;
 
 	public readonly ILogger Logger;
@@ -149,8 +134,9 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			.Where(_ => animationTimer != null)
 			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed))
 			.DisposeWith(subscriptions);
-		_ = this.WhenAnyValue(o => o.GroupedImageViewModels).Skip(1)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageCount)))
+		imageCount = this.WhenAnyValue(o => o.GroupedImageViewModels)
+			.Select(groups => $"Image count = {groups.Sum(x => x.Images.Count)}")
+			.ToProperty(this, o => o.ImageCount)
 			.DisposeWith(subscriptions);
 
 		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImagesAsync);
@@ -622,13 +608,13 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			group.SelectionModel.SelectionChanged -= SelectionChanged;
 			foreach (var image in group.Images)
 			{
-				(image as IDisposable)?.Dispose();
+				image.Dispose();
 			}
 		}
 
 		foreach (var image in LayeredImages)
 		{
-			(image as IDisposable)?.Dispose();
+			image.Dispose();
 		}
 
 		LayeredImages.Clear();

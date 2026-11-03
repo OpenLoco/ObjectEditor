@@ -15,7 +15,7 @@ public class WaterViewModel(WaterObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(CostFactor));
+			RaisePropertiesChanged(nameof(CostFactor));
 		}
 	}
 

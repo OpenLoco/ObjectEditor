@@ -23,7 +23,7 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 			.Subscribe(Observer.Create<IChangeSet<ObjectModelHeader>>(_ => SyncRequiredObjectsToModel()))
 			.DisposeWith(modelSyncSubscriptions);
 
-		CargoInfluenceObjects = [with(model.CargoInfluenceObjects)];
+		CargoInfluenceObjects = new(model.CargoInfluenceObjects, h => new CargoReferenceViewModel(h), list => model.CargoInfluenceObjects = [.. list]);
 		CargoInfluenceTownFilter = [with(model.CargoInfluenceTownFilter)];
 	}
 
@@ -37,7 +37,7 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 	public RequiredObjectsListViewModel RequiredObjects { get; init; }
 
 	[Category("Cargo")]
-	public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; init; }
+	public ObjectReferenceList<CargoReferenceViewModel> CargoInfluenceObjects { get; init; }
 
 	[Category("Cargo")]
 	public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; init; }
@@ -46,6 +46,11 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 	{
 		Model.DependentObjects.Clear();
 		Model.DependentObjects.AddRange(RequiredObjects.Items);
+	}
+
+	public override void SynchronizeToModel()
+	{
+		CargoInfluenceObjects.Synchronize();
 	}
 
 	protected override void Dispose(bool disposing)

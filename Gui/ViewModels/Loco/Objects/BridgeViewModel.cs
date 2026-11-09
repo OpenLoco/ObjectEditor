@@ -99,8 +99,14 @@ public class BridgeViewModel(BridgeObject model)
 	}
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = [with(model.CompatibleTrackObjects)];
+	public ObjectReferenceList<TrackReferenceViewModel> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects, h => new TrackReferenceViewModel(h), list => model.CompatibleTrackObjects = [.. list]);
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = [with(model.CompatibleRoadObjects)];
+	public ObjectReferenceList<RoadReferenceViewModel> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects, h => new RoadReferenceViewModel(h), list => model.CompatibleRoadObjects = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		CompatibleTrackObjects.Synchronize();
+		CompatibleRoadObjects.Synchronize();
+	}
 }

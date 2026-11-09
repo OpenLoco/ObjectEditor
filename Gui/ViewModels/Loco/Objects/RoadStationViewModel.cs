@@ -12,6 +12,7 @@ namespace Gui.ViewModels;
 public class RoadStationViewModel(RoadStationObject model)
 	: BaseViewModel<RoadStationObject>(model)
 {
+	CargoReferenceViewModel? cargoType = model.CargoType is { } cargoTypeModel ? new(cargoTypeModel) : null;
 
 	public uint8_t PaintStyle
 	{
@@ -77,15 +78,24 @@ public class RoadStationViewModel(RoadStationObject model)
 	}
 
 	[Category("Cargo")]
-	public ObjectModelHeader? CargoType
+	public CargoReferenceViewModel? CargoType
 	{
-		get => Model.CargoType;
-		set => Model.CargoType = value;
+		get => cargoType;
+		set
+		{
+			cargoType = value;
+			Model.CargoType = value?.Model;
+		}
 	}
 
 	[Category("Cargo")]
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = [with(model.CompatibleRoadObjects)];
+	public ObjectReferenceList<RoadReferenceViewModel> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects, h => new RoadReferenceViewModel(h), list => model.CompatibleRoadObjects = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		CompatibleRoadObjects.Synchronize();
+	}
 }

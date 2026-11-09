@@ -15,6 +15,7 @@ public class ExtendedPropertyGrid : PropertyGrid
 	{
 		Factories.AddFactory(new Pos3CellEditFactory());
 		Factories.AddFactory(new InflatableCurrencyCellEditFactory());
+		Factories.AddFactory(new ObjectReferenceCellEditFactory());
 	}
 }
 
@@ -157,5 +158,46 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 		}
 
 		return false;
+	}
+}
+
+internal class ObjectReferenceCellEditFactory : AbstractCellEditFactory
+{
+	public override bool Accept(object accessToken)
+		=> accessToken is ExtendedPropertyGrid;
+
+	public override Control? HandleNewProperty(PropertyCellContext context)
+	{
+		var referenceViewModelType = context.Property.PropertyType;
+		if (!typeof(ObjectModelHeaderViewModel).IsAssignableFrom(referenceViewModelType))
+		{
+			return null;
+		}
+
+		ObjectModelHeaderViewModel? GetReference()
+			=> context.Property.GetValue(context.Target) as ObjectModelHeaderViewModel;
+
+		var view = new ObjectReferenceView();
+		view.DataContext = new ObjectReferenceEntryViewModel(
+			GetReference,
+			referenceViewModelType,
+			commitNewReference: vm => SetAndRaise(context, view, vm));
+
+		return view;
+	}
+
+	public override bool HandlePropertyChanged(PropertyCellContext context)
+	{
+		if (!typeof(ObjectModelHeaderViewModel).IsAssignableFrom(context.Property.PropertyType))
+		{
+			return false;
+		}
+
+		if (context.CellEdit is ObjectReferenceView { DataContext: ObjectReferenceEntryViewModel entryViewModel })
+		{
+			entryViewModel.Refresh();
+		}
+
+		return true;
 	}
 }

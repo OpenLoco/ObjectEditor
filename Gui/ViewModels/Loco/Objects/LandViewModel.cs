@@ -7,6 +7,9 @@ namespace Gui.ViewModels;
 public class LandViewModel(LandObject model)
 	: BaseViewModel<LandObject>(model)
 {
+	CliffEdgeReferenceViewModel cliffEdgeHeader = model.CliffEdgeHeader is { } cliffEdgeHeaderModel ? new(cliffEdgeHeaderModel) : new();
+	LandReferenceViewModel? replacementLandHeader = model.ReplacementLandHeader is { } replacementLandHeaderModel ? new(replacementLandHeaderModel) : null;
+
 	public uint8_t CostIndex
 	{
 		get => Model.CostIndex;
@@ -62,15 +65,26 @@ public class LandViewModel(LandObject model)
 		set => Model.VariationLikelihood = value;
 	}
 
-	public ObjectModelHeader CliffEdgeHeader
+	public CliffEdgeReferenceViewModel CliffEdgeHeader
 	{
-		get => Model.CliffEdgeHeader;
-		set => Model.CliffEdgeHeader = value;
+		get => cliffEdgeHeader;
+		set
+		{
+			cliffEdgeHeader = value;
+			if (value != null)
+			{
+				Model.CliffEdgeHeader = value.Model;
+			}
+		}
 	}
 
-	public ObjectModelHeader? ReplacementLandHeader
+	public LandReferenceViewModel? ReplacementLandHeader
 	{
-		get => Model.ReplacementLandHeader;
-		set => Model.ReplacementLandHeader = value;
+		get => replacementLandHeader;
+		set
+		{
+			replacementLandHeader = value;
+			Model.ReplacementLandHeader = value?.Model;
+		}
 	}
 }

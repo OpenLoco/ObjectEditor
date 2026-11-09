@@ -71,5 +71,10 @@ public class TrackSignalViewModel(TrackSignalObject model)
 	}
 
 	[Length(0, TrackSignalObjectLoader.Constants.ModsLength)]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = [with(model.CompatibleTrackObjects)];
+	public ObjectReferenceList<TrackReferenceViewModel> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects, h => new TrackReferenceViewModel(h), list => model.CompatibleTrackObjects = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		CompatibleTrackObjects.Synchronize();
+	}
 }

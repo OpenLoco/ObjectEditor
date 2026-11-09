@@ -89,5 +89,10 @@ public class TrackStationViewModel(TrackStationObject model)
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = [with(model.CompatibleTrackObjects)];
+	public ObjectReferenceList<TrackReferenceViewModel> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects, h => new TrackReferenceViewModel(h), list => model.CompatibleTrackObjects = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		CompatibleTrackObjects.Synchronize();
+	}
 }

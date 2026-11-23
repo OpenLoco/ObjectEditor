@@ -214,7 +214,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		}
 	}
 
-	public static IViewModel? GetViewModelFromStruct(LocoObject locoObject)
+	public IViewModel? GetViewModelFromStruct(LocoObject locoObject)
 	{
 		var locoStruct = locoObject.Object;
 		var asm = Assembly
@@ -227,9 +227,21 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				&& type.BaseType.GetGenericTypeDefinition() == typeof(BaseViewModel<>)
 				&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
 
-		return asm == null
-			? null
-			: (IViewModel?)Activator.CreateInstance(asm, locoStruct);
+		if (asm == null)
+		{
+			return null;
+		}
+
+		// Try to create with (locoStruct, editorContext) for ViewModels that support context-aware features
+		try
+		{
+			return (IViewModel?)Activator.CreateInstance(asm, locoStruct, EditorContext);
+		}
+		catch (MissingMethodException)
+		{
+			// Fall back to single-argument constructor for ViewModels that don't need the context
+			return (IViewModel?)Activator.CreateInstance(asm, locoStruct);
+		}
 	}
 
 	public override void Load()

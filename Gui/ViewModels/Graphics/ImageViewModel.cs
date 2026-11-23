@@ -10,6 +10,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.ComponentModel;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 
 namespace Gui.ViewModels.Graphics;
@@ -34,7 +36,7 @@ public class DesignImageViewModel : ImageViewModel
 	}
 }
 
-public class ImageViewModel : ReactiveUI.ReactiveObject
+public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 {
 	public string Name
 		=> Model.Name;
@@ -94,7 +96,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 	}
 
 	[Reactive, Browsable(false)]
-	public Bitmap DisplayedImage { get; private set; }
+	public Bitmap? DisplayedImage { get; private set; }
 
 	[Browsable(false)]
 	public Image<Rgba32> UnderlyingImage
@@ -102,7 +104,12 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		get => Model.Image!;
 		set
 		{
-			Model.Image = value;
+			if (!ReferenceEquals(Model.Image, value))
+			{
+				Model.Image?.Dispose();
+				Model.Image = value;
+			}
+
 			this.RaisePropertyChanged(nameof(UnderlyingImage));
 		}
 	}
@@ -122,6 +129,9 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 	public ImageViewModel()
 	{ }
 
+	readonly CompositeDisposable subscriptions = new();
+	bool disposed;
+
 	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)
 	{
 		Model = graphicsElement;
@@ -130,17 +140,19 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		_ = this.WhenAnyValue(o => o.UnderlyingImage)
 			.Where(x => x != null)
 			.Subscribe(_ =>
-		{
-			DisplayedImage = UnderlyingImage!.ToAvaloniaBitmap();
-			this.RaisePropertyChanged(nameof(Width));
-			this.RaisePropertyChanged(nameof(Height));
-			Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
-			Model.Width = (short)UnderlyingImage.Width;
-			Model.Height = (short)UnderlyingImage.Height;
-		});
+			{
+				SetDisplayedImage(UnderlyingImage!.ToAvaloniaBitmap());
+				this.RaisePropertyChanged(nameof(Width));
+				this.RaisePropertyChanged(nameof(Height));
+				Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
+				Model.Width = (short)UnderlyingImage.Width;
+				Model.Height = (short)UnderlyingImage.Height;
+			})
+			.DisposeWith(subscriptions);
 
 		_ = this.WhenAnyValue(o => o.DisplayedImage, o => o.XOffset, o => o.YOffset, o => o.Width, o => o.Height)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)))
+			.DisposeWith(subscriptions);
 	}
 
 	public void RecolourImage(ColourSwatch primary, ColourSwatch secondary, PaletteMap paletteMap)
@@ -167,7 +179,19 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		}
 
 		// only update the UI image - don't update the underlying image as we want to keep the original
-		DisplayedImage = image!.ToAvaloniaBitmap();
+		SetDisplayedImage(image!.ToAvaloniaBitmap());
+	}
+
+	void SetDisplayedImage(Bitmap? bitmap)
+	{
+		if (ReferenceEquals(DisplayedImage, bitmap))
+		{
+			return;
+		}
+
+		DisplayedImage?.Dispose();
+		DisplayedImage = bitmap;
+		this.RaisePropertyChanged(nameof(DisplayedImage));
 	}
 
 	public void CropImage()
@@ -237,5 +261,28 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 			ImageData = rawData,
 			ImageTableIndex = ImageTableIndex,
 		};
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
+	void Dispose(bool disposing)
+	{
+		if (disposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			subscriptions.Dispose();
+			DisplayedImage?.Dispose();
+			Model.Image?.Dispose();
+		}
+
+		disposed = true;
 	}
 }

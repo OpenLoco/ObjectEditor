@@ -7,15 +7,20 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 
 namespace Gui.ViewModels;
 
-public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelGroupHost where T : class
+public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelGroupHost, IDisposable where T : class
 {
 	[Browsable(false)]
 	public virtual string DisplayName
 		=> typeof(T).Name;
+
+	readonly CompositeDisposable subscriptions = new();
+	bool disposed;
 
 	protected BaseViewModel(T? model = default)
 	{
@@ -24,12 +29,14 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 		_ = _allViewModels.Connect()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Bind(out _allViewModelsCollection)
-			.Subscribe();
+			.Subscribe()
+			.DisposeWith(subscriptions);
 
 		_ = _viewModelGroups.Connect()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Bind(out _viewModelGroupsCollection)
-			.Subscribe();
+			.Subscribe()
+			.DisposeWith(subscriptions);
 
 		AddGroupCommand = ReactiveCommand.Create(AddGroup);
 		ResetViewModelGroups();
@@ -46,7 +53,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 		=> _allViewModelsCollection;
 
 	[Browsable(false)]
-	public string NewGroupName { get; set; } = "New Group";
+	public string NewGroupName { get; set; } = "<unnamed>";
 
 	[Browsable(false)]
 	public ReactiveCommand<Unit, Unit> AddGroupCommand { get; }
@@ -67,7 +74,8 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 
 	protected void ResetViewModelGroups(string defaultGroupName = "General")
 	{
-		_allViewModels.Clear();
+		ClearViewModels();
+		DisposeViewModelGroups();
 
 		_viewModelGroups.Edit(list =>
 		{
@@ -91,8 +99,11 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 			return false;
 		}
 
+		DisposeViewModels(group.ViewModels);
 		group.ClearViewModels();
-		return _viewModelGroups.Remove(group);
+		var removed = _viewModelGroups.Remove(group);
+		(group as IDisposable)?.Dispose();
+		return removed;
 	}
 
 	protected void AddViewModel(IViewModel? vm)
@@ -139,12 +150,56 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 
 	protected void ClearViewModels()
 	{
+		DisposeViewModels(ViewModelGroups.SelectMany(group => group.ViewModels));
+
 		foreach (var group in ViewModelGroups)
 		{
 			group.ClearViewModels();
 		}
 
 		_allViewModels.Clear();
+	}
+
+	void DisposeViewModels(IEnumerable<IViewModel> viewModels)
+	{
+		foreach (var viewModel in viewModels.ToHashSet())
+		{
+			if (viewModel is IDisposable disposable)
+			{
+				disposable.Dispose();
+			}
+		}
+	}
+
+	void DisposeViewModelGroups()
+	{
+		foreach (var group in ViewModelGroups.OfType<IDisposable>())
+		{
+			group.Dispose();
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			ClearViewModels();
+			DisposeViewModelGroups();
+			subscriptions.Dispose();
+		}
+
+		disposed = true;
 	}
 
 	void AddGroup()

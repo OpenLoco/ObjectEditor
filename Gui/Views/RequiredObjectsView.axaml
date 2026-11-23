@@ -1,0 +1,61 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Gui.ViewModels"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	x:Class="Gui.Views.RequiredObjectsView"
+	x:DataType="vm:RequiredObjectsListViewModel">
+
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="4">
+			<Button Command="{Binding AddItemCommand}"
+					ToolTip.Tip="Select and add an object from the current folder to the list">
+				Add object
+			</Button>
+			<Button Command="{Binding RemoveSelectedItemCommand}"
+					Classes="danger"
+					ToolTip.Tip="Remove the currently selected object from the list (Delete)">
+				Remove selected
+			</Button>
+			<Separator Width="8" />
+			<Button Command="{Binding PopulateFromFolderCommand}"
+					ToolTip.Tip="Clear the list and populate it with all objects from a selected folder">
+				Populate from folder
+			</Button>
+			<Button Command="{Binding CopyCommand}"
+					ToolTip.Tip="Copy the required objects list to clipboard as JSON">
+				Copy list
+			</Button>
+			<Button Command="{Binding PasteCommand}"
+					ToolTip.Tip="Replace the required objects list with objects from clipboard (JSON format)">
+				Paste list
+			</Button>
+			<Button Command="{Binding ClearCommand}"
+					Classes="danger"
+					ToolTip.Tip="Remove all required objects from the list">
+				Clear
+			</Button>
+			<TextBlock VerticalAlignment="Center"
+					   Text="{Binding Items.Count, StringFormat='({0} items)'}" />
+		</StackPanel>
+		<DataGrid
+			ItemsSource="{Binding Items}"
+			SelectedItem="{Binding SelectedItem}"
+			AutoGenerateColumns="False"
+			CanUserSortColumns="True"
+			CanUserResizeColumns="True"
+			IsReadOnly="True">
+			<DataGrid.KeyBindings>
+				<KeyBinding Gesture="Delete" Command="{Binding RemoveSelectedItemCommand}" />
+			</DataGrid.KeyBindings>
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+				<DataGridTextColumn Header="Type" Binding="{Binding ObjectType}" Width="Auto" />
+				<DataGridTextColumn Header="Source" Binding="{Binding ObjectSource}" Width="Auto" />
+				<DataGridTextColumn Header="Checksum" Binding="{Binding DatChecksum}" Width="Auto" />
+			</DataGrid.Columns>
+		</DataGrid>
+	</DockPanel>
+</UserControl>

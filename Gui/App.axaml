@@ -99,6 +99,9 @@
 		<DataTemplate DataType="vm:SCV5ViewModel">
 			<vi:SCV5View />
 		</DataTemplate>
+		<DataTemplate DataType="vm:RegionViewModel">
+			<vi:RegionView />
+		</DataTemplate>
 		<DataTemplate DataType="vm:Graphics.ImageViewModel">
 			<vi:ImageView />
 		</DataTemplate>

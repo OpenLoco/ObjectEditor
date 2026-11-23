@@ -69,16 +69,34 @@ public class TabViewPageViewModel : ViewModelBase
 	}
 
 	void RemoveDocument(IFileViewModel tabToRemove)
-		=> _ = Documents.Remove(tabToRemove);
+	{
+		DisposeDocument(tabToRemove);
+		_ = Documents.Remove(tabToRemove);
+	}
 
 	void ClearDocuments()
-		=> Documents.Clear();
+	{
+		foreach (var document in Documents.ToList())
+		{
+			DisposeDocument(document);
+		}
+
+		Documents.Clear();
+	}
 
 	void ClearDocumentsExcept(IFileViewModel tabToKeep)
 	{
+		foreach (var document in Documents.Where(document => !ReferenceEquals(document, tabToKeep)).ToList())
+		{
+			DisposeDocument(document);
+		}
+
 		Documents.Clear();
 		Documents.Add(tabToKeep);
 	}
+
+	static void DisposeDocument(IFileViewModel model)
+		=> (model as IDisposable)?.Dispose();
 
 	public bool DocumentExistsWithFile(FileSystemItem fsi)
 		=> Documents.Any(x => x.CurrentFile == fsi);

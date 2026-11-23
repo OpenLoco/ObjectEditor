@@ -108,7 +108,7 @@ public static class PlatformSpecific
 		});
 	}
 
-	public static async Task<IStorageFile?> SaveFilePicker(IReadOnlyList<FilePickerFileType> filetypes)
+	public static async Task<IStorageFile?> SaveFilePicker(IReadOnlyList<FilePickerFileType> filetypes, string? suggestedFileName = null)
 	{
 		// See IoCFileOps project for an example of how to accomplish this.
 		if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
@@ -121,6 +121,7 @@ public static class PlatformSpecific
 		{
 			ShowOverwritePrompt = true,
 			Title = "Select a new file name",
+			SuggestedFileName = suggestedFileName,
 			FileTypeChoices = filetypes,
 		});
 	}

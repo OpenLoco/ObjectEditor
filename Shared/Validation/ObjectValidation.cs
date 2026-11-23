@@ -94,7 +94,7 @@ public static class ObjectValidation
 				validationErrors.Add($"Unable to find file info for the vanilla file. Name=\"{currentDirName}\".");
 			}
 
-			string[] expectedPrefixes = ["OG", "EX"];
+			string[] expectedPrefixes = ["OG"];
 
 			foreach (var expectedPrefix in expectedPrefixes)
 			{

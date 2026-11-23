@@ -27,9 +27,14 @@ public class SteamViewModel(SteamObject model)
 		set => Model.ImageOffset = value;
 	}
 
-	public BindingList<ObjectModelHeader> SoundEffects { get; init; } = [with(model.SoundEffects)];
+	public ObjectReferenceList<SoundReferenceViewModel> SoundEffects { get; init; } = new(model.SoundEffects, h => new SoundReferenceViewModel(h), list => model.SoundEffects = [.. list]);
 
 	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; init; } = [with(model.FrameInfoType0)];
 
 	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; init; } = [with(model.FrameInfoType1)];
+
+	public override void SynchronizeToModel()
+	{
+		SoundEffects.Synchronize();
+	}
 }

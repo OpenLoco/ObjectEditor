@@ -17,8 +17,8 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 	public BuildingViewModel(BuildingObject model) : base(model)
 	{
 		ProducedQuantity = [with(model.ProducedQuantity)];
-		ProducedCargoType = [with(model.ProducedCargoType)];
-		ConsumedCargoType = [with(model.ConsumedCargoType)];
+		ProducedCargoType = new(model.ProducedCargoType, h => new CargoReferenceViewModel(h), list => model.ProducedCargoType = [.. list]);
+		ConsumedCargoType = new(model.ConsumedCargoType, h => new CargoReferenceViewModel(h), list => model.ConsumedCargoType = [.. list]);
 		ProducedCargoQuantity = [with(model.ProducedCargoQuantity)];
 		ConsumedCargoQuantity = [with(model.ConsumedCargoQuantity)];
 
@@ -47,6 +47,12 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 		BuildingAnimations.ListChanged += OnBuildingAnimationsChanged;
 
 		#endregion
+	}
+
+	public override void SynchronizeToModel()
+	{
+		ProducedCargoType.Synchronize();
+		ConsumedCargoType.Synchronize();
 	}
 
 	void OnBuildingVariationsChanged(object? sender, ListChangedEventArgs e)
@@ -186,8 +192,8 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 	}
 
 	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ProducedQuantity { get; set; }
-	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeader> ProducedCargoType { get; set; }
-	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeader> ConsumedCargoType { get; set; }
+	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public ObjectReferenceList<CargoReferenceViewModel> ProducedCargoType { get; set; }
+	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public ObjectReferenceList<CargoReferenceViewModel> ConsumedCargoType { get; set; }
 	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ProducedCargoQuantity { get; set; }
 	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ConsumedCargoQuantity { get; set; }
 

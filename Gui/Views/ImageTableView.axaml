@@ -249,6 +249,7 @@ x:DataType="vmg:ImageTableViewModel">
 												<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
 													<Image.ContextMenu>
 														<ContextMenu>
+															<MenuItem Header="Export" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).ExportImageCommand}" CommandParameter="{Binding}"/>
 															<MenuItem Header="Replace" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).ReplaceImageCommand}" CommandParameter="{Binding}"/>
 															<MenuItem Header="Dither" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).DitherImageCommand}" CommandParameter="{Binding}"/>
 															<MenuItem Header="Crop" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).CropImageCommand}"/>

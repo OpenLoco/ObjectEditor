@@ -5,12 +5,15 @@ using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace Gui.ViewModels.Graphics;
 
@@ -203,6 +206,14 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 		RefreshDisplayedImage();
 		this.RaisePropertyChanged(nameof(XOffset));
 		this.RaisePropertyChanged(nameof(YOffset));
+	}
+
+	/// <summary>Saves this image to a PNG file using the raw palette colours (the default remap swatches),
+	/// the same way the bulk image-table export does.</summary>
+	public async Task SaveAsPngAsync(string filename)
+	{
+		using var rgba = UnderlyingImage!.ToRgba(paletteMap);
+		await rgba.SaveAsPngAsync(filename);
 	}
 
 	public void Dispose()

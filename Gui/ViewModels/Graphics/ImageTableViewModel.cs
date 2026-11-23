@@ -56,6 +56,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	public ICommand ReloadImageTableGroupingCommand { get; }
 
 	public ICommand ReplaceImageCommand { get; }
+	public ICommand ExportImageCommand { get; }
 	public ICommand DitherImageCommand { get; }
 	public ICommand DitherAllImagesCommand { get; }
 	public ICommand CropImageCommand { get; }
@@ -143,6 +144,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		ImportJsonOffsetsCommand = ReactiveCommand.CreateFromTask(ImportJsonOffsetsAsync);
 		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImagesAsync);
 		ReplaceImageCommand = ReactiveCommand.CreateFromTask<ImageViewModel>(ReplaceImageAsync);
+		ExportImageCommand = ReactiveCommand.CreateFromTask<ImageViewModel>(ExportImageAsync);
 		CropImageCommand = ReactiveCommand.Create(CropImage);
 		DeleteImageCommand = ReactiveCommand.CreateFromTask(DeleteImageAsync);
 		InsertImageAtCommand = ReactiveCommand.CreateFromTask<bool>(InsertImageAtAsync);
@@ -382,6 +384,31 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		img.Dispose();
 
 		return GraphicsElement.FromIndexed(flags, frame, xOffset, yOffset, zoomOffset, name, index);
+	}
+
+	public async Task ExportImageAsync(ImageViewModel image)
+	{
+		if (image == null)
+		{
+			return;
+		}
+
+		var suggestedFileName = ImageTableIo.BuildSingleImageFileName(image.ImageTableIndex, image.Name);
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.PngFileTypes, suggestedFileName);
+		if (saveFile?.Path == null)
+		{
+			return; // user cancelled
+		}
+
+		try
+		{
+			await image.SaveAsPngAsync(saveFile.Path.LocalPath);
+			Logger.LogInformation("Exported image {ImageTableIndex} to {Filename}", image.ImageTableIndex, saveFile.Path.LocalPath);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to export image {ImageTableIndex} to {Filename}", image.ImageTableIndex, saveFile.Path.LocalPath);
+		}
 	}
 
 	public async Task DitherImageAsync(ImageViewModel image)

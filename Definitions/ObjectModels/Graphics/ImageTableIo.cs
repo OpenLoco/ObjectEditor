@@ -14,6 +14,25 @@ public static class ImageTableIo
 {
 	public const string SpritesFileName = "sprites.json";
 
+	static readonly char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
+
+	/// <summary>Sanitises a name so it can be used as part of a file name: trimmed, lowercased, spaces
+	/// replaced with dashes, and any characters invalid in a file name removed.</summary>
+	public static string SanitizeFileName(string? value)
+		=> value == null
+			? string.Empty
+			: new string([.. value.Trim().ToLower().Replace(' ', '-').Where(x => !invalidFileNameChars.Contains(x))]).Trim();
+
+	/// <summary>Builds the file name used to export a single image: <c>{index}_{name}.png</c>, falling back
+	/// to <c>{index}.png</c> when the image has no usable name.</summary>
+	public static string BuildSingleImageFileName(int imageTableIndex, string? imageName)
+	{
+		var sanitized = SanitizeFileName(imageName);
+		return sanitized.Length == 0
+			? $"{imageTableIndex}.png"
+			: $"{imageTableIndex}_{sanitized}.png";
+	}
+
 	public static async Task<int> ExportAsync(ImageTable imageTable, string directory, bool prependGroupAndImageNameInFilename, PaletteMap paletteMap, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
@@ -30,7 +49,6 @@ public static class ImageTableIo
 		logger.LogInformation("Exporting images to {Directory}", directory);
 
 		var offsets = new List<SpriteElementJson>();
-		var invalidChars = Path.GetInvalidFileNameChars();
 
 		foreach (var item in imageTable.Groups
 			.SelectMany(group => group.GraphicsElements, (group, image) => new { group.Name, Image = image })
@@ -41,8 +59,8 @@ public static class ImageTableIo
 			var fileName = $"{image.ImageTableIndex}.png";
 			if (prependGroupAndImageNameInFilename)
 			{
-				var imageName = Sanitize(image.Name, invalidChars);
-				var groupName = Sanitize(item.Name, invalidChars);
+				var imageName = SanitizeFileName(image.Name);
+				var groupName = SanitizeFileName(item.Name);
 
 				if (!string.IsNullOrEmpty(groupName) && !string.IsNullOrEmpty(imageName))
 				{
@@ -60,9 +78,6 @@ public static class ImageTableIo
 		await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
 
 		return offsets.Count;
-
-		static string Sanitize(string value, char[] invalidChars)
-			=> new string([.. value.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
 	}
 
 	public static async Task<ICollection<SpriteElementJson>?> LoadSpritesJsonAsync(string filename, ILogger logger)

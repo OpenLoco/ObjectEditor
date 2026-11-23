@@ -64,13 +64,27 @@ public class ObjectModelHeaderViewModel : BaseViewModel<ObjectModelHeader>
 	public string Name
 	{
 		get => Model.Name;
-		set => Model.Name = value;
+		set
+		{
+			if (Model.Name != value)
+			{
+				Model.Name = value;
+				RaisePropertiesChanged(nameof(Name));
+			}
+		}
 	}
 
 	public ObjectSource ObjectSource
 	{
 		get => Model.ObjectSource;
-		set => Model.ObjectSource = value;
+		set
+		{
+			if (Model.ObjectSource != value)
+			{
+				Model.ObjectSource = value;
+				RaisePropertiesChanged(nameof(ObjectSource));
+			}
+		}
 	}
 
 	/// <summary>
@@ -91,20 +105,36 @@ public class ObjectModelHeaderViewModel : BaseViewModel<ObjectModelHeader>
 				return;
 			}
 
-			Model.ObjectType = value;
+			if (Model.ObjectType != value)
+			{
+				Model.ObjectType = value;
+			}
+
+			RaisePropertiesChanged(nameof(ObjectType));
 		}
 	}
 
 	public uint DatChecksumInt
 	{
 		get => Model.DatChecksum;
-		set => Model.DatChecksum = value;
+		set
+		{
+			if (Model.DatChecksum != value)
+			{
+				Model.DatChecksum = value;
+				RaisePropertiesChanged(nameof(DatChecksumInt), nameof(DatChecksumHex));
+			}
+		}
 	}
 
 	public string DatChecksumHex
 	{
 		get => string.Format($"0x{DatChecksumInt:X}");
-		set => DatChecksumInt = Convert.ToUInt32(value[2..], 16);
+		set
+		{
+			DatChecksumInt = Convert.ToUInt32(value[2..], 16);
+			RaisePropertiesChanged(nameof(DatChecksumHex));
+		}
 	}
 }
 

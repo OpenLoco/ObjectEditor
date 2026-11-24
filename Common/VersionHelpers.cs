@@ -20,15 +20,15 @@ public static class VersionHelpers
 	public static Process? OpenDownloadPage()
 		=> Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true });
 
-	// win: object-editor-5.3.5-win-x64.zip
-	// osx: object-editor-5.3.5-osx-x64.tar
-	// linux: object-editor-5.3.5-linux-x64.tar
+	// win:   object-editor-5.3.5-win-x64.zip
+	// osx:   object-editor-5.3.5-osx-arm64.zip (or -osx-x64.zip)
+	// linux: object-editor-5.3.5-linux-x64.tar.gz
 
-	static string DownloadFilename(SemanticVersion latestVersion, OSPlatform platform)
-		=> $"object-editor-{latestVersion}-{PlatformSpecific.EditorPlatformZipName(platform)}";
+	static string DownloadFilename(SemanticVersion latestVersion, OSPlatform platform, Architecture architecture)
+		=> $"object-editor-{latestVersion}-{PlatformSpecific.EditorPlatformZipName(platform, architecture)}";
 
-	public static string UrlForDownload(SemanticVersion latestVersion, OSPlatform platform)
-		=> $"{GithubLatestReleaseDownloadPage}/download/{latestVersion}/{DownloadFilename(latestVersion, platform)}";
+	public static string UrlForDownload(SemanticVersion latestVersion, OSPlatform platform, Architecture? architecture = null)
+		=> $"{GithubLatestReleaseDownloadPage}/download/{latestVersion}/{DownloadFilename(latestVersion, platform, architecture ?? RuntimeInformation.ProcessArchitecture)}";
 
 	public static void StartAutoUpdater(ILogger logger, SemanticVersion currentVersion, SemanticVersion latestVersion)
 	{
@@ -49,14 +49,17 @@ public static class VersionHelpers
 				}
 			}
 
-			var editorExe = $"{ObjectEditorUpdaterName}.exe";
-			if (!File.Exists(editorExe))
+			var editorExe = PlatformSpecific.EditorPlatformUpdaterName(PlatformSpecific.GetPlatform);
+			// resolve relative to the editor's own folder so this works for a macOS .app bundle too
+			var executableDirectory = Path.GetDirectoryName(Environment.ProcessPath) ?? ".";
+			var editorExePath = Path.Combine(executableDirectory, editorExe);
+			if (!File.Exists(editorExePath))
 			{
-				logger.Error($"Cannot find the auto-updater executable: {editorExe}. You'll need to manually download the update.");
+				logger.Error($"Cannot find the auto-updater executable: {editorExePath}. You'll need to manually download the update.");
 				return;
 			}
 
-			var startInfo = new ProcessStartInfo(editorExe,
+			var startInfo = new ProcessStartInfo(editorExePath,
 			[
 				"--pid",
 				$"{Environment.ProcessId}",
@@ -94,21 +97,34 @@ public static class VersionHelpers
 
 	public static SemanticVersion GetCurrentAppVersion()
 	{
-		var assembly = Assembly.GetCallingAssembly();
-		if (assembly == null)
+		// prefer the version baked into the entry assembly by the build (`dotnet publish -p:Version=`), which
+		// removes the need for build.sh to rewrite and commit version.txt on every release
+		var entryAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+		if (entryAssembly != null)
+		{
+			var informationalVersion = entryAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+			// SourceLink appends the commit hash as build metadata, eg 5.13.1+abc1234
+			var versionText = informationalVersion?.Split('+')[0];
+			var assemblyVersion = GetVersionFromText(versionText);
+			if (assemblyVersion != UnknownVersion)
+			{
+				return assemblyVersion;
+			}
+		}
+
+		// fall back to the embedded version.txt, which is what older builds shipped with
+		const string versionFilename = "Gui.version.txt";
+		using var stream = entryAssembly?.GetManifestResourceStream(versionFilename);
+		if (stream == null)
 		{
 			return UnknownVersion;
 		}
 
-		// grab current app version from assembly
-		const string versionFilename = "Gui.version.txt";
-		using (var stream = assembly.GetManifestResourceStream(versionFilename))
-		using (var ms = new MemoryStream())
-		{
-			stream!.CopyTo(ms);
-			var versionText = Encoding.ASCII.GetString(ms.ToArray());
-			return GetVersionFromText(versionText);
-		}
+		using var ms = new MemoryStream();
+		stream.CopyTo(ms);
+		var embeddedVersionText = Encoding.ASCII.GetString(ms.ToArray());
+		return GetVersionFromText(embeddedVersionText);
 	}
 
 	// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861

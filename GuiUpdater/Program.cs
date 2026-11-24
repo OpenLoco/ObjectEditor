@@ -2,7 +2,9 @@ using Common;
 using NuGet.Versioning;
 using System.CommandLine;
 using System.Diagnostics;
+using System.Formats.Tar;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
 
 var pidOption = new Option<int>("--pid") { Description = "The process ID of the main application to wait for it to exit." };
 var appPathOption = new Option<string>("--app-path") { Description = "The path to the main application executable to restart." };
@@ -26,7 +28,8 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 {
 	var programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 	var loggingFile = Path.Combine(programDataPath, LoggingFileName);
-	using var logStream = new StreamWriter(File.OpenWrite(loggingFile));
+	_ = Directory.CreateDirectory(programDataPath);
+	using var logStream = new StreamWriter(File.Create(loggingFile));
 	Console.SetOut(logStream);
 	Console.SetError(logStream);
 
@@ -53,13 +56,14 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 	}
 
 	// current version
-	if (SemanticVersion.TryParse(currentVersionString, out var currentVersion) || currentVersion == null || currentVersion == VersionHelpers.UnknownVersion)
+	if (SemanticVersion.TryParse(currentVersionString ?? string.Empty, out var currentVersion) && currentVersion != VersionHelpers.UnknownVersion)
 	{
 		Console.WriteLine($"Current version: {currentVersion}");
 	}
 	else
 	{
 		Console.WriteLine("Unable to parse current version - will attempt to download the latest version");
+		currentVersion ??= VersionHelpers.UnknownVersion;
 	}
 
 	// latest version
@@ -107,10 +111,11 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 	}
 
 	// actually download
-	var url = VersionHelpers.UrlForDownload(latestVersion, PlatformSpecific.GetPlatform);
+	var platform = PlatformSpecific.GetPlatform;
+	var url = VersionHelpers.UrlForDownload(latestVersion, platform);
 	var filename = Path.GetFileName(url);
-	var tempZipPath = Path.Combine(Path.GetTempPath(), filename);
-	var extractionPath = Path.GetDirectoryName(appPath);
+	var tempArchivePath = Path.Combine(Path.GetTempPath(), filename);
+	var extractionPath = GetInstallRoot(appPath, platform);
 
 	if (string.IsNullOrEmpty(extractionPath))
 	{
@@ -125,16 +130,17 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 		{
 			var response = await httpClient.GetAsync(url, cancellationToken);
 			_ = response.EnsureSuccessStatusCode();
-			await using (var fs = new FileStream(tempZipPath, FileMode.Create, FileAccess.Write, FileShare.None))
+			await using (var fs = new FileStream(tempArchivePath, FileMode.Create, FileAccess.Write, FileShare.None))
 			{
 				await response.Content.CopyToAsync(fs, cancellationToken);
 			}
 		}
 
-		Console.WriteLine($"Update downloaded to {tempZipPath}.");
+		Console.WriteLine($"Update downloaded to {tempArchivePath}.");
 
 		Console.WriteLine($"Extracting update to {extractionPath}...");
-		ZipFile.ExtractToDirectory(tempZipPath, extractionPath, true);
+		ExtractArchive(tempArchivePath, extractionPath);
+		RestoreExecutablePermissions(extractionPath, platform);
 		Console.WriteLine("Extraction complete");
 	}
 	catch (Exception ex)
@@ -144,12 +150,105 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 	}
 	finally
 	{
-		if (File.Exists(tempZipPath))
+		if (File.Exists(tempArchivePath))
 		{
-			File.Delete(tempZipPath);
+			File.Delete(tempArchivePath);
 		}
 	}
 
 	Console.WriteLine($"Restarting editor at: {appPath}");
-	_ = Process.Start(new ProcessStartInfo(appPath) { UseShellExecute = false, CreateNoWindow = true, });
+	if (platform == OSPlatform.OSX)
+	{
+		// relaunch through `open` so macOS boots the bundle properly rather than the raw inner binary
+		var appBundlePath = GetMacAppBundlePath(appPath) ?? appPath;
+		_ = Process.Start(new ProcessStartInfo("open", ["-n", appBundlePath]) { UseShellExecute = false, CreateNoWindow = true, });
+	}
+	else
+	{
+		_ = Process.Start(new ProcessStartInfo(appPath) { UseShellExecute = false, CreateNoWindow = true, });
+	}
+}
+
+// the directory the archive should be extracted into, ie the folder that holds the app/bundle
+static string? GetInstallRoot(string appPath, OSPlatform platform)
+{
+	if (platform == OSPlatform.OSX)
+	{
+		// appPath is <root>/ObjectEditor.app/Contents/MacOS/ObjectEditor, and the archive contains
+		// ObjectEditor.app/..., so extract into <root>
+		var bundlePath = GetMacAppBundlePath(appPath);
+		return bundlePath == null ? null : Path.GetDirectoryName(bundlePath);
+	}
+
+	return Path.GetDirectoryName(appPath);
+}
+
+// eg /Applications/ObjectEditor.app/Contents/MacOS/ObjectEditor -> /Applications/ObjectEditor.app
+static string? GetMacAppBundlePath(string appPath)
+{
+	var directory = new DirectoryInfo(Path.GetDirectoryName(appPath) ?? ".");
+	// walk up looking for the .app directory
+	for (var i = 0; i < 3 && directory != null; i++)
+	{
+		if (directory.Extension == ".app")
+		{
+			return directory.FullName;
+		}
+
+		directory = directory.Parent;
+	}
+
+	return null;
+}
+
+static void ExtractArchive(string archivePath, string destination)
+{
+	if (archivePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+	{
+		ZipFile.ExtractToDirectory(archivePath, destination, true);
+	}
+	else if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) || archivePath.EndsWith(".tgz", StringComparison.OrdinalIgnoreCase))
+	{
+		using var fileStream = File.OpenRead(archivePath);
+		using var gzipStream = new GZipStream(fileStream, CompressionMode.Decompress);
+		TarFile.ExtractToDirectory(gzipStream, destination, true);
+	}
+	else
+	{
+		throw new NotSupportedException($"Unsupported archive type: \"{Path.GetFileName(archivePath)}\"");
+	}
+}
+
+// zip archives do not carry unix file modes, so the extracted binaries need their exec bit setting
+static void RestoreExecutablePermissions(string installRoot, OSPlatform platform)
+{
+	if (OperatingSystem.IsWindows())
+	{
+		return;
+	}
+
+	const UnixFileMode executableMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+		| UnixFileMode.GroupRead | UnixFileMode.GroupExecute
+		| UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
+
+	var executablePaths = platform == OSPlatform.OSX
+		? new[]
+		{
+			Path.Combine(installRoot, "ObjectEditor.app", "Contents", "MacOS", VersionHelpers.ObjectEditorName),
+			Path.Combine(installRoot, "ObjectEditor.app", "Contents", "MacOS", VersionHelpers.ObjectEditorUpdaterName),
+		}
+		: new[]
+		{
+			Path.Combine(installRoot, VersionHelpers.ObjectEditorName),
+			Path.Combine(installRoot, VersionHelpers.ObjectEditorUpdaterName),
+		};
+
+	foreach (var path in executablePaths)
+	{
+		if (File.Exists(path))
+		{
+			File.SetUnixFileMode(path, executableMode);
+			Console.WriteLine($"Restored executable permissions on \"{path}\"");
+		}
+	}
 }

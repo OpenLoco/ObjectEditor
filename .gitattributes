@@ -2,9 +2,14 @@
 *.cs eol=lf
 *.json eol=lf
 *.txt eol=lf
+# Shell scripts must always be LF; CRLF breaks them on Linux/macOS checkouts
+*.sh eol=lf
 
 # Add any other file extensions that should use LF endings
 
 # Explicitly declare binary files to prevent line ending conversion
 *.exe binary
 *.dll binary
+*.icns binary
+*.ico binary
+*.png binary

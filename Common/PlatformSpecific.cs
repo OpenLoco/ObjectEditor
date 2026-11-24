@@ -35,16 +35,46 @@ public static class PlatformSpecific
 	}
 
 	public static string EditorPlatformZipName(OSPlatform platform) =>
-		platform == OSPlatform.Windows ? "win-x64.zip" :
-		platform == OSPlatform.OSX ? "osx-x64.tar" :
-		platform == OSPlatform.Linux ? "linux-x64.tar" :
-		throw new PlatformNotSupportedException();
+		EditorPlatformZipName(platform, RuntimeInformation.ProcessArchitecture);
+
+	// mac:   object-editor-5.3.5-osx-x64.zip / object-editor-5.3.5-osx-arm64.zip
+	// linux: object-editor-5.3.5-linux-x64.tar.gz
+	// win:   object-editor-5.3.5-win-x64.zip
+	public static string EditorPlatformZipName(OSPlatform platform, Architecture architecture)
+	{
+		var rid = RuntimeIdentifierFor(platform, architecture);
+
+		return platform == OSPlatform.Windows ? $"{rid}.zip"
+			: platform == OSPlatform.OSX ? $"{rid}.zip"
+			: platform == OSPlatform.Linux ? $"{rid}.tar.gz"
+			: throw new PlatformNotSupportedException();
+	}
 
 	public static string EditorPlatformBinaryName(OSPlatform platform) =>
-		platform == OSPlatform.Windows ? $"{VersionHelpers.ObjectEditorName}.exe" :
-		platform == OSPlatform.OSX ? VersionHelpers.ObjectEditorName :
-		platform == OSPlatform.Linux ? VersionHelpers.ObjectEditorName :
-		throw new PlatformNotSupportedException();
+		platform == OSPlatform.Windows ? $"{VersionHelpers.ObjectEditorName}.exe"
+			: platform == OSPlatform.OSX || platform == OSPlatform.Linux ? VersionHelpers.ObjectEditorName
+			: throw new PlatformNotSupportedException();
+
+	public static string EditorPlatformUpdaterName(OSPlatform platform) =>
+		platform == OSPlatform.Windows ? $"{VersionHelpers.ObjectEditorUpdaterName}.exe"
+			: platform == OSPlatform.OSX || platform == OSPlatform.Linux ? VersionHelpers.ObjectEditorUpdaterName
+			: throw new PlatformNotSupportedException();
+
+	// the runtime identifier used by build.sh, eg win-x64, osx-arm64, linux-x64
+	public static string RuntimeIdentifierFor(OSPlatform platform, Architecture architecture)
+	{
+		var arch = architecture switch
+		{
+			Architecture.X64 => "x64",
+			Architecture.Arm64 => "arm64",
+			_ => throw new PlatformNotSupportedException($"Architecture {architecture} is not supported."),
+		};
+
+		return platform == OSPlatform.Windows ? $"win-{arch}"
+			: platform == OSPlatform.OSX ? $"osx-{arch}"
+			: platform == OSPlatform.Linux ? $"linux-{arch}"
+			: throw new PlatformNotSupportedException();
+	}
 
 	public static OSPlatform GetPlatform =>
 		RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? OSPlatform.Windows :

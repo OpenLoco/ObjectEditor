@@ -160,7 +160,27 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
   - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer, but it isn't required to actually build or run the editor
 
 # Deploying
-See `build.sh` and `tag.sh`
+Run `./build.sh <version>` from the repository root. It publishes a self-contained, single-file
+build of the editor and the updater for every supported platform and writes the release artifacts
+to `artifacts/`:
+
+| Platform | Runtime identifier | Artifact |
+| --- | --- | --- |
+| Windows | `win-x64` | `object-editor-<version>-win-x64.zip` |
+| Linux | `linux-x64` | `object-editor-<version>-linux-x64.tar.gz` |
+| macOS (Intel) | `osx-x64` | `object-editor-<version>-osx-x64.zip` |
+| macOS (Apple silicon) | `osx-arm64` | `object-editor-<version>-osx-arm64.zip` |
+
+- The macOS artifacts are zipped `ObjectEditor.app` bundles: unzip, then drag the app to
+  `/Applications`. The bundles are only ad-hoc signed, so on first launch macOS Gatekeeper may
+  require right-clicking the app and choosing *Open*. Distributing a fully notarised build requires
+  an Apple Developer ID certificate, which is applied outside this script.
+- Archives are named after the runtime identifier above; the in-editor auto-updater downloads the
+  matching file, so these names are part of the update contract (covered by `VersioningTests`).
+- `tag.sh <version>` commits the version to `Gui/version.txt`, tags the commit, and pushes the tag.
+  Pushing a `x.y.z` tag runs the `Build and package` workflow, which tests, builds all artifacts and
+  attaches them to a draft GitHub release.
+- Release builds can also be triggered manually from the *Actions* tab with a version input.
 
 # Disclaimer and Terms of Service
 When you run the editor and select a folder to browse, you give permission for the editor to read all DAT objects in that folder (and no other type of object or file). By doing this, you hereby give permission for the editor to check the DAT files in that directory against the master list in the object service. If a file is discovered that is not listed in the service, the editor will automatically upload the file to the service for archiving. These are the terms for using the object editor and object service. If you disagree with these terms, do not use the editor or service.

@@ -1,6 +1,7 @@
 using Common;
 using NuGet.Versioning;
 using NUnit.Framework;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -67,14 +68,13 @@ public class VersioningTests
 	}
 
 	[Test]
-	public void TestCurrentAppVersionComesFromAssembly()
+	public void TestCurrentAppVersionMatchesAssembly()
 	{
-		// the version is baked in by MinVer from the git tag, so it must be a real version and must match the
-		// informational version of this product's assemblies
+		// the version is baked in by MinVer, so it must be reported from the assembly and never be the old
+		// hard-coded placeholder
 		var version = VersionHelpers.GetCurrentAppVersion();
 
 		Assert.That(version, Is.Not.EqualTo(VersionHelpers.UnknownVersion));
-		Assert.That(version.Major, Is.GreaterThan(0), "the version should come from the git tag, not a placeholder");
 
 		var informationalVersion = typeof(VersionHelpers).Assembly
 			.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
@@ -82,5 +82,25 @@ public class VersioningTests
 			.Split('+')[0];
 
 		Assert.That(version.ToString(), Is.EqualTo(informationalVersion));
+		Assert.That(version.ToString(), Is.Not.EqualTo("1.2.3"), "the version should come from the build, not a placeholder");
+
+		// 0.0.0-alpha.0 is MinVer's no-tag fallback; only tolerate it in a tagless checkout (eg a shallow CI clone)
+		var hasVersionTag = new ProcessStartInfo("git", "describe --tags")
+		{
+			RedirectStandardOutput = true,
+			RedirectStandardError = true,
+			UseShellExecute = false,
+		};
+
+		using var process = Process.Start(hasVersionTag);
+		_ = process?.StandardOutput.ReadToEnd();
+		_ = process?.StandardError.ReadToEnd();
+		process?.WaitForExit();
+
+		if (process?.ExitCode == 0)
+		{
+			Assert.That(version, Is.Not.EqualTo(new SemanticVersion(0, 0, 0, "alpha.0")),
+				"a tag was available, so the version must not be MinVer's no-tag fallback");
+		}
 	}
 }

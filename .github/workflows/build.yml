@@ -3,7 +3,8 @@ name: Build and package
 on:
   push:
     branches: [ "master" ]
-    tags: [ "[0-9]+.[0-9]+.[0-9]+" ]
+    # matches both release tags (5.14.0) and pre-release tags (5.14.0-beta.1)
+    tags: [ "[0-9]+.[0-9]+.[0-9]+*" ]
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:
@@ -22,6 +23,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # MinVer derives the version from tags, so the full history and tags are needed here too; without
+          # them every build would report 0.0.0-alpha.0
+          fetch-depth: 0
 
       - name: Install .NET
         uses: actions/setup-dotnet@v4
@@ -31,13 +36,8 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      # The ObjectService integration fixtures are excluded: they already fail on a clean checkout for
-      # reasons unrelated to packaging (the repo has no ObjectService/wwwroot folder, and the seeded-id
-      # assertions are wrong). Remove the filter once those fixtures are fixed.
       - name: Test
-        run: >
-          dotnet test Tests/Tests.csproj -c Release --no-restore
-          --filter "FullyQualifiedName!~AuthorRoutesTest&FullyQualifiedName!~IdentityRoutesTest&FullyQualifiedName!~LicenseRoutesTest&FullyQualifiedName!~ObjectMissingRoutesTest&FullyQualifiedName!~ObjectRoutesTest&FullyQualifiedName!~TagRoutesTest"
+        run: dotnet test Tests/Tests.csproj -c Release --no-restore
 
   # build.sh cross-publishes every runtime, so a single host is enough. macOS is used because packaging the
   # macOS bundles correctly needs ditto and codesign.

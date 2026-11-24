@@ -20,7 +20,13 @@ fi
 # Always operate from the repository root, regardless of where the script is invoked from
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 1. Determine the version. MinVer (see Directory.Build.props) derives it from the git tag, so the version is
+# 1. Restore first: the MinVer target is provided by a NuGet package, so it does not exist until packages
+#    have been restored. Doing this up front also means a clean checkout works.
+echo "Restoring packages"
+dotnet restore Gui/Gui.csproj
+dotnet restore GuiUpdater/GuiUpdater.csproj
+
+# 2. Determine the version. MinVer (see Directory.Build.props) derives it from the git tag, so the version is
 #    normally whatever `git describe` resolves to. An explicit argument overrides it, which is useful for CI or
 #    for producing a build for a tag before it exists.
 version="${1:-}"
@@ -40,6 +46,17 @@ else
         echo "Error: Unable to determine the version. Please provide it as the first argument, eg ./build.sh 1.2.3"
         exit 1
     fi
+
+    # MinVer falls back to 0.0.0-alpha.0 when no version tag is reachable, which means the checkout is
+    # shallow or has no tags. Refuse to ship an artifact with a meaningless version.
+    case "$version" in
+        0.0.0*)
+            echo "Error: No version tag was found, so the version resolved to \"$version\"."
+            echo "       Fetch the full history and tags (git fetch --tags --unshallow), or pass the version explicitly."
+            exit 1
+            ;;
+    esac
+
     min_ver_override=()
 fi
 

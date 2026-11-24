@@ -44,11 +44,24 @@ if [ -z "$framework" ]; then
     echo "Error: Unable to determine the target framework from Gui/Gui.csproj."
     exit 1
 fi
-# 2. Write the version to version.txt. This is read by the UI to know the current version.
-echo "$version" > Definitions/version.txt
+# The version is baked into the assemblies via -p:Version below, which is what the editor reads at runtime.
+# Definitions/version.txt is only a fallback, so it is deliberately left untouched here to keep the working
+# tree clean; tag.sh updates it as part of the release commit.
 
-# The version is also baked into the assemblies via -p:Version below, which is what the editor reads at
-# runtime (with this file as a fallback).
+echo "=== Building Object Editor v${FG_BLUE}$version${RESET} for ${FG_BLUE}$framework${RESET} ==="
+
+app_name="ObjectEditor"
+updater_name="ObjectEditorUpdater"
+mac_bundle_id="com.openloco.objecteditor"
+mac_min_os="15.0"
+mac_icon="Gui/Assets/loco_icon.icns"
+
+artifacts_dir="artifacts"
+# archives are created from inside a staging directory, so the output path must be absolute
+artifacts_root="$(pwd)/$artifacts_dir"
+publish_root="$artifacts_root/publish"
+rm -rf "$artifacts_root"
+mkdir -p "$publish_root"
 
 # Publish both the editor and the updater into a single staging folder for the given runtime identifier.
 # The restore is intentionally left to `dotnet publish` (ie no --no-restore): a restore performed without a

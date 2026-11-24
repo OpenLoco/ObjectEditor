@@ -159,10 +159,22 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - Open `ObjectEditor.sln` in Visual Studio
   - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer, but it isn't required to actually build or run the editor
 
+# Versioning
+Versions are derived from git tags by [MinVer](https://github.com/adamralph/minver) — the standard
+approach for .NET SDK projects. There is no version file to keep in sync; tagging a commit *is* the
+release.
+
+- A commit tagged `5.14.0` builds as `5.14.0`.
+- Any other commit builds as the next patch pre-release, with the number of commits since the last
+  tag: e.g. 19 commits after `5.13.1` builds as `5.13.2-alpha.0.19`.
+- MinVer sets `AssemblyVersion`, `FileVersion`, `InformationalVersion` and `Version` for every
+  project, and the editor reports its version by reading the informational version from its own
+  assembly — so the version shown in the UI always matches the binaries and the artifact name.
+
 # Deploying
-Run `./build.sh <version>` from the repository root. It publishes a self-contained, single-file
-build of the editor and the updater for every supported platform and writes the release artifacts
-to `artifacts/`:
+Run `./build.sh` from the repository root. The version is taken from git tags (pass an argument such
+as `./build.sh 5.14.0` to override it). It publishes a self-contained, single-file build of the
+editor and the updater for every supported platform and writes the release artifacts to `artifacts/`:
 
 | Platform | Runtime identifier | Artifact |
 | --- | --- | --- |
@@ -177,10 +189,11 @@ to `artifacts/`:
   an Apple Developer ID certificate, which is applied outside this script.
 - Archives are named after the runtime identifier above; the in-editor auto-updater downloads the
   matching file, so these names are part of the update contract (covered by `VersioningTests`).
-- `tag.sh <version>` commits the version to `Gui/version.txt`, tags the commit, and pushes the tag.
-  Pushing a `x.y.z` tag runs the `Build and package` workflow, which tests, builds all artifacts and
-  attaches them to a draft GitHub release.
-- Release builds can also be triggered manually from the *Actions* tab with a version input.
+- `tag.sh <version>` tags the current commit and pushes the tag. Pushing a `x.y.z` tag runs the
+  `Build and package` workflow, which tests, builds all artifacts and attaches them to a draft
+  GitHub release. No commit is needed to bump the version.
+- Release builds can also be triggered manually from the *Actions* tab, with an optional version
+  override.
 
 # Database Schema Migration
 - `dotnet ef migrations add <MigrationName>`

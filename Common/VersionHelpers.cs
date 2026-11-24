@@ -5,7 +5,6 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Common;
 
@@ -104,38 +103,16 @@ var editorExe = PlatformSpecific.EditorPlatformUpdaterName(PlatformSpecific.GetP
 			return CachedSemanticVersion;
 		}
 
-		// prefer the version baked into the entry assembly by the build (`dotnet publish -p:Version=`), so the
-		// reported version cannot drift from the binaries. SourceLink appends the commit hash as build metadata.
-		var entryAssembly = Assembly.GetEntryAssembly();
-		if (entryAssembly != null)
-		{
-			var informationalVersion = entryAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+			// The version is baked into every assembly at build time by MinVer (from the git tag), so the running
+			// binary can never disagree with what it reports. SourceLink appends the commit hash as build metadata,
+			// which is not part of the version.
+			// Read from the assembly that defines this type rather than the entry assembly: it is always this
+			// product's assembly, even when the app is hosted by another process (eg a test runner or designer).
+			var informationalVersion = typeof(VersionHelpers).Assembly
+				.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+				.InformationalVersion;
+
 			CachedSemanticVersion = GetVersionFromText(informationalVersion?.Split('+')[0]);
-			if (CachedSemanticVersion != UnknownVersion)
-			{
-				return CachedSemanticVersion;
-			}
-		}
-
-		// fall back to the embedded version.txt, which is how older and CI builds report their version
-		foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-		{
-			// version.txt is an embedded resource in the Definitions assembly
-			using var stream = assembly.GetManifestResourceStream("Definitions.version.txt")
-				?? assembly.GetManifestResourceStream("Gui.version.txt")
-				?? assembly.GetManifestResourceStream("version.txt");
-			if (stream == null)
-			{
-				continue;
-			}
-
-			using var ms = new MemoryStream();
-			stream.CopyTo(ms);
-			CachedSemanticVersion = GetVersionFromText(Encoding.ASCII.GetString(ms.ToArray()));
-			return CachedSemanticVersion;
-		}
-
-		CachedSemanticVersion = UnknownVersion;
 		return CachedSemanticVersion;
 	}
 

@@ -20,17 +20,27 @@ fi
 # Always operate from the repository root, regardless of where the script is invoked from
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 1. Get the version from the first command-line argument
-if [ -z "${1:-}" ]; then
-    echo "Error: Please provide the version as the first argument."
-    exit 1
-fi
+# 1. Determine the version. MinVer (see Directory.Build.props) derives it from the git tag, so the version is
+#    normally whatever `git describe` resolves to. An explicit argument overrides it, which is useful for CI or
+#    for producing a build for a tag before it exists.
+version="${1:-}"
 
-version="$1"
+if [ -n "$version" ]; then
+    if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+        echo "Error: \"$version\" is not a valid semantic version (expected eg 1.2.3 or 1.2.3-beta.1)."
+        exit 1
+    fi
+    min_ver_override=(-p:MinVerVersionOverride="$version")
+else
+    # ask MSBuild for the version MinVer will bake into the assemblies, so the artifact names always match the
+    # version reported by the running app
+    version=$(dotnet msbuild Gui/Gui.csproj -t:MinVer -getProperty:Version -nologo 2> /dev/null | tr -d '[:space:]')
 
-if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
-    echo "Error: \"$version\" is not a valid semantic version (expected eg 1.2.3 or 1.2.3-beta.1)."
-    exit 1
+    if [ -z "$version" ]; then
+        echo "Error: Unable to determine the version. Please provide it as the first argument, eg ./build.sh 1.2.3"
+        exit 1
+    fi
+    min_ver_override=()
 fi
 
 # Apple's CFBundleShortVersionString/CFBundleVersion only accept digits and dots
@@ -44,9 +54,6 @@ if [ -z "$framework" ]; then
     echo "Error: Unable to determine the target framework from Gui/Gui.csproj."
     exit 1
 fi
-# The version is baked into the assemblies via -p:Version below, which is what the editor reads at runtime.
-# Definitions/version.txt is only a fallback, so it is deliberately left untouched here to keep the working
-# tree clean; tag.sh updates it as part of the release commit.
 
 echo "=== Building Object Editor v${FG_BLUE}$version${RESET} for ${FG_BLUE}$framework${RESET} ==="
 
@@ -74,10 +81,10 @@ publish_rid() {
     mkdir -p "$out"
 
     echo "Publishing ${FG_BLUE}Editor${RESET} ($rid)"
-    dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version="$version" --self-contained -r "$rid" -o "$out"
+    dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true "${min_ver_override[@]}" --self-contained -r "$rid" -o "$out"
 
     echo "Publishing ${FG_BLUE}Updater${RESET} ($rid)"
-    dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true -p:Version="$version" --self-contained -r "$rid" -o "$out"
+    dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true "${min_ver_override[@]}" --self-contained -r "$rid" -o "$out"
 
     # Debug symbols are not needed by end users but inflate the archives by ~100MB
     find "$out" -name '*.pdb' -delete

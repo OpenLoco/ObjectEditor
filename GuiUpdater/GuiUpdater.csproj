@@ -6,14 +6,8 @@
     <Nullable>enable</Nullable>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
-        <!--
-          AssemblyVersion/FileVersion are derived by the SDK from the numeric part of Version, so they must not be
-          set from $(Version) directly: a prerelease version such as 5.14.0-beta.1 is not a valid assembly version.
-        -->
     <AssemblyName>ObjectEditorUpdater</AssemblyName>
     <Product>$(AssemblyName) $(Version)</Product>
-    <!-- This is a dummy version that is replaced with the real version either at runtime or at package build time -->
-    <Version>1.2.3</Version>
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <ApplicationIcon>Assets\updater_icon.ico</ApplicationIcon>

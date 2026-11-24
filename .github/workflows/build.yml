@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to build, eg 5.14.0"
-        required: true
+        description: "Optional version override, eg 5.14.0. Leave empty to use the version derived from git tags."
+        required: false
         type: string
 
 permissions:
@@ -47,32 +47,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # MinVer needs the full history and tags to derive the version
+          fetch-depth: 0
 
       - name: Install .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
-      - name: Determine version
-        id: version
-        shell: bash
-        env:
-          DISPATCH_VERSION: ${{ inputs.version }}
-        run: |
-          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
-            version="$GITHUB_REF_NAME"
-          elif [ -n "$DISPATCH_VERSION" ]; then
-            version="$DISPATCH_VERSION"
-          else
-            # build-only version derived from the release version file plus the run number
-            version="$(tr -d '[:space:]' < Gui/version.txt)-ci.$GITHUB_RUN_NUMBER"
-          fi
-          echo "Building version $version"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-
+      # The version comes from the git tag via MinVer, so no version file is read or written.
       - name: Build
         shell: bash
-        run: ./build.sh "${{ steps.version.outputs.version }}"
+        env:
+          VERSION_OVERRIDE: ${{ inputs.version }}
+        run: ./build.sh ${VERSION_OVERRIDE:+"$VERSION_OVERRIDE"}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

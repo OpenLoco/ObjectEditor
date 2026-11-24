@@ -44,7 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="version.txt" />
     <EmbeddedResource Include="Assets\palette.png">
       <LogicalName>Core.palette.png</LogicalName>
     </EmbeddedResource>

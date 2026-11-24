@@ -1,6 +1,7 @@
 using Common;
 using NuGet.Versioning;
 using NUnit.Framework;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Tests;
@@ -63,5 +64,23 @@ public class VersioningTests
 	public void TestUnsupportedArchitectureThrows()
 	{
 		Assert.Throws<PlatformNotSupportedException>(() => PlatformSpecific.EditorPlatformZipName(OSPlatform.Windows, Architecture.X86));
+	}
+
+	[Test]
+	public void TestCurrentAppVersionComesFromAssembly()
+	{
+		// the version is baked in by MinVer from the git tag, so it must be a real version and must match the
+		// informational version of this product's assemblies
+		var version = VersionHelpers.GetCurrentAppVersion();
+
+		Assert.That(version, Is.Not.EqualTo(VersionHelpers.UnknownVersion));
+		Assert.That(version.Major, Is.GreaterThan(0), "the version should come from the git tag, not a placeholder");
+
+		var informationalVersion = typeof(VersionHelpers).Assembly
+			.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+			.InformationalVersion?
+			.Split('+')[0];
+
+		Assert.That(version.ToString(), Is.EqualTo(informationalVersion));
 	}
 }

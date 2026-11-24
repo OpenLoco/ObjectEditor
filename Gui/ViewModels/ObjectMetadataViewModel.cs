@@ -4,24 +4,17 @@ using Definitions.ObjectModels;
 using Gui.Models;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reactive;
-using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
 public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMetadata>, IViewModel
 {
-	public string DisplayName
+	public new string DisplayName
 		=> "Metadata";
 
-	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"), null)
-	{
-	}
-
-	public ObjectMetadataViewModel(ObjectMetadata model, ObjectEditorContext editorContext)
+	public ObjectMetadataViewModel(ObjectEditorContext editorContext, ObjectMetadata model)
 		: base(editorContext, model)
 	{
 		Model = model;
@@ -31,9 +24,9 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 		selectedLicence = model.Licence;
 
 		// Initialize observable collections from metadata
-		Authors = new ObservableCollection<DtoAuthorEntry>(model.Authors);
-		Tags = new ObservableCollection<DtoTagEntry>(model.Tags);
-		ObjectPacks = new ObservableCollection<DtoItemPackEntry>(model.ObjectPacks);
+		Authors = [with(model.Authors)];
+		Tags = [with(model.Tags)];
+		ObjectPacks = [with(model.ObjectPacks)];
 
 		// Initialize commands
 		AddAuthorCommand = ReactiveCommand.Create<DtoAuthorEntry?>(author =>
@@ -81,18 +74,8 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 			SyncObjectPacksToMetadata();
 		});
 
-		// Load data from server if we have a client
-		if (editorContext.ObjectServiceClient != null)
-		{
-			_ = LoadServerDataAsync().ContinueWith(t =>
-			{
-				// Log any exceptions that occur
-				if (t.Exception != null)
-				{
-					logger?.Error("Failed to load server data for metadata editing", t.Exception);
-				}
-			}, TaskContinuationOptions.OnlyOnFaulted);
-		}
+		// Server metadata (licences/authors/tags/object packs) is fetched once and cached on the
+		// ObjectEditorContext; just point at those shared collections.
 	}
 
 	// InternalName is readonly (init-only in the model)
@@ -116,74 +99,15 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 	public ReactiveCommand<DtoItemPackEntry?, Unit> AddObjectPackCommand { get; }
 	public ReactiveCommand<DtoItemPackEntry, Unit> RemoveObjectPackCommand { get; }
 
-	// Available items for selection
-	ObservableCollection<DtoAuthorEntry> availableAuthors = [];
-	public ObservableCollection<DtoAuthorEntry> AvailableAuthors
-	{
-		get => availableAuthors;
-		set => this.RaiseAndSetIfChanged(ref availableAuthors, value);
-	}
+	// Available items for selection - sourced from the shared cache on ObjectEditorContext.ObjectServiceModel
+	// so they are only fetched from the server once per editor session.
+	public ObservableCollection<DtoAuthorEntry> AvailableAuthors => EditorContext.ObjectServiceModel.AvailableAuthors;
 
-	ObservableCollection<DtoTagEntry> availableTags = [];
-	public ObservableCollection<DtoTagEntry> AvailableTags
-	{
-		get => availableTags;
-		set => this.RaiseAndSetIfChanged(ref availableTags, value);
-	}
+	public ObservableCollection<DtoTagEntry> AvailableTags => EditorContext.ObjectServiceModel.AvailableTags;
 
-	ObservableCollection<DtoItemPackEntry> availableObjectPacks = [];
-	public ObservableCollection<DtoItemPackEntry> AvailableObjectPacks
-	{
-		get => availableObjectPacks;
-		set => this.RaiseAndSetIfChanged(ref availableObjectPacks, value);
-	}
+	public ObservableCollection<DtoItemPackEntry> AvailableObjectPacks => EditorContext.ObjectServiceModel.AvailableObjectPacks;
 
-	// Available licences
-	ObservableCollection<DtoLicenceEntry?> availableLicences = [];
-	public ObservableCollection<DtoLicenceEntry?> AvailableLicences
-	{
-		get => availableLicences;
-		set => this.RaiseAndSetIfChanged(ref availableLicences, value);
-	}
-
-	async Task LoadServerDataAsync()
-	{
-		var objectServiceClient = EditorContext.ObjectServiceClient;
-		if (objectServiceClient == null)
-		{
-			return;
-		}
-
-		try
-		{
-			// Load licences
-			var licences = await objectServiceClient.GetLicencesAsync();
-			var licenceList = new List<DtoLicenceEntry?> { null }; // Add None option
-			licenceList.AddRange(licences);
-			AvailableLicences = new ObservableCollection<DtoLicenceEntry?>(licenceList.OrderBy(x => x?.Name));
-
-			// Load authors, tags, and object packs
-			var authors = await objectServiceClient.GetAuthorsAsync();
-			AvailableAuthors = new ObservableCollection<DtoAuthorEntry>(authors.OrderBy(x => x.Name));
-
-			var tags = await objectServiceClient.GetTagsAsync();
-			AvailableTags = new ObservableCollection<DtoTagEntry>(tags.OrderBy(x => x.Name));
-
-			var objectPacks = await objectServiceClient.GetObjectPacksAsync();
-			AvailableObjectPacks = new ObservableCollection<DtoItemPackEntry>(objectPacks.OrderBy(x => x.Name));
-		}
-		catch (Exception ex)
-		{
-			// Log the exception so users know why data failed to load
-			logger?.Error("Failed to load server data for metadata editing", ex);
-
-			// If we can't load data (e.g., offline mode), just set empty lists
-			AvailableLicences = [null];
-			AvailableAuthors = [];
-			AvailableTags = [];
-			AvailableObjectPacks = [];
-		}
-	}
+	public ObservableCollection<DtoLicenceEntry?> AvailableLicences => EditorContext.ObjectServiceModel.AvailableLicences;
 
 	// Commands for adding/removing items
 	void SyncAuthorsToMetadata()

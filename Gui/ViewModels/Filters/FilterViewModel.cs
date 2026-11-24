@@ -1,9 +1,8 @@
 using Avalonia.Media;
-using Common;
 using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
-using Index;
+using Microsoft.Extensions.Logging;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -14,6 +13,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reflection;
 
@@ -21,16 +22,18 @@ namespace Gui.ViewModels.Filters;
 
 public class FilterTypeViewModel : ReactiveObject
 {
-	public Type Type { get; set; }
-	public string DisplayName { get; set; }
+	public required Type Type { get; set; }
+	public required string DisplayName { get; set; }
 	public string IconName { get; set; } = "CircleSmall";
 
 	public IBrush? BackgroundColour { get; set; }
 }
 
-public class FilterViewModel : ReactiveObject
+public class FilterViewModel : ReactiveObject, IDisposable
 {
 	private readonly ObjectEditorContext _model;
+	readonly CompositeDisposable subscriptions = [];
+	bool disposed;
 
 	[Reactive] public FilterTypeViewModel? SelectedObjectType { get; set; }
 	[Reactive] public PropertyInfo? SelectedProperty { get; set; }
@@ -94,7 +97,8 @@ public class FilterViewModel : ReactiveObject
 				AvailableProperties.AddRange(searchableProperties);
 				SelectedProperty = AvailableProperties.FirstOrDefault();
 				SelectedOperator = null;
-			});
+			})
+			.DisposeWith(subscriptions);
 
 		_ = this.WhenAnyValue(x => x.SelectedProperty)
 			.Where(x => x != null)
@@ -102,9 +106,22 @@ public class FilterViewModel : ReactiveObject
 			{
 				UpdateAvailableOperators(property!.PropertyType);
 				UpdateValueInputType(property!.PropertyType);
-			});
+			})
+			.DisposeWith(subscriptions);
 
 		RemoveFilterCommand = ReactiveCommand.Create(() => onRemove(this));
+	}
+
+	public void Dispose()
+	{
+		if (disposed)
+		{
+			return;
+		}
+
+		disposed = true;
+		subscriptions.Dispose();
+		GC.SuppressFinalize(this);
 	}
 
 	private void UpdateAvailableOperators(Type propertyType)
@@ -232,7 +249,7 @@ public class FilterViewModel : ReactiveObject
 		return null;
 	}
 
-	public Func<ObjectIndexEntry, bool>? BuildExpression(bool isLocal)
+	public Func<FileSystemItem, bool>? BuildExpression(bool isLocal)
 	{
 		if (SelectedProperty == null || SelectedObjectType == null)
 		{
@@ -240,24 +257,16 @@ public class FilterViewModel : ReactiveObject
 		}
 
 		// If the filter is on the index itself, build a fast expression tree
-		if (SelectedObjectType.Type == typeof(ObjectIndexEntry))
+		if (SelectedObjectType.Type == typeof(FileSystemItem))
 		{
-			return BuildFilterExpression<ObjectIndexEntry>()?.Compile();
+			return BuildFilterExpression<FileSystemItem>()?.Compile();
 		}
-		//else if (SelectedObjectType.Type == typeof(MetadataModel))
-		//{
-		//	return BuildFilterExpression<MetadataModel>()?.Compile();
-		//}
+
 		// Otherwise, build a delegate that loads the object from disk
 		return entry => BuildObjectFilter(entry, isLocal);
 	}
 
-	//bool BuildMetadataFilter(ObjectIndexEntry entry)
-	//{
-	//	return BuildFilterExpression<MetadataModel>()?.Compile();
-	//}
-
-	bool BuildObjectFilter(ObjectIndexEntry entry, bool isLocal)
+	bool BuildObjectFilter(FileSystemItem entry, bool isLocal)
 	{
 		if (!isLocal)
 		{
@@ -265,13 +274,12 @@ public class FilterViewModel : ReactiveObject
 			return false;
 		}
 
-		if (ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
+		if (entry.ObjectType == null || SelectedObjectType == null || ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
 		{
 			return false;
 		}
 
-		var fileSystemItem = FolderTreeViewModel.IndexEntryToFileSystemItem(entry, _model.Settings.ObjDataDirectory, FileLocation.Local);
-		if (!_model.TryLoadObject(fileSystemItem, out var locoFile) || locoFile?.LocoObject == null)
+		if (!_model.TryLoadObject(entry, out var locoFile) || locoFile?.LocoObject == null)
 		{
 			return false;
 		}
@@ -387,9 +395,10 @@ public class FilterViewModel : ReactiveObject
 					_ => null
 				};
 			}
-			catch (Exception)
+			catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
 			{
-				return null; // Conversion failed
+				_model.Logger.LogDebug("Filter value \"{TextValue}\" could not be converted to {Name}: {Message}", TextValue, underlyingType.Name, ex.Message);
+				return null;
 			}
 		}
 		else if (underlyingType == typeof(DateOnly) && DateValue != null)
@@ -410,9 +419,10 @@ public class FilterViewModel : ReactiveObject
 					_ => null
 				};
 			}
-			catch (Exception)
+			catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
 			{
-				return null; // Conversion failed
+				_model.Logger.LogDebug("Filter date value could not be converted to {Name}: {Message}", underlyingType.Name, ex.Message);
+				return null;
 			}
 		}
 		else if (underlyingType == typeof(string) && !string.IsNullOrEmpty(TextValue))
@@ -448,7 +458,7 @@ public class FilterViewModel : ReactiveObject
 		if (isNullable)
 		{
 			Expression nullCheck;
-			
+
 			// For Nullable<T> value types, check HasValue property
 			if (Nullable.GetUnderlyingType(member.Type) != null)
 			{

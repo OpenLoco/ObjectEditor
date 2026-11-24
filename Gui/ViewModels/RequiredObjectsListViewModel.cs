@@ -25,7 +25,7 @@ namespace Gui.ViewModels;
 public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 {
 	readonly ObjectEditorContext? editorContext;
-	readonly SourceCache<ObjectModelHeader, uint> sourceCache = new(x => x.DatChecksum);
+	readonly SourceList<ObjectModelHeader> sourceList = new();
 	readonly CompositeDisposable subscriptions = [];
 	readonly ReadOnlyObservableCollection<ObjectModelHeader> itemsCollection;
 	bool disposed;
@@ -34,8 +34,8 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 	{
 		this.editorContext = editorContext;
 
-		_ = sourceCache.Connect()
-			.ObserveOn(RxApp.MainThreadScheduler)
+		_ = sourceList.Connect()
+		   .ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Bind(out itemsCollection)
 			.Subscribe()
 			.DisposeWith(subscriptions);
@@ -75,17 +75,17 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 	[Browsable(false)]
 	public ReactiveCommand<Unit, Unit> ClearCommand { get; }
 
-	public IObservable<IChangeSet<ObjectModelHeader, uint>> Connect()
-		=> sourceCache.Connect();
+	public IObservable<IChangeSet<ObjectModelHeader>> Connect()
+		=> sourceList.Connect();
 
 	public void AddOrUpdate(IEnumerable<ObjectModelHeader> headers)
-		=> sourceCache.Edit(updater => updater.AddOrUpdate(headers));
+		=> sourceList.AddRange(headers);
 
 	public void Replace(IEnumerable<ObjectModelHeader> headers)
-		=> sourceCache.Edit(updater =>
+		=> sourceList.Edit(list =>
 		{
-			updater.Clear();
-			updater.AddOrUpdate(headers);
+			list.Clear();
+			list.AddRange(headers);
 		});
 
 	async Task AddItemAsync()
@@ -107,7 +107,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 
 		if (result?.SelectedObject is { DatChecksum: not null } selected)
 		{
-			sourceCache.AddOrUpdate(new ObjectModelHeader(selected.DisplayName, selected.ObjectType, selected.ObjectSource, selected.DatChecksum.Value));
+			sourceList.Add(new ObjectModelHeader(selected.DisplayName, selected.ObjectType, selected.ObjectSource, selected.DatChecksum.Value));
 		}
 	}
 
@@ -115,7 +115,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 	{
 		if (SelectedItem != null)
 		{
-			sourceCache.RemoveKey(SelectedItem.DatChecksum);
+			_ = sourceList.Remove(SelectedItem);
 		}
 	}
 
@@ -134,7 +134,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 
 		var headers = objectIndex.Objects
 			.Where(x => x.DatChecksum.HasValue)
-			.Select(entry => new ObjectModelHeader(entry.DisplayName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum.Value));
+			.Select(entry => new ObjectModelHeader(entry.DisplayName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum!.Value));
 
 		Replace(headers);
 	}
@@ -172,7 +172,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 	}
 
 	void ClearItems()
-		=> sourceCache.Clear();
+		=> sourceList.Clear();
 
 	public void Dispose()
 	{
@@ -190,7 +190,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 		if (disposing)
 		{
 			subscriptions.Dispose();
-			sourceCache.Dispose();
+			sourceList.Dispose();
 		}
 
 		disposed = true;

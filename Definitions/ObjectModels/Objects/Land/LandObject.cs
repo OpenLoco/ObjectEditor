@@ -9,14 +9,13 @@ public class LandObject : ILocoStruct
 	public uint8_t NumGrowthStages { get; set; }
 	public uint8_t NumImageAngles { get; set; }
 	public LandObjectFlags Flags { get; set; }
-	public ObjectModelHeader CliffEdgeHeader { get; set; }
+	public ObjectModelHeader CliffEdgeHeader { get; set; } = null!;
 	public ObjectModelHeader? ReplacementLandHeader { get; set; }
 	public int16_t CostFactor { get; set; }
 	public uint32_t NumImagesPerGrowthStage { get; set; }
 	public uint8_t DistributionPattern { get; set; }
 	public uint8_t NumVariations { get; set; }
 	public uint8_t VariationLikelihood { get; set; }
-	public uint8_t pad_1D { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
@@ -40,7 +39,7 @@ public class LandObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(NumGrowthStages)} must be at most 8.", [nameof(NumGrowthStages)]);
 		}
 
-		if (NumImageAngles is not 1 or 2 or 4)
+		if (NumImageAngles is not (1 or 2 or 4))
 		{
 			yield return new ValidationResult($"{nameof(NumImageAngles)} must be 1, 2, or 4.", [nameof(NumImageAngles)]);
 		}

@@ -1,4 +1,3 @@
-using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.Loaders;
@@ -8,6 +7,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -26,8 +26,8 @@ public static class SawyerStreamWriter
 			(ushort)hdr.Channels,
 			(uint)hdr.SampleRate,
 			(uint)hdr.AverageBytesPerSecond,
-			4, //(ushort)waveFHeader.BlockAlign,
-			16, //(ushort)waveFHeader.BitsPerSample,
+			(ushort)hdr.BlockAlign, // loco uses 4
+			(ushort)hdr.BitsPerSample, // loco uses 16
 			0x61746164, // "data"
 			(uint)pcmDataLength // data size
 			);
@@ -100,25 +100,26 @@ public static class SawyerStreamWriter
 	{
 		ArgumentNullException.ThrowIfNull(locoObject);
 
-		logger.Info($"Writing \"{objName}\" to {filename}");
+		logger.LogInformation("Writing \"{ObjName}\" to {Filename}", objName, filename);
 
 		var objBytes = WriteLocoObject(objName, locoObject.ObjectType, objectSource, encoding, logger, locoObject, allowWritingAsVanilla).ToArray();
 
 		try
 		{
-			var stream = File.Create(filename);
+			// 'using' ensures the file handle is released even if Write/Flush throws (e.g. disk full),
+			// which previously leaked the stream because it was only closed on the success path.
+			using var stream = File.Create(filename);
 			stream.Write(objBytes);
 			stream.Flush();
-			stream.Close();
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
 			// will usually be UnauthorizedAccessException
-			logger?.Error(ex);
+			logger?.LogError(ex, "An error occurred while saving {ObjName}", objName);
 			return;
 		}
 
-		logger.Info($"{objName} successfully saved to {filename}");
+		logger.LogInformation("{ObjName} successfully saved to {Filename}", objName, filename);
 	}
 
 	public static byte[] Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
@@ -261,16 +262,18 @@ public static class SawyerStreamWriter
 
 	static byte[] EncodeRotate(ReadOnlySpan<byte> data)
 	{
-		using var buffer = new MemoryStream();
+		// 'Rotate' encoding is a 1:1 transform (same length in and out), so index directly
+		// into a right-sized array instead of writing byte-by-byte into a MemoryStream.
+		var buffer = new byte[data.Length];
 
 		uint8_t code = 1;
 		for (var i = 0; i < data.Length; ++i)
 		{
-			buffer.WriteByte(RotateLeft(data[i], code));
+			buffer[i] = RotateLeft(data[i], code);
 			code = (uint8_t)((code + 2) & 7);
 		}
 
-		return buffer.ToArray();
+		return buffer;
 	}
 
 	static uint8_t RotateLeft(uint8_t value, uint8_t shift)
@@ -278,9 +281,6 @@ public static class SawyerStreamWriter
 		shift &= 7; // Ensure shift is within 0-7 for 8-bit bytes
 		return (uint8_t)((value << shift) | (value >> (8 - shift)));
 	}
-	public static byte[] EncodeRLEImageData(GraphicsElement img)
-		=> EncodeRLEImageData((DatG1ElementFlags)img.Flags, img.ImageData, img.Width, img.Height);
-
 	public static byte[] EncodeRLEImageData(DatG1Element32 img)
 		=> EncodeRLEImageData(img.Flags, img.ImageData, img.Width, img.Height);
 
@@ -332,6 +332,11 @@ public static class SawyerStreamWriter
 			bytesTotal += bytesPreviousLine;
 
 			var value = headerOffset + bytesTotal;
+			if (value > ushort.MaxValue)
+			{
+				throw new InvalidDataException($"RLE image line offset exceeded 16-bit limit: {value} > {ushort.MaxValue}. Dimensions {width}x{height} produce too much compressed RLE data for Locomotion's G1 format.");
+			}
+
 			var low = (byte)(value & 0xFF);
 			var high = (byte)((value >> 8) & 0xFF);
 			ms.WriteByte(low);
@@ -490,7 +495,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static MemoryStream WriteLocoObject(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
+	public static MemoryStream WriteLocoObject(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanillaObjectSource)
 	{
 		var validationResults = new List<ValidationResult>();
 		if (!Validator.TryValidateObject(obj.Object, new ValidationContext(obj.Object), validationResults))
@@ -506,10 +511,10 @@ public static class SawyerStreamWriter
 
 		// s5 header
 		var sourceGame = objectSource.Convert();
-		if (sourceGame == DatObjectSource.Vanilla && !allowWritingAsVanilla)
+		if (sourceGame == DatObjectSource.Vanilla && !allowWritingAsVanillaObjectSource)
 		{
 			sourceGame = DatObjectSource.Custom;
-			logger.Warning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
+			logger.LogWarning("Cannot save an object with object source as 'Vanilla' - using 'Custom' instead");
 		}
 
 		var s5Header = new S5Header(objName, 0)
@@ -559,6 +564,8 @@ public static class SawyerStreamWriter
 
 	public static void WriteStringTable(Stream ms, StringTable table)
 	{
+		// flip to true to byte-perfect-match vanilla objects (e.g. Currency); see WriteVanillaStringTable note below.
+#pragma warning disable CS0162 // unreachable code is intentional
 		const bool wantVanillaExact = false;
 		if (wantVanillaExact)
 		{
@@ -568,6 +575,7 @@ public static class SawyerStreamWriter
 		{
 			WriteSimpleStringTable(ms, table);
 		}
+#pragma warning restore CS0162
 	}
 
 	// this is a byte-perfect method for recreating the vanilla objects (specifically Currency)
@@ -626,11 +634,13 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static void WriteImageTable(Stream ms, List<GraphicsElement> graphicsElements)
+	public static void WriteImageTable(Stream ms, List<GraphicsElement> graphicsImages, PaletteMap? paletteMap = null)
 	{
-		var g1Elements = graphicsElements.Select(x => x.Convert()).ToList();
+		// The palette is a global service available here; a caller-supplied one (e.g. from the CLI) takes priority.
+		var palette = paletteMap ?? PaletteMapLoader.Current;
+		var g1Elements = graphicsImages.Select(x => x.ToDatG1Element32(palette)).ToList();
 
-		if (g1Elements != null && g1Elements.Count != 0)
+		if (g1Elements.Count != 0)
 		{
 			// encode if necessary
 			List<DatG1Element32> encoded = [];
@@ -671,7 +681,10 @@ public static class SawyerStreamWriter
 
 	public static void SaveG1(string filename, G1Dat g1)
 	{
-		using (var fs = File.OpenWrite(filename))
+		// FileMode.Create truncates any existing file. File.OpenWrite would open the existing file
+		// without truncating it, leaving trailing bytes from a previously larger G1 and corrupting
+		// the output whenever the new image table is smaller than the one on disk.
+		using (var fs = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None))
 		{
 			WriteImageTable(fs, g1.ImageTable.GraphicsElements);
 		}

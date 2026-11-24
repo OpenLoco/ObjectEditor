@@ -38,19 +38,18 @@ public class TrackSignalViewModel(TrackSignalObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
@@ -72,5 +71,10 @@ public class TrackSignalViewModel(TrackSignalObject model)
 	}
 
 	[Length(0, TrackSignalObjectLoader.Constants.ModsLength)]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
+	public ObjectReferenceList<TrackReferenceViewModel> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects, h => new TrackReferenceViewModel(h), list => model.CompatibleTrackObjects = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		CompatibleTrackObjects.Synchronize();
+	}
 }

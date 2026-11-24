@@ -14,6 +14,9 @@ public class LocoBinaryReader : BinaryReader
 	public LocoBinaryReader(Stream input) : base(input, Encoding.UTF8, leaveOpen: true)
 	{ }
 
+	// suppress CS0809: these overrides are intentionally marked [Obsolete] to surface incorrect usage
+	// at compile time. The base members are non-obsolete, which is exactly the point of this override.
+#pragma warning disable CS0809
 	[Obsolete("This method does not correctly read bytes from the stream. Use PeekByte instead.")]
 	public override int PeekChar()
 		=> throw new NotImplementedException("This method does not correctly read bytes from the stream. Use PeekByte instead.");
@@ -21,11 +24,15 @@ public class LocoBinaryReader : BinaryReader
 	[Obsolete("Use as specific Read method for the data type you want to read.")]
 	public override int Read()
 		=> throw new NotImplementedException("Use as specific Read method for the data type you want to read.");
+#pragma warning restore CS0809
 
 	public void SkipTerminator()
-		=> SkipByte(1);
+		=> SkipBytes(1);
 
-	public void SkipByte(int count = 1)
+	public void SkipByte()
+		=> SkipBytes(1);
+
+	public void SkipBytes(int count)
 		=> _ = BaseStream.Seek(count, SeekOrigin.Current);
 
 	public void SkipUInt16(int count = 1)
@@ -207,15 +214,10 @@ public class LocoBinaryReader : BinaryReader
 				NumRollFrames = ReadByte(),
 				HalfLength = ReadByte(),
 				Flags = (BodySpriteFlags)ReadByte(),
-				_Width = ReadByte(),
-				_HeightNegative = ReadByte(),
-				_HeightPositive = ReadByte(),
-				_FlatYawAccuracy = ReadByte(),
-				_SlopedYawAccuracy = ReadByte(),
-				_NumPermutationsPerRotation = ReadByte(),
 			};
 
-			SkipImageId(4);
+			SkipBytes(6); // Width, HeightNegative, HeightPositive, FlatYawAccuracy, SlopedYawAccuracy, NumPermutationsPerRotation
+			SkipImageId(4); // image ids not part of object definition
 		}
 	}
 
@@ -232,7 +234,7 @@ public class LocoBinaryReader : BinaryReader
 				HeightPositive = ReadByte(),
 			};
 
-			SkipByte(1); // NumFramesPerRotation is not part of object definition, its calculated on load
+			SkipBytes(1); // NumFramesPerRotation is not part of object definition, its calculated on load
 			SkipImageId(3); // image ids not part of object definition
 		}
 	}
@@ -242,11 +244,19 @@ public class LocoBinaryReader : BinaryReader
 		for (var i = 0; i < count; ++i)
 		{
 			SkipByte(); // object_id
-			yield return new EmitterAnimation
+			var emitterAnimation = new EmitterAnimation
 			{
 				EmitterVerticalPos = ReadByte(),
-				Type = (SimpleAnimationType)ReadByte(),
+				Type = (EmitterAnimationType)ReadByte(),
 			};
+
+			// The file always carries the full fixed-size emitter array (empty slots included) and the stream
+			// is advanced past every slot, but only slots with an animation are surfaced: the object model,
+			// database and DTOs hold the real emitters, not the DAT layer's padding.
+			if (emitterAnimation.Type != EmitterAnimationType.None)
+			{
+				yield return emitterAnimation;
+			}
 		}
 	}
 

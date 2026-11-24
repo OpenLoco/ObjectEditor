@@ -57,47 +57,42 @@ public class TrackStationViewModel(TrackStationObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(8, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(8, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("<unknown>")]
-	public uint8_t var_0B
+	[Category("Station")]
+	public uint8_t PlatformType
 	{
-		get => Model.var_0B;
-		set => Model.var_0B = value;
+		get => Model.PlatformType;
+		set => Model.PlatformType = value;
 	}
 
-	// unused in loco
-	//[Category("<unused>")]
-	//public uint8_t var_0D
-	//{
-	//	get => Model.var_0D;
-	//	set => Model.var_0D = value;
-	//}
-
-	// unused in loco
-	//[Category("<unused>")]
-	//public uint8_t[][] var_6E { get; set; } = model.var_6E;
+	// pad_0D and DiagonalCargoOffsetBytes are part of the DAT layout but are unused by Locomotion,
+	// so they are intentionally not surfaced for editing.
 
 	[Category("Cargo")]
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
+	public ObjectReferenceList<TrackReferenceViewModel> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects, h => new TrackReferenceViewModel(h), list => model.CompatibleTrackObjects = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		CompatibleTrackObjects.Synchronize();
+	}
 }

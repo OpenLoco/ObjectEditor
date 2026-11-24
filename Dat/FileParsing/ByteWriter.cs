@@ -6,39 +6,41 @@ public static class ByteWriter
 {
 	public static void WriteT(Span<byte> data, Type t, int offset, object val)
 	{
+		// The values reaching here are boxed primitives of the property/element type, or a boxed
+		// int 0 for skip-read properties. Convert.* performs the same coercion the previous
+		// (uint8_t)(dynamic)val casts did, but without the DLR call-site overhead.
 		if (t == typeof(uint8_t))
 		{
-			ByteWriterT.Write(data, offset, (uint8_t)(dynamic)val);
+			ByteWriterT.Write_uint8t(data, offset, Convert.ToByte(val));
 		}
 		else if (t == typeof(int8_t))
 		{
-			ByteWriterT.Write(data, offset, (int8_t)(dynamic)val);
+			ByteWriterT.Write_int8t(data, offset, Convert.ToSByte(val));
 		}
 		else if (t == typeof(uint16_t))
 		{
-			ByteWriterT.Write(data, offset, (uint16_t)(dynamic)val);
+			ByteWriterT.Write_uint16t(data, offset, Convert.ToUInt16(val));
 		}
 		else if (t == typeof(int16_t))
 		{
-			ByteWriterT.Write(data, offset, (int16_t)(dynamic)val);
+			ByteWriterT.Write_int16t(data, offset, Convert.ToInt16(val));
 		}
 		else if (t == typeof(uint32_t))
 		{
-			ByteWriterT.Write(data, offset, (uint32_t)(dynamic)val);
+			ByteWriterT.Write_uint32t(data, offset, Convert.ToUInt32(val));
 		}
 		else if (t == typeof(int32_t))
 		{
-			ByteWriterT.Write(data, offset, (int32_t)(dynamic)val);
+			ByteWriterT.Write_int32t(data, offset, Convert.ToInt32(val));
 		}
 		else if (t == typeof(string_id))
 		{
 			// string ids should always be 0 in the dat file - they're only set when loaded into memory and never saved
-			val = 0;
-			ByteWriterT.Write(data, offset, (string_id)(dynamic)val);
+			ByteWriterT.Write_uint16t(data, offset, 0);
 		}
 		else if (t == typeof(bool))
 		{
-			ByteWriterT.Write(data, offset, (bool)(dynamic)val);
+			ByteWriterT.Write_bool(data, offset, Convert.ToBoolean(val));
 		}
 		else if (t.IsArray)
 		{
@@ -84,40 +86,23 @@ public static class ByteWriter
 		var objSize = ByteHelpers.GetObjectSize(t);
 		var buf = new byte[objSize];
 
-		foreach (var p in t.GetProperties())
+		foreach (var p in LocoStructMetadata.GetStructProperties(t))
 		{
-			// ignore non-loco properties on the records
-			var offsetAttr = AttributeHelper.Get<LocoStructOffsetAttribute>(p);
-			if (offsetAttr == null)
-			{
-				continue;
-			}
-
 			// write 0s to properties that need it
-			var skip = AttributeHelper.Get<LocoStructSkipReadAttribute>(p);
-			if (skip != null)
+			if (p.IsSkipRead)
 			{
-				WriteT(buf, p.PropertyType, offsetAttr.Offset, 0);
+				WriteT(buf, p.PropertyType, p.Offset, 0);
 				continue;
 			}
 
 			// skip variable struct loading as they'll be set in special save
-			var variable = AttributeHelper.Get<LocoStructVariableLoadAttribute>(p);
-			if (variable != null)
+			if (p.IsVariableLoad)
 			{
 				continue;
 			}
 
-			// special array handling
-			var arrLength = 0;
-			if (p.PropertyType.IsArray)
-			{
-				var arrLengthAttr = AttributeHelper.Get<LocoArrayLengthAttribute>(p) ?? throw new ArgumentOutOfRangeException(nameof(obj), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
-				arrLength = arrLengthAttr.Length;
-			}
-
-			var propVal = p.GetValue(obj) ?? throw new ArgumentNullException($"{p.Name} for {obj} was null");
-			WriteT(buf, p.PropertyType, offsetAttr.Offset, propVal);
+			var propVal = p.Property.GetValue(obj) ?? throw new ArgumentNullException($"{p.Property.Name} for {obj} was null");
+			WriteT(buf, p.PropertyType, p.Offset, propVal);
 		}
 
 		return buf;

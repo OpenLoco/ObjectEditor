@@ -11,7 +11,6 @@ public class TrackSignalObject : ILocoStruct
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public uint8_t var_0B { get; set; }
 	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }

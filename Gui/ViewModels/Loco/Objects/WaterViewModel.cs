@@ -15,20 +15,14 @@ public class WaterViewModel(WaterObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(CostFactor));
+			RaisePropertiesChanged(nameof(CostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t CostFactor
 	{
 		get => Model.CostFactor;
 		set => Model.CostFactor = value;
 	}
-	public uint8_t var_03
-	{
-		get => Model.var_03;
-		set => Model.var_03 = value;
-	}
-
 }

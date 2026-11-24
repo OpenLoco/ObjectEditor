@@ -1,19 +1,17 @@
 using Avalonia;
-using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Common;
-using Common.Logging;
 using Dat.Data;
-using Definitions.ObjectModels;
+using Dat.Templates;
+using Definitions.ObjectModels.Graphics;
 using DynamicData;
 using Gui.Models;
 using Gui.ViewModels.Loco.Tutorial;
+using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
-using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -48,6 +46,7 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Task> OpenTutorial { get; }
 	public ReactiveCommand<Unit, Task> OpenScores { get; }
 	public ReactiveCommand<Unit, Task> OpenLanguage { get; }
+	public ReactiveCommand<Unit, Unit> NewObjectCommand { get; }
 	public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
 	public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
 	public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
@@ -56,7 +55,9 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Unit> DownloadLatestUpdate { get; }
 
 	public string WindowTitle
-		=> $"{ObjectEditorContext.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
+		=> windowTitle.Value;
+
+	readonly ObservableAsPropertyHelper<string> windowTitle;
 
 	[Reactive]
 	public SemanticVersion ApplicationVersion { get; set; }
@@ -68,18 +69,16 @@ public class MainWindowViewModel : ViewModelBase
 	[Reactive]
 	public bool IsUpdateAvailable { get; set; }
 
-	const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
-	Image<Rgba32> DefaultPaletteImage { get; init; }
-
 	public Interaction<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> OpenEditorSettingsWindow { get; }
 
 	public Interaction<LogWindowViewModel, LogWindowViewModel?> OpenLogWindow { get; }
 
+	public Interaction<NewObjectWizardViewModel, NewObjectWizardViewModel?> OpenNewObjectWizard { get; }
+
 	public MainWindowViewModel()
 	{
-		DefaultPaletteImage = Image.Load<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
-
 		EditorContext = new();
+		Task.Run(EditorContext.LoadAsync);
 		Task.Run(LoadDefaultPalette);
 
 		FolderTreeViewModel = new FolderTreeViewModel(EditorContext);
@@ -87,7 +86,7 @@ public class MainWindowViewModel : ViewModelBase
 		_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 			.Subscribe((x) =>
 			{
-				if (x != null && (x.SubNodes == null || x.SubNodes?.Count == 0))
+				if (x != null && x.CanOpen && (x.SubNodes == null || x.SubNodes?.Count == 0))
 				{
 					SetObjectViewModel(x);
 				}
@@ -113,7 +112,7 @@ public class MainWindowViewModel : ViewModelBase
 							return;
 						}
 
-						ShowLogsCommand.Execute();
+						ShowLogsCommand?.Execute();
 					});
 				}
 			}
@@ -125,13 +124,23 @@ public class MainWindowViewModel : ViewModelBase
 		OpenCacheFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorContext.Settings.CacheFolder, EditorContext.Logger));
 		OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorContext.Settings.DownloadFolder, EditorContext.Logger));
 		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorContext.ProgramDataPath, EditorContext.Logger));
-		OpenG1 = ReactiveCommand.Create(LoadG1);
-		OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
-		OpenMusic = ReactiveCommand.Create(LoadMusic);
-		OpenSoundEffect = ReactiveCommand.Create(LoadSoundEffects);
-		OpenTutorial = ReactiveCommand.Create(LoadTutorial);
-		OpenScores = ReactiveCommand.Create(LoadScores);
-		OpenLanguage = ReactiveCommand.Create(LoadLanguage);
+		OpenG1 = ReactiveCommand.Create(() => Load<G1ViewModel>(PlatformSpecific.DatFileTypes));
+		OpenSCV5 = ReactiveCommand.Create(() => Load<SCV5ViewModel>(PlatformSpecific.SCV5FileTypes));
+		OpenMusic = ReactiveCommand.Create(() => Load<MusicViewModel>(PlatformSpecific.DatFileTypes));
+		OpenSoundEffect = ReactiveCommand.Create(() => Load<SoundEffectsViewModel>(PlatformSpecific.DatFileTypes));
+		OpenTutorial = ReactiveCommand.Create(() => Load<TutorialViewModel>(PlatformSpecific.DatFileTypes));
+		OpenScores = ReactiveCommand.Create(() => Load<ScoresViewModel>(PlatformSpecific.DatFileTypes));
+		OpenLanguage = ReactiveCommand.Create(() => Load<LanguageFileViewModel>(PlatformSpecific.DatFileTypes));
+
+		OpenNewObjectWizard = new();
+		NewObjectCommand = ReactiveCommand.CreateFromTask(async () =>
+		{
+			var result = await OpenNewObjectWizard.Handle(new NewObjectWizardViewModel());
+			if (result is { Confirmed: true })
+			{
+				OpenNewObject(result);
+			}
+		});
 
 		UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
 		UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
@@ -141,7 +150,7 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			var vm = new EditorSettingsWindowViewModel(EditorContext.Settings);
 			var result = await OpenEditorSettingsWindow.Handle(vm);
-			EditorContext.Settings.Save(ObjectEditorContext.SettingsFile, EditorContext.Logger);
+			EditorContext.Settings.Save(ObjectEditorContext.SettingsFilePathName, EditorContext.Logger);
 		});
 
 		OpenLogWindow = new();
@@ -153,25 +162,26 @@ public class MainWindowViewModel : ViewModelBase
 
 		#region Version
 
-		_ = this.WhenAnyValue(o => o.ApplicationVersion)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
-		_ = this.WhenAnyValue(o => o.LatestVersionText)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
+		windowTitle = this.WhenAnyValue(o => o.ApplicationVersion, o => o.LatestVersionText,
+				(applicationVersion, latestVersionText) => $"{ObjectEditorContext.ApplicationName} - {applicationVersion} ({latestVersionText})")
+			.ToProperty(this, o => o.WindowTitle);
 
 		OpenDownloadLink = ReactiveCommand.Create(VersionHelpers.OpenDownloadPage);
 		DownloadLatestUpdate = ReactiveCommand.Create(() =>
 		{
 			if (ApplicationVersion == null || ApplicationVersion == VersionHelpers.UnknownVersion)
 			{
-				EditorContext.Logger.Info($"{nameof(ApplicationVersion)} is null");
+				EditorContext.Logger.LogInformation("{Nameof} is null", nameof(ApplicationVersion));
+				ApplicationVersion = VersionHelpers.UnknownVersion;
 			}
 
 			if (LatestVersion == null || LatestVersion == VersionHelpers.UnknownVersion)
 			{
-				EditorContext.Logger.Info($"{nameof(LatestVersion)} is null");
+				EditorContext.Logger.LogInformation("{Nameof} is null", nameof(LatestVersion));
+				LatestVersion = VersionHelpers.UnknownVersion;
 			}
 
-			EditorContext.Logger.Info($"Attempting to update from {ApplicationVersion} to {LatestVersion}");
+			EditorContext.Logger.LogInformation("Attempting to update from {ApplicationVersion} to {LatestVersion}", ApplicationVersion, LatestVersion);
 			_ = Task.Run(() => VersionHelpers.StartAutoUpdater(EditorContext.Logger, ApplicationVersion, LatestVersion));
 
 		});
@@ -179,9 +189,19 @@ public class MainWindowViewModel : ViewModelBase
 		ApplicationVersion = VersionHelpers.GetCurrentAppVersion();
 
 #if !DEBUG
+		// Fire-and-forget: the network check must not block the UI thread.
+		// Failures are logged inside CheckForLatestVersionAsync.
+		_ = CheckForLatestVersionAsync();
+#endif
+
+	}
+
+#if !DEBUG
+	async Task CheckForLatestVersionAsync()
+	{
 		try
 		{
-			LatestVersion = VersionHelpers.GetLatestAppVersion(VersionHelpers.ObjectEditorName);
+			LatestVersion = await VersionHelpers.GetLatestAppVersionAsync(VersionHelpers.ObjectEditorName);
 			if (LatestVersion > ApplicationVersion)
 			{
 				LatestVersionText = $"newer version exists: {LatestVersion}";
@@ -195,12 +215,11 @@ public class MainWindowViewModel : ViewModelBase
 		}
 		catch (Exception ex)
 		{
-			EditorContext.Logger.Error(ex);
+			EditorContext.Logger.LogError(ex, "Unable to get latest version info");
 		}
-#endif
-
-		#endregion
 	}
+#endif
+		#endregion
 
 	void PopulateObjDataMenu()
 	{
@@ -255,11 +274,12 @@ public class MainWindowViewModel : ViewModelBase
 	}
 
 	async Task LoadDefaultPalette()
-		=> await Task.Run(() =>
-		{
-			EditorContext.PaletteMap = new PaletteMap(DefaultPaletteImage);
-			CurrentTabModel.ReloadAll();
-		});
+	{
+		// The palette is a global service: (re)initialise it and reload any open tables so their
+		// displayed images pick up the change. The underlying image tables are not modified.
+		await Task.Run(() => PaletteMapLoader.SetCurrent(PaletteMapLoader.LoadDefault()));
+		await CurrentTabModel.ReloadAllAsync();
+	}
 
 	async Task LoadCustomPalette()
 	{
@@ -276,14 +296,14 @@ public class MainWindowViewModel : ViewModelBase
 			return;
 		}
 
-		EditorContext.PaletteMap = new PaletteMap(path);
-		CurrentTabModel.ReloadAll();
+		await Task.Run(() => PaletteMapLoader.SetCurrent(new PaletteMap(path)));
+		await CurrentTabModel.ReloadAllAsync();
 	}
 
 	public async Task LoadSingleObject()
 	{
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi == null)
+		if (fsi == null || fsi.FileName == null)
 		{
 			return;
 		}
@@ -293,14 +313,14 @@ public class MainWindowViewModel : ViewModelBase
 
 		if (EditorContext.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 		{
-			EditorContext.Logger.Warning($"Successfully loaded {fsi.FileName}");
-			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum, uiLocoFile.DatInfo.S5Header.ObjectSource);
-			var fsi2 = new FileSystemItem(uiLocoFile!.DatInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
+			EditorContext.Logger.LogWarning("Successfully loaded {FileName}", fsi.FileName);
+			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo!.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum, uiLocoFile.DatInfo.S5Header.ObjectSource);
+			var fsi2 = new FileSystemItem(uiLocoFile.DatInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
 			SetObjectViewModel(fsi2);
 		}
 		else
 		{
-			EditorContext.Logger.Warning($"Unable to load {fsi.FileName}");
+			EditorContext.Logger.LogWarning("Unable to load {FileName}", fsi.FileName);
 		}
 	}
 
@@ -312,66 +332,50 @@ public class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	public async Task LoadG1()
+	/// <summary>Builds a template object from the completed wizard and opens it in a new tab.</summary>
+	void OpenNewObject(NewObjectWizardViewModel wizard)
 	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new G1ViewModel(fsi, EditorContext));
-		}
+		var name = wizard.ObjectName.Trim();
+		var displayName = wizard.EffectiveDisplayName;
+
+		EditorContext.Logger.LogInformation("Creating new {ObjectType} object \"{Name}\"", wizard.SelectedObjectType, name);
+
+		var template = NewObjectTemplateFactory.Create(name, wizard.SelectedObjectType, wizard.SelectedObjectSource, wizard.SelectedEncoding);
+		var model = new LocoUIObjectModel { LocoObject = template.LocoObject, DatInfo = template.DatInfo };
+
+		// A brand-new object has no file on disk, so there is nothing to reload or overwrite yet - the
+		// editor tab opens with in-place saving disabled until the user chooses "Save As".
+		var fileSystemItem = new FileSystemItem(displayName, null, null, null, null, FileLocation.Local, wizard.SelectedObjectSource, wizard.SelectedObjectType);
+
+		CurrentTabModel.AddDocument(new ObjectEditorViewModel(fileSystemItem, EditorContext, model));
 	}
 
-	public async Task LoadSCV5()
+	public async Task Load<T>(IReadOnlyList<FilePickerFileType> filetypes) where T : IFileViewModel
 	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.SCV5FileTypes);
+		var fsi = await GetFileSystemItemFromUser(filetypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new SCV5ViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadMusic()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new MusicViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadSoundEffects()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new SoundEffectsViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadTutorial()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new TutorialViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadScores()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new ScoresViewModel(fsi, EditorContext));
-		}
-	}
-
-	async Task LoadLanguage()
-	{
-		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
-		{
-			CurrentTabModel.AddDocument(new LanguageFileViewModel(fsi, EditorContext));
+			try
+			{
+				// use reflection because C# cannot handle generic type constraints with constructors that take parameters, ie we cannot do "new T(fsi, EditorContext)" because T is not known at compile time
+				var modelType = typeof(T);
+				var cstrParams = new Type[] { typeof(FileSystemItem), typeof(ObjectEditorContext) };
+				var cstr = modelType.GetConstructor(cstrParams);
+				var cstrArgs = new object[] { fsi, EditorContext };
+				if (cstr != null)
+				{
+					var model = (T)cstr.Invoke(cstrArgs);
+					CurrentTabModel.AddDocument(model);
+				}
+				else
+				{
+					EditorContext.Logger.LogError("Unable to find constructor for {ModelType} with parameters {CstrParams}", modelType, cstrParams);
+				}
+			}
+			catch (Exception ex)
+			{
+				EditorContext.Logger.LogError(ex, "Unable to load SCV5 file {FileName}", fsi.FileName);
+			}
 		}
 	}
 
@@ -388,37 +392,37 @@ public class MainWindowViewModel : ViewModelBase
 
 		if (!Directory.Exists(dirPath))
 		{
-			EditorContext.Logger.Warning("Directory doesn't exist");
+			EditorContext.Logger.LogWarning("Directory doesn't exist");
 			return;
 		}
 
 		if (EditorContext.Settings.ObjDataDirectories.Contains(dirPath))
 		{
-			EditorContext.Logger.Warning("Object directory is already in the list");
+			EditorContext.Logger.LogWarning("Object directory is already in the list");
 			return;
 		}
 
 		if (EditorContext.Settings.LocomotionSteamObjDataFolder == dirPath)
 		{
-			EditorContext.Logger.Warning("No need to add - this is the predefined Locomotion (Steam) ObjData folder");
+			EditorContext.Logger.LogWarning("No need to add - this is the predefined Locomotion (Steam) ObjData folder");
 			return;
 		}
 
 		if (EditorContext.Settings.LocomotionGoGObjDataFolder == dirPath)
 		{
-			EditorContext.Logger.Warning("No need to add - this is the predefined Locomotion (GoG) ObjData folder");
+			EditorContext.Logger.LogWarning("No need to add - this is the predefined Locomotion (GoG) ObjData folder");
 			return;
 		}
 
 		if (EditorContext.Settings.OpenLocoObjDataFolder == dirPath)
 		{
-			EditorContext.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");
+			EditorContext.Logger.LogWarning("No need to add - this is the predefined OpenLoco object folder");
 			return;
 		}
 
 		if (EditorContext.Settings.AppDataObjDataFolder == dirPath)
 		{
-			EditorContext.Logger.Warning("No need to add - this is the predefined AppData folder");
+			EditorContext.Logger.LogWarning("No need to add - this is the predefined AppData folder");
 			return;
 		}
 

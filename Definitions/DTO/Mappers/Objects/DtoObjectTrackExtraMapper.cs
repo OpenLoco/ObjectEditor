@@ -10,6 +10,7 @@ public static class DtoObjectTrackExtraMapper
 		CostIndex = tblobjecttrackextra.CostIndex,
 		BuildCostFactor = tblobjecttrackextra.BuildCostFactor,
 		SellCostFactor = tblobjecttrackextra.SellCostFactor,
+		TrackPieces = tblobjecttrackextra.TrackPieces,
 		Id = tblobjecttrackextra.Id,
 	};
 
@@ -20,6 +21,7 @@ public static class DtoObjectTrackExtraMapper
 		CostIndex = model.CostIndex,
 		BuildCostFactor = model.BuildCostFactor,
 		SellCostFactor = model.SellCostFactor,
+		TrackPieces = model.TrackPieces,
 		Id = model.Id,
 	};
 }

@@ -4,12 +4,11 @@ namespace Definitions.ObjectModels.Objects.Competitor;
 public class CompetitorObject : ILocoStruct
 {
 	public NamePrefixFlags AvailableNamePrefixes { get; set; } // bitset
-	public PlaystyleFlags AvailablePlayStyles { get; set; } // bitset
+	public NameSuffixFlags AvailableNameSuffixes { get; set; } // bitset
 	public EmotionFlags Emotions { get; set; } // bitset
 	public uint8_t Intelligence { get; set; }
 	public uint8_t Aggressiveness { get; set; }
 	public uint8_t Competitiveness { get; set; }
-	public uint8_t var_37 { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Definitions.Database;
 
-[Index(nameof(DatName), nameof(DatChecksum), IsUnique = true)]
+[Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false], IsUnique = true)]
 public class TblObjectMissing : DbIdObject
 {
 	public required string DatName { get; set; }

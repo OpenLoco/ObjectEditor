@@ -16,6 +16,9 @@ namespace Gui.ViewModels;
 public class IndustryViewModel(IndustryObject model)
 	: BaseViewModel<IndustryObject>(model)
 {
+	WallReferenceViewModel? buildingWall = model.BuildingWall is { } buildingWallModel ? new(buildingWallModel) : null;
+	WallReferenceViewModel? buildingWallEntrance = model.BuildingWallEntrance is { } buildingWallEntranceModel ? new(buildingWallEntranceModel) : null;
+
 	[Description("Total industries of this type that can be created in a scenario. Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.")]
 	public uint8_t TotalOfTypeInScenario
 	{
@@ -57,15 +60,15 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("Production")]
-	public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; init; } = new(model.InitialProductionRate);
+	public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; init; } = [with(model.InitialProductionRate)];
 
 	[Category("Production")]
 	[Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
-	public BindingList<ObjectModelHeader> ProducedCargo { get; init; } = new(model.ProducedCargo);
+	public ObjectReferenceList<CargoReferenceViewModel> ProducedCargo { get; init; } = new(model.ProducedCargo, h => new CargoReferenceViewModel(h), list => model.ProducedCargo = [.. list]);
 
 	[Category("Production")]
 	[Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
-	public BindingList<ObjectModelHeader> RequiredCargo { get; init; } = new(model.RequiredCargo);
+	public ObjectReferenceList<CargoReferenceViewModel> RequiredCargo { get; init; } = new(model.RequiredCargo, h => new CargoReferenceViewModel(h), list => model.RequiredCargo = [.. list]);
 
 	[Category("Production")]
 	public uint8_t MonthlyClosureChance
@@ -81,19 +84,18 @@ public class IndustryViewModel(IndustryObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(3, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(3, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
@@ -115,7 +117,7 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("Farm")]
-	public uint8_t FarmIdealSize
+	public uint8_t FarmNumFields
 	{
 		get => Model.FarmNumFields;
 		set => Model.FarmNumFields = value;
@@ -134,7 +136,7 @@ public class IndustryViewModel(IndustryObject model)
 
 	[Category("Building")]
 	[Length(1, IndustryObjectLoader.Constants.BuildingVariationCount)]
-	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
+	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = [with(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList())];
 
 	[Category("Building")]
 	[Length(1, IndustryObjectLoader.Constants.BuildingHeightCount)]
@@ -184,29 +186,44 @@ public class IndustryViewModel(IndustryObject model)
 
 	[Category("Building")]
 	[Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)]
-	public BindingList<ObjectModelHeader> WallTypes { get; init; } = model.WallTypes.ToBindingList();
+	public ObjectReferenceList<WallReferenceViewModel> WallTypes { get; init; } = new(model.WallTypes, h => new WallReferenceViewModel(h), list => model.WallTypes = [.. list]);
 
 	[Category("Building")]
-	public ObjectModelHeader? BuildingWall
+	public WallReferenceViewModel? BuildingWall
 	{
-		get => Model.BuildingWall;
-		set => Model.BuildingWall = value;
+		get => buildingWall;
+		set
+		{
+			buildingWall = value;
+			Model.BuildingWall = value?.Model;
+		}
 	}
 
 	[Category("Building")]
-	public ObjectModelHeader? BuildingWallEntrance
+	public WallReferenceViewModel? BuildingWallEntrance
 	{
-		get => Model.BuildingWallEntrance;
-		set => Model.BuildingWallEntrance = value;
+		get => buildingWallEntrance;
+		set
+		{
+			buildingWallEntrance = value;
+			Model.BuildingWallEntrance = value?.Model;
+		}
 	}
 
-	[Category("<unknown>")]
-	public BindingList<IndustryObjectUnk38> var_38 { get; init; } = model.var_38.ToBindingList();
+	[Category("Building")]
+	public BindingList<IndustryObjectRandomAnimation> RandomAnimations { get; init; } = model.RandomAnimations.ToBindingList();
 
-	[Category("<unknown>")]
-	public uint8_t var_E8
+	[Category("Farm")]
+	public uint8_t NumFarmTileImages
 	{
-		get => Model.var_E8;
-		set => Model.var_E8 = value;
+		get => Model.NumFarmTileImages;
+		set => Model.NumFarmTileImages = value;
+	}
+
+	public override void SynchronizeToModel()
+	{
+		ProducedCargo.Synchronize();
+		RequiredCargo.Synchronize();
+		WallTypes.Synchronize();
 	}
 }

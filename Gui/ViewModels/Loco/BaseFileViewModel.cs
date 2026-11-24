@@ -28,10 +28,6 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 		DeleteLocalFileCommand = ReactiveCommand.CreateFromTask(DeleteWrapper);
 	}
 
-	protected BaseFileViewModel(ObjectEditorContext editorContext, T? model = null) : base(editorContext, model)
-	{
-	}
-
 	[Reactive]
 	public FileSystemItem CurrentFile { get; init; }
 
@@ -42,7 +38,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 
 	public abstract void Load();
 	public abstract void Save();
-	public abstract string? SaveAs(SaveParameters saveParameters);
+	public abstract Task<string?> SaveAsAsync(SaveParameters saveParameters);
 	public virtual void Delete() { }
 
 	async Task SaveAsWrapper()
@@ -92,13 +88,10 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 			}
 			: null;
 
-		var filename = SaveAs(new SaveParameters(type, encoding));
+		var filename = await SaveAsAsync(new SaveParameters(type, encoding));
 
-		// Open the newly-saved document as a new tab in the tabviewpagemodel
-		if (filename != null)
-		{
-			// todo:
-		}
+		// todo: Open the newly-saved document as a new tab in the tabviewpagemodel
+		_ = filename;
 	}
 
 	async Task SaveWrapper()
@@ -106,7 +99,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 		// note - this is the DAT file source, not the true source...
 		if (CurrentFile.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 		{
-			var msbParams = GetDefaultParams();
+			var msbParams = BaseFileViewModel<T>.GetDefaultParams();
 			msbParams.ContentTitle = "Confirm Save";
 			msbParams.ContentMessage = $"{CurrentFile.FileName} is a vanilla Locomotion file - are you sure you want to overwrite it?";
 			msbParams.ButtonDefinitions = ButtonEnum.YesNo;
@@ -127,7 +120,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 
 	async Task DeleteWrapper()
 	{
-		var msbParams = GetDefaultParams();
+		var msbParams = BaseFileViewModel<T>.GetDefaultParams();
 		msbParams.ContentTitle = "Confirm Delete";
 		msbParams.ContentMessage = $"Are you sure you would like to delete {CurrentFile.FileName}?";
 		msbParams.ButtonDefinitions = ButtonEnum.YesNo;
@@ -143,7 +136,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 		}
 	}
 
-	MessageBoxStandardParams GetDefaultParams()
+	static MessageBoxStandardParams GetDefaultParams()
 		=> new()
 		{
 			WindowStartupLocation = WindowStartupLocation.CenterOwner,

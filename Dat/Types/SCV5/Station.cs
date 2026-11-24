@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel.DataAnnotations;

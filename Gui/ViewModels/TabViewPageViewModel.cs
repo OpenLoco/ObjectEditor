@@ -1,3 +1,4 @@
+using DynamicData.Binding;
 using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -6,28 +7,29 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
 public class TabViewPageViewModel : ViewModelBase
 {
+	readonly ObservableAsPropertyHelper<bool> openInNewTabIsVisible;
+
 	public ObservableCollection<IFileViewModel> Documents { get; }
 
+	[Reactive]
 	public bool OpenInNewTab { get; set; }
 
-	public bool OpenInNewTabIsVisible => Documents.Any();
+	public bool OpenInNewTabIsVisible => openInNewTabIsVisible.Value;
 
 	[Reactive]
 	public IFileViewModel? SelectedDocument { get; set; }
 
 	public ReactiveCommand<IFileViewModel, Unit> RemoveTabCommand { get; }
 
-	[Reactive]
-	public ICommand CloseAllTabsCommand { get; set; }
+	public ReactiveCommand<Unit, Unit> CloseAllTabsCommand { get; }
 
-	[Reactive]
-	public ReactiveCommand<IFileViewModel, Unit> CloseOtherTabsCommand { get; set; }
+	public ReactiveCommand<IFileViewModel, Unit> CloseOtherTabsCommand { get; }
 
 	public TabViewPageViewModel()
 	{
@@ -36,11 +38,12 @@ public class TabViewPageViewModel : ViewModelBase
 		CloseAllTabsCommand = ReactiveCommand.Create(ClearDocuments);
 		CloseOtherTabsCommand = ReactiveCommand.Create<IFileViewModel>(ClearDocumentsExcept);
 
-		_ = this.WhenAnyValue(o => o.SelectedDocument)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(OpenInNewTabIsVisible)));
+		openInNewTabIsVisible = Documents.ToObservableChangeSet()
+			.Select(_ => Documents.Count > 0)
+			.ToProperty(this, o => o.OpenInNewTabIsVisible);
 	}
 
-	public async void ReloadAll()
+	public async Task ReloadAllAsync()
 	{
 		foreach (var model in Documents)
 		{

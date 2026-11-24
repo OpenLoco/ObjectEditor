@@ -20,38 +20,37 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 		RequiredObjects.AddOrUpdate(model.DependentObjects);
 
 		_ = RequiredObjects.Connect()
-			.Subscribe(Observer.Create<IChangeSet<ObjectModelHeader, uint>>(_ => SyncRequiredObjectsToModel()))
+			.Subscribe(Observer.Create<IChangeSet<ObjectModelHeader>>(_ => SyncRequiredObjectsToModel()))
 			.DisposeWith(modelSyncSubscriptions);
 
-		CargoInfluenceObjects = new(model.CargoInfluenceObjects);
-		CargoInfluenceTownFilter = new(model.CargoInfluenceTownFilter);
+		CargoInfluenceObjects = new(model.CargoInfluenceObjects, h => new CargoReferenceViewModel(h), list => model.CargoInfluenceObjects = [.. list]);
+		CargoInfluenceTownFilter = [with(model.CargoInfluenceTownFilter)];
 	}
 
-	public DrivingSide VehiclesDriveOnThe
+	public DrivingSide VehicleDrivingSide
 	{
-		get => Model.VehiclesDriveOnThe;
-		set => Model.VehiclesDriveOnThe = value;
-	}
-
-	public uint8_t pad_07
-	{
-		get => Model.pad_07;
-		set => Model.pad_07 = value;
+		get => Model.VehicleDrivingSide;
+		set => Model.VehicleDrivingSide = value;
 	}
 
 	[Browsable(false)]
-	public RequiredObjectsListViewModel RequiredObjects { get; }
+	public RequiredObjectsListViewModel RequiredObjects { get; init; }
 
 	[Category("Cargo")]
-	public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; }
+	public ObjectReferenceList<CargoReferenceViewModel> CargoInfluenceObjects { get; init; }
 
 	[Category("Cargo")]
-	public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; }
+	public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; init; }
 
 	void SyncRequiredObjectsToModel()
 	{
 		Model.DependentObjects.Clear();
 		Model.DependentObjects.AddRange(RequiredObjects.Items);
+	}
+
+	public override void SynchronizeToModel()
+	{
+		CargoInfluenceObjects.Synchronize();
 	}
 
 	protected override void Dispose(bool disposing)

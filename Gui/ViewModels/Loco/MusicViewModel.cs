@@ -2,6 +2,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Gui.Models;
 using Gui.Models.Audio;
+using Microsoft.Extensions.Logging;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
 using System.Threading.Tasks;
@@ -11,17 +12,20 @@ namespace Gui.ViewModels;
 public class MusicViewModel : BaseFileViewModel<DummyModel>
 {
 	[Reactive]
-	public AudioViewModel AudioViewModel { get; set; }
+	public AudioViewModel? AudioViewModel { get; set; }
 
 	public MusicViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
 		=> Load();
 
 	public override void Load()
-		=> AudioViewModel = new AudioViewModel(
-			logger,
+	{
+		AudioViewModel?.Dispose();
+		AudioViewModel = new AudioViewModel(
+			Logger,
 			GetDisplayName(CurrentFile.DisplayName),
 			CurrentFile.FileName!);
+	}
 
 	static string GetDisplayName(string filename)
 	{
@@ -52,9 +56,9 @@ public class MusicViewModel : BaseFileViewModel<DummyModel>
 		SaveCore(savePath);
 	}
 
-	public override string SaveAs(SaveParameters saveParameters)
+	public override async Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
-		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes);
 		var savePath = saveFile?.Path.LocalPath;
 
 		if (savePath == null)
@@ -68,12 +72,18 @@ public class MusicViewModel : BaseFileViewModel<DummyModel>
 
 	void SaveCore(string filename)
 	{
-		logger?.Info($"Saving music to {filename}");
+		Logger.LogInformation("Saving music to {Filename}", filename);
+
+		if (AudioViewModel == null)
+		{
+			Logger.LogError("AudioViewModel is null, cannot save.");
+			return;
+		}
 
 		var datWav = AudioViewModel.GetAsDatWav(LocoAudioType.Music);
 		if (datWav == null)
 		{
-			logger?.Error("Failed to get music data for saving.");
+			Logger.LogError("Failed to get music data for saving.");
 			return;
 		}
 

@@ -1,18 +1,19 @@
 using Avalonia.Media.Imaging;
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.Dithering;
 using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace Gui.ViewModels.Graphics;
 
@@ -20,19 +21,8 @@ public class DesignImageViewModel : ImageViewModel
 {
 	public DesignImageViewModel()
 	{
-		Model = new GraphicsElement()
-		{
-			Flags = GraphicsElementFlags.None,
-			Name = "NewImage",
-			Width = 16,
-			Height = 16,
-			Image = new Image<Rgba32>(16, 16),
-			ImageTableIndex = 0,
-			XOffset = 1,
-			YOffset = 2,
-			ZoomOffset = 3
-		};
-		UnderlyingImage = Model.Image!;
+		Model = GraphicsElement.FromIndexed(GraphicsElementFlags.None, PaletteMapLoader.Current.CreateIndexedImageFrame(16, 16), 1, 2, 3, "NewImage", 0);
+		UnderlyingImage = Model;
 	}
 }
 
@@ -46,11 +36,11 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	[Unit("px")]
 	public int Width
-		=> UnderlyingImage.Width;
+		=> UnderlyingImage!.Width;
 
 	[Unit("px")]
 	public int Height
-		=> UnderlyingImage.Height;
+		=> UnderlyingImage!.Height;
 
 	[Unit("px")]
 	public short XOffset
@@ -98,16 +88,32 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 	[Reactive, Browsable(false)]
 	public Bitmap? DisplayedImage { get; private set; }
 
+	/// <summary>If set, this dithering method is used when converting the RGBA image to palette data on the next image change.</summary>
+	[Reactive, Browsable(false)]
+	public DitheringMethod? DitheringMethod { get; set; }
+
 	[Browsable(false)]
-	public Image<Rgba32> UnderlyingImage
+	public GraphicsElement? UnderlyingImage
 	{
-		get => Model.Image!;
+		get => Model;
 		set
 		{
-			if (!ReferenceEquals(Model.Image, value))
+			// The table owns the same GraphicsElement that this view model models, and Model is init-only,
+			// so adopt the replacement's pixel data and metadata in-place rather than reassigning Model.
+			if (Model != null && value != null && !ReferenceEquals(Model, value))
 			{
-				Model.Image?.Dispose();
-				Model.Image = value;
+				// AdoptDecodedFrom transfers ownership of value's decoded frames into Model before we
+				// dispose value, so the two never double-dispose the same Image/IndexedImageFrame.
+				Model.AdoptDecodedFrom(value);
+				Model.Width = value.Width;
+				Model.Height = value.Height;
+				Model.XOffset = value.XOffset;
+				Model.YOffset = value.YOffset;
+				Model.ZoomOffset = value.ZoomOffset;
+				Model.Flags = value.Flags;
+				Model.Name = value.Name;
+				Model.ImageTableIndex = value.ImageTableIndex;
+				value.Dispose();
 			}
 
 			this.RaisePropertyChanged(nameof(UnderlyingImage));
@@ -116,70 +122,51 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	[Browsable(false)]
 	public Avalonia.Rect SelectedBitmapPreviewBorder
-		=> DisplayedImage == null
-		? new Avalonia.Rect()
-			: new Avalonia.Rect(
-				XOffset - 1,
-				YOffset - 1,
-				DisplayedImage.Size.Width + 2,
-				DisplayedImage.Size.Height + 2);
+		=> selectedBitmapPreviewBorder?.Value ?? default;
 
-	protected GraphicsElement Model { get; init; }
+	protected GraphicsElement Model { get; init; } = null!;
+
+	// Default to the global palette so the parameterless constructor (used by the designer and the
+	// property grid) never leaves this null; the main constructor overrides it with the supplied palette.
+	readonly PaletteMap paletteMap = PaletteMapLoader.Current;
 
 	public ImageViewModel()
 	{ }
 
-	readonly CompositeDisposable subscriptions = new();
+	readonly CompositeDisposable subscriptions = [];
+	readonly ObservableAsPropertyHelper<Avalonia.Rect>? selectedBitmapPreviewBorder;
 	bool disposed;
 
-	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)
+	public ImageViewModel(GraphicsElement image, PaletteMap paletteMap)
 	{
-		Model = graphicsElement;
-		UnderlyingImage = Model.Image!;
+		Model = image;
+		this.paletteMap = paletteMap;
+		UnderlyingImage = image;
 
-		_ = this.WhenAnyValue(o => o.UnderlyingImage)
-			.Where(x => x != null)
-			.Subscribe(_ =>
-			{
-				SetDisplayedImage(UnderlyingImage!.ToAvaloniaBitmap());
-				this.RaisePropertyChanged(nameof(Width));
-				this.RaisePropertyChanged(nameof(Height));
-				Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
-				Model.Width = (short)UnderlyingImage.Width;
-				Model.Height = (short)UnderlyingImage.Height;
-			})
+		_ = this.WhenAnyValue(o => o.UnderlyingImage, o => o.DitheringMethod)
+			.Where(x => x.Item1 != null)
+			.Subscribe(_ => RefreshDisplayedImage())
 			.DisposeWith(subscriptions);
 
-		_ = this.WhenAnyValue(o => o.DisplayedImage, o => o.XOffset, o => o.YOffset, o => o.Width, o => o.Height)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)))
+		selectedBitmapPreviewBorder = this.WhenAnyValue(
+				o => o.DisplayedImage, o => o.XOffset, o => o.YOffset, o => o.Width, o => o.Height,
+				(image, xOffset, yOffset, _, _) => image == null
+					? new Avalonia.Rect()
+					: new Avalonia.Rect(xOffset - 1, yOffset - 1, image.Size.Width + 2, image.Size.Height + 2))
+			.ToProperty(this, o => o.SelectedBitmapPreviewBorder)
 			.DisposeWith(subscriptions);
 	}
 
 	public void RecolourImage(ColourSwatch primary, ColourSwatch secondary, PaletteMap paletteMap)
 	{
-		// turn rgba32 into raw palette image
-		var rawData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
-
-		var dummyElement = new GraphicsElement
-		{
-			Name = Name, // not necessary for palette
-			Width = (short)UnderlyingImage.Width,
-			Height = (short)UnderlyingImage.Height,
-			XOffset = XOffset,
-			YOffset = YOffset,
-			Flags = Flags,
-			ZoomOffset = ZoomOffset,
-			ImageData = rawData,
-			ImageTableIndex = ImageTableIndex, // not necessary for palette
-		};
-
-		if (!paletteMap.TryConvertG1ToRgba32Bitmap(dummyElement, primary, secondary, out var image))
-		{
-			throw new InvalidOperationException("Failed to recolour image");
-		}
+		// Decode the underlying image to RGBA, applying the chosen remap swatches to company colours.
+		// The image table is not modified - this is a view-only preview of the remap effect.
+		// DecodeToRgba returns a fresh, caller-owned image (never cached on the element) so the preview
+		// always reflects the currently-selected swatches and can never feed back into the saved palette data.
+		using var recoloured = UnderlyingImage!.DecodeToRgba(paletteMap, primary, secondary);
 
 		// only update the UI image - don't update the underlying image as we want to keep the original
-		SetDisplayedImage(image!.ToAvaloniaBitmap());
+		SetDisplayedImage(recoloured.ToAvaloniaBitmap());
 	}
 
 	void SetDisplayedImage(Bitmap? bitmap)
@@ -191,76 +178,42 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 		DisplayedImage?.Dispose();
 		DisplayedImage = bitmap;
-		this.RaisePropertyChanged(nameof(DisplayedImage));
+	}
+
+	/// <summary>Refreshes the displayed preview from the underlying element's source of truth. Dithering is
+	/// already baked into the indexed frame at import/replace time, so a palette image's preview shows the
+	/// indexed (dithered) result naturally. Nothing is written back to the element - previews never mutate it.</summary>
+	void RefreshDisplayedImage()
+	{
+		using var rgba = UnderlyingImage!.ToRgba(paletteMap);
+		Model.Width = (short)rgba.Width;
+		Model.Height = (short)rgba.Height;
+		SetDisplayedImage(rgba.ToAvaloniaBitmap());
+
+		this.RaisePropertyChanged(nameof(Width));
+		this.RaisePropertyChanged(nameof(Height));
 	}
 
 	public void CropImage()
 	{
-		var cropRegion = FindCropRegion(UnderlyingImage);
-
-		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
-		{
-			UnderlyingImage = UnderlyingImage.Clone(i => i.Crop(new Rectangle(0, 0, 1, 1)));
-			XOffset = 0;
-			YOffset = 0;
-		}
-		else
-		{
-			UnderlyingImage = UnderlyingImage.Clone(i => i.Crop(cropRegion));
-			XOffset += (short)cropRegion.Left;
-			YOffset += (short)cropRegion.Top;
-		}
-
-		static Rectangle FindCropRegion(Image<Rgba32> image)
-		{
-			var minX = image.Width;
-			var maxX = 0;
-			var minY = image.Height;
-			var maxY = 0;
-
-			for (var y = 0; y < image.Height; y++)
-			{
-				for (var x = 0; x < image.Width; x++)
-				{
-					var pixel = image[x, y];
-
-					if (pixel.A > 0)
-					{
-						minX = Math.Min(minX, x);
-						maxX = Math.Max(maxX, x);
-						minY = Math.Min(minY, y);
-						maxY = Math.Max(maxY, y);
-					}
-				}
-			}
-
-			// Calculate the crop area. Ensure it is within image bounds.
-			var width = Math.Max(0, Math.Min(maxX - minX + 1, image.Width - minX));
-			var height = Math.Max(0, Math.Min(maxY - minY + 1, image.Height - minY));
-			return new Rectangle(minX, minY, width, height);
-		}
-	}
-
-	public GraphicsElement ToGraphicsElement(PaletteMap paletteMap)
-	{
 		if (UnderlyingImage == null)
 		{
-			throw new InvalidOperationException("Cannot convert to GraphicsElement when UnderlyingImage is null");
+			return;
 		}
 
-		// turn rgba32 into raw palette image
-		var rawData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
-		return new GraphicsElement
-		{
-			Width = (short)UnderlyingImage.Width,
-			Height = (short)UnderlyingImage.Height,
-			XOffset = XOffset,
-			YOffset = YOffset,
-			Flags = Flags,
-			ZoomOffset = ZoomOffset,
-			ImageData = rawData,
-			ImageTableIndex = ImageTableIndex,
-		};
+		// Crop mutates the GraphicsElement (Model) in-place, adjusting its offsets.
+		UnderlyingImage.Crop(paletteMap);
+		RefreshDisplayedImage();
+		this.RaisePropertyChanged(nameof(XOffset));
+		this.RaisePropertyChanged(nameof(YOffset));
+	}
+
+	/// <summary>Saves this image to a PNG file using the raw palette colours (the default remap swatches),
+	/// the same way the bulk image-table export does.</summary>
+	public async Task SaveAsPngAsync(string filename)
+	{
+		using var rgba = UnderlyingImage!.ToRgba(paletteMap);
+		await rgba.SaveAsPngAsync(filename);
 	}
 
 	public void Dispose()
@@ -280,7 +233,8 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 		{
 			subscriptions.Dispose();
 			DisplayedImage?.Dispose();
-			Model.Image?.Dispose();
+			// The underlying GraphicsElement is owned by the model and may be shared across view models.
+			// Do not dispose it here during regrouping.
 		}
 
 		disposed = true;

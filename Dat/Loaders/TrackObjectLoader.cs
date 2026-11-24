@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -54,7 +57,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			var numStations = br.ReadByte();
 			br.SkipObjectId(Constants.MaxStations);
 			model.VehicleDisplayListVerticalOffset = br.ReadByte();
-			model.pad_35 = br.ReadByte(); // pad_35, not part of object definition
+			br.SkipByte(); // 0x35, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -111,7 +114,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.Stations.Count);
 			bw.WriteEmptyObjectId(Constants.MaxStations); // Stations, not part of object definition
 			bw.Write(model.VehicleDisplayListVerticalOffset);
-			bw.Write(model.pad_35); // pad_35, not part of object definition
+			bw.WriteEmptyBytes(1); // // 0x35 is a padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -153,9 +156,10 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 	internal enum DatTrackObjectFlags : uint16_t
 	{
 		None = 0,
-		unk_00 = 1 << 0,
-		unk_01 = 1 << 1,
-		unk_02 = 1 << 2,
+		HasRackRail = 1 << 0,   // if set road can have rack rail added (not used)
+		NoSlipSurface = 1 << 1, // if set vehicles can't start slipping
+		IsRoad = 1 << 2,        // controls if the object appears in the roads menu instead of the track menu
+		RestrictsAiPathfinding = 1 << 4, // causes the AI to use a more restrictive track/road weighting limit when pathfinding
 	}
 }
 

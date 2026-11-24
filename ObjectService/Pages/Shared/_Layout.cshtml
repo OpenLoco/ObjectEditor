@@ -1,0 +1,201 @@
+@using Microsoft.Extensions.Diagnostics.HealthChecks
+@using Microsoft.Extensions.Hosting
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Definitions.Database
+@inject HealthCheckService HealthCheckService
+@inject SignInManager<TblUser> SignInManager
+@inject UserManager<TblUser> UserManager
+@inject IHostEnvironment HostEnvironment
+@inject LocoDbContext LocoDb
+@inject IConfiguration Configuration
+@{
+	var readOnlyMode = Configuration.GetValue<bool?>("ObjectService:FrontendReadOnly") ?? false;
+	var healthReport = await HealthCheckService.CheckHealthAsync();
+	var healthDescription = healthReport.Entries.Values
+		.Select(x => x.Description)
+		.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))
+		?? healthReport.Status.ToString();
+	var healthClass = healthReport.Status switch
+	{
+		HealthStatus.Healthy => "health-indicator-healthy",
+		HealthStatus.Degraded => "health-indicator-degraded",
+		_ => "health-indicator-unhealthy",
+	};
+	var isAuthenticated = SignInManager.IsSignedIn(User);
+	// Defense-in-depth: verify the user actually exists in the database.
+	// A fake ClaimsPrincipal (e.g. from a misconfigured auth bypass) may appear
+	// signed in but has no backing DB record; treating it as unauthenticated
+	// prevents the header showing a non-existent user and avoids 401 errors
+	// when clicking the user name link.
+	if (isAuthenticated)
+	{
+		var currentUser = await UserManager.GetUserAsync(User);
+		isAuthenticated = currentUser != null;
+	}
+
+	var isDevelopment = HostEnvironment.IsDevelopment();
+	var isAdmin = User.IsInRole("Admin");
+	string? databaseProvider = null;
+	string? databaseSource = null;
+	string? databaseName = null;
+	string? databaseConnectionString = null;
+	if (isDevelopment)
+	{
+		var connection = LocoDb.Database.GetDbConnection();
+		databaseProvider = LocoDb.Database.ProviderName;
+		databaseSource = connection.DataSource;
+		databaseName = connection.Database;
+		databaseConnectionString = connection.ConnectionString;
+	}
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - OpenLoco Object Service</title>
+<script>
+(() => {
+    // Set the theme before first paint to avoid a flash. The palette itself
+    // is pure CSS (see base.css); this only flips data-theme on <html>.
+    const root = document.documentElement;
+    try {
+        const stored = localStorage.getItem("object-service-theme");
+        root.dataset.theme = stored === "light" || stored === "dark"
+            ? stored
+            : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    } catch {
+        root.dataset.theme = "light";
+    }
+})();
+</script>
+	<link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/pages.css" asp-append-version="true" />
+</head>
+<body>
+	<div class="site-shell">
+		<header class="site-header">
+			<a class="brand" asp-page="/Index">OpenLoco Object Service</a>
+			<div class="site-header-actions">
+				@await RenderSectionAsync("HeaderContent", required: false)
+				<nav class="site-nav">
+					<a href="/api">API</a>
+				@if (!readOnlyMode)
+				{
+					if (isAuthenticated)
+					{
+						<a asp-page="/Account/Manage">@(User.Identity?.Name ?? "Account")</a>
+					}
+					else
+					{
+						<a asp-page="/Account/Login">Log in</a>
+						<a asp-page="/Account/Register">Register</a>
+					}
+				}
+				</nav>
+				<span class="health-indicator @healthClass" title="@healthDescription">
+					<span class="health-indicator-dot" aria-hidden="true"></span>
+					<span>Server @healthReport.Status</span>
+				</span>
+				@if (isDevelopment && isAdmin)
+				{
+					<button type="button" class="button button-small button-secondary dev-panel-toggle" data-dev-panel-toggle aria-expanded="false" aria-controls="dev-stats-panel">
+						Developer
+					</button>
+				}
+			@if (!readOnlyMode)
+			{
+				if (isDevelopment && !isAuthenticated)
+				{
+				<form method="post" asp-page="/Dev/QuickLogin" class="inline-form">
+					<button type="submit" class="button button-primary">
+						Dev Login
+					</button>
+				</form>
+				}
+			}
+			else
+			{
+				<span class="chip chip-muted" title="The server is in read-only mode — browsing and downloads are available, but logins and account features are disabled.">
+					Read-only mode
+				</span>
+			}
+			<div class="theme-switch" data-theme-switch data-theme="light">
+					<span class="theme-switch-label theme-switch-label-light">Light</span>
+					<button type="button" class="theme-toggle" data-theme-toggle role="switch" aria-checked="false" aria-label="Toggle between light and dark mode">
+						<span class="theme-toggle-thumb" aria-hidden="true"></span>
+					</button>
+					<span class="theme-switch-label theme-switch-label-dark">Dark</span>
+				</div>
+			</div>
+		</header>
+
+		<main class="site-main">
+			@if (isDevelopment && isAdmin)
+			{
+				<section id="dev-stats-panel" class="dev-stats panel" data-dev-panel hidden aria-label="Developer environment details">
+					<div class="dev-stats-header">
+						<p class="eyebrow">Developer mode</p>
+						<span class="chip">@HostEnvironment.EnvironmentName</span>
+					</div>
+					<dl class="meta-grid">
+						<div>
+							<dt>Database provider</dt>
+							<dd>@(databaseProvider ?? "Unknown")</dd>
+						</div>
+						<div>
+							<dt>Database name</dt>
+							<dd>@(databaseName ?? "Unknown")</dd>
+						</div>
+						<div>
+							<dt>Data source</dt>
+							<dd>@(databaseSource ?? "Unknown")</dd>
+						</div>
+						<div>
+							<dt>Connection string</dt>
+							<dd>@(databaseConnectionString ?? "Unknown")</dd>
+						</div>
+						<div>
+							<dt>Health status</dt>
+							<dd>@healthReport.Status</dd>
+						</div>
+						<div>
+							<dt>Health description</dt>
+							<dd>@healthDescription</dd>
+						</div>
+						<div>
+							<dt>Health checks</dt>
+							<dd>
+								<ul class="health-check-list">
+									@foreach (var entry in healthReport.Entries)
+									{
+										<li>
+											<strong>@entry.Key:</strong> @entry.Value.Status
+											@if (!string.IsNullOrWhiteSpace(entry.Value.Description))
+											{
+												<p>@entry.Value.Description</p>
+											}
+										</li>
+									}
+								</ul>
+							</dd>
+						</div>
+						<div>
+							<dt>User management</dt>
+							<dd>
+								<a asp-page="/Manage/Users/Index" class="button button-small button-secondary">Manage users &amp; roles</a>
+							</dd>
+						</div>
+					</dl>
+				</section>
+			}
+			@RenderBody()
+		</main>
+	</div>
+	<script src="~/js/theme-toggle.js" asp-append-version="true"></script>
+	<script src="~/js/dev-panel.js" asp-append-version="true"></script>
+</body>
+</html>

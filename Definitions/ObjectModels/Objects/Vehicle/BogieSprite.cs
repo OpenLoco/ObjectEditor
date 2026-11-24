@@ -12,11 +12,11 @@ public class BogieSprite : ILocoStruct
 	public uint8_t HeightNegative { get; set; }
 	public uint8_t HeightPositive { get; set; }
 
-	[Browsable(false)]
-	public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds { get; set; } = new();
+	//[JsonIgnore, Browsable(false)]
+	//public int NumImages { get; set; }
 
-	[Browsable(false)]
-	public int NumImages { get; set; }
+	//[JsonIgnore, Browsable(false)]
+	//public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds { get; set; } = [];
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

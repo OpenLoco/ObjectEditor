@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Bridge;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 
@@ -18,11 +19,8 @@ public class TblObjectBridge : DbSubObject, IConvertibleToTable<TblObjectBridge,
 	public uint16_t DesignedYear { get; set; }
 	public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
 
-	//public uint8_t CompatibleTrackObjectCount { get; set; }
-	//public uint8_t CompatibleRoadObjectCount { get; set; }
-	// how to store in DB? just json? base64 encoded?
-	//public ICollection<UniqueObjectId> CompatibleTrackObjects { get; set; }
-	//public ICollection<UniqueObjectId> CompatibleRoadObjects { get; set; }
+	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
+	public List<ObjectModelHeader> CompatibleRoadObjects { get; set; } = [];
 
 	public static TblObjectBridge FromObject(TblObject tbl, BridgeObject obj)
 		=> new()
@@ -41,5 +39,7 @@ public class TblObjectBridge : DbSubObject, IConvertibleToTable<TblObjectBridge,
 			SellCostFactor = obj.SellCostFactor,
 			DesignedYear = obj.DesignedYear,
 			DisabledTrackFlags = obj.DisabledTrackFlags,
+			CompatibleTrackObjects = obj.CompatibleTrackObjects,
+			CompatibleRoadObjects = obj.CompatibleRoadObjects,
 		};
 }

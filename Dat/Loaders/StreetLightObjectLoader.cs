@@ -1,10 +1,12 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Streetlight;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 
 namespace Dat.Loaders;
 
@@ -75,11 +77,3 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 		}
 	}
 }
-
-[LocoStructSize(0x0C)]
-[LocoStructType(DatObjectType.StreetLight)]
-public record DatStreetLightObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02), LocoArrayLength(StreetLightObjectLoader.Constants.DesignedYearLength)] uint16_t[] DesignedYears
-)
-{ }

@@ -4,24 +4,82 @@ namespace ObjectService.RouteHandlers;
 
 public static class BaseTableRouteHandler
 {
-	public static void MapRoutes<THandler>(
-		IEndpointRouteBuilder parentRoute
-		) where THandler : ITableRouteHandler
+	/// <summary>
+	/// Maps only the read (GET) routes (list + get-by-id) for a handler.
+	/// Use this for publicly-accessible read routes.
+	/// </summary>
+	public static void MapRoutes(
+		ITableRouteHandler handler,
+		IEndpointRouteBuilder parentRoute,
+		IConfiguration config)
 	{
 		var baseRoute = parentRoute
-			.MapGroup(THandler.BaseRoute)
-			.WithTags(RouteHelpers.MakeNicePlural(typeof(THandler).Name));
+			.MapGroup(handler.BaseRoute)
+			.WithTags(handler.TagName);
 
-		_ = baseRoute.MapGet(string.Empty, THandler.ListDelegate);
+		_ = baseRoute.MapGet(string.Empty, handler.ListDelegate);
 
-		var resourceRoute = baseRoute.MapGroup(RoutesV2.ResourceRoute);
-		_ = resourceRoute.MapGet(string.Empty, THandler.ReadDelegate);
+		var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
+		_ = resourceRoute.MapGet(string.Empty, handler.ReadDelegate);
 
-#if DEBUG
-		_ = baseRoute.MapPost(string.Empty, THandler.CreateDelegate); //.RequireAuthorization(AdminPolicy.Name);
-		_ = resourceRoute.MapPut(string.Empty, THandler.UpdateDelegate); //.RequireAuthorization(AdminPolicy.Name);
-		_ = resourceRoute.MapDelete(string.Empty, THandler.DeleteDelegate); //.RequireAuthorization(AdminPolicy.Name);
-#endif
-		THandler.MapAdditionalRoutes(baseRoute);
+		handler.MapAdditionalRoutes(baseRoute);
+	}
+
+	/// <summary>
+	/// Maps only the write (POST/PUT/DELETE) routes for a handler,
+	/// for use when write routes need a different authorization group than read routes.
+	/// <paramref name="createPolicy"/> and <paramref name="modifyPolicy"/> are additional policies
+	/// applied to the POST and PUT/DELETE endpoints respectively (on top of the parent group's policy).
+	/// </summary>
+	public static void MapWriteRoutes(
+		ITableRouteHandler handler,
+		IEndpointRouteBuilder parentRoute,
+		IConfiguration config,
+		string? createPolicy = null,
+		string? modifyPolicy = null)
+	{
+		var backendReadOnly = config.GetValue<bool?>("ObjectService:BackendReadOnly") ?? false;
+
+		if (backendReadOnly)
+		{
+			return;
+		}
+
+		var baseRoute = parentRoute
+			.MapGroup(handler.BaseRoute)
+			.WithTags(handler.TagName);
+
+		var createEndpoint = baseRoute.MapPost(string.Empty, handler.CreateDelegate);
+		if (createPolicy is not null)
+		{
+			_ = createEndpoint.RequireAuthorization(createPolicy);
+		}
+
+		var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
+
+		var updateEndpoint = resourceRoute.MapPut(string.Empty, handler.UpdateDelegate);
+		if (modifyPolicy is not null)
+		{
+			_ = updateEndpoint.RequireAuthorization(modifyPolicy);
+		}
+
+		var deleteEndpoint = resourceRoute.MapDelete(string.Empty, handler.DeleteDelegate);
+		if (modifyPolicy is not null)
+		{
+			_ = deleteEndpoint.RequireAuthorization(modifyPolicy);
+		}
+	}
+
+	/// <summary>
+	/// Maps all routes (both read and write) for a handler.
+	/// Use this for handlers where read and write share the same authorization level (e.g. admin-only).
+	/// </summary>
+	public static void MapAllRoutes(
+		ITableRouteHandler handler,
+		IEndpointRouteBuilder parentRoute,
+		IConfiguration config)
+	{
+		MapRoutes(handler, parentRoute, config);
+		MapWriteRoutes(handler, parentRoute, config);
 	}
 }

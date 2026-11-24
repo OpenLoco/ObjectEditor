@@ -1,0 +1,209 @@
+using Common.Json;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.Dithering;
+using Definitions.ObjectModels.Types;
+using Microsoft.Extensions.Logging;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using System.Text.Json;
+
+namespace Core.Graphics;
+
+public static class ImageTableIo
+{
+	public const string SpritesFileName = "sprites.json";
+
+	static readonly char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
+
+	/// <summary>Sanitises a name so it can be used as part of a file name: trimmed, lowercased, spaces
+	/// replaced with dashes, and any characters invalid in a file name removed.</summary>
+	public static string SanitizeFileName(string? value)
+		=> value == null
+			? string.Empty
+			: new string([.. value.Trim().ToLower().Replace(' ', '-').Where(x => !invalidFileNameChars.Contains(x))]).Trim();
+
+	/// <summary>Builds the file name used to export a single image: <c>{index}_{name}.png</c>, falling back
+	/// to <c>{index}.png</c> when the image has no usable name.</summary>
+	public static string BuildSingleImageFileName(int imageTableIndex, string? imageName)
+	{
+		var sanitized = SanitizeFileName(imageName);
+		return sanitized.Length == 0
+			? $"{imageTableIndex}.png"
+			: $"{imageTableIndex}_{sanitized}.png";
+	}
+
+	public static async Task<int> ExportAsync(ImageTable imageTable, string directory, bool prependGroupAndImageNameInFilename, PaletteMap paletteMap, ILogger logger)
+	{
+		ArgumentNullException.ThrowIfNull(imageTable);
+		ArgumentNullException.ThrowIfNull(logger);
+
+		if (string.IsNullOrEmpty(directory))
+		{
+			logger.LogError("Directory is invalid: \"{Directory}\"", directory);
+			return 0;
+		}
+
+		_ = Directory.CreateDirectory(directory);
+
+		logger.LogInformation("Exporting images to {Directory}", directory);
+
+		var offsets = new List<SpriteElementJson>();
+
+		foreach (var item in imageTable.Groups
+			.SelectMany(group => group.GraphicsElements, (group, image) => new { group.Name, Image = image })
+			.OrderBy(x => x.Image.ImageTableIndex))
+		{
+			var image = item.Image;
+
+			var fileName = $"{image.ImageTableIndex}.png";
+			if (prependGroupAndImageNameInFilename)
+			{
+				var imageName = SanitizeFileName(image.Name);
+				var groupName = SanitizeFileName(item.Name);
+
+				if (!string.IsNullOrEmpty(groupName) && !string.IsNullOrEmpty(imageName))
+				{
+					fileName = $"{groupName}_{imageName}.png";
+				}
+			}
+
+			using var rgba = image.ToRgba(paletteMap);
+			await rgba.SaveAsPngAsync(Path.Combine(directory, fileName));
+			offsets.Add(new SpriteElementJson(fileName, image));
+		}
+
+		var offsetsFile = Path.Combine(directory, SpritesFileName);
+		logger.LogInformation("Saving sprite offsets to {OffsetsFile}", offsetsFile);
+		await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
+
+		return offsets.Count;
+	}
+
+	public static async Task<ICollection<SpriteElementJson>?> LoadSpritesJsonAsync(string filename, ILogger logger)
+	{
+		ArgumentNullException.ThrowIfNull(logger);
+
+		if (!File.Exists(filename))
+		{
+			return null;
+		}
+
+		var offsets = await JsonFile.DeserializeFromFileAsync<ICollection<SpriteElementJson>>(filename);
+		logger.LogDebug("Found sprites.json file with {Count} images", offsets?.Count ?? 0);
+		return offsets;
+	}
+
+	public static async Task<List<GraphicsElement>?> LoadImagesAsync(string directory, PaletteMap paletteMap, ILogger logger, DitheringMethod? ditheringMethod = null)
+	{
+		ArgumentNullException.ThrowIfNull(logger);
+
+		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+		{
+			logger.LogError("Directory does not exist: \"{Directory}\"", directory);
+			return null;
+		}
+
+		var spritesFile = Path.Combine(directory, SpritesFileName);
+		var sprites = await LoadSpritesJsonAsync(spritesFile, logger);
+
+		if (sprites == null || sprites.Count == 0)
+		{
+			logger.LogError("No sprites.json found or file is empty in {Directory}. Import aborted.", directory);
+			return null;
+		}
+
+		var importedImages = new List<GraphicsElement>();
+		foreach (var (sprite, i) in sprites.Select((x, i) => (x, i)))
+		{
+			var is1Pixel = string.IsNullOrEmpty(sprite.Path);
+			var img = is1Pixel
+				? new Image<Rgba32>(1, 1, PaletteMap.Transparent.Color.ToPixel<Rgba32>())
+				: Image.Load<Rgba32>(Path.Combine(directory, sprite.Path));
+
+			var effectiveSprite = is1Pixel
+				? sprite with { Flags = GraphicsElementFlags.HasTransparency }
+				: sprite;
+
+			var image = GraphicsElementOperations.FromImage(effectiveSprite, img, paletteMap, i, ditheringMethod);
+			image.Name = string.IsNullOrEmpty(image.Name)
+				? DefaultImageTableNameProvider.GetImageName(i)
+				: image.Name;
+
+			importedImages.Add(image);
+		}
+
+		return importedImages;
+	}
+
+	public static async Task<int> ImportAsync(ImageTable imageTable, string directory, PaletteMap paletteMap, ILogger logger, ILocoStruct? objectModel = null, ObjectType? objectType = null, DitheringMethod? ditheringMethod = null)
+	{
+		ArgumentNullException.ThrowIfNull(imageTable);
+
+		logger.LogInformation("Importing images from {Directory}", directory);
+
+		var importedImages = await LoadImagesAsync(directory, paletteMap, logger, ditheringMethod);
+		if (importedImages == null)
+		{
+			return 0;
+		}
+
+		imageTable.Groups.Clear();
+		imageTable.Groups.Add(new ImageTableGroup("<temp>", importedImages));
+
+		Regroup(imageTable, logger, objectModel, objectType);
+
+		return importedImages.Count;
+	}
+
+	public static void Regroup(ImageTable imageTable, ILogger logger, ILocoStruct? objectModel, ObjectType? objectType)
+	{
+		ArgumentNullException.ThrowIfNull(imageTable);
+
+		if (objectModel == null || !objectType.HasValue)
+		{
+			return;
+		}
+
+		var imageList = imageTable.GraphicsElements;
+
+		try
+		{
+			imageTable.Groups = [.. ImageTableGrouper.CreateGroupsForExistingImages(objectModel, objectType.Value, imageList)];
+		}
+		catch (Exception ex) when (ex is InvalidOperationException or JsonException)
+		{
+			logger.LogError(ex, "Failed to regroup the image table - images will remain in a single flat group");
+		}
+	}
+
+	public static async Task<int> ApplyOffsetsAsync(ImageTable imageTable, string spritesJsonFileName, ILogger logger)
+	{
+		ArgumentNullException.ThrowIfNull(imageTable);
+
+		var offsets = await LoadSpritesJsonAsync(spritesJsonFileName, logger);
+		if (offsets == null)
+		{
+			logger.LogError("Failed to load offsets from {Filename}", spritesJsonFileName);
+			return 0;
+		}
+
+		var elements = imageTable.GraphicsElements;
+		var applied = 0;
+
+		foreach (var (offset, i) in offsets.Select((o, index) => (o, index)))
+		{
+			if (elements.Count <= i)
+			{
+				logger.LogError("Offset for Image[{Index}] is provided in the sprites.json file, but only {Count} images are available in the current image table. This offset will be skipped.", i, elements.Count);
+				continue;
+			}
+
+			elements[i].XOffset = offset.XOffset;
+			elements[i].YOffset = offset.YOffset;
+			applied++;
+		}
+
+		return applied;
+	}
+}

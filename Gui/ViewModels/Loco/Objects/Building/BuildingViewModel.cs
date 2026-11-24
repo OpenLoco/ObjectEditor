@@ -2,6 +2,7 @@ using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using ReactiveUI;
@@ -15,11 +16,13 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 {
 	public BuildingViewModel(BuildingObject model) : base(model)
 	{
-		ProducedCargo = new(model.ProducedCargo);
-		RequiredCargo = new(model.RequiredCargo);
-		ProducedQuantity = new(model.ProducedQuantity);
+		ProducedQuantity = [with(model.ProducedQuantity)];
+		ProducedCargoType = new(model.ProducedCargoType, h => new CargoReferenceViewModel(h), list => model.ProducedCargoType = [.. list]);
+		ConsumedCargoType = new(model.ConsumedCargoType, h => new CargoReferenceViewModel(h), list => model.ConsumedCargoType = [.. list]);
+		ProducedCargoQuantity = [with(model.ProducedCargoQuantity)];
+		ConsumedCargoQuantity = [with(model.ConsumedCargoQuantity)];
 
-		BuildingVariations = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
+		BuildingVariations = [with(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList())];
 		BuildingHeights = model.BuildingComponents.BuildingHeights.ToBindingList();
 		BuildingAnimations = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
@@ -44,6 +47,12 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 		BuildingAnimations.ListChanged += OnBuildingAnimationsChanged;
 
 		#endregion
+	}
+
+	public override void SynchronizeToModel()
+	{
+		ProducedCargoType.Synchronize();
+		ConsumedCargoType.Synchronize();
 	}
 
 	void OnBuildingVariationsChanged(object? sender, ListChangedEventArgs e)
@@ -175,23 +184,18 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 		set => Model.CostIndex = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(8, nameof(CostIndex))]
 	public uint16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeader> ProducedCargo { get; set; }
-	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeader> RequiredCargo { get; set; }
 	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ProducedQuantity { get; set; }
-
-	//[Category("Building")]
-	//public BuildingComponents BuildingComponents
-	//{
-	//	get => Model.BuildingComponents;
-	//	set => Model.BuildingComponents = value;
-	//}
+	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public ObjectReferenceList<CargoReferenceViewModel> ProducedCargoType { get; set; }
+	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public ObjectReferenceList<CargoReferenceViewModel> ConsumedCargoType { get; set; }
+	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ProducedCargoQuantity { get; set; }
+	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ConsumedCargoQuantity { get; set; }
 
 	[Category("Building"), Length(1, BuildingObject.Constants.MaxVariationsCount)]
 	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; }
@@ -203,7 +207,6 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; }
 
 	// note: these height sequences are massive. BLDCTY28 has 2 sequences, 512 in length and 1024 in length. Avalonia PropertyGrid takes 30+ seconds to render this. todo: don't use property grid in future
-	//[Reactive, Category("Building"), Length(1, BuildingObject.MaxElevatorHeightSequences), Browsable(false)] public BindingList<BindingList<uint8_t>> ElevatorHeightSequences { get; set; } // NumElevatorSequences
 
 	[Category("Elevator"), Browsable(false)]
 	public BindingList<uint8_t>? ElevatorSequence1 { get; init; }
@@ -217,38 +220,9 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 	[Category("Elevator"), Browsable(false)]
 	public BindingList<uint8_t>? ElevatorSequence4 { get; init; }
 
-	[Category("<unknown>")]
-	public uint8_t var_A6
+	public TownAmenityCategory TownAmenityCategory
 	{
-		get => Model.var_A6;
-		set => Model.var_A6 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint8_t var_A7
-	{
-		get => Model.var_A7;
-		set => Model.var_A7 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint8_t var_A8
-	{
-		get => Model.var_A8;
-		set => Model.var_A8 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint8_t var_A9
-	{
-		get => Model.var_A9;
-		set => Model.var_A9 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint8_t var_AC
-	{
-		get => Model.var_AC;
-		set => Model.var_AC = value;
+		get => Model.TownAmenityCategory;
+		set => Model.TownAmenityCategory = value;
 	}
 }

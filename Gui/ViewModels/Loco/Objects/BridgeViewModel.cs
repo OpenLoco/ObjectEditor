@@ -73,27 +73,25 @@ public class BridgeViewModel(BridgeObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BaseCostFactor));
-			this.RaisePropertyChanged(nameof(HeightCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BaseCostFactor), nameof(HeightCostFactor), nameof(SellCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BaseCostFactor
 	{
 		get => Model.BaseCostFactor;
 		set => Model.BaseCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t HeightCostFactor
 	{
 		get => Model.HeightCostFactor;
 		set => Model.HeightCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
@@ -101,15 +99,14 @@ public class BridgeViewModel(BridgeObject model)
 	}
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
+	public ObjectReferenceList<TrackReferenceViewModel> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects, h => new TrackReferenceViewModel(h), list => model.CompatibleTrackObjects = [.. list]);
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
+	public ObjectReferenceList<RoadReferenceViewModel> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects, h => new RoadReferenceViewModel(h), list => model.CompatibleRoadObjects = [.. list]);
 
-	[Category("<unknown>")]
-	public uint8_t var_03
+	public override void SynchronizeToModel()
 	{
-		get => Model.var_03;
-		set => Model.var_03 = value;
+		CompatibleTrackObjects.Synchronize();
+		CompatibleRoadObjects.Synchronize();
 	}
 }

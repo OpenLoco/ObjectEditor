@@ -18,6 +18,7 @@ public static class DtoObjectCargoMapper
 		PaymentFactor = tblobjectcargo.PaymentFactor,
 		PaymentIndex = tblobjectcargo.PaymentIndex,
 		UnitSize = tblobjectcargo.UnitSize,
+		UnitWeight = tblobjectcargo.UnitWeight,
 		Id = tblobjectcargo.Id,
 	};
 
@@ -36,6 +37,7 @@ public static class DtoObjectCargoMapper
 		PaymentFactor = model.PaymentFactor,
 		PaymentIndex = model.PaymentIndex,
 		UnitSize = model.UnitSize,
+		UnitWeight = model.UnitWeight,
 		Id = model.Id,
 	};
 

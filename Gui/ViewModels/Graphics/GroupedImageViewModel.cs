@@ -17,7 +17,7 @@ public class GroupedImageViewModel : ReactiveObject
 	public GroupedImageViewModel(string groupName, IEnumerable<ImageViewModel> images)
 	{
 		GroupName = groupName;
-		Images = new ObservableCollection<ImageViewModel>(images);
+		Images = [with(images)];
 
 		SelectionModel = new SelectionModel<ImageViewModel>
 		{

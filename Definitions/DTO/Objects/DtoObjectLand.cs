@@ -1,5 +1,6 @@
 using Definitions.Database;
 using Definitions.ObjectModels.Objects.Land;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
@@ -14,5 +15,7 @@ public class DtoObjectLand : IDtoSubObject
 	public uint8_t DistributionPattern { get; set; }
 	public uint8_t NumVariations { get; set; }
 	public uint8_t VariationLikelihood { get; set; }
+	public ObjectModelHeader CliffEdgeHeader { get; set; } = null!;
+	public ObjectModelHeader? ReplacementLandHeader { get; set; }
 	public UniqueObjectId Id { get; set; }
 }

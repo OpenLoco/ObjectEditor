@@ -1,4 +1,3 @@
-using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.Loaders;
@@ -7,6 +6,7 @@ using Dat.Types.SCV5;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Sound;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -31,7 +31,7 @@ public static class SawyerStreamReader
 		}
 		catch (InvalidDataException ex)
 		{
-			logger?.Error(ex);
+			logger?.LogError(ex, "An error occurred while decoding {ObjName}", hdrs.S5.Name);
 			return (hdrs.S5, hdrs.Obj, []);
 		}
 
@@ -40,19 +40,12 @@ public static class SawyerStreamReader
 
 		if (computedChecksum != hdrs.S5.Checksum)
 		{
-			logger?.Error($"{hdrs.S5.Name} had incorrect checksum. Header={hdrs.S5.Checksum} Computed={computedChecksum}");
+			logger?.LogError("{Name} had incorrect checksum. Header={Checksum} Computed={ComputedChecksum}", hdrs.S5.Name, hdrs.S5.Checksum, computedChecksum);
 		}
 
-		if (hdrs.S5.IsVanilla())
+		foreach (var failedValidation in ValidateS5Header(hdrs.S5, new ValidationContext(hdrs)))
 		{
-			if (OriginalObjectFiles.Names.TryGetValue(hdrs.S5.Name.Trim(), out var fileInfo))
-			{
-				logger?.Debug($"{hdrs.S5.Name} is a vanilla object with checksums [Steam={fileInfo.SteamChecksum} GoG={fileInfo.GoGChecksum}]");
-			}
-			else
-			{
-				logger?.Warning($"{hdrs.S5.Name} is marked as vanilla but is not in the original object list!");
-			}
+			logger?.LogWarning("\"{Name}\" failed header validation: {failedValidation}", hdrs.S5.Name, failedValidation);
 		}
 
 		return (hdrs.S5, hdrs.Obj, decodedData);
@@ -79,13 +72,13 @@ public static class SawyerStreamReader
 
 		if (!s5.IsValid())
 		{
-			logger.Error("S5 header was invalid");
+			logger.LogError("S5 header was invalid");
 			return false;
 		}
 
 		if (!oh.IsValid())
 		{
-			logger.Error("Object header was invalid");
+			logger.LogError("Object header was invalid");
 			return false;
 		}
 
@@ -108,12 +101,12 @@ public static class SawyerStreamReader
 
 	public static (DatHeaderInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(Stream stream, ILogger logger, string filename, bool loadExtra = true)
 	{
-		logger.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
+		logger.LogInformation("Full-loading \"{Filename}\" with loadExtra={LoadExtra}", filename, loadExtra);
 
 		var obj = LoadAndDecode(stream, logger);
 		if (obj == null || obj.Value.decodedData.Length == 0)
 		{
-			logger.Error($"{filename} was unable to be decoded");
+			logger.LogError("{Filename} was unable to be decoded", filename);
 			return (new DatHeaderInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
 		}
 
@@ -123,7 +116,7 @@ public static class SawyerStreamReader
 
 		if (decodedData.Length == 0)
 		{
-			logger.Warning($"No data was decoded from {filename}, file is malformed.");
+			logger.LogWarning("No data was decoded from {Filename}, file is malformed.", filename);
 			return (new DatHeaderInfo(s5Header, objectHeader), null);
 		}
 
@@ -135,41 +128,45 @@ public static class SawyerStreamReader
 		}
 	}
 
+	static IEnumerable<ValidationResult> ValidateS5Header(S5Header s5Header, ValidationContext validationContext)
+	{
+		if (s5Header.ObjectSource == DatObjectSource.Vanilla && !s5Header.IsVanilla())
+		{
+			yield return new ValidationResult($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
+		}
+	}
+
 	static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
 	{
 		var warnings = new List<string>();
 
 		try
 		{
-			if (s5Header.ObjectSource == DatObjectSource.Vanilla)
+			foreach (var failedValidation in ValidateS5Header(s5Header, new ValidationContext(s5Header)))
 			{
-				var s5Name = s5Header.Name;
-				if (!s5Header.IsVanilla())
-				{
-					warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
-				}
+				warnings.Add($"\"{s5Header.Name}\" failed header validation: {failedValidation}");
 			}
 
 			foreach (var failedValidation in locoStruct.Validate(new ValidationContext(locoStruct)))
 			{
-				warnings.Add($"\"{s5Header.Name}\" failed validation: {failedValidation}");
+				warnings.Add($"\"{s5Header.Name}\" failed object validation: {failedValidation}");
 			}
 
 			if (warnings.Count != 0)
 			{
 				foreach (var warning in warnings)
 				{
-					logger?.Warning(warning);
+					logger?.LogWarning(warning);
 				}
 			}
 			else
 			{
-				logger?.Info($"\"{s5Header.Name}\" validated successfully");
+				logger?.LogInformation("\"{Name}\" validated successfully", s5Header.Name);
 			}
 		}
 		catch (NotImplementedException)
 		{
-			logger?.Debug2($"{s5Header.ObjectType} object type is missing validation function");
+			logger?.LogTrace("{ObjectType} object type is missing validation function", s5Header.ObjectType);
 		}
 	}
 
@@ -191,7 +188,7 @@ public static class SawyerStreamReader
 
 		if (stream.Length == 0 || stringNames.Length == 0)
 		{
-			logger?.Warning("No data for language table");
+			logger?.LogWarning("No data for language table");
 			return stringTable;
 		}
 
@@ -235,7 +232,7 @@ public static class SawyerStreamReader
 		using (var br = new LocoBinaryReader(ms))
 		{
 			var (g1Header, imageTable) = ReadImageTable(br);
-			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={ms.Position}");
+			logger.LogInformation("FileLength={Length} NumEntries={NumEntries} TotalSize={TotalSize} ImageTableLength={Position}", new FileInfo(filename).Length, g1Header.NumEntries, g1Header.TotalSize, ms.Position);
 			return new G1Dat(g1Header, imageTable);
 		}
 	}
@@ -292,7 +289,7 @@ public static class SawyerStreamReader
 				currElement.ImageData = DecodeRLEImageData(currElement);
 			}
 
-			graphicsElements.Add(currElement.Convert(DefaultImageTableNameProvider.GetImageName(i), i));
+			graphicsElements.Add(currElement.Convert());
 		}
 
 		return (g1Header, graphicsElements);
@@ -467,6 +464,10 @@ public static class SawyerStreamReader
 	{
 		using var ms = new MemoryStream();
 
+		// Reused scratch buffer for repeat runs. A run is at most 257 - 128 = 129 bytes,
+		// so 256 is comfortably large enough and avoids a heap allocation per run.
+		Span<byte> repeatBuffer = stackalloc byte[256];
+
 		for (var i = 0; i < data.Length; ++i)
 		{
 			var rleCodeByte = data[i];
@@ -480,9 +481,8 @@ public static class SawyerStreamReader
 
 				var count = 257 - rleCodeByte;
 
-				var arr = new byte[count];
-				Array.Fill(arr, data[i]);
-				ms.Write(arr);
+				repeatBuffer[..count].Fill(data[i]);
+				ms.Write(repeatBuffer[..count]);
 			}
 			else
 			{
@@ -536,7 +536,14 @@ public static class SawyerStreamReader
 				var copySrc = 0 + buffer.Count + offset;
 				var copyLen = (data[i] & 7) + 1;
 
-				buffer.AddRange(buffer.GetRange(copySrc, copyLen));
+				// Copy the repeated bytes one at a time rather than via buffer.GetRange, which
+				// allocates a brand new List<byte> for every match (thousands per DAT file).
+				// copySrc + j always refers to a position before the current end, so the values
+				// stay valid even if the backing array grows mid-copy.
+				for (var j = 0; j < copyLen; j++)
+				{
+					buffer.Add(buffer[copySrc + j]);
+				}
 			}
 		}
 

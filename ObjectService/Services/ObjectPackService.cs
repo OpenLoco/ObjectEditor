@@ -1,0 +1,258 @@
+using System.IO.Compression;
+using Common;
+using Definitions;
+using Definitions.Database;
+using Definitions.DTO;
+using Definitions.DTO.Mappers;
+using Definitions.ObjectModels.Types;
+using Definitions.SourceData;
+using Microsoft.EntityFrameworkCore;
+using ObjectService.RouteHandlers;
+
+namespace ObjectService.Services;
+
+public interface IObjectPackService
+{
+	Task<IEnumerable<DtoItemPackEntry>> ListPacksAsync(CancellationToken ct);
+	Task<IEnumerable<DtoObjectPackListEntry>> ListEntriesAsync(CancellationToken ct);
+	Task<DtoItemPackDescriptor<DtoObjectEntry>?> GetPackAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoObjectPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct);
+	Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct);
+	Task<DtoItemPackEntry> CreatePackAsync(DtoItemPackDescriptor<DtoObjectEntry> request, UniqueObjectId ownerUserId, CancellationToken ct);
+	Task<DtoObjectPackDescriptor?> UpdateAsync(UniqueObjectId id, DtoObjectPackDescriptor request, CancellationToken ct);
+	Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct);
+}
+
+public class ObjectPackService : IObjectPackService
+{
+	private readonly LocoDbContext _db;
+	private readonly ServerFolderManager _sfm;
+
+	public ObjectPackService(LocoDbContext db, ServerFolderManager sfm)
+	{
+		_db = db;
+		_sfm = sfm;
+	}
+
+	public async Task<IEnumerable<DtoItemPackEntry>> ListPacksAsync(CancellationToken ct)
+	{
+		var packs = await _db.ObjectPacks.Include(l => l.Licence).ToListAsync(ct);
+		return packs.Select(x => x.ToDtoEntry()).OrderBy(x => x.Name);
+	}
+
+	public async Task<IEnumerable<DtoObjectPackListEntry>> ListEntriesAsync(CancellationToken ct)
+	{
+		var packs = await _db.ObjectPacks
+			.Include(p => p.Licence)
+			.Include(p => p.Authors)
+			.Include(p => p.Tags)
+			.Include(p => p.Objects)
+			.AsSplitQuery()
+			.ToListAsync(ct);
+
+		return packs
+			.Select(p => new DtoObjectPackListEntry(
+				p.Id,
+				p.Name,
+				p.Description,
+				p.UploadedDate,
+				p.Licence?.ToDtoEntry(),
+				p.Authors.Count,
+				p.Tags.Count,
+				p.Objects.Count))
+			.OrderBy(p => p.Name);
+	}
+
+	public async Task<DtoItemPackDescriptor<DtoObjectEntry>?> GetPackAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var pack = await _db.ObjectPacks
+			.Where(x => x.Id == id)
+			.Include(l => l.Licence)
+			.Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags))
+			.SingleOrDefaultAsync(ct);
+
+		return pack?.ToDtoDescriptor();
+	}
+
+	public async Task<DtoObjectPackDescriptor?> GetDescriptorAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var pack = await _db.ObjectPacks
+			.Where(x => x.Id == id)
+			.Include(x => x.Licence)
+			.Include(x => x.Authors)
+			.Include(x => x.Tags)
+			.Include(x => x.Objects)
+			.AsSplitQuery()
+			.FirstOrDefaultAsync(ct);
+
+		return pack is null ? null : ToDescriptor(pack);
+	}
+
+	public async Task<DtoObjectPackDescriptor?> UpdateAsync(UniqueObjectId id, DtoObjectPackDescriptor request, CancellationToken ct)
+	{
+		var pack = await _db.ObjectPacks
+			.Where(x => x.Id == id)
+			.Include(x => x.Licence)
+			.Include(x => x.Authors)
+			.Include(x => x.Tags)
+			.Include(x => x.Objects)
+			.AsSplitQuery()
+			.FirstOrDefaultAsync(ct);
+
+		if (pack is null)
+		{
+			return null;
+		}
+
+		pack.Name = request.Name;
+		pack.Description = request.Description;
+		pack.CreatedDate = request.CreatedDate;
+		pack.ModifiedDate = request.ModifiedDate;
+
+		pack.Licence = request.Licence is null ? null : await _db.Licences.FindAsync([request.Licence.Id], ct);
+
+		pack.Authors.Clear();
+		var authorIds = request.Authors.Select(a => a.Id).ToList();
+		if (authorIds.Count > 0)
+		{
+			var authors = await _db.Authors.Where(a => authorIds.Contains(a.Id)).ToListAsync(ct);
+			foreach (var author in authors)
+			{
+				pack.Authors.Add(author);
+			}
+		}
+
+		pack.Tags.Clear();
+		var tagIds = request.Tags.Select(t => t.Id).ToList();
+		if (tagIds.Count > 0)
+		{
+			var tags = await _db.Tags.Where(t => tagIds.Contains(t.Id)).ToListAsync(ct);
+			foreach (var tag in tags)
+			{
+				pack.Tags.Add(tag);
+			}
+		}
+
+		pack.Objects.Clear();
+		var objectIds = request.Objects.Select(o => o.Id).ToList();
+		if (objectIds.Count > 0)
+		{
+			var objects = await _db.Objects.Where(o => objectIds.Contains(o.Id)).ToListAsync(ct);
+			foreach (var obj in objects)
+			{
+				pack.Objects.Add(obj);
+			}
+		}
+
+		_ = await _db.SaveChangesAsync(ct);
+		return ToDescriptor(pack);
+	}
+
+	public async Task<bool> DeleteAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var pack = await _db.ObjectPacks.FindAsync([id], ct);
+		if (pack is null)
+		{
+			return false;
+		}
+
+		_ = _db.ObjectPacks.Remove(pack);
+		_ = await _db.SaveChangesAsync(ct);
+		return true;
+	}
+
+	static DtoObjectPackDescriptor ToDescriptor(TblObjectPack pack)
+		=> new(
+			pack.Id,
+			pack.Name,
+			pack.Description,
+			pack.CreatedDate,
+			pack.ModifiedDate,
+			pack.UploadedDate,
+			pack.Licence?.ToDtoEntry(),
+			[.. pack.Authors.OrderBy(a => a.Name).Select(a => a.ToDtoEntry())],
+			[.. pack.Tags.OrderBy(t => t.Name).Select(t => t.ToDtoEntry())],
+			[.. pack.Objects.OrderBy(o => o.Name).Select(o => new DtoItemRef(o.Id, o.Name))]);
+
+	public async Task<(Stream? Stream, string FileName)> GetPackFileAsync(UniqueObjectId id, CancellationToken ct)
+	{
+		var pack = await _db.ObjectPacks.Where(x => x.Id == id).Include(x => x.Objects).ThenInclude(o => o.DatObjects).SingleOrDefaultAsync(ct);
+		if (pack == null)
+		{
+			return (null, string.Empty);
+		}
+
+		var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.zip");
+		var zipStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+		using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
+		{
+			foreach (var obj in pack.Objects)
+			{
+				if (!ObjectAvailabilityRules.IsDownloadable(obj.ObjectSource, obj.Availability))
+				{
+					continue;
+				}
+
+				foreach (var dat in obj.DatObjects)
+				{
+					if (!_sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
+					{
+						continue;
+					}
+
+					if (!RouteHelpers.TryGetSafePathUnderRoot(_sfm.ObjectsFolder, entry.FileName, out var fullPath, out var entryName))
+					{
+						continue;
+					}
+
+					if (!File.Exists(fullPath))
+					{
+						continue;
+					}
+
+					await using var fs = File.OpenRead(fullPath);
+					var ze = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+					await using var es = ze.Open();
+					await fs.CopyToAsync(es, ct);
+				}
+			}
+		}
+		zipStream.Position = 0;
+		var dn = DownloadNameHelper.MakeSafeDownloadFileName(pack.Name, ".zip", "object-pack");
+		return (zipStream, dn);
+	}
+	public async Task<DtoItemPackEntry> CreatePackAsync(DtoItemPackDescriptor<DtoObjectEntry> request, UniqueObjectId ownerUserId, CancellationToken ct)
+	{
+		var pack = new TblObjectPack
+		{
+			Name = request.Name,
+			Description = request.Description,
+			OwnerUserId = ownerUserId,
+		};
+
+		// Link the owner's associated author if available
+		var owner = await _db.Users.Include(u => u.AssociatedAuthor).FirstOrDefaultAsync(u => u.Id == ownerUserId, ct);
+		if (owner?.AssociatedAuthor != null)
+		{
+			pack.Authors.Add(owner.AssociatedAuthor);
+		}
+
+		// Add requested objects if specified
+		if (request.Items?.Count > 0)
+		{
+			var objectIds = request.Items.Select(i => i.Id).ToList();
+			var objects = await _db.Objects.Where(o => objectIds.Contains(o.Id)).ToListAsync(ct);
+			foreach (var obj in objects)
+			{
+				pack.Objects.Add(obj);
+			}
+		}
+
+		_ = await _db.ObjectPacks.AddAsync(pack, ct);
+		_ = await _db.SaveChangesAsync(ct);
+
+		// Reload to get computed columns like UploadedDate
+		var created = await _db.ObjectPacks.Include(p => p.Licence).FirstAsync(p => p.Id == pack.Id, ct);
+		return created.ToDtoEntry();
+	}
+}

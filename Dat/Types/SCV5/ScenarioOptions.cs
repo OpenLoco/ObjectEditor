@@ -15,7 +15,7 @@ public record ScenarioOptions(
 	[property: LocoStructOffset(0x06)] ScenarioFlags ScenarioFlags,
 	[property: LocoStructOffset(0x08)] uint8_t MadeAnyChanges,
 	[property: LocoStructOffset(0x09)] uint8_t var_9,
-	[property: LocoStructOffset(0x0A), LocoArrayLength(32)] LandDistributionPattern LandDistributionPatterns,
+	[property: LocoStructOffset(0x0A), LocoArrayLength(32)] LandDistributionPattern[] LandDistributionPatterns,
 	[property: LocoStructOffset(0x2A), LocoArrayLength(64), Browsable(false)] char_t[] ScenarioName, // this is a string
 	[property: LocoStructOffset(0x6A), LocoArrayLength(256), Browsable(false)] char_t[] ScenarioDetails, // this is a string
 	[property: LocoStructOffset(0x16A)] S5Header ScenarioText,

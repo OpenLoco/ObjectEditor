@@ -11,6 +11,8 @@ namespace Gui.ViewModels;
 public class TrackViewModel(TrackObject model)
 	: BaseViewModel<TrackObject>(model)
 {
+	TunnelReferenceViewModel? tunnel = model.Tunnel is { } tunnelModel ? new(tunnelModel) : null;
+
 	[EnumProhibitValues<TrackObjectFlags>(TrackObjectFlags.None)]
 	public TrackObjectFlags Flags
 	{
@@ -32,7 +34,7 @@ public class TrackViewModel(TrackObject model)
 		set => Model.StationTrackPieces = value;
 	}
 
-	public Speed16 CurveSpeed
+	public Speed16 MaxCurveSpeed
 	{
 		get => Model.MaxCurveSpeed;
 		set => Model.MaxCurveSpeed = value;
@@ -52,27 +54,25 @@ public class TrackViewModel(TrackObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
-			this.RaisePropertyChanged(nameof(TunnelCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor), nameof(TunnelCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t TunnelCostFactor
 	{
 		get => Model.TunnelCostFactor;
@@ -87,24 +87,40 @@ public class TrackViewModel(TrackObject model)
 	}
 
 	[Category("Compatible Objects")]
-	public ObjectModelHeader Tunnel
+	public TunnelReferenceViewModel? Tunnel
 	{
-		get => Model.Tunnel;
-		set => Model.Tunnel = value;
+		get => tunnel;
+		set
+		{
+			tunnel = value;
+			if (value != null)
+			{
+				Model.Tunnel = value.Model;
+			}
+		}
 	}
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> TracksAndRoads { get; init; } = new(model.TracksAndRoads);
+	public ObjectReferenceList<TrackOrRoadReferenceViewModel> TracksAndRoads { get; init; } = new(model.TracksAndRoads, h => new TrackOrRoadReferenceViewModel(h), list => model.TracksAndRoads = [.. list]);
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> TrackExtras { get; init; } = new(model.TrackMods);
+	public ObjectReferenceList<TrackExtraReferenceViewModel> TrackExtras { get; init; } = new(model.TrackMods, h => new TrackExtraReferenceViewModel(h), list => model.TrackMods = [.. list]);
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Signals { get; init; } = new(model.Signals);
+	public ObjectReferenceList<TrackSignalReferenceViewModel> Signals { get; init; } = new(model.Signals, h => new TrackSignalReferenceViewModel(h), list => model.Signals = [.. list]);
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Bridges { get; init; } = new(model.Bridges);
+	public ObjectReferenceList<BridgeReferenceViewModel> Bridges { get; init; } = new(model.Bridges, h => new BridgeReferenceViewModel(h), list => model.Bridges = [.. list]);
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Stations { get; init; } = new(model.Stations);
+	public ObjectReferenceList<TrackStationReferenceViewModel> Stations { get; init; } = new(model.Stations, h => new TrackStationReferenceViewModel(h), list => model.Stations = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		TracksAndRoads.Synchronize();
+		TrackExtras.Synchronize();
+		Signals.Synchronize();
+		Bridges.Synchronize();
+		Stations.Synchronize();
+	}
 }

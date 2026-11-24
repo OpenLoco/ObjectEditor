@@ -16,15 +16,42 @@ public static class JsonFile
 
 	public static async Task SerializeToFileAsync<T>(T obj, string filePath, JsonSerializerOptions? options = null)
 	{
-		await using (var fileStream = new FileStream(
-			filePath,
-			FileMode.Create,
-			FileAccess.Write,
-			FileShare.None,
-			bufferSize: BufferSize,
-			useAsync: true))
+		var dir = Path.GetDirectoryName(filePath);
+		if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
 		{
-			await JsonSerializer.SerializeAsync(fileStream, obj, options ?? DefaultSerializerOptions).ConfigureAwait(false);
+			_ = Directory.CreateDirectory(dir);
+		}
+
+		var tempFile = Path.Combine(dir ?? string.Empty, $"{Path.GetFileName(filePath)}.{Guid.NewGuid():N}.tmp");
+		try
+		{
+			await using (var fileStream = new FileStream(
+				tempFile,
+				FileMode.CreateNew,
+				FileAccess.Write,
+				FileShare.None,
+				bufferSize: BufferSize,
+				useAsync: true))
+			{
+				await JsonSerializer.SerializeAsync(fileStream, obj, options ?? DefaultSerializerOptions).ConfigureAwait(false);
+				await fileStream.FlushAsync().ConfigureAwait(false);
+			}
+
+			File.Move(tempFile, filePath, overwrite: true);
+		}
+		finally
+		{
+			if (File.Exists(tempFile))
+			{
+				try
+				{
+					File.Delete(tempFile);
+				}
+				catch
+				{
+					// Best-effort cleanup of temporary file
+				}
+			}
 		}
 	}
 

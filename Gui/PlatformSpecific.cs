@@ -1,8 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,7 +23,7 @@ public static class PlatformSpecific
 		}
 		catch (Exception ex)
 		{
-			logger.Error(ex);
+			logger.LogError(ex, "Failed to open folder \"{Directory}\"", directory);
 		}
 	}
 
@@ -89,7 +90,7 @@ public static class PlatformSpecific
 	public static readonly IReadOnlyList<FilePickerFileType> JsonFileTypes = [new("JSON Files") { Patterns = ["*.json", "*.JSON"] }];
 	public static readonly IReadOnlyList<FilePickerFileType> DatFileTypes = [new("Locomotion DAT Files") { Patterns = ["*.dat", "*.DAT"] }];
 	public static readonly IReadOnlyList<FilePickerFileType> PngFileTypes = [new("PNG Files") { Patterns = ["*.png", "*.PNG"] }];
-	public static readonly IReadOnlyList<FilePickerFileType> SCV5FileTypes = [new("SC5/SV5 Files") { Patterns = ["*.sc5", "*.SC5", "*.sv5", "*.SV5"] }];
+	public static readonly IReadOnlyList<FilePickerFileType> SCV5FileTypes = [new("SC5/SV5 Files") { Patterns = ["*.sc5", "*.SC5", "*.sv5", "*.SV5", "title.dat"] }];
 
 	public static readonly IReadOnlyList<FilePickerFileType> AudioFileImportTypes = [new("WAV Files") { Patterns = ["*.wav", "*.WAV"] }, new("MP3 Files") { Patterns = ["*.mp3", "*.MP3"] }];
 	public static readonly IReadOnlyList<FilePickerFileType> AudioFileExportTypes = [new("WAV Files") { Patterns = ["*.wav", "*.WAV"] }];
@@ -111,7 +112,7 @@ public static class PlatformSpecific
 		});
 	}
 
-	public static async Task<IStorageFile?> SaveFilePicker(IReadOnlyList<FilePickerFileType> filetypes)
+	public static async Task<IStorageFile?> SaveFilePicker(IReadOnlyList<FilePickerFileType> filetypes, string? suggestedFileName = null)
 	{
 		// See IoCFileOps project for an example of how to accomplish this.
 		if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
@@ -124,6 +125,7 @@ public static class PlatformSpecific
 		{
 			ShowOverwritePrompt = true,
 			Title = "Select a new file name",
+			SuggestedFileName = suggestedFileName,
 			FileTypeChoices = filetypes,
 		});
 	}
@@ -136,7 +138,7 @@ public static class PlatformSpecific
 			var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
 			if (clipboard != null)
 			{
-				return await clipboard.GetTextAsync();
+				return await clipboard.TryGetTextAsync();
 			}
 		}
 

@@ -13,27 +13,24 @@ using System.Reactive.Linq;
 
 namespace Gui.ViewModels;
 
-public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelGroupHost, IDisposable where T : class
+public abstract class BaseViewModel : ReactiveObject, IViewModel, IViewModelGroupHost, IDisposable
 {
 	[Browsable(false)]
-	public virtual string DisplayName
-		=> typeof(T).Name;
+	public virtual string DisplayName => GetType().Name;
 
-	readonly CompositeDisposable subscriptions = new();
+	readonly CompositeDisposable subscriptions = [];
 	bool disposed;
 
-	protected BaseViewModel(T? model = default)
+	protected BaseViewModel()
 	{
-		Model = model;
-
 		_ = _allViewModels.Connect()
-			.ObserveOn(RxApp.MainThreadScheduler)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Bind(out _allViewModelsCollection)
 			.Subscribe()
 			.DisposeWith(subscriptions);
 
 		_ = _viewModelGroups.Connect()
-			.ObserveOn(RxApp.MainThreadScheduler)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Bind(out _viewModelGroupsCollection)
 			.Subscribe()
 			.DisposeWith(subscriptions);
@@ -41,9 +38,6 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 		AddGroupCommand = ReactiveCommand.Create(AddGroup);
 		ResetViewModelGroups();
 	}
-
-	[Reactive, Browsable(false)]
-	public T? Model { get; protected set; }
 
 	private readonly SourceList<IViewModel> _allViewModels = new();
 	private readonly ReadOnlyObservableCollection<IViewModel> _allViewModelsCollection;
@@ -99,7 +93,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 			return false;
 		}
 
-		DisposeViewModels(group.ViewModels);
+		BaseViewModel.DisposeViewModels(group.ViewModels);
 		group.ClearViewModels();
 		var removed = _viewModelGroups.Remove(group);
 		(group as IDisposable)?.Dispose();
@@ -148,9 +142,13 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 	public bool IsDefaultGroup(ViewModelGroup group)
 		=> ReferenceEquals(group, DefaultViewModelGroup);
 
+	public virtual void SynchronizeToModel()
+	{
+	}
+
 	protected void ClearViewModels()
 	{
-		DisposeViewModels(ViewModelGroups.SelectMany(group => group.ViewModels));
+		BaseViewModel.DisposeViewModels(ViewModelGroups.SelectMany(group => group.ViewModels));
 
 		foreach (var group in ViewModelGroups)
 		{
@@ -160,7 +158,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 		_allViewModels.Clear();
 	}
 
-	void DisposeViewModels(IEnumerable<IViewModel> viewModels)
+	static void DisposeViewModels(IEnumerable<IViewModel> viewModels)
 	{
 		foreach (var viewModel in viewModels.ToHashSet())
 		{
@@ -202,6 +200,19 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 		disposed = true;
 	}
 
+	/// <summary>
+	/// Raises change notifications for a set of dependent properties in a single call. The object view models
+	/// use this to refresh their inflation-adjusted cost-factor properties (which the property grid caches,
+	/// so it only re-reads them when explicitly notified) whenever <c>CostIndex</c> changes.
+	/// </summary>
+	protected void RaisePropertiesChanged(params string[] propertyNames)
+	{
+		foreach (var propertyName in propertyNames)
+		{
+			this.RaisePropertyChanged(propertyName);
+		}
+	}
+
 	void AddGroup()
 	{
 		var name = NewGroupName?.Trim();
@@ -225,4 +236,19 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 			_allViewModels.Add(viewModel);
 		}
 	}
+}
+
+public abstract class BaseViewModel<T> : BaseViewModel where T : class
+{
+	[Browsable(false)]
+	public override string DisplayName => typeof(T).Name;
+
+	protected BaseViewModel(T? model)
+		: base()
+	{
+		Model = model!;
+	}
+
+	[Reactive, Browsable(false)]
+	public T Model { get; protected set; }
 }

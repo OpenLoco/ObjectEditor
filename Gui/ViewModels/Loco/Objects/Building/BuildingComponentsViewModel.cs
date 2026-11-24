@@ -9,14 +9,19 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using ReactiveObject = ReactiveUI.ReactiveObject;
 
 namespace Gui.ViewModels.Loco.Objects.Building;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class BuildingComponentsViewModel : ReactiveObject, IViewModel
+public class BuildingComponentsViewModel : ReactiveObject, IViewModel, IDisposable
 {
+	readonly CompositeDisposable _subscriptions = [];
+	IDisposable? _modelSubscription;
+	bool _disposed;
 	public string DisplayName
 		=> "Building Components";
 
@@ -28,7 +33,7 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 	[Reactive] public int MaxHeight { get; set; }
 
 	[Reactive]
-	public BuildingComponents BuildingComponentsModel { get; set; }
+	public BuildingComponents BuildingComponentsModel { get; set; } = new();
 
 	[Reactive, Browsable(false)]
 	public ObservableCollection<uint8_t> BuildingHeights { get; set; } = [];
@@ -42,17 +47,21 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 	[Reactive]
 	public ObservableCollection<BuildingVariationViewModel> BuildingVariationViewModels { get; set; } = [];
 
-	protected ImageTable ImageTable { get; set; }
+	protected ImageTable ImageTable { get; set; } = new();
 
 	public BuildingComponentsViewModel()
 	{
 		_ = this.WhenAnyValue(x => x.BuildingVariations)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(BuildingVariationViewModels)));
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(BuildingVariationViewModels)))
+			.DisposeWith(_subscriptions);
 
 		_ = this.WhenAnyValue(x => x.VerticalLayerSpacing)
-			.Subscribe(ApplyOffsetToAllLayers);
+			.Subscribe(ApplyOffsetToAllLayers)
+			.DisposeWith(_subscriptions);
 
-		_ = MessageBus.Current.Listen<BuildingComponents>().Subscribe(UpdateBuildingComponents);
+		_ = MessageBus.Current.Listen<BuildingComponents>()
+			.Subscribe(UpdateBuildingComponents)
+			.DisposeWith(_subscriptions);
 	}
 
 	public BuildingComponentsViewModel(BuildingComponents buildingComponents, ImageTable imageTable) : this()
@@ -66,12 +75,15 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 
 	void UpdateBuildingComponents(BuildingComponents buildingComponents)
 	{
-		_ = this.WhenAnyValue(x => x.BuildingVariationViewModels)
+		// Replace any previous per-model subscription so we don't accumulate handlers
+		// every time the model is swapped.
+		_modelSubscription?.Dispose();
+		_modelSubscription = this.WhenAnyValue(x => x.BuildingVariationViewModels)
 			.Where(x => x != null && ImageTable != null)
 			.Subscribe(_ => RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations, buildingComponents.BuildingHeights));
 
-		BuildingHeights = new ObservableCollection<uint8_t>(buildingComponents.BuildingHeights);
-		BuildingAnimations = new ObservableCollection<BuildingPartAnimation>(buildingComponents.BuildingAnimations);
+		BuildingHeights = [with(buildingComponents.BuildingHeights)];
+		BuildingAnimations = [with(buildingComponents.BuildingAnimations)];
 		BuildingVariations = buildingComponents.BuildingVariations;
 		BuildingComponentsModel = buildingComponents;
 
@@ -90,8 +102,12 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 
 		BuildingVariationViewModels.Clear();
 
-		MaxWidth = layers.Max(x => x.Max(y => y.Width)) + 16;
-		MaxHeight = (layers.Max(x => x.Max(y => y.Height)) * buildingHeights.Count) + buildingHeights.Sum(x => x) + buildingVariations.Max(x => x.Count) * (VerticalLayerSpacing * 2);
+		var maxElementWidth = layers.SelectMany(x => x).Select(y => (int)y.Width).DefaultIfEmpty(0).Max();
+		var maxElementHeight = layers.SelectMany(x => x).Select(y => (int)y.Height).DefaultIfEmpty(0).Max();
+		var maxVariationCount = buildingVariations.Select(v => v.Count).DefaultIfEmpty(0).Max();
+
+		MaxWidth = maxElementWidth + 16;
+		MaxHeight = (maxElementHeight * buildingHeights.Count) + buildingHeights.Sum(x => (int)x) + (maxVariationCount * VerticalLayerSpacing * 2);
 
 		var x = 0;
 		foreach (var variation in buildingVariations)
@@ -119,7 +135,7 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 						{
 							XBase = layer[i].XOffset + (MaxWidth / 2),
 							YBase = layer[i].YOffset - cumulativeOffset + MaxHeight * 0.80,
-							DisplayedImage = layer[i].Image.ToAvaloniaBitmap(),
+							DisplayedImage = layer[i].ToAvaloniaBitmap(PaletteMapLoader.Current),
 							XOffset = 0,
 							YOffset = 0,
 						};
@@ -166,6 +182,19 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 				}
 			}
 		}
+	}
+
+	public void Dispose()
+	{
+		if (_disposed)
+		{
+			return;
+		}
+
+		_disposed = true;
+		_modelSubscription?.Dispose();
+		_subscriptions.Dispose();
+		GC.SuppressFinalize(this);
 	}
 }
 

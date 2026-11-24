@@ -4,26 +4,26 @@ namespace Definitions.Database;
 
 public class TblObjectLevelCrossing : DbSubObject, IConvertibleToTable<TblObjectLevelCrossing, LevelCrossingObject>
 {
-	public int16_t CostFactor { get; set; }
+	public uint16_t DesignedYear { get; set; }
+	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public uint8_t AnimationSpeed { get; set; }
-	public uint8_t ClosingFrames { get; set; }
-	public uint8_t ClosedFrames { get; set; }
-	public uint16_t DesignedYear { get; set; }
-
-	//public uint8_t var_0A { get; set; } // something like IdleAnimationFrames or something
+	public uint8_t ClosedAnimationFrameInterval { get; set; }
+	public uint8_t ClosedAnimationFrameCount { get; set; }
+	public uint8_t TransitionAnimationFrameCount { get; set; }
+	public uint8_t TransitionAnimationDelayBitmask { get; set; }
 
 	public static TblObjectLevelCrossing FromObject(TblObject tbl, LevelCrossingObject obj)
 		=> new()
 		{
 			Parent = tbl,
-			CostFactor = obj.BuildCostFactor,
+			DesignedYear = obj.DesignedYear,
+			BuildCostFactor = obj.BuildCostFactor,
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
-			AnimationSpeed = obj.AnimationSpeed,
-			ClosingFrames = obj.ClosingFrames,
-			ClosedFrames = obj.ClosedFrames,
-			DesignedYear = obj.DesignedYear,
+			ClosedAnimationFrameInterval = obj.ClosedAnimationFrameInterval,
+			ClosedAnimationFrameCount = obj.ClosedAnimationFrameCount,
+			TransitionAnimationFrameCount = obj.TransitionAnimationFrameCount,
+			TransitionAnimationDelayBitmask = obj.TransitionAnimationDelayBitmask,
 		};
 }

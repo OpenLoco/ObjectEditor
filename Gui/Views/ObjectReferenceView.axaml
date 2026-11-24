@@ -1,0 +1,31 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vi="using:Gui.Views"
+	xmlns:vm="using:Gui.ViewModels">
+	<Design.PreviewWith>
+		<vi:ObjectReferenceView />
+	</Design.PreviewWith>
+
+	<Style Selector="vi|ObjectReferenceView">
+		<Setter Property="Template">
+			<ControlTemplate>
+				<StackPanel x:DataType="vm:ObjectReferenceEntryViewModel" Spacing="2">
+					<StackPanel Orientation="Horizontal" Spacing="4">
+						<TextBlock Text="{Binding ReferenceName}" VerticalAlignment="Center" MinWidth="80" />
+						<Button Content="…" Command="{Binding PickCommand}" ToolTip.Tip="Select the object this reference points at" />
+						<Button Content="✕" Command="{Binding ClearCommand}" ToolTip.Tip="Clear this reference" />
+						<ToggleButton Content="✎" IsChecked="{Binding IsManualEditorVisible}" ToolTip.Tip="Manually set the object header values (name, type, source, checksum) instead of picking an object from the index" />
+					</StackPanel>
+					<Border IsVisible="{Binding IsManualEditorVisible}"
+							BorderThickness="1"
+							CornerRadius="3"
+							Padding="2"
+							BorderBrush="{DynamicResource ButtonBackground}">
+						<vi:ObjectModelHeaderView DataContext="{Binding Reference}" />
+					</Border>
+				</StackPanel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+</Styles>

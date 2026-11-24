@@ -55,6 +55,17 @@
 							</MenuFlyout>
 						</SplitButton.Flyout>
 					</SplitButton>
+					<Button Margin="4" Command="{Binding ValidateSCV5Command}" Content="Validate Scenario" ToolTip.Tip="Checks that every object dependency (e.g. an industry's produced/consumed cargo) is included in this file's required objects list">
+						<Button.Styles>
+							<Style>
+								<Style.Resources>
+									<SolidColorBrush x:Key="ButtonBackground">#4F759B</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#37526C</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPressed">#86A3C1</SolidColorBrush>
+								</Style.Resources>
+							</Style>
+						</Button.Styles>
+					</Button>
 				</StackPanel>
 				<vi:RequiredObjectsView DataContext="{Binding RequiredObjects}" />
 			</DockPanel>
@@ -86,8 +97,8 @@
 				<Image Source="{Binding Map}" RenderOptions.BitmapInterpolationMode="None" DockPanel.Dock="Right"/>
 				<StackPanel Orientation="Vertical" DockPanel.Dock="Left" MaxWidth="256">
 					<StackPanel Orientation="Horizontal" >
-						<TextBox Watermark="X" Text="{Binding TileElementX}"></TextBox>
-						<TextBox Watermark="Y" Text="{Binding TileElementY}"></TextBox>
+						<TextBox PlaceholderText="X" Text="{Binding TileElementX}"></TextBox>
+						<TextBox PlaceholderText="Y" Text="{Binding TileElementY}"></TextBox>
 					</StackPanel>
 					<ItemsRepeater ItemsSource="{Binding CurrentTileElements}">
 						<ItemsRepeater.Layout>

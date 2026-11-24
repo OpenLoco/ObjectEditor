@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -39,7 +42,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
-			model.var_0B = br.ReadByte();
+			br.SkipByte(); // pad_0B, not part of object definition
 			br.SkipStringId(); // Description, not part of object definition
 			br.SkipImageId(); // BaseImageOffset, not part of object definition
 			var compatibleTrackCount = br.ReadByte();
@@ -80,7 +83,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
-			bw.Write(model.var_0B);
+			bw.WriteEmptyBytes(1); // pad_0B, not part of object definition
 			bw.Write((string_id)0); // Description, not part of object definition
 			bw.Write((image_id)0); // BaseImageOffset, not part of object definition
 			bw.Write((uint8_t)model.CompatibleTrackObjects.Count);

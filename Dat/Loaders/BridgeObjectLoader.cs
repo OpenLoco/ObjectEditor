@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -31,7 +34,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
 			model.Flags = ((DatBridgeObjectFlags)br.ReadByte()).Convert();
-			model.var_03 = br.ReadByte();
+			br.SkipByte(); // var_03 is a padding byte, not part of the object definition
 			model.ClearHeight = br.ReadUInt16();
 			model.DeckDepth = br.ReadInt16();
 			model.SpanLength = br.ReadByte();
@@ -79,7 +82,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 		{
 			bw.WriteEmptyStringId();// Name offset, not part of object definition
 			bw.Write((uint8_t)model.Flags);
-			bw.Write(model.var_03);
+			bw.Write((byte)0); // var_03 is a padding byte, not part of the object definition
 			bw.Write(model.ClearHeight);
 			bw.Write(model.DeckDepth);
 			bw.Write(model.SpanLength);

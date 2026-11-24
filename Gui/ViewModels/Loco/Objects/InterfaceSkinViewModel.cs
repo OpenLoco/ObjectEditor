@@ -101,10 +101,10 @@ public class InterfaceSkinViewModel(InterfaceSkinObject model) : BaseViewModel<I
 		set => Model.TopToolbarQuaternaryColour = value;
 	}
 
-	public Colour PlayerInfoToolbarColour
+	public Colour CompanyInfoToolbarColour
 	{
-		get => Model.PlayerInfoToolbarColour;
-		set => Model.PlayerInfoToolbarColour = value;
+		get => Model.CompanyInfoToolbarColour;
+		set => Model.CompanyInfoToolbarColour = value;
 	}
 
 	public Colour TimeToolbarColour

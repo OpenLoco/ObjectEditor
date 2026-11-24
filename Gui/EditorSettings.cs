@@ -1,11 +1,10 @@
 using Common.Json;
-using Common.Logging;
+using Definitions.ObjectModels.Graphics.Dithering;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Gui;
 
@@ -13,7 +12,7 @@ public class EditorSettings
 {
 	public string ObjDataDirectory
 	{
-		get;
+		get => field ??= string.Empty;
 		set
 		{
 			field = value;
@@ -33,6 +32,9 @@ public class EditorSettings
 	public bool ShowLogsOnError { get; set; }
 	public bool AutoObjectDiscoveryAndUpload { get; set; }
 
+	/// <summary>When set to a value other than None, bypasses the dithering selection popup and always uses this algorithm when importing palette images.</summary>
+	public DitheringMethod DefaultDitheringMethod { get; set; }
+
 	public bool UseHttps { get; set; }
 	public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";
 	public string ServerAddressHttps { get; set; } = "https://openloco.leftofzen.dev/";
@@ -40,9 +42,10 @@ public class EditorSettings
 	//public string ServerEmail { get; set; }
 	//public string ServerPassword { get; set; }
 
-	public string ObjectIndicesFolder { get; set; } = string.Empty;
-	public string DownloadFolder { get; set; } = string.Empty;
 	public string CacheFolder { get; set; } = string.Empty;
+	public string ConfigFolder { get; set; } = string.Empty;
+	public string DownloadFolder { get; set; } = string.Empty;
+	public string ObjectIndicesFolder { get; set; } = string.Empty;
 
 	public string LocomotionSteamObjDataFolder { get; set; } = string.Empty;
 	public string LocomotionGoGObjDataFolder { get; set; } = string.Empty;
@@ -59,33 +62,47 @@ public class EditorSettings
 			_ => throw new NotImplementedException(),
 		};
 
-	[JsonIgnore]
-	public string IndexFileName
-	{
-		get
-		{
-			var filename = Convert.ToBase64String(Encoding.UTF8.GetBytes(ObjDataDirectory));
-			return Path.Combine(ObjectIndicesFolder, $"{filename}.json");
-		}
-	}
-
-	[JsonIgnore]
-	public const string DefaultFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
-
 	public static EditorSettings Load(string filename, ILogger logger)
 	{
 		if (!File.Exists(filename))
 		{
-			logger.Info($"Settings file doesn't exist; creating now at \"{filename}\"");
+			logger.LogInformation("Settings file doesn't exist; creating now at \"{Filename}\"", filename);
 			var newSettings = new EditorSettings();
 			Save(newSettings, filename, logger);
 			return newSettings;
 		}
 
-		var text = File.ReadAllText(filename);
-		var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: JsonFile.DefaultSerializerOptions); // todo: try-catch this for invalid settings files
-		ArgumentNullException.ThrowIfNull(settings);
-		return settings;
+		try
+		{
+			var text = File.ReadAllText(filename);
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: JsonFile.DefaultSerializerOptions);
+			if (settings != null)
+			{
+				return settings;
+			}
+
+			logger.LogWarning("Settings file at \"{Filename}\" deserialized to null; backing up and recreating with defaults.", filename);
+		}
+		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+		{
+			logger.LogError(ex, "Failed to load settings from \"{Filename}\"; backing up and recreating with defaults.", filename);
+		}
+
+		// Move the bad file aside so we don't silently destroy whatever the user had.
+		try
+		{
+			var backup = $"{filename}.bad-{DateTime.UtcNow:yyyyMMddHHmmss}";
+			File.Move(filename, backup, overwrite: true);
+			logger.LogInformation("Backed up invalid settings file to \"{Backup}\"", backup);
+		}
+		catch (Exception backupEx) when (backupEx is IOException or UnauthorizedAccessException)
+		{
+			logger.LogError(backupEx, "Failed to back up invalid settings file \"{Filename}\"; it will be overwritten.", filename);
+		}
+
+		var defaults = new EditorSettings();
+		Save(defaults, filename, logger);
+		return defaults;
 	}
 
 	public void Save(string filename, ILogger logger)
@@ -105,9 +122,9 @@ public class EditorSettings
 		{
 			File.WriteAllText(filename, text);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
-			logger.Error(ex);
+			logger.LogError(ex, "Failed to save settings to \"{Filename}\"", filename);
 		}
 	}
 
@@ -115,31 +132,37 @@ public class EditorSettings
 	{
 		if (string.IsNullOrEmpty(ObjDataDirectory))
 		{
-			logger.Warning("Invalid settings file: Object directory was null or empty");
+			logger.LogWarning("Invalid settings file: Object directory was null or empty");
 			return false;
 		}
 
 		if (!Directory.Exists(ObjDataDirectory))
 		{
-			logger.Warning($"Invalid settings file: ObjData folder \"{ObjDataDirectory}\" does not exist");
+			logger.LogWarning("Invalid settings file: ObjData folder \"{ObjDataDirectory}\" does not exist", ObjDataDirectory);
+			return false;
+		}
+
+		if (!string.IsNullOrEmpty(ConfigFolder) && !Directory.Exists(ConfigFolder))
+		{
+			logger.LogWarning("Invalid settings file: Config folder \"{ConfigFolder}\" does not exist", ConfigFolder);
 			return false;
 		}
 
 		if (!string.IsNullOrEmpty(CacheFolder) && !Directory.Exists(CacheFolder))
 		{
-			logger.Warning($"Invalid settings file: Cache folder \"{CacheFolder}\" does not exist");
+			logger.LogWarning("Invalid settings file: Cache folder \"{CacheFolder}\" does not exist", CacheFolder);
 			return false;
 		}
 
 		if (!string.IsNullOrEmpty(DownloadFolder) && !Directory.Exists(DownloadFolder))
 		{
-			logger.Warning($"Invalid settings file: Download folder \"{DownloadFolder}\" does not exist");
+			logger.LogWarning("Invalid settings file: Download folder \"{DownloadFolder}\" does not exist", DownloadFolder);
 			return false;
 		}
 
 		if (!string.IsNullOrEmpty(ObjectIndicesFolder) && !Directory.Exists(ObjectIndicesFolder))
 		{
-			logger.Warning($"Invalid settings file: Object index folder \"{ObjectIndicesFolder}\" does not exist");
+			logger.LogWarning("Invalid settings file: Object index folder \"{ObjectIndicesFolder}\" does not exist", ObjectIndicesFolder);
 			return false;
 		}
 

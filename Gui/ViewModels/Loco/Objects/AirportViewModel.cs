@@ -70,19 +70,18 @@ public class AirportViewModel(AirportObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(6, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(6, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
@@ -91,7 +90,7 @@ public class AirportViewModel(AirportObject model)
 
 	[Category("Building")]
 	[Length(1, AirportObjectLoader.Constants.BuildingVariationCount)]
-	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
+	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = [with(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList())];
 
 	[Category("Building")]
 	[Length(1, AirportObjectLoader.Constants.BuildingHeightCount)]
@@ -110,17 +109,10 @@ public class AirportViewModel(AirportObject model)
 	[Category("Movement")]
 	public BindingList<MovementEdge> MovementEdges { get; init; } = model.MovementEdges.ToBindingList();
 
-	[Category("<unknown>")]
-	public uint8_t var_07
+	[Category("Movement")]
+	public uint32_t RequiredClearEdges
 	{
-		get => Model.var_07;
-		set => Model.var_07 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint32_t var_B6
-	{
-		get => Model.var_B6;
-		set => Model.var_B6 = value;
+		get => Model.RequiredClearEdges;
+		set => Model.RequiredClearEdges = value;
 	}
 }

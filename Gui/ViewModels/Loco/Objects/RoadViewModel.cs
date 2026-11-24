@@ -10,6 +10,8 @@ namespace Gui.ViewModels;
 public class RoadViewModel(RoadObject model)
 	: BaseViewModel<RoadObject>(model)
 {
+	TunnelReferenceViewModel? tunnel = model.Tunnel is { } tunnelModel ? new(tunnelModel) : null;
+
 	[EnumProhibitValues<RoadObjectFlags>(RoadObjectFlags.None)]
 	public RoadObjectFlags Flags
 	{
@@ -24,7 +26,7 @@ public class RoadViewModel(RoadObject model)
 		set => Model.RoadPieces = value;
 	}
 
-	public Speed16 MaxSpeed
+	public Speed16 MaxCurveSpeed
 	{
 		get => Model.MaxCurveSpeed;
 		set => Model.MaxCurveSpeed = value;
@@ -56,27 +58,25 @@ public class RoadViewModel(RoadObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
-			this.RaisePropertyChanged(nameof(TunnelCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor), nameof(TunnelCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t TunnelCostFactor
 	{
 		get => Model.TunnelCostFactor;
@@ -84,21 +84,36 @@ public class RoadViewModel(RoadObject model)
 	}
 
 	[Category("Compatible Objects")]
-	public ObjectModelHeader Tunnel
+	public TunnelReferenceViewModel? Tunnel
 	{
-		get => Model.Tunnel;
-		set => Model.Tunnel = value;
+		get => tunnel;
+		set
+		{
+			tunnel = value;
+			if (value != null)
+			{
+				Model.Tunnel = value.Model;
+			}
+		}
 	}
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Bridges { get; set; } = new(model.Bridges);
+	public ObjectReferenceList<BridgeReferenceViewModel> Bridges { get; set; } = new(model.Bridges, h => new BridgeReferenceViewModel(h), list => model.Bridges = [.. list]);
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Stations { get; set; } = new(model.Stations);
+	public ObjectReferenceList<RoadStationReferenceViewModel> Stations { get; set; } = new(model.Stations, h => new RoadStationReferenceViewModel(h), list => model.Stations = [.. list]);
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Mods { get; set; } = new(model.RoadMods);
+	public ObjectReferenceList<RoadExtraReferenceViewModel> Mods { get; set; } = new(model.RoadMods, h => new RoadExtraReferenceViewModel(h), list => model.RoadMods = [.. list]);
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> TracksAndRoads { get; set; } = new(model.TracksAndRoads);
+	public ObjectReferenceList<TrackOrRoadReferenceViewModel> TracksAndRoads { get; set; } = new(model.TracksAndRoads, h => new TrackOrRoadReferenceViewModel(h), list => model.TracksAndRoads = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		Bridges.Synchronize();
+		Stations.Synchronize();
+		Mods.Synchronize();
+		TracksAndRoads.Synchronize();
+	}
 }

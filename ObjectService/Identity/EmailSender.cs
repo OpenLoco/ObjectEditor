@@ -19,11 +19,22 @@ public class EmailSender : IEmailSender
 	public Task SendEmailAsync(string email, string subject, string htmlMessage)
 	{
 		// Get SMTP settings from appsettings.json
+
 		var smtpHost = _configuration["SmtpSettings:Host"];
-		var smtpPort = int.Parse(_configuration["SmtpSettings:Port"]);
+		ArgumentException.ThrowIfNullOrEmpty(smtpHost, nameof(smtpHost));
+
+		var port = _configuration["SmtpSettings:Port"];
+		ArgumentException.ThrowIfNullOrEmpty(port, nameof(port));
+		var smtpPort = int.Parse(port);
+
 		var smtpUsername = _configuration["SmtpSettings:Username"];
+		ArgumentException.ThrowIfNullOrEmpty(smtpUsername, nameof(smtpUsername));
+
 		var smtpPassword = _configuration["SmtpSettings:Password"];
+		ArgumentException.ThrowIfNullOrEmpty(smtpPassword, nameof(smtpPassword));
+
 		var senderEmail = _configuration["SmtpSettings:SenderEmail"];
+		ArgumentException.ThrowIfNullOrEmpty(senderEmail, nameof(senderEmail));
 
 		var client = new SmtpClient(smtpHost, smtpPort)
 		{

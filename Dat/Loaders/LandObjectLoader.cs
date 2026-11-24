@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -45,7 +48,7 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			model.DistributionPattern = br.ReadByte();
 			model.NumVariations = br.ReadByte();
 			model.VariationLikelihood = br.ReadByte();
-			model.pad_1D = br.ReadByte();
+			br.SkipByte(); // 0x1D is padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -92,7 +95,7 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			bw.Write(model.DistributionPattern);
 			bw.Write(model.NumVariations);
 			bw.Write(model.VariationLikelihood);
-			bw.Write(model.pad_1D);
+			bw.WriteEmptyBytes(1); // 0x1D is a padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

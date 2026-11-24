@@ -12,5 +12,5 @@ public class TblStringTableRow : DbIdObject
 	public required string Text { get; set; }
 
 	public required UniqueObjectId ObjectId { get; set; } // FK, the TblObject that owns this string
-	public TblObject Object { get; set; } // navigation property. a stringtable object must ALWAYS reference an OL object
+	public TblObject Object { get; set; } = null!; // navigation property. a stringtable object must ALWAYS reference an OL object
 }

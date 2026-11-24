@@ -76,7 +76,7 @@ public class CargoViewModel(CargoObject model)
 		set => Model.MaxNonPremiumDays = value;
 	}
 
-	public uint16_t MaxPremiumRate
+	public uint16_t NonPremiumRate
 	{
 		get => Model.NonPremiumRate;
 		set => Model.NonPremiumRate = value;

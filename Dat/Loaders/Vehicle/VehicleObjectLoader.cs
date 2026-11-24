@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Common;
 using Dat.Data;
 using Dat.FileParsing;
@@ -22,9 +25,12 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		public const int MaxUnionSoundStructLength = 0x1B;
 		public const int MaxBodySprites = 4;
 		public const int MaxBogieSprites = 2;
+		public const int MaxCrossingSounds = 1;
 		public const int MaxStartSounds = 3;
 		public const int MaxEmitterAnimations = 2;
 		public const int Var135PadSize = 0x15A - 0x135;
+		public const uint8_t StartSoundsMask = 0x7F; // 127
+		public const uint8_t StartSoundsCrossingWhistleMask = 1 << 7; // 128
 	}
 
 	public static class StructSizes
@@ -107,7 +113,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 				}
 			}
 
-			br.SkipByte(2); // skips the 0xFFFF bytes
+			br.SkipBytes(2); // skips the 0xFFFF bytes
 
 			if (model.CompatibleCargoCategories[index].Count == 0)
 			{
@@ -122,7 +128,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// animation
 		foreach (var anim in model.ParticleEmitters)
 		{
-			if (anim.Type == SimpleAnimationType.None)
+			if (anim.Type == EmitterAnimationType.None)
 			{
 				continue;
 			}
@@ -142,13 +148,27 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// driving sound
 		if (model.DrivingSoundType != DrivingSoundType.None)
 		{
-			model.Sound = br.ReadS5Header();
+			model.DrivingSound = br.ReadS5Header();
 		}
 
-		// driving start sounds
-		const int mask = 127;
-		var count = numStartSounds & mask;
-		model.StartSounds = [.. br.ReadS5HeaderList(count)];
+		// start sounds and crossing whistle
+		var startSoundCount = Math.Min(Constants.MaxStartSounds, numStartSounds & Constants.StartSoundsMask);
+		var sounds = br.ReadS5HeaderList(startSoundCount).ToList();
+		var lastSoundIsExclusiveToCrossingSounds = (numStartSounds & Constants.StartSoundsCrossingWhistleMask) != 0;
+
+		// if we have this flag set, then the last sound is a dedicated crossing whistle and should be excluded from the start sounds list
+		if (startSoundCount > 0)
+		{
+			if (lastSoundIsExclusiveToCrossingSounds)
+			{
+				model.StartSounds = sounds[0..^1];
+				model.CrossingSounds = [sounds[^1]];
+			}
+			else
+			{
+				model.StartSounds = sounds;
+			}
+		}
 	}
 
 	private static void LoadFixed(LocoBinaryReader br, VehicleObject model, out byte numRequiredTrackExtras, out byte numCompatibleVehicles, out byte numStartSounds)
@@ -167,7 +187,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		model.CompanyColourSchemeIndex = ((DatCompanyColourType)br.ReadByte()).Convert();
 		numCompatibleVehicles = br.ReadByte();
 		br.SkipUInt16(Constants.CompatibleVehicleCount);
-		br.SkipByte(Constants.RequiredTrackExtrasCount);
+		br.SkipBytes(Constants.RequiredTrackExtrasCount);
 		model.CarComponents = [.. br.ReadCarComponents(Constants.MaxCarComponents)];
 		model.BodySprites = [.. br.ReadBodySprites(Constants.MaxBodySprites)];
 		model.BogieSprites = [.. br.ReadBogieSprites(Constants.MaxBogieSprites)];
@@ -176,9 +196,9 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		model.RackSpeed = br.ReadInt16();
 		model.Weight = br.ReadUInt16();
 		model.Flags = ((DatVehicleObjectFlags)br.ReadUInt16()).Convert();
-		br.SkipByte(Constants.MaxCompatibleCargoCategories * 1); // MaxCargo, read in LoadVariable
-		br.SkipByte(Constants.MaxCompatibleCargoCategories * 4); // CompatibleCargoCategories, read in LoadVariable
-		br.SkipByte(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
+		br.SkipBytes(Constants.MaxCompatibleCargoCategories * 1); // MaxCargo, read in LoadVariable
+		br.SkipBytes(Constants.MaxCompatibleCargoCategories * 4); // CompatibleCargoCategories, read in LoadVariable
+		br.SkipBytes(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
 		br.SkipByte(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
 		model.ParticleEmitters = [.. br.ReadEmitterAnimations(Constants.MaxEmitterAnimations)];
 		model.ShipWakeSpacing = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
@@ -192,28 +212,28 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			case DrivingSoundType.Friction:
 				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.FrictionSound = br.ReadFrictionSound();
-				br.SkipByte(StructSizes.SoundData - StructSizes.FrictionSound);
+				br.SkipBytes(StructSizes.SoundData - StructSizes.FrictionSound);
 				break;
 			case DrivingSoundType.SimpleMotor:
 				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.SimpleMotorSound = br.ReadSimpleMotorSound();
-				br.SkipByte(StructSizes.SoundData - StructSizes.SimpleMotorSound);
+				br.SkipBytes(StructSizes.SoundData - StructSizes.SimpleMotorSound);
 				break;
 			case DrivingSoundType.GearboxMotor:
 				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.GearboxMotorSound = br.ReadGearboxMotorSound();
-				br.SkipByte(StructSizes.SoundData - StructSizes.GearboxMotorSound);
+				br.SkipBytes(StructSizes.SoundData - StructSizes.GearboxMotorSound);
 				break;
 			case DrivingSoundType.None:
-				br.SkipByte(StructSizes.SoundData);
+				br.SkipBytes(StructSizes.SoundData);
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
 		}
 
-		model.var_135 = br.ReadBytes(0x15A - 0x135);
+		br.SkipBytes(Constants.Var135PadSize);
 		numStartSounds = br.ReadByte();
-		br.SkipByte(Constants.MaxStartSounds); // StartSounds, not part of object definition
+		br.SkipBytes(Constants.MaxStartSounds); // StartSounds, not part of object definition
 	}
 
 	public static void Save(Stream stream, LocoObject obj)
@@ -285,8 +305,13 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 					throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
 			}
 
-			bw.Write(model.var_135.Fill(Constants.Var135PadSize, (byte)0).ToArray());
-			bw.Write((uint8_t)model.StartSounds.Count);
+			bw.WriteEmptyBytes(Constants.Var135PadSize);
+
+			// if there are crossing sounds, then we need to set the high bit of the start sounds count to indicate that the last sound is a dedicated crossing whistle and should be excluded from the start sounds list
+			var totalSounds = model.StartSounds.Count + model.CrossingSounds.Count;
+			var numStartSounds = (uint8_t)(totalSounds | (model.CrossingSounds.Count > 0 ? Constants.StartSoundsCrossingWhistleMask : 0x00));
+			bw.Write(numStartSounds);
+
 			bw.WriteEmptyBytes(Constants.MaxStartSounds * 1); // StartSounds, not part of object
 
 			// sanity check
@@ -353,43 +378,44 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// driving sound
 		if (model.DrivingSoundType != DrivingSoundType.None)
 		{
-			bw.WriteS5Header(model.Sound);
+			bw.WriteS5Header(model.DrivingSound);
 		}
 
-		// driving start sounds
+		// crossing whistle mask is handled in Save()
 		bw.WriteS5HeaderList(model.StartSounds);
+		bw.WriteS5HeaderList(model.CrossingSounds);
 	}
 }
 
 internal static class SimpleAnimationTypeConverter
 {
-	public static SimpleAnimationType Convert(this DatSimpleAnimationType type)
+	public static EmitterAnimationType Convert(this DatSimpleAnimationType type)
 		=> type switch
 		{
-			DatSimpleAnimationType.None => SimpleAnimationType.None,
-			DatSimpleAnimationType.SteamPuff1 => SimpleAnimationType.SteamPuff1,
-			DatSimpleAnimationType.SteamPuff2 => SimpleAnimationType.SteamPuff2,
-			DatSimpleAnimationType.SteamPuff3 => SimpleAnimationType.SteamPuff3,
-			DatSimpleAnimationType.DieselExhaust1 => SimpleAnimationType.DieselExhaust1,
-			DatSimpleAnimationType.ElectricSpark1 => SimpleAnimationType.ElectricSpark1,
-			DatSimpleAnimationType.ElectricSpark2 => SimpleAnimationType.ElectricSpark2,
-			DatSimpleAnimationType.DieselExhaust2 => SimpleAnimationType.DieselExhaust2,
-			DatSimpleAnimationType.ShipWake => SimpleAnimationType.ShipWake,
+			DatSimpleAnimationType.None => EmitterAnimationType.None,
+			DatSimpleAnimationType.SteamPuff1 => EmitterAnimationType.SteamPuff1,
+			DatSimpleAnimationType.SteamPuff2 => EmitterAnimationType.SteamPuff2,
+			DatSimpleAnimationType.SteamPuff3 => EmitterAnimationType.SteamPuff3,
+			DatSimpleAnimationType.DieselExhaust1 => EmitterAnimationType.DieselExhaust1,
+			DatSimpleAnimationType.ElectricSpark1 => EmitterAnimationType.ElectricSpark1,
+			DatSimpleAnimationType.ElectricSpark2 => EmitterAnimationType.ElectricSpark2,
+			DatSimpleAnimationType.DieselExhaust2 => EmitterAnimationType.DieselExhaust2,
+			DatSimpleAnimationType.ShipWake => EmitterAnimationType.ShipWake,
 			_ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
 		};
 
-	public static DatSimpleAnimationType Convert(this SimpleAnimationType type)
+	public static DatSimpleAnimationType Convert(this EmitterAnimationType type)
 		=> type switch
 		{
-			SimpleAnimationType.None => DatSimpleAnimationType.None,
-			SimpleAnimationType.SteamPuff1 => DatSimpleAnimationType.SteamPuff1,
-			SimpleAnimationType.SteamPuff2 => DatSimpleAnimationType.SteamPuff2,
-			SimpleAnimationType.SteamPuff3 => DatSimpleAnimationType.SteamPuff3,
-			SimpleAnimationType.DieselExhaust1 => DatSimpleAnimationType.DieselExhaust1,
-			SimpleAnimationType.ElectricSpark1 => DatSimpleAnimationType.ElectricSpark1,
-			SimpleAnimationType.ElectricSpark2 => DatSimpleAnimationType.ElectricSpark2,
-			SimpleAnimationType.DieselExhaust2 => DatSimpleAnimationType.DieselExhaust2,
-			SimpleAnimationType.ShipWake => DatSimpleAnimationType.ShipWake,
+			EmitterAnimationType.None => DatSimpleAnimationType.None,
+			EmitterAnimationType.SteamPuff1 => DatSimpleAnimationType.SteamPuff1,
+			EmitterAnimationType.SteamPuff2 => DatSimpleAnimationType.SteamPuff2,
+			EmitterAnimationType.SteamPuff3 => DatSimpleAnimationType.SteamPuff3,
+			EmitterAnimationType.DieselExhaust1 => DatSimpleAnimationType.DieselExhaust1,
+			EmitterAnimationType.ElectricSpark1 => DatSimpleAnimationType.ElectricSpark1,
+			EmitterAnimationType.ElectricSpark2 => DatSimpleAnimationType.ElectricSpark2,
+			EmitterAnimationType.DieselExhaust2 => DatSimpleAnimationType.DieselExhaust2,
+			EmitterAnimationType.ShipWake => DatSimpleAnimationType.ShipWake,
 			_ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
 		};
 }

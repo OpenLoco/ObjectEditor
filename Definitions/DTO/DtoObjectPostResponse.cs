@@ -22,6 +22,6 @@ public record DtoObjectPostResponse(
 	ICollection<DtoTagEntry> Tags,
 	ICollection<DtoItemPackEntry> ObjectPacks,
 	ICollection<DtoDatObjectEntry> DatObjects,
-	DtoStringTableDescriptor StringTable
-	//IDtoSubObject SubObject
+	DtoStringTableDescriptor StringTable,
+	IDtoSubObject? SubObject
 	) : IHasId, IDbDates;

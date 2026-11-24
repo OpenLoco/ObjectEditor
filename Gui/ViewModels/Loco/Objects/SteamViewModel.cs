@@ -21,15 +21,20 @@ public class SteamViewModel(SteamObject model)
 		set => Model.Flags = value;
 	}
 
-	public uint32_t var_0A
+	public uint32_t ImageOffset
 	{
-		get => Model.var_0A;
-		set => Model.var_0A = value;
+		get => Model.ImageOffset;
+		set => Model.ImageOffset = value;
 	}
 
-	public BindingList<ObjectModelHeader> SoundEffects { get; init; } = new(model.SoundEffects);
+	public ObjectReferenceList<SoundReferenceViewModel> SoundEffects { get; init; } = new(model.SoundEffects, h => new SoundReferenceViewModel(h), list => model.SoundEffects = [.. list]);
 
-	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; init; } = new(model.FrameInfoType0);
+	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; init; } = [with(model.FrameInfoType0)];
 
-	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; init; } = new(model.FrameInfoType1);
+	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; init; } = [with(model.FrameInfoType1)];
+
+	public override void SynchronizeToModel()
+	{
+		SoundEffects.Synchronize();
+	}
 }

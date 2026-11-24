@@ -15,6 +15,7 @@ public enum VehicleObjectFlags : uint16_t
 	// Alternates between sprite 0 and sprite 1 for each vehicle of this type in a train
 	// NOTE: This is for vehicles and not vehicle components (which can also do similar)
 	AlternatingCarSprite = 1 << 7,
+	CanReverse = 1 << 8, // Yes, this shares a value with AircraftIsTailDragger, but is used for different vehicle types
 	AircraftIsTailDragger = 1 << 8,
 	AnyRoadType = 1 << 9, // set on all road vehicles except trams
 	unk_10 = 1 << 10, // speed control?

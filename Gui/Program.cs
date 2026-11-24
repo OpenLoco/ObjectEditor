@@ -42,5 +42,5 @@ class Program
 				RenderingMode = [Win32RenderingMode.Software]
 			})
 			.LogToTrace(LogEventLevel.Verbose, LogArea.Binding)
-			.UseReactiveUI();
+			.UseReactiveUI(_ => { });
 }

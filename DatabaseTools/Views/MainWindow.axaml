@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:DatabaseTools.ViewModels"
+        xmlns:m="using:DatabaseTools.Models"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
+        x:Class="DatabaseTools.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Locomotion Database Tools"
+        Width="1000" Height="750"
+        WindowStartupLocation="CenterScreen">
+	<Design.DataContext>
+		<vm:MainWindowViewModel />
+	</Design.DataContext>
+
+	<Grid RowDefinitions="Auto,*,Auto,200">
+		<!-- Settings -->
+		<Border Grid.Row="0" Padding="12" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,0,0,1">
+			<Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="6" ColumnSpacing="8">
+				<TextBlock Grid.Row="0" Grid.Column="0" Text="Database file:" VerticalAlignment="Center" />
+				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Settings.DatabaseFile}" />
+				<Button Grid.Row="0" Grid.Column="2" Content="Browse..." Command="{Binding BrowseDatabaseFileCommand}" />
+
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Objects directory:" VerticalAlignment="Center" />
+				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Settings.ObjectDirectory}" />
+				<Button Grid.Row="1" Grid.Column="2" Content="Browse..." Command="{Binding BrowseObjectDirectoryCommand}" />
+
+				<TextBlock Grid.Row="2" Grid.Column="0" Text="JSON directory:" VerticalAlignment="Center" />
+				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Settings.JsonDirectory}" />
+				<Button Grid.Row="2" Grid.Column="2" Content="Browse..." Command="{Binding BrowseJsonDirectoryCommand}" />
+
+				<CheckBox Grid.Row="3" Grid.Column="1" Content="Delete existing rows before import"
+				          IsChecked="{Binding Settings.DeleteExistingOnImport}" />
+
+				<StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+					<TextBlock Text="{Binding SettingsPath, StringFormat='Settings: {0}'}" VerticalAlignment="Center" Opacity="0.6" FontSize="11" />
+					<Button Content="Save settings" Command="{Binding SaveSettingsCommand}" />
+				</StackPanel>
+			</Grid>
+		</Border>
+
+		<!-- Tabs -->
+		<TabControl Grid.Row="1" Margin="0,8,0,0">
+			<TabItem Header="Export">
+				<ItemsControl ItemsSource="{Binding ExportScripts}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate DataType="m:ScriptDescriptor">
+							<Border Padding="12" Margin="8,4" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
+								<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+									<TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Name}" FontWeight="SemiBold" />
+									<TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.75" />
+									<Button Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Content="Run" VerticalAlignment="Center"
+									        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RunScriptCommand}"
+									        CommandParameter="{Binding}" />
+								</Grid>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</TabItem>
+			<TabItem Header="Import">
+				<ItemsControl ItemsSource="{Binding ImportScripts}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate DataType="m:ScriptDescriptor">
+							<Border Padding="12" Margin="8,4" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
+								<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+									<TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Name}" FontWeight="SemiBold" />
+									<TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.75" />
+									<Button Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Content="Run" VerticalAlignment="Center"
+									        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RunScriptCommand}"
+									        CommandParameter="{Binding}" />
+								</Grid>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</TabItem>
+			<TabItem Header="Helpers">
+				<ScrollViewer>
+					<ItemsControl ItemsSource="{Binding HelperScripts}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate DataType="m:ScriptDescriptor">
+								<Border Padding="12" Margin="8,4" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
+									<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+										<TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Name}" FontWeight="SemiBold" />
+										<TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.75" />
+										<Button Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Content="Run" VerticalAlignment="Center"
+										        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RunScriptCommand}"
+										        CommandParameter="{Binding}" />
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</ScrollViewer>
+			</TabItem>
+		</TabControl>
+
+		<!-- Status / log toolbar -->
+		<Grid Grid.Row="2" Margin="12,4" ColumnDefinitions="*,Auto,Auto">
+			<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+				<TextBlock Text="Status:" FontWeight="SemiBold" />
+				<TextBlock Text="{Binding CurrentScript, FallbackValue=Idle, TargetNullValue=Idle}" />
+				<ProgressBar IsIndeterminate="{Binding IsRunning}"
+				             IsVisible="{Binding IsRunning}"
+				             Width="120" Height="6" />
+			</StackPanel>
+			<Button Grid.Column="1" Content="Clear log" Command="{Binding ClearLogCommand}" Margin="0,0,8,0" />
+		</Grid>
+
+		<!-- Log output -->
+		<Border Grid.Row="3" Padding="4" Margin="8,0,8,8" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
+			<TextBox Text="{Binding LogText}"
+			         IsReadOnly="True"
+			         AcceptsReturn="True"
+			         TextWrapping="NoWrap"
+			         FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
+			         FontSize="12"
+			         VerticalAlignment="Stretch"
+			         HorizontalAlignment="Stretch"
+			         VerticalContentAlignment="Top" />
+		</Border>
+	</Grid>
+</Window>

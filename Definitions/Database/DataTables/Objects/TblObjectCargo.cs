@@ -4,6 +4,7 @@ namespace Definitions.Database;
 
 public class TblObjectCargo : DbSubObject, IConvertibleToTable<TblObjectCargo, CargoObject>
 {
+	public uint16_t UnitWeight { get; set; }
 	public uint16_t CargoTransferTime { get; set; }
 	public CargoCategory CargoCategory { get; set; }
 	public CargoObjectFlags Flags { get; set; }
@@ -17,12 +18,11 @@ public class TblObjectCargo : DbSubObject, IConvertibleToTable<TblObjectCargo, C
 	public uint8_t PaymentIndex { get; set; }
 	public uint8_t UnitSize { get; set; }
 
-	//uint16_t var_02 { get; set; }
-
 	public static TblObjectCargo FromObject(TblObject tbl, CargoObject obj)
 		=> new()
 		{
 			Parent = tbl,
+			UnitWeight = obj.UnitWeight,
 			CargoTransferTime = obj.CargoTransferTime,
 			CargoCategory = obj.CargoCategory,
 			Flags = obj.Flags,

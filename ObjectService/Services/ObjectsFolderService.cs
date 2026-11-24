@@ -1,0 +1,664 @@
+using Dat.FileParsing;
+using Definitions;
+using Definitions.Database;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
+using Index;
+using Microsoft.EntityFrameworkCore;
+using System.IO.Hashing;
+
+namespace ObjectService.Services;
+
+/// <summary>
+/// The service for <c>GameData/Objects</c>. Game objects are their own entity type: this service
+/// maintains the local <see cref="ObjectIndex"/> (persisted to <c>objectIndex.json</c>) and the
+/// object tables in the database.
+/// </summary>
+public sealed class ObjectsFolderService : GameDataFolderServiceBase
+{
+	private readonly ILogger _ssrLogger;
+	private readonly IObjectImageCache _imageCache;
+
+	public ObjectsFolderService(
+		LocoDbContext db,
+		ServerFolderManager sfm,
+		ILogger<ObjectsFolderService> logger,
+		ILoggerFactory loggerFactory,
+		IObjectImageCache imageCache)
+		: base(db, sfm, logger)
+	{
+		_ssrLogger = loggerFactory.CreateLogger("SawyerStreamReader");
+		_imageCache = imageCache;
+	}
+
+	public override Task<GameDataImportResult> ImportAsync(string absolutePath, CancellationToken ct)
+		=> ImportCoreAsync(absolutePath, ct, persistIndex: true);
+
+	public override Task<GameDataImportResult> RemoveAsync(string absolutePath, CancellationToken ct)
+		=> RemoveCoreAsync(absolutePath, ct, persistIndex: true);
+
+	private async Task<GameDataImportResult> ImportCoreAsync(string absolutePath, CancellationToken ct, bool persistIndex)
+	{
+		if (!File.Exists(absolutePath))
+		{
+			return new GameDataImportResult(GameDataImportStatus.Skipped, "File no longer exists on disk");
+		}
+
+		if (!IsDatFile(absolutePath))
+		{
+			return new GameDataImportResult(GameDataImportStatus.Skipped, "Not a DAT file");
+		}
+
+		var relativePath = Path.GetRelativePath(Sfm.ObjectsFolder, absolutePath);
+
+		byte[] bytes;
+		try
+		{
+			bytes = await File.ReadAllBytesAsync(absolutePath, ct).ConfigureAwait(false);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			return new GameDataImportResult(GameDataImportStatus.Failed, $"Could not read file: {ex.Message}");
+		}
+
+		// 'Check' the dropped file: it must have valid S5 + object headers before it is added to
+		// the index or the database. GetDatFileInfoFromBytes performs that check and returns null
+		// when the file is not a valid DAT object.
+		var entry = ObjectIndex.GetDatFileInfoFromBytes(absolutePath, relativePath, bytes, _ssrLogger);
+		if (entry == null)
+		{
+			return new GameDataImportResult(GameDataImportStatus.Failed, "Invalid DAT file (missing or invalid S5/object headers)");
+		}
+
+		// An object dropped into the Custom folder that is really an OpenLoco object is moved into the
+		// OpenLoco folder before it is indexed or imported, so a file's location always matches its content.
+		(absolutePath, relativePath, entry) = EnsureCorrectObjectFolder(absolutePath, relativePath, entry);
+
+		// UpsertDatabaseEntryAsync returns Failed (rather than throwing) when the object cannot be
+		// loaded - either its headers are unusable or its body cannot be decoded. Such an object is
+		// parked in the Removed folder instead of being retried on every startup.
+		var dbStatus = await UpsertDatabaseEntryAsync(bytes, entry, relativePath, ct).ConfigureAwait(false);
+		if (dbStatus == GameDataImportStatus.Failed)
+		{
+			return await ParkUnloadableCustomObjectAsync(absolutePath, entry, "The object could not be loaded", persistIndex, ct).ConfigureAwait(false);
+		}
+
+		// Only update the local index once the database succeeded so the two never point at
+		// different sets of objects. A duplicate (identical content to an existing file) is indexed
+		// too, so the file stays served and the reconcile does not re-read it on every startup.
+		UpdateIndexEntry(entry);
+
+		if (persistIndex)
+		{
+			await Sfm.ObjectIndex.SaveIndexAsync(Sfm.IndexFile).ConfigureAwait(false);
+		}
+
+		Logger.LogInformation("Indexed object {DisplayName} from \"{RelativePath}\" ({Status})", entry.DisplayName, relativePath, dbStatus);
+
+		return new GameDataImportResult(dbStatus, $"Object {entry.DisplayName} processed", entry);
+	}
+
+	private async Task<GameDataImportResult> RemoveCoreAsync(string absolutePath, CancellationToken ct, bool persistIndex)
+	{
+		var entry = FindIndexEntryByFilePath(absolutePath);
+
+		if (entry == null)
+		{
+			return new GameDataImportResult(GameDataImportStatus.Skipped, "File was not present in the object index");
+		}
+
+		// Drop it from the in-memory index and persist the change so the file stops being served.
+		lock (Sfm.ObjectIndex)
+		{
+			Sfm.ObjectIndex.RemoveEntry(entry);
+		}
+
+		if (persistIndex)
+		{
+			await Sfm.ObjectIndex.SaveIndexAsync(Sfm.IndexFile).ConfigureAwait(false);
+		}
+
+		if (!entry.DatChecksum.HasValue)
+		{
+			return new GameDataImportResult(GameDataImportStatus.Removed, $"Removed {entry.DisplayName} from the index", entry);
+		}
+
+		// The same file content can be represented on disk more than once (duplicate files are collapsed
+		// to the oldest, but the index can transiently hold several). If an identical file is still
+		// present the object stays available - only the file mapping was dropped.
+		if (entry.xxHash3.HasValue && IsContentStillOnDisk(entry.xxHash3.Value))
+		{
+			return new GameDataImportResult(
+				GameDataImportStatus.Removed,
+				$"Removed {entry.DisplayName} from the index (identical content is still present)",
+				entry);
+		}
+
+		// Mark the database object as unavailable rather than deleting it so any metadata (authors,
+		// tags, packs) curated against it is preserved.
+		var datObject = await Db.DatObjects
+			.Include(x => x.Object)
+			.FirstOrDefaultAsync(x => x.DatName == entry.DisplayName && x.DatChecksum == entry.DatChecksum.Value, ct)
+			.ConfigureAwait(false);
+
+		if (datObject == null)
+		{
+			return new GameDataImportResult(GameDataImportStatus.Removed, $"Removed {entry.DisplayName} from the index (no database row)", entry);
+		}
+
+		datObject.Object.Availability = ObjectAvailability.Unavailable;
+		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+		Logger.LogInformation("Marked object {DisplayName} as unavailable after its file was deleted", entry.DisplayName);
+
+		return new GameDataImportResult(GameDataImportStatus.Unavailable, $"Object {entry.DisplayName} marked unavailable", entry);
+	}
+
+	/// <summary>
+	/// Adds or refreshes the object's row(s) in the database. Returns
+	/// <see cref="GameDataImportStatus.Added"/> for a brand new object,
+	/// <see cref="GameDataImportStatus.Updated"/> when it already existed and
+	/// <see cref="GameDataImportStatus.Failed"/> when it could not be parsed.
+	/// </summary>
+	private async Task<GameDataImportStatus> UpsertDatabaseEntryAsync(byte[] bytes, ObjectIndexEntry entry, string relativePath, CancellationToken ct)
+	{
+		var datName = entry.DisplayName;
+		var datChecksum = entry.DatChecksum ?? 0;
+		var xxHash3 = entry.xxHash3 ?? XxHash3.HashToUInt64(bytes);
+
+		// xxHash3 is the authoritative identity of a file. If we already hold a file with this exact
+		// content, this one is a duplicate: keep the oldest (the existing object) and add nothing.
+		if (Db.DoesObjectWithHashExist(xxHash3, out var duplicateObj))
+		{
+			duplicateObj!.ModifiedDate = entry.ModifiedDate;
+
+			// A file that reappears (e.g. restored from the Removed folder) makes the object available
+			// again - unless it is non-Custom content (vanilla/OpenLoco are never available).
+			duplicateObj.Availability = ObjectAvailabilityRules.ForFile(duplicateObj.ObjectSource, fileExists: true);
+
+			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+			Logger.LogInformation(
+				"File \"{RelativePath}\" is a duplicate (xxHash3={XxHash3}); keeping the existing object {ObjectId}",
+				relativePath, xxHash3, duplicateObj.Id);
+
+			return GameDataImportStatus.Duplicate;
+		}
+
+		if (!SawyerStreamReader.TryGetHeadersFromBytes(bytes, out var hdrs, _ssrLogger))
+		{
+			return GameDataImportStatus.Failed;
+		}
+
+		// The (DatName, DatChecksum) pair is not unique: a binary-different file may carry the same S5
+		// name and checksum. Name the object from that pair, disambiguating with the whole-file hash
+		// when the name is already taken so the unique Objects.Name constraint still holds.
+		var objName = await Db.GetUniqueObjectNameAsync(hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, ct).ConfigureAwait(false);
+
+		var missingEntry = await Db.ObjectsMissing.FirstOrDefaultAsync(x => x.DatName == datName && x.DatChecksum == datChecksum, ct).ConfigureAwait(false);
+		if (missingEntry != null)
+		{
+			_ = Db.ObjectsMissing.Remove(missingEntry);
+		}
+
+		var tblObject = new TblObject
+		{
+			Name = objName,
+			Description = string.Empty,
+			ObjectSource = entry.ObjectSource,
+			ObjectType = entry.ObjectType,
+			VehicleType = entry.VehicleType,
+			Availability = ObjectAvailabilityRules.ForFile(entry.ObjectSource, fileExists: true),
+			CreatedDate = entry.CreatedDate,
+			ModifiedDate = entry.ModifiedDate,
+			UploadedDate = DateOnly.FromDateTime(DateTime.UtcNow.Date),
+			Authors = [],
+			Tags = [],
+			ObjectPacks = [],
+			DatObjects = [],
+			StringTable = [],
+			Licence = null,
+			OwnerUserId = null,
+		};
+
+		_ = await Db.Objects.AddAsync(tblObject, ct).ConfigureAwait(false);
+		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+		// The full object can fail to parse even though its headers were fine (for example a corrupt
+		// RLE image table). The row created above is kept and marked unavailable rather than deleted:
+		// the caller parks the file, and the row records that the object exists but cannot be loaded
+		// so it is never served or offered for download.
+		LocoObject? locoObject;
+		try
+		{
+			(_, locoObject) = SawyerStreamReader.LoadFullObject(bytes, _ssrLogger, relativePath);
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			tblObject.Availability = ObjectAvailability.Unavailable;
+			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+			Logger.LogWarning(ex, "Failed to parse object \"{RelativePath}\"", relativePath);
+			return GameDataImportStatus.Failed;
+		}
+
+		if (locoObject == null)
+		{
+			tblObject.Availability = ObjectAvailability.Unavailable;
+			_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+			return GameDataImportStatus.Failed;
+		}
+
+		foreach (var s in locoObject.StringTable.Table)
+		{
+			foreach (var t in s.Value)
+			{
+				tblObject.StringTable.Add(new TblStringTableRow { Name = s.Key, Language = t.Key, Text = t.Value, ObjectId = tblObject.Id });
+			}
+		}
+
+		tblObject.DatObjects.Add(new TblDatObject
+		{
+			ObjectId = tblObject.Id,
+			DatName = datName,
+			DatChecksum = datChecksum,
+			xxHash3 = xxHash3,
+			Object = tblObject,
+		});
+
+		_ = await DbSubObjectHelper.AddOrUpdate(Db, tblObject, locoObject.Object).ConfigureAwait(false);
+		_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+		// The object is fully decoded here, so warm the image cache (thumbnail + metadata) while it is free
+		// to do so. Only Custom content is ever exposed through the API, so it is not worth warming otherwise.
+		if (locoObject.ImageTable is { } imageTable && entry.ObjectSource == ObjectSource.Custom)
+		{
+			await ObjectImageRender.WarmAsync(_imageCache, xxHash3, imageTable.GraphicsElements, ct).ConfigureAwait(false);
+		}
+
+		return GameDataImportStatus.Added;
+	}
+
+	/// <summary>
+	/// Parks a <c>Custom</c> folder DAT file that cannot be loaded so it is not retried on every
+	/// startup: the file is moved into the category's <c>Removed</c> folder, its object-index entry
+	/// is dropped and any database row for it is marked <see cref="ObjectAvailability.Unavailable"/>
+	/// (the row is kept so curated metadata and references survive). Only files under the Custom
+	/// folder are moved - Original/OpenLoco files are server-managed and are never relocated
+	/// automatically.
+	/// </summary>
+	private async Task<GameDataImportResult> ParkUnloadableCustomObjectAsync(
+		string absolutePath,
+		ObjectIndexEntry entry,
+		string reason,
+		bool persistIndex,
+		CancellationToken ct)
+	{
+		if (!IsUnder(absolutePath, Sfm.ObjectsCustomFolder))
+		{
+			return new GameDataImportResult(GameDataImportStatus.Failed, reason, entry);
+		}
+
+		string? parked;
+		try
+		{
+			parked = ServerFolderManager.MoveToRemovedFolder(Sfm.ObjectsFolder, absolutePath);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			Logger.LogError(ex, "Failed to move unloadable object \"{Path}\" into the Removed folder", absolutePath);
+			return new GameDataImportResult(GameDataImportStatus.Failed, $"Could not unload object: {reason}", entry);
+		}
+
+		// Keep the database row(s) but mark them unavailable so curated metadata (authors, tags,
+		// packs) and scenario references survive while the object stops being served/downloaded.
+		if (entry.DatChecksum is { } checksum)
+		{
+			var rows = await Db.DatObjects
+				.Include(x => x.Object)
+				.Where(x => x.DatName == entry.DisplayName && x.DatChecksum == checksum)
+				.ToListAsync(ct)
+				.ConfigureAwait(false);
+
+			if (rows.Count > 0)
+			{
+				foreach (var row in rows)
+				{
+					row.Object.Availability = ObjectAvailability.Unavailable;
+				}
+
+				_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+			}
+		}
+
+		// Drop the file's index entry so it stops being served and is not reported missing.
+		var indexEntry = FindIndexEntryByFilePath(absolutePath) ?? entry;
+		lock (Sfm.ObjectIndex)
+		{
+			Sfm.ObjectIndex.RemoveEntry(indexEntry);
+		}
+
+		if (persistIndex && parked != null)
+		{
+			await Sfm.ObjectIndex.SaveIndexAsync(Sfm.IndexFile).ConfigureAwait(false);
+		}
+
+		if (parked != null)
+		{
+			Logger.LogInformation(
+				"Parked unloadable object \"{DisplayName}\": moved \"{SourcePath}\" to \"{DestinationPath}\" ({Reason})",
+				entry.DisplayName, absolutePath, parked, reason);
+		}
+		else
+		{
+			Logger.LogInformation(
+				"Parked unloadable object \"{DisplayName}\": \"{SourcePath}\" was already in the Removed folder ({Reason})",
+				entry.DisplayName, absolutePath, reason);
+		}
+
+		return new GameDataImportResult(
+			GameDataImportStatus.Unavailable,
+			$"Object {entry.DisplayName} could not be loaded and was moved to the Removed folder",
+			entry);
+	}
+
+	/// <summary>
+	/// Reassesses the Objects folder against the object index and database: stale index entries are
+	/// dropped (and their database objects marked unavailable), objects missing from the database
+	/// are backfilled, and DAT files that aren't in the index are imported. The index is persisted
+	/// once at the end rather than per file.
+	/// </summary>
+	public override async Task ReconcileAsync(CancellationToken ct)
+	{
+		var changed = false;
+		var missing = 0;
+		var backfilled = 0;
+		var added = 0;
+		var parked = 0;
+		var duplicates = 0;
+
+		// 0. Objects sitting in the wrong folder are moved to the folder their content says they belong
+		// to first, so the rest of the pass works against the corrected layout.
+		var relocated = await RelocateMisplacedObjectsAsync(ct).ConfigureAwait(false);
+		if (relocated > 0)
+		{
+			changed = true;
+		}
+
+		var dbPairs = await Db.DatObjects
+			.AsNoTracking()
+			.Select(x => new { x.DatName, x.DatChecksum })
+			.ToListAsync(ct)
+			.ConfigureAwait(false);
+		var dbPairSet = new HashSet<(string Name, uint Checksum)>(dbPairs.Select(p => (p.DatName, p.DatChecksum)));
+
+		List<ObjectIndexEntry> indexEntries;
+		lock (Sfm.ObjectIndex)
+		{
+			indexEntries = [.. Sfm.ObjectIndex.Objects];
+		}
+
+		// The index/disk comparison is the same one the editor performs when it reloads its index. The
+		// file list is supplied so files parked in the Removed folder are ignored, as before.
+		var diskFiles = EnumerateFiles(Sfm.ObjectsFolder, IsDatFile)
+			.Select(f => Path.GetRelativePath(Sfm.ObjectsFolder, f))
+			.ToList();
+		var (missingEntries, unindexedFiles) = Sfm.ObjectIndex.DiffWithDisk(Sfm.ObjectsFolder, diskFiles);
+
+		// 1. Index entries whose file has gone.
+		foreach (var entry in missingEntries)
+		{
+			var fullPath = ResolveObjectPath(entry.FileName ?? string.Empty);
+			var result = await TryReconcileFileAsync(fullPath, () => RemoveCoreAsync(fullPath, ct, persistIndex: false), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Unavailable or GameDataImportStatus.Removed)
+			{
+				changed = true;
+				missing++;
+			}
+		}
+
+		// 2. Index entries whose file exists but which are missing from the database.
+		foreach (var entry in indexEntries)
+		{
+			if (string.IsNullOrEmpty(entry.FileName) || !entry.DatChecksum.HasValue)
+			{
+				continue;
+			}
+
+			var fullPath = ResolveObjectPath(entry.FileName!);
+			if (!File.Exists(fullPath) || dbPairSet.Contains((entry.DisplayName, entry.DatChecksum.Value)))
+			{
+				continue;
+			}
+
+			var result = await TryReconcileFileAsync(fullPath, () => ImportCoreAsync(fullPath, ct, persistIndex: false), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
+			{
+				changed = true;
+				backfilled++;
+			}
+			else if (result?.Status is GameDataImportStatus.Unavailable)
+			{
+				changed = true;
+				parked++;
+			}
+			else if (result?.Status is GameDataImportStatus.Duplicate)
+			{
+				duplicates++;
+			}
+		}
+
+		// 3. DAT files on disk that are not in the index at all.
+		foreach (var relativePath in unindexedFiles)
+		{
+			var file = Path.Combine(Sfm.ObjectsFolder, relativePath);
+			var result = await TryReconcileFileAsync(file, () => ImportCoreAsync(file, ct, persistIndex: false), ct).ConfigureAwait(false);
+			if (result?.Status is GameDataImportStatus.Added or GameDataImportStatus.Updated)
+			{
+				changed = true;
+				added++;
+			}
+			else if (result?.Status is GameDataImportStatus.Unavailable)
+			{
+				changed = true;
+				parked++;
+			}
+			else if (result?.Status is GameDataImportStatus.Duplicate)
+			{
+				duplicates++;
+			}
+		}
+
+		if (changed)
+		{
+			await Sfm.ObjectIndex.SaveIndexAsync(Sfm.IndexFile).ConfigureAwait(false);
+		}
+
+		Logger.LogInformation(
+			"Objects reconciliation complete: relocated={Relocated}, added={Added}, database backfilled={Backfilled}, marked unavailable={Missing}, parked unloadable={Parked}, duplicates ignored={Duplicates}",
+			relocated, added, backfilled, missing, parked, duplicates);
+	}
+
+	/// <summary>
+	/// Moves object files that sit in the <c>Custom</c> folder but whose content identifies them as
+	/// OpenLoco objects into the <c>OpenLoco</c> folder, re-pointing the index entry (and the database's
+	/// recorded source) at the new location.
+	/// </summary>
+	private async Task<int> RelocateMisplacedObjectsAsync(CancellationToken ct)
+	{
+		List<ObjectIndexEntry> indexEntries;
+		lock (Sfm.ObjectIndex)
+		{
+			indexEntries = [.. Sfm.ObjectIndex.Objects];
+		}
+
+		var moved = 0;
+		foreach (var entry in indexEntries)
+		{
+			if (ct.IsCancellationRequested)
+			{
+				break;
+			}
+
+			if (entry.ObjectSource != ObjectSource.OpenLoco || string.IsNullOrEmpty(entry.FileName))
+			{
+				continue;
+			}
+
+			var source = ResolveObjectPath(entry.FileName!);
+			if (!File.Exists(source) || !IsUnder(source, Sfm.ObjectsCustomFolder))
+			{
+				continue;
+			}
+
+			var destination = Path.Combine(Sfm.ObjectsOpenLocoFolder, Path.GetFileName(source));
+			if (File.Exists(destination))
+			{
+				Logger.LogWarning("Cannot move OpenLoco object \"{Source}\": \"{Destination}\" already exists", source, destination);
+				continue;
+			}
+
+			try
+			{
+				File.Move(source, destination);
+			}
+			catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+			{
+				Logger.LogError(ex, "Failed to move OpenLoco object \"{Source}\" into the OpenLoco folder", source);
+				continue;
+			}
+
+			var newRelativePath = Path.GetRelativePath(Sfm.ObjectsFolder, destination);
+			lock (Sfm.ObjectIndex)
+			{
+				Sfm.ObjectIndex.RemoveEntry(entry);
+				Sfm.ObjectIndex.AddEntry(entry with { FileName = newRelativePath, ObjectSource = ObjectSource.OpenLoco });
+			}
+
+			if (entry.DatChecksum.HasValue
+				&& Db.DoesObjectExist(entry.DisplayName, entry.DatChecksum.Value, out var tblObject)
+				&& tblObject!.ObjectSource != ObjectSource.OpenLoco)
+			{
+				tblObject.ObjectSource = ObjectSource.OpenLoco;
+				_ = await Db.SaveChangesAsync(ct).ConfigureAwait(false);
+			}
+
+			moved++;
+			Logger.LogInformation("Moved OpenLoco object \"{Name}\" from Custom into the OpenLoco folder", entry.DisplayName);
+		}
+
+		return moved;
+	}
+
+	/// <summary>
+	/// Moves <paramref name="absolutePath"/> into the OpenLoco folder when it is an OpenLoco object
+	/// sitting in the Custom folder, and returns the updated paths and index entry. Otherwise the
+	/// inputs are returned unchanged.
+	/// </summary>
+	private (string AbsolutePath, string RelativePath, ObjectIndexEntry Entry) EnsureCorrectObjectFolder(
+		string absolutePath,
+		string relativePath,
+		ObjectIndexEntry entry)
+	{
+		if (entry.ObjectSource != ObjectSource.OpenLoco || !IsUnder(absolutePath, Sfm.ObjectsCustomFolder))
+		{
+			return (absolutePath, relativePath, entry);
+		}
+
+		var destination = Path.Combine(Sfm.ObjectsOpenLocoFolder, Path.GetFileName(absolutePath));
+		if (File.Exists(destination))
+		{
+			Logger.LogWarning("Cannot move OpenLoco object \"{Source}\": \"{Destination}\" already exists", absolutePath, destination);
+			return (absolutePath, relativePath, entry);
+		}
+
+		try
+		{
+			File.Move(absolutePath, destination);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			Logger.LogError(ex, "Failed to move OpenLoco object \"{Source}\" into the OpenLoco folder", absolutePath);
+			return (absolutePath, relativePath, entry);
+		}
+
+		var newRelativePath = Path.GetRelativePath(Sfm.ObjectsFolder, destination);
+		Logger.LogInformation("Moved OpenLoco object \"{Name}\" from Custom into the OpenLoco folder", entry.DisplayName);
+		return (destination, newRelativePath, entry with { FileName = newRelativePath });
+	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> when any file still in the index has the same whole-file content
+	/// hash and is present on disk.
+	/// </summary>
+	private bool IsContentStillOnDisk(ulong xxHash3)
+	{
+		lock (Sfm.ObjectIndex)
+		{
+			return Sfm.ObjectIndex.Objects.Any(e =>
+				e.xxHash3 == xxHash3
+				&& !string.IsNullOrEmpty(e.FileName)
+				&& File.Exists(ResolveObjectPath(e.FileName!)));
+		}
+	}
+
+	/// <summary>
+	/// Finds the index entry whose stored filename (absolute for uploaded objects, relative for
+	/// scanned ones) resolves to <paramref name="absolutePath"/>.
+	/// </summary>
+	private ObjectIndexEntry? FindIndexEntryByFilePath(string absolutePath)
+	{
+		var fullPath = Path.GetFullPath(absolutePath);
+
+		lock (Sfm.ObjectIndex)
+		{
+			foreach (var entry in Sfm.ObjectIndex.Objects.ToList())
+			{
+				if (string.IsNullOrEmpty(entry.FileName))
+				{
+					continue;
+				}
+
+				if (string.Equals(Path.GetFullPath(ResolveObjectPath(entry.FileName)), fullPath, StringComparison.OrdinalIgnoreCase))
+				{
+					return entry;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// Adds the entry to the in-memory index, replacing any existing entry for the same content
+	/// (matched by xxHash3 first, then by dat name + checksum) so a moved or renamed file doesn't
+	/// leave a stale path behind.
+	/// </summary>
+	private void UpdateIndexEntry(ObjectIndexEntry entry)
+	{
+		var index = Sfm.ObjectIndex;
+		lock (index)
+		{
+			ObjectIndexEntry? existing = null;
+
+			if (entry.xxHash3.HasValue)
+			{
+				_ = index.TryFind(entry.xxHash3.Value, out existing);
+			}
+
+			if (existing == null && entry.DatChecksum.HasValue)
+			{
+				_ = index.TryFind((entry.DisplayName, entry.DatChecksum.Value), out existing);
+			}
+
+			if (existing != null)
+			{
+				index.RemoveEntry(existing);
+			}
+
+			index.AddEntry(entry);
+		}
+	}
+
+	private string ResolveObjectPath(string fileName)
+		=> Path.IsPathRooted(fileName) ? fileName : Path.Combine(Sfm.ObjectsFolder, fileName);
+}

@@ -15,6 +15,8 @@ public static class DtoObjectLandMapper
 		DistributionPattern = tblobjectland.DistributionPattern,
 		NumVariations = tblobjectland.NumVariations,
 		VariationLikelihood = tblobjectland.VariationLikelihood,
+		CliffEdgeHeader = tblobjectland.CliffEdgeHeader,
+		ReplacementLandHeader = tblobjectland.ReplacementLandHeader,
 		Id = tblobjectland.Id,
 	};
 
@@ -30,6 +32,8 @@ public static class DtoObjectLandMapper
 		DistributionPattern = model.DistributionPattern,
 		NumVariations = model.NumVariations,
 		VariationLikelihood = model.VariationLikelihood,
+		CliffEdgeHeader = model.CliffEdgeHeader,
+		ReplacementLandHeader = model.ReplacementLandHeader,
 		Id = model.Id,
 	};
 

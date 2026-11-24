@@ -1,0 +1,171 @@
+@page "/Tags/{id}"
+@model ObjectService.Pages.Tags.DetailsModel
+@{
+	ViewData["Title"] = Model.Tag?.Name ?? "Tag";
+	var isAdmin = User.IsInRole("Admin");
+}
+
+@if (Model.Tag is null)
+{
+	<section class="panel">
+		<h1>Tag not found</h1>
+		<p>The tag you are looking for does not exist.</p>
+		<a class="button button-secondary" asp-page="/Index" asp-route-category="tags">Back to tag list</a>
+	</section>
+	return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+	<div class="alert alert-success">@Model.SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+	<div class="alert alert-error">@Model.ErrorMessage</div>
+}
+
+<section class="detail-hero panel">
+	<div>
+		<a class="back-link" asp-page="/Index" asp-route-category="tags">Back to tags</a>
+		<div class="admin-page-header">
+			<h1>@Model.Tag.Name</h1>
+			@if (isAdmin)
+			{
+				<div class="action-buttons">
+					<button type="button" class="button button-small button-secondary" onclick="document.getElementById('edit-form').hidden = !document.getElementById('edit-form').hidden">Edit</button>
+					<form method="post" asp-page-handler="Delete" asp-route-id="@Model.Tag.Id" class="inline-form" onsubmit="return confirm('Delete this tag?')">
+						<button type="submit" class="button button-small button-danger">Delete</button>
+					</form>
+				</div>
+			}
+		</div>
+		@if (isAdmin)
+		{
+			<form method="post" asp-page-handler="Edit" id="edit-form" hidden class="form mt-lg">
+				<input type="hidden" name="Id" value="@Model.Tag.Id" />
+				<div class="form-group">
+					<label for="editName">Name</label>
+					<input id="editName" name="Name" type="text" value="@Model.Tag.Name" required class="form-input" />
+				</div>
+				<div class="form-actions mt-sm">
+					<button type="submit" class="button button-primary button-small">Save</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-form').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+	</div>
+</section>
+
+<div class="detail-grid-4col">
+	<section class="panel">
+		<h2>Objects</h2>
+		@if (Model.Objects.Count == 0)
+		{
+			<p class="muted">No objects are associated with this tag.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var obj in Model.Objects)
+						{
+							<tr>
+								<td><a asp-page="/Objects/Details" asp-route-id="@obj.Id">@obj.Name</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>Object Packs</h2>
+		@if (Model.ObjectPacks.Count == 0)
+		{
+			<p class="muted">No object packs are associated with this tag.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var pack in Model.ObjectPacks)
+						{
+							<tr>
+								<td><a asp-page="/ObjectPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>Scenarios</h2>
+		@if (Model.Scenarios.Count == 0)
+		{
+			<p class="muted">No scenarios are associated with this tag.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var file in Model.Scenarios)
+						{
+							<tr>
+								<td>@file.Name</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>Scenario Packs</h2>
+		@if (Model.ScenarioPacks.Count == 0)
+		{
+			<p class="muted">No scenario packs are associated with this tag.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var pack in Model.ScenarioPacks)
+						{
+							<tr>
+								<td><a asp-page="/ScenarioPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+</div>

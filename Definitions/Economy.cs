@@ -25,7 +25,7 @@ public static class Economy
 		var factors = new uint[32];
 
 		// Initialize all factors to 1024 (base value)
-		for (var i = 0; i < 32; i++)
+		for (var i = 0; i < 32; ++i)
 		{
 			factors[i] = 1024;
 		}
@@ -38,9 +38,9 @@ public static class Economy
 		// Apply inflation for each month
 		for (var month = 0; month < monthCount; month++)
 		{
-			for (var i = 0; i < 32; i++)
+			for (var i = 0; i < 32; ++i)
 			{
-				factors[i] += (uint)((ulong)InflationFactors[i] * factors[i] >> 12);
+				factors[i] += (uint)((InflationFactors[i] * (ulong)factors[i]) >> 12);
 			}
 		}
 
@@ -55,7 +55,7 @@ public static class Economy
 	/// <param name="year">The year to calculate the cost for</param>
 	/// <param name="divisor">The divisor to apply (default is 10, which is common for most objects)</param>
 	/// <returns>The inflation-adjusted cost</returns>
-	public static int GetInflationAdjustedCost(short costFactor, byte costIndex, int year, byte divisor = 10)
+	public static int GetInflationAdjustedCost(short costFactor, byte costIndex, int year, byte divisor)
 	{
 		if (costIndex >= 32)
 		{
@@ -68,7 +68,7 @@ public static class Economy
 		}
 
 		var factors = CalculateCurrencyMultiplicationFactors(year);
-		var val = costFactor * (long)factors[costIndex];
+		var val = costFactor * factors[costIndex];
 		var result = val / (1L << divisor);
 
 		return (int)result;

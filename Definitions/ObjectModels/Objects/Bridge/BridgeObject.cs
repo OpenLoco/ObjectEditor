@@ -6,7 +6,6 @@ namespace Definitions.ObjectModels.Objects.Bridge;
 public class BridgeObject : ILocoStruct
 {
 	public BridgeObjectFlags Flags { get; set; }
-	public uint8_t var_03 { get; set; } // unknown - padding?
 	public uint16_t ClearHeight { get; set; }
 	public int16_t DeckDepth { get; set; }
 	public uint8_t SpanLength { get; set; }

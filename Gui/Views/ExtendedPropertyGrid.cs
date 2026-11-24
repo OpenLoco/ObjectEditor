@@ -15,6 +15,7 @@ public class ExtendedPropertyGrid : PropertyGrid
 	{
 		Factories.AddFactory(new Pos3CellEditFactory());
 		Factories.AddFactory(new InflatableCurrencyCellEditFactory());
+		Factories.AddFactory(new ObjectReferenceCellEditFactory());
 	}
 }
 
@@ -52,6 +53,12 @@ internal class Pos3CellEditFactory : AbstractCellEditFactory
 		if (control is Pos3View pv)
 		{
 			var pos = (Pos3)propertyDescriptor.GetValue(target)!;
+
+			if (pv.DataContext is Pos3ViewModel existingVm)
+			{
+				existingVm.Pos = pos;
+				return true;
+			}
 
 			var model = new Pos3ViewModel { Pos = pos };
 			pv.DataContext = model;
@@ -104,11 +111,6 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 
 		if (control is InflatableCurrencyView cv)
 		{
-			if (cv is null)
-			{
-				return false;
-			}
-
 			var costFactor = (short)propertyDescriptor.GetValue(target)!;
 
 			// Get CostIndex from the target object
@@ -120,13 +122,21 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 			var designedYearProperty = currencyAttr.DesignedYearPropertyName is null
 				? null
 				: TypeDescriptor.GetProperties(target)[currencyAttr.DesignedYearPropertyName];
-
 			var designedYear = designedYearProperty is not null
 				? (uint16_t)designedYearProperty.GetValue(target)!
 				: (uint16_t)1950;
 
-			var currVm = (InflatableCurrencyViewModel?)cv?.DataContext;
-			var year = currVm?.Year ?? designedYear;
+			var divisor = currencyAttr.InflationDivisor;
+
+			if (cv.DataContext is InflatableCurrencyViewModel existingModel)
+			{
+				existingModel.CostIndex = costIndex;
+				existingModel.Divisor = divisor;
+				existingModel.CostFactor = costFactor;
+				return true;
+			}
+
+			var year = designedYear;
 			// objects can actually set any year as designed year, even 0, so lets sanitize it
 			if (year < 1800)
 			{
@@ -137,7 +147,8 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 			{
 				CostFactor = costFactor,
 				CostIndex = costIndex,
-				Year = year
+				Year = year,
+				Divisor = divisor,
 			};
 
 			cv.DataContext = model;
@@ -147,5 +158,46 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 		}
 
 		return false;
+	}
+}
+
+internal class ObjectReferenceCellEditFactory : AbstractCellEditFactory
+{
+	public override bool Accept(object accessToken)
+		=> accessToken is ExtendedPropertyGrid;
+
+	public override Control? HandleNewProperty(PropertyCellContext context)
+	{
+		var referenceViewModelType = context.Property.PropertyType;
+		if (!typeof(ObjectModelHeaderViewModel).IsAssignableFrom(referenceViewModelType))
+		{
+			return null;
+		}
+
+		ObjectModelHeaderViewModel? GetReference()
+			=> context.Property.GetValue(context.Target) as ObjectModelHeaderViewModel;
+
+		var view = new ObjectReferenceView();
+		view.DataContext = new ObjectReferenceEntryViewModel(
+			GetReference,
+			referenceViewModelType,
+			commitNewReference: vm => SetAndRaise(context, view, vm));
+
+		return view;
+	}
+
+	public override bool HandlePropertyChanged(PropertyCellContext context)
+	{
+		if (!typeof(ObjectModelHeaderViewModel).IsAssignableFrom(context.Property.PropertyType))
+		{
+			return false;
+		}
+
+		if (context.CellEdit is ObjectReferenceView { DataContext: ObjectReferenceEntryViewModel entryViewModel })
+		{
+			entryViewModel.Refresh();
+		}
+
+		return true;
 	}
 }

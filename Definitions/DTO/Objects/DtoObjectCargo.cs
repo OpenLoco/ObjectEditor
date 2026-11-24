@@ -17,5 +17,6 @@ public class DtoObjectCargo : IDtoSubObject
 	public uint16_t PaymentFactor { get; set; }
 	public uint8_t PaymentIndex { get; set; }
 	public uint8_t UnitSize { get; set; }
+	public uint16_t UnitWeight { get; set; }
 	public UniqueObjectId Id { get; set; }
 }

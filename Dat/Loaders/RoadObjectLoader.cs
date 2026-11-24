@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -57,7 +60,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			br.SkipUInt16(); // _CompatibleRoads, not part of object definition
 			br.SkipUInt16(); // _CompatibleTracks, not part of object definition
 			model.TargetTownSize = ((DatTownSize)br.ReadByte()).Convert();
-			model.pad_2F = br.ReadByte(); // pad_2F, not part of object definition
+			br.SkipByte(); // 0x2F is a padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -116,7 +119,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			bw.Write((uint16_t)0); // _CompatibleRoads, not part of object definition
 			bw.Write((uint16_t)0); // _CompatibleTracks, not part of object definition
 			bw.Write((uint8_t)model.TargetTownSize.Convert());
-			bw.Write(model.pad_2F);
+			bw.WriteEmptyBytes(1); // 0x2F is a padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

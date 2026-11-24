@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -47,7 +50,7 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 			model.TopToolbarSecondaryColour = (Colour)br.ReadByte();
 			model.TopToolbarTertiaryColour = (Colour)br.ReadByte();
 			model.TopToolbarQuaternaryColour = (Colour)br.ReadByte();
-			model.PlayerInfoToolbarColour = (Colour)br.ReadByte();
+			model.CompanyInfoToolbarColour = (Colour)br.ReadByte();
 			model.TimeToolbarColour = (Colour)br.ReadByte();
 
 			// sanity check
@@ -94,7 +97,7 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.TopToolbarSecondaryColour);
 			bw.Write((uint8_t)model.TopToolbarTertiaryColour);
 			bw.Write((uint8_t)model.TopToolbarQuaternaryColour);
-			bw.Write((uint8_t)model.PlayerInfoToolbarColour);
+			bw.Write((uint8_t)model.CompanyInfoToolbarColour);
 			bw.Write((uint8_t)model.TimeToolbarColour);
 
 			// sanity check

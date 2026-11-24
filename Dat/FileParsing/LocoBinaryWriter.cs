@@ -131,13 +131,9 @@ public class LocoBinaryWriter : BinaryWriter
 			Write(body.NumRollFrames);
 			Write(body.HalfLength);
 			Write((uint8_t)body.Flags);
-			Write(body._Width);
-			Write(body._HeightNegative);
-			Write(body._HeightPositive);
-			Write(body._FlatYawAccuracy);
-			Write(body._SlopedYawAccuracy);
-			Write(body._NumPermutationsPerRotation);
 
+			// These are not part of the object definition, but are required for the object to load correctly. They are calculated on load, so we can just write 0 here.
+			WriteEmptyBytes(6); // _Width, _HeightNegative, _HeightPositive, _FlatYawAccuracy, _SlopedYawAccuracy, _NumPermutationsPerRotation
 			WriteEmptyImageId(4); // image ids not part of object definition
 		}
 	}
@@ -151,6 +147,8 @@ public class LocoBinaryWriter : BinaryWriter
 			Write(bogie.Width);
 			Write(bogie.HeightNegative);
 			Write(bogie.HeightPositive);
+
+			// These are not part of the object definition, but are required for the object to load correctly. They are calculated on load, so we can just write 0 here.
 			WriteEmptyBytes(1); // NumFramesPerRotation is not part of object definition, its calculated on load
 			WriteEmptyImageId(3); // image ids not part of object definition
 		}

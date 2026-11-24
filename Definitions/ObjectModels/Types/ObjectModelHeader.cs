@@ -7,7 +7,7 @@ namespace Definitions.ObjectModels.Types;
 public class ObjectModelHeader(string name, ObjectType objectType, ObjectSource objectSource, uint datchecksum) : ILocoStruct
 {
 	public ObjectModelHeader()
-		: this(string.Empty, ObjectType.Airport, ObjectSource.Custom, 0)
+		: this(string.Empty, 0, 0, 0)
 	{ }
 
 	public string Name { get; set; } = name;

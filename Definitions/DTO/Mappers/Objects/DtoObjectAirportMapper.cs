@@ -17,6 +17,11 @@ public static class DtoObjectAirportMapper
 		MaxY = tblobjectairport.MaxY,
 		DesignedYear = tblobjectairport.DesignedYear,
 		ObsoleteYear = tblobjectairport.ObsoleteYear,
+		BuildingComponents = tblobjectairport.BuildingComponents,
+		BuildingPositions = tblobjectairport.BuildingPositions,
+		MovementNodes = tblobjectairport.MovementNodes,
+		MovementEdges = tblobjectairport.MovementEdges,
+		RequiredClearEdges = tblobjectairport.RequiredClearEdges,
 		Id = tblobjectairport.Id,
 	};
 
@@ -34,6 +39,11 @@ public static class DtoObjectAirportMapper
 		MaxY = model.MaxY,
 		DesignedYear = model.DesignedYear,
 		ObsoleteYear = model.ObsoleteYear,
+		BuildingComponents = model.BuildingComponents,
+		BuildingPositions = model.BuildingPositions,
+		MovementNodes = model.MovementNodes,
+		MovementEdges = model.MovementEdges,
+		RequiredClearEdges = model.RequiredClearEdges,
 		Id = model.Id,
 	};
 }

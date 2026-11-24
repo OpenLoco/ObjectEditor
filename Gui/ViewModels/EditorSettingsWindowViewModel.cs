@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Graphics.Dithering;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -6,15 +7,17 @@ namespace Gui.ViewModels;
 
 public class EditorSettingsWindowViewModel : ViewModelBase
 {
-	EditorSettings Model { get; }
+	EditorSettings Model { get; } = new();
 
 	public EditorSettingsWindowViewModel()
-	{ }
+	{
+		ObjDataDirectories = [];
+	}
 
 	public EditorSettingsWindowViewModel(EditorSettings settings)
 	{
 		Model = settings;
-		ObjDataDirectories = new(settings.ObjDataDirectories);
+		ObjDataDirectories = [with(settings.ObjDataDirectories)];
 	}
 
 	public void Commit()
@@ -22,7 +25,14 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		Model.ObjDataDirectories = [.. ObjDataDirectories];
 	}
 
-	[Category("Misc"), DisplayName("Allow saving as vanilla object"), Description("If enabled, the editor will allow saving objects with \"Vanilla\" flag set. If disabled, the object will be forcefully saved as \"Custom\" instead.")]
+	[Category("Misc"), DisplayName("Default Dithering Method"), Description("When set to a value other than None, the dithering popup is skipped and this algorithm is always used when importing palette-indexed images. Set to 'None' to always see the popup.")]
+	public DitheringMethod DefaultDitheringMethod
+	{
+		get => Model.DefaultDitheringMethod;
+		set => Model.DefaultDitheringMethod = value;
+	}
+
+	[Category("Misc"), DisplayName("Allow saving with vanilla object source"), Description("If enabled, the editor will allow saving objects with \"Vanilla\" object source flag set. If disabled, the object will be forcefully saved as \"Custom\" instead.")]
 	public bool AllowSavingAsVanillaObject
 	{
 		get => Model.AllowSavingAsVanillaObject;
@@ -45,8 +55,9 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 
 	#region Object Folders
 
-	const string GameObjectFolderCategory = "Folders OpenLoco can use objects from";
-	const string UserObjectFolderCategory = "Folders where you store custom objects";
+	const string GameObjectFolderCategory = "Locomotion/OpenLoco ObjData Folders";
+	const string UserObjectFolderCategory = "Custom Object Folders";
+	const string ConfigFolderCategory = "Configuration Folders";
 
 	[PathBrowsable(PathBrowsableType.Directory), Category(GameObjectFolderCategory), DisplayName("Locomotion (Steam) ObjData Folder"), Description("The ObjData folder in your Steam Locomotion installation.")]
 	public string LocomotionSteamObjDataFolder
@@ -90,6 +101,20 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		set => Model.DownloadFolder = value;
 	}
 
+	[PathBrowsable(PathBrowsableType.Directory), Category(ConfigFolderCategory), DisplayName("Config"), Description("The folder to dynamic editor config.")]
+	public string ConfigFolder
+	{
+		get => Model.ConfigFolder;
+		set => Model.ConfigFolder = value;
+	}
+
+	[PathBrowsable(PathBrowsableType.Directory), Category(ConfigFolderCategory), DisplayName("Object Indices"), Description("The folder to store object index files (which are created one for each directory you ask the editor to index).")]
+	public string ObjectIndicesFolder
+	{
+		get => Model.ObjectIndicesFolder;
+		set => Model.ObjectIndicesFolder = value;
+	}
+
 	[ReadOnly(true), Category(UserObjectFolderCategory), DisplayName("Current ObjectData folder"), Description("The currently-selected ObjectData folder. This is readonly and only used to remember the previous location when you start up the editor.")]
 	public string CurrentObjDataFolder
 	{
@@ -97,7 +122,7 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		set => Model.ObjDataDirectory = value;
 	}
 
-	[Category(UserObjectFolderCategory), DisplayName("ObjectData folders"), Description("The list of all ObjectData folders.")]
+	[Category(UserObjectFolderCategory), DisplayName("ObjectData folders"), Description("The list of all ObjectData folders that have been indexed.")]
 	public ObservableCollection<string> ObjDataDirectories { get; set; }
 
 	#endregion
@@ -128,8 +153,8 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 	[Category("Object Service"), DisplayName("HTTPS"), PropertyVisibilityCondition(nameof(UseHttps), true)]
 	public string ServerAddressHttps
 	{
-		get;
-		set;
+		get => Model.ServerAddressHttps;
+		set => Model.ServerAddressHttps = value;
 	}
 
 	#endregion

@@ -2,6 +2,7 @@ using Dat.FileParsing;
 using Dat.Types;
 using Gui.Models;
 using Gui.ViewModels.Graphics;
+using Microsoft.Extensions.Logging;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
 using System.Threading.Tasks;
@@ -15,58 +16,62 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 		=> Load();
 
 	[Reactive]
-	public ImageTableViewModel ImageTableViewModel { get; set; }
+	public ImageTableViewModel? ImageTableViewModel { get; set; }
 
 	public override void Load()
 	{
-		logger.Info($"Loading G1 from {CurrentFile.FileName}");
-		Model = SawyerStreamReader.LoadG1(CurrentFile.FileName, EditorContext.Logger);
-
-		if (Model == null)
+		Logger.LogInformation("Loading G1 from {FileName}", CurrentFile.FileName);
+		if (CurrentFile.FileName == null)
 		{
-			logger.Error($"G1 was unable to be loaded from {CurrentFile.FileName}");
+			Logger.LogError("G1 file name was null");
 			return;
 		}
 
-		Model.ImageTable.PaletteMap = EditorContext.PaletteMap;
+		Model = SawyerStreamReader.LoadG1(CurrentFile.FileName, EditorContext.Logger)!;
+
+		if (Model == null)
+		{
+			Logger.LogError("G1 was unable to be loaded from {FileName}", CurrentFile.FileName);
+			return;
+		}
+
 		EditorContext.G1 = Model; // todo: do we still need? can we do another way?
-		ImageTableViewModel = new ImageTableViewModel(Model.ImageTable, logger);
+		ImageTableViewModel?.Dispose();
+		ImageTableViewModel = new ImageTableViewModel(Model.ImageTable, Logger, editorSettings: EditorContext.Settings);
 	}
 
 	public override void Save()
 	{
 		if (Model == null)
 		{
-			logger?.Error("G1 was null and was unable to saved");
+			Logger.LogError("G1 was null and was unable to saved");
 			return;
 		}
 
-		//Model.G1.ImageTable.GraphicsElements = [.. ImageTableViewModel.ImageViewModels.Select(x => x.ToGraphicsElement())];
-
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
-			? Path.Combine(EditorContext.Settings.ObjDataDirectory, CurrentFile.FileName)
-			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+			? Path.Combine(EditorContext.Settings.ObjDataDirectory, CurrentFile.FileName ?? string.Empty)
+			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName ?? string.Empty, ".dat"));
 
-		logger?.Info($"Saving G1.dat to {savePath}");
+		Logger.LogInformation("Saving G1.dat to {SavePath}", savePath);
 		SawyerStreamWriter.SaveG1(savePath, Model);
 	}
 
-	public override string? SaveAs(SaveParameters saveParameters)
+	public override async Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
 		if (Model == null)
 		{
-			logger?.Error("G1 was null and was unable to saved");
+			Logger.LogError("G1 was null and was unable to saved");
 			return null;
 		}
 
-		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes);
 		if (saveFile == null)
 		{
 			return null;
 		}
 
 		var savePath = saveFile.Path.LocalPath;
-		logger?.Info($"Saving G1.dat to {savePath}");
+		Logger.LogInformation("Saving G1.dat to {SavePath}", savePath);
 		SawyerStreamWriter.SaveG1(savePath, Model);
 
 		return savePath;

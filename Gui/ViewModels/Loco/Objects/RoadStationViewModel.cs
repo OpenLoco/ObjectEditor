@@ -12,6 +12,7 @@ namespace Gui.ViewModels;
 public class RoadStationViewModel(RoadStationObject model)
 	: BaseViewModel<RoadStationObject>(model)
 {
+	CargoReferenceViewModel? cargoType = model.CargoType is { } cargoTypeModel ? new(cargoTypeModel) : null;
 
 	public uint8_t PaintStyle
 	{
@@ -58,19 +59,18 @@ public class RoadStationViewModel(RoadStationObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(8, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(8, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
@@ -78,15 +78,24 @@ public class RoadStationViewModel(RoadStationObject model)
 	}
 
 	[Category("Cargo")]
-	public ObjectModelHeader? CargoType
+	public CargoReferenceViewModel? CargoType
 	{
-		get => Model.CargoType;
-		set => Model.CargoType = value;
+		get => cargoType;
+		set
+		{
+			cargoType = value;
+			Model.CargoType = value?.Model;
+		}
 	}
 
 	[Category("Cargo")]
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
+	public ObjectReferenceList<RoadReferenceViewModel> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects, h => new RoadReferenceViewModel(h), list => model.CompatibleRoadObjects = [.. list]);
+
+	public override void SynchronizeToModel()
+	{
+		CompatibleRoadObjects.Synchronize();
+	}
 }

@@ -10,12 +10,12 @@
 	x:DataType="vm:ObjectSelectionWindowViewModel"
 	Title="ObjectSelection"
 	WindowStartupLocation="CenterOwner"
-	SystemDecorations="Full"
+	WindowDecorations="Full"
 	Width="320"
 	Height="640"
 	ShowInTaskbar="False">
 	<DockPanel>
-		<TextBox DockPanel.Dock="Top" Watermark="Search" Text="{Binding SearchTerm}"></TextBox>
+		<TextBox DockPanel.Dock="Top" PlaceholderText="Search" Text="{Binding SearchTerm}"></TextBox>
 		<UniformGrid Rows="1" Columns="2" DockPanel.Dock="Bottom">
 			<Button Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding ConfirmCommand}">Confirm</Button>
 			<Button Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding CancelCommand}">Cancel</Button>

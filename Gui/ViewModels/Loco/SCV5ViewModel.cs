@@ -1,3 +1,6 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
 using Dat.Converters;
 using Dat.Data;
@@ -7,9 +10,14 @@ using Definitions.DTO;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Index;
+using Microsoft.Extensions.Logging;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using Shared.Validation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,6 +25,8 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -24,8 +34,7 @@ namespace Gui.ViewModels;
 
 public class SCV5ViewModel : BaseFileViewModel<S5File>
 {
-	//[Reactive]
-	//public S5File? Model { get; set; }
+	readonly CompositeDisposable subscriptions = [];
 
 	public RequiredObjectsListViewModel RequiredObjects { get; }
 
@@ -36,7 +45,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	public WriteableBitmap? Map { get; set; }
 
 	[Reactive]
-	public Dictionary<ElementType, Bitmap> Maps { get; set; }
+	public Dictionary<ElementType, Bitmap> Maps { get; set; } = [];
 
 	[Reactive, Range(0, Limits.kMapColumnsVanilla - 1)]
 	public int TileElementX { get; set; }
@@ -52,25 +61,40 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	[Reactive]
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
 	public ReactiveCommand<GameObjDataFolder, Unit> DownloadMissingObjectsToGameObjDataCommand { get; }
+	public ReactiveCommand<Unit, Unit> ValidateSCV5Command { get; }
 
 	public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
 	{
 		RequiredObjects = new RequiredObjectsListViewModel(editorContext);
-		SaveIsVisible = false;
-		SaveAsIsVisible = false;
+
+		// Subscribe once here rather than in Load() so that reloading the file does not accumulate handlers.
+		_ = this.WhenAnyValue(o => o.TileElementX)
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)))
+			.DisposeWith(subscriptions);
+		_ = this.WhenAnyValue(o => o.TileElementY)
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)))
+			.DisposeWith(subscriptions);
+
 		Load();
 		DownloadMissingObjectsToGameObjDataCommand = ReactiveCommand.CreateFromTask<GameObjDataFolder>(DownloadMissingObjects);
+		ValidateSCV5Command = ReactiveCommand.CreateFromTask(ValidateSCV5Async);
 	}
 
 	public override void Load()
 	{
-		logger?.Info($"Loading scenario from {CurrentFile.FileName}");
-		Model = SawyerStreamReader.LoadSave(CurrentFile.FileName, EditorContext.Logger);
+		Logger.LogInformation("Loading scenario/save from {FileName}", CurrentFile.FileName);
+		if (CurrentFile.FileName == null)
+		{
+			Logger.LogError("Scenario file name was null");
+			return;
+		}
+
+		Model = SawyerStreamReader.LoadSave(CurrentFile.FileName, EditorContext.Logger)!;
 
 		if (Model == null)
 		{
-			logger?.Error($"Unable to load {CurrentFile.FileName}");
+			Logger.LogError("Unable to load {FileName}", CurrentFile.FileName);
 			return;
 		}
 
@@ -79,14 +103,8 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			.Select(x => x.Convert());
 		RequiredObjects.Replace(headers);
 
-		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1.Convert())).OrderBy(x => x.Name);
-		PackedObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. po]);
-
-		_ = this.WhenAnyValue(o => o.TileElementX)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
-
-		_ = this.WhenAnyValue(o => o.TileElementY)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
+		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Header.Convert())).OrderBy(x => x.Name);
+		PackedObjects = [with([.. po])];
 
 		if (Model.TileElementMap != null)
 		{
@@ -96,7 +114,111 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			}
 			catch (Exception ex)
 			{
-				logger?.Error(ex);
+				Logger.LogError(ex, "Failed to draw map for scenario \"{FileName}\"", CurrentFile.FileName);
+			}
+		}
+	}
+
+	async Task ValidateSCV5Async()
+	{
+		if (Model == null)
+		{
+			Logger.LogError("Cannot validate scenario because the model is null");
+			return;
+		}
+
+		if (EditorContext.ObjectIndex.Objects.Count == 0)
+		{
+			var infoBox = MessageBoxManager.GetMessageBoxStandard(
+				"Scenario validation",
+				"No object index is loaded. Load an ObjData directory first so the scenario's objects can be resolved.",
+				ButtonEnum.Ok,
+				Icon.Info,
+				windowStartupLocation: WindowStartupLocation.CenterOwner);
+
+			_ = infoBox.ShowAsync();
+			return;
+		}
+
+		// The scenario's required objects, converted to ObjectModelHeaders (skip empty/fill slots).
+		var scenarioObjects = Model.RequiredObjects
+			.Where(x => x.Checksum != 0)
+			.Select(x => x.Convert())
+			.ToList();
+
+		// Loading object files to resolve dependencies can be slow, so do it off the UI thread.
+		var validationErrors = await Task.Run(() => ObjectValidation.ValidateSCV5(scenarioObjects, ResolveObjectDependencies, Logger));
+
+		await ShowValidationMessageBox(validationErrors, showPopupOnSuccess: true);
+	}
+
+	/// <summary>
+	/// Resolves the object headers that a scenario-included object depends on being present. For
+	/// industries this is the cargo they produce and consume. Objects that cannot be resolved (e.g.
+	/// not present in the loaded ObjData index) are treated as having no dependencies.
+	/// </summary>
+	IEnumerable<ObjectModelHeader> ResolveObjectDependencies(ObjectModelHeader header)
+	{
+		var entry = EditorContext.ObjectIndex.Objects
+			.FirstOrDefault(x => x.DisplayName == header.Name && x.DatChecksum == header.DatChecksum);
+
+		if (entry?.FileName == null)
+		{
+			return [];
+		}
+
+		var path = Path.Combine(EditorContext.Settings.ObjDataDirectory, entry.FileName);
+		if (!File.Exists(path))
+		{
+			return [];
+		}
+
+		var (_, locoObject) = SawyerStreamReader.LoadFullObject(path, Logger, loadExtra: false);
+		return ObjectValidation.GetObjectDependencies(locoObject?.Object);
+	}
+
+	static async Task ShowValidationMessageBox(IEnumerable<string> validationErrors, bool showPopupOnSuccess)
+	{
+		// Show the box as a modal dialog owned by the main window so the user must dismiss it
+		// before interacting with the editor again.
+		var owner = Application.Current?.ApplicationLifetime switch
+		{
+			IClassicDesktopStyleApplicationLifetime desktop => desktop.MainWindow,
+			_ => null,
+		};
+
+		if (validationErrors.Any())
+		{
+			var errorMsg = string.Join(Environment.NewLine, validationErrors);
+			var box = MessageBoxManager.GetMessageBoxStandard(
+				new MessageBoxStandardParams
+				{
+					ContentTitle = "Validation failed",
+					ContentMessage = errorMsg,
+					ButtonDefinitions = ButtonEnum.Ok,
+					Icon = Icon.Error,
+					WindowStartupLocation = WindowStartupLocation.CenterOwner,
+					Topmost = true,
+				});
+
+			_ = owner == null ? box.ShowAsync() : box.ShowWindowDialogAsync(owner);
+		}
+		else
+		{
+			if (showPopupOnSuccess)
+			{
+				var box = MessageBoxManager.GetMessageBoxStandard(
+					new MessageBoxStandardParams
+					{
+						ContentTitle = "Validation succeeded",
+						ContentMessage = "✔ No issues found. SCV5 file is valid.",
+						ButtonDefinitions = ButtonEnum.Ok,
+						Icon = Icon.Success,
+						WindowStartupLocation = WindowStartupLocation.CenterOwner,
+						Topmost = true,
+					});
+
+				_ = owner == null ? box.ShowAsync() : box.ShowWindowDialogAsync(owner);
 			}
 		}
 	}
@@ -107,7 +229,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 		if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
 		{
-			logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
+			Logger.LogError("The specified [{TargetFolder}] ObjData directory is invalid: \"{Folder}\"", targetFolder, folder);
 			return;
 		}
 
@@ -115,103 +237,159 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 		if (Model == null)
 		{
-			logger.Error("Current S5File is null");
+			Logger.LogError("Current S5File is null");
 			return;
 		}
 
 		if (EditorContext.ObjectServiceClient == null)
 		{
-			logger.Error("The object service client is null");
+			Logger.LogError("The object service client is null");
 			return;
 		}
 
-		var gameFolderIndex = ObjectIndex.LoadOrCreateIndex(folder, logger);
+		var gameFolderIndex = await ObjectIndex.LoadOrCreateIndexAsync(folder, Logger).ConfigureAwait(true);
 
 		if (EditorContext.ObjectIndexOnline == null)
 		{
 			// need to download the index, ie call /objects/list
-			logger.Info("Online index doesn't exist - downloading now");
+			Logger.LogInformation("Online index doesn't exist - downloading now");
 
 			EditorContext.ObjectIndexOnline = new ObjectIndex((await EditorContext.ObjectServiceClient.GetObjectListAsync())
 				.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
 
-			logger.Info("Index downloaded");
+			Logger.LogInformation("Index downloaded");
 			// technically should check if the index is downloaded and valid now
 		}
 
-		foreach (var obj in RequiredObjects.Items)
+		// Download the scenario's required objects and also any of their dependency objects that
+		// are missing from the target folder.
+		var objectIndexOnline = EditorContext.ObjectIndexOnline!; // guaranteed non-null above
+		foreach (var obj in GetRequiredObjectsWithDependencies())
 		{
-			if (OriginalObjectFiles.GetFileSource(obj.Name, obj.DatChecksum, obj.ObjectSource.Convert()) is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+			await DownloadMissingObjectAsync(obj, folder, gameFolderIndex, objectIndexOnline);
+		}
+	}
+
+	/// <summary>
+	/// Collects every object that should be present in the game folder for this scenario to run:
+	/// the scenario's required objects, plus each one's dependency objects (resolved by reusing the
+	/// dependency-checking code). Duplicate objects are removed so each is only downloaded once.
+	/// </summary>
+	List<ObjectModelHeader> GetRequiredObjectsWithDependencies()
+	{
+		var desired = new List<ObjectModelHeader>();
+		var seen = new HashSet<(string Name, uint Checksum)>();
+
+		foreach (var required in RequiredObjects.Items)
+		{
+			if (required == null || string.IsNullOrWhiteSpace(required.Name) || required.DatChecksum == 0)
 			{
 				continue;
 			}
 
-			if (gameFolderIndex.Objects.Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum))
+			if (seen.Add((required.Name, required.DatChecksum)))
 			{
-				continue;
+				desired.Add(required);
 			}
 
-			// obj is missing - we need to download
-			logger.Info($"Scenario {CurrentFile.DisplayName} has missing object. Name=\"{obj.Name}\" Checksum={obj.DatChecksum} ObjectType={obj.ObjectType} ");
-
-			var onlineObj = EditorContext.ObjectIndexOnline
-				.Objects
-				.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
-
-			if (onlineObj == null)
+			// Reuse the dependency-checking code to discover this object's dependencies
+			// (e.g. an industry's produced/consumed cargo, a track's tunnels/stations, etc.).
+			foreach (var dependency in ResolveObjectDependencies(required))
 			{
-				logger.Error($"Couldn't find a matching object in the online index. Name=\"{obj.Name}\" Checksum={obj.DatChecksum} ObjectType={obj.ObjectType} ");
-
-				// Add this missing object to the server's missing objects list
-				var missingEntry = new DtoObjectMissingPost(
-					obj.Name,
-					obj.DatChecksum,
-					obj.ObjectType);
-
-				var result = await EditorContext.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
-				if (result != null)
+				if (dependency == null || string.IsNullOrWhiteSpace(dependency.Name) || dependency.DatChecksum == 0)
 				{
-					logger.Info($"Successfully added missing object to server: Id={result.Id} Name=\"{obj.Name}\" Checksum=({obj.DatChecksum})");
-				}
-				else
-				{
-					logger.Error($"Failed to add missing object to server: Name=\"{obj.Name}\" Checksum=({obj.DatChecksum})");
+					continue;
 				}
 
-				continue;
+				if (seen.Add((dependency.Name, dependency.DatChecksum)))
+				{
+					desired.Add(dependency);
+				}
 			}
-
-			if (onlineObj.Id == null)
-			{
-				logger.Error("Downloaded object had no Id - this is a problem with the server");
-				continue;
-			}
-
-			// download actual file
-			var downloadedObjBytes = await EditorContext.ObjectServiceClient.GetObjectFileAsync(onlineObj.Id.Value);
-
-			if (downloadedObjBytes == null)
-			{
-				logger.Error("Downloaded bytes was null");
-				continue;
-			}
-
-			// write file to the selected directory
-			var filename = $"{onlineObj.DisplayName ?? onlineObj.FileName}-{onlineObj.Id}.dat";
-			filename = Path.Combine(folder, filename);
-
-			if (File.Exists(filename))
-			{
-				logger.Warning($"{filename} already exists - will NOT overwrite it");
-				continue;
-			}
-
-			logger.Info($"Writing file to {filename}");
-
-			await File.WriteAllBytesAsync(filename, downloadedObjBytes);
 		}
 
-		return;
+		return desired;
+	}
+
+	/// <summary>
+	/// Downloads a single missing object into <paramref name="folder"/>. Vanilla objects and objects
+	/// already present in the game folder are skipped.
+	/// </summary>
+	async Task DownloadMissingObjectAsync(ObjectModelHeader obj, string folder, ObjectIndex gameFolderIndex, ObjectIndex objectIndexOnline)
+	{
+		if (obj == null || string.IsNullOrWhiteSpace(obj.Name) || obj.DatChecksum == 0)
+		{
+			return;
+		}
+
+		if (OriginalObjectFiles.GetFileSource(obj.Name, obj.DatChecksum, obj.ObjectSource.Convert()) is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+		{
+			return;
+		}
+
+		if (gameFolderIndex.Objects.Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum))
+		{
+			return;
+		}
+
+		// obj is missing - we need to download
+		Logger.LogInformation("Scenario {DisplayName} has missing object. Name=\"{Name}\" Checksum={DatChecksum} ObjectType={ObjectType} ", CurrentFile.DisplayName, obj.Name, obj.DatChecksum, obj.ObjectType);
+
+		var onlineObj = objectIndexOnline
+			.Objects
+			.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
+
+		if (onlineObj == null)
+		{
+			Logger.LogError("Couldn't find a matching object in the online index. Name=\"{Name}\" Checksum={DatChecksum} ObjectType={ObjectType} ", obj.Name, obj.DatChecksum, obj.ObjectType);
+
+			// Add this missing object to the server's missing objects list
+			var missingEntry = new DtoObjectMissingPost(
+				obj.Name,
+				obj.DatChecksum,
+				obj.ObjectType);
+
+			var result = await EditorContext.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
+			if (result != null)
+			{
+				Logger.LogInformation("Successfully added missing object to server: Id={Id} Name=\"{Name}\" Checksum=({DatChecksum})", result.Id, obj.Name, obj.DatChecksum);
+			}
+			else
+			{
+				Logger.LogError("Failed to add missing object to server: Name=\"{Name}\" Checksum=({DatChecksum})", obj.Name, obj.DatChecksum);
+			}
+
+			return;
+		}
+
+		if (onlineObj.Id == null)
+		{
+			Logger.LogError("Downloaded object had no Id - this is a problem with the server");
+			return;
+		}
+
+		// download actual file
+		var downloadedObjBytes = await EditorContext.ObjectServiceClient.GetObjectFileAsync(onlineObj.Id.Value);
+
+		if (downloadedObjBytes == null)
+		{
+			Logger.LogError("Downloaded bytes was null");
+			return;
+		}
+
+		// write file to the selected directory
+		var filename = $"{onlineObj.DisplayName ?? onlineObj.FileName}-{onlineObj.Id}.dat";
+		filename = Path.Combine(folder, filename);
+
+		if (File.Exists(filename))
+		{
+			Logger.LogWarning("{Filename} already exists - will NOT overwrite it", filename);
+			return;
+		}
+
+		Logger.LogInformation("Writing file to {Filename}", filename);
+
+		await File.WriteAllBytesAsync(filename, downloadedObjBytes);
 	}
 
 	void DrawMap()
@@ -245,10 +423,6 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 								rgba[idx + 0] = (byte)(111 + el.BaseZ - (els.TerrainType() * 8));
 								rgba[idx + 1] = (byte)(75 + el.BaseZ + (els.TerrainType() * 8));
 								rgba[idx + 2] = (byte)(23 + el.BaseZ + (els.TerrainType() * 8));
-
-								//rgbaValues[idx + 0] = (byte)(el.Terrain() == 1 ? 255 : 0);
-								//rgbaValues[idx + 1] = (byte)(el.Terrain() == 1 ? 255 : 0);
-								//rgbaValues[idx + 2] = (byte)(el.Terrain() == 1 ? 255 : 0);
 							}
 						}
 						else if (el.Type == ElementType.Track)
@@ -308,38 +482,58 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	}
 
 	public override void Save()
-		=> logger?.Warning("Save is not currently implemented");
-
-	public override string? SaveAs(SaveParameters saveParameters)
 	{
-		logger?.Warning("SaveAs is not currently implemented");
-		return null;
+		var savePath = CurrentFile.FileLocation == FileLocation.Local
+			? CurrentFile.FileName
+			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".sv5"));
+
+		if (string.IsNullOrEmpty(savePath))
+		{
+			Logger.LogError("Cannot save scenario/save file because save path is empty");
+			return;
+		}
+
+		SaveCore(savePath);
 	}
 
-	//public override void Save()
-	//	=> Save(CurrentFile.Filename);
+	public override async Task<string?> SaveAsAsync(SaveParameters saveParameters)
+	{
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.SCV5FileTypes);
+		if (saveFile == null)
+		{
+			return null;
+		}
 
-	//public override void SaveAs(SaveParameters saveParameters)
-	//{
-	//	var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.SCV5FileTypes)).Result;
-	//	if (saveFile == null)
-	//	{
-	//		return;
-	//	}
+		var savePath = saveFile.Path.LocalPath;
+		SaveCore(savePath);
+		return savePath;
+	}
 
-	//	Save(saveFile.Path.LocalPath);
-	//}
+	void SaveCore(string filename)
+	{
+		if (Model == null)
+		{
+			Logger.LogError("Cannot save scenario/save file because model is null");
+			return;
+		}
 
-	//void Save(string filename)
-	//{
-	//	logger?.Info($"Saving scenario/save/landscape to {filename}");
+		var newFile = Model with
+		{
+			RequiredObjects = [.. RequiredObjects.Items.Select(x => x.Convert())],
+		};
 
-	//	var newFile = CurrentS5File with
-	//	{
-	//		RequiredObjects = [.. RequiredObjects.Select(x => x.GetAsUnderlyingType())],
-	//	};
+		var bytes = newFile.Write();
+		File.WriteAllBytes(filename, bytes);
+		Logger.LogInformation("Saved scenario/save file to {Filename}", filename);
+	}
 
-	//	var bytes = newFile.Write();
-	//	File.WriteAllBytes(filename, bytes);
-	//}
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			subscriptions.Dispose();
+		}
+
+		base.Dispose(disposing);
+	}
 }

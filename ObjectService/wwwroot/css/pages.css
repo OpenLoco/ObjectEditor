@@ -1,0 +1,244 @@
+/* ==========================================================================
+   pages.css — feature-specific styling
+   ========================================================================== */
+
+/* ==========================================================================
+   Master tabs (primary category navigation)
+   ========================================================================== */
+
+.master-tabs {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-xl);
+}
+
+.master-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 var(--space-xl);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    font-weight: 700;
+    font-size: var(--text-base);
+    color: var(--text);
+    transition:
+        background-color 140ms ease,
+        color 140ms ease,
+        transform 140ms ease;
+}
+
+.master-tab:hover {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    transform: translateY(-1px);
+}
+
+.master-tab-active,
+.master-tab-active:hover {
+    background: var(--accent);
+    border-color: transparent;
+}
+
+.master-tab-separator {
+    display: inline-flex;
+    align-self: center;
+    width: 1px;
+    height: 28px;
+    margin: 0 var(--space-sm);
+    background: var(--border);
+    border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   Object explorer (master-detail)
+   ========================================================================== */
+
+.object-type-sidebar {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-title {
+    margin: 0 0 var(--space-lg);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text);
+}
+
+.object-type-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.object-type-link {
+    display: block;
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text);
+    transition:
+        background-color 120ms ease,
+        color 120ms ease;
+}
+
+.object-type-link:hover {
+    background: var(--surface-subtle);
+    color: var(--accent-strong);
+}
+
+.object-type-link-active {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-weight: 700;
+}
+
+.object-type-sub-list {
+    margin: var(--space-xs) 0 var(--space-xs) var(--space-md);
+    padding: 0 0 0 var(--space-lg);
+    border-left: 2px solid var(--border);
+    list-style: none;
+}
+
+.object-type-sub-list .object-type-link {
+    font-size: var(--text-sm);
+    padding: var(--space-xs) var(--space-md);
+}
+
+.object-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-lg);
+}
+
+.card-img-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border-soft);
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.card-header {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* ==========================================================================
+   Auth / account pages
+   ========================================================================== */
+
+.auth-panel {
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.auth-form .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.auth-form .field span {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.auth-form input {
+    background: var(--field-bg);
+    border: 1.5px solid var(--field-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--text-base);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.auth-form input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.auth-alt {
+    text-align: center;
+    margin-top: var(--space-xl);
+    font-size: var(--text-base);
+}
+
+.auth-alt a {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   DAT object list (object edit form)
+   ========================================================================== */
+
+.dat-objects {
+    display: grid;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: var(--field-bg);
+    border: 1px solid var(--field-border);
+    border-radius: var(--radius-sm);
+}
+
+.dat-object-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
+    font-size: var(--text-sm);
+    background: var(--surface-subtle);
+    border-radius: var(--radius-sm);
+}
+
+.dat-object-item code {
+    padding: var(--space-xs) var(--space-sm);
+    font-family: var(--mono);
+    font-size: var(--text-sm);
+    background: var(--accent-soft-strong);
+    border-radius: var(--radius-sm);
+}
+
+

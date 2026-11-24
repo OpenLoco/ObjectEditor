@@ -1,4 +1,6 @@
 using Gui.Models;
+using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
@@ -8,14 +10,14 @@ public class ScoresViewModel : BaseFileViewModel<DummyModel>
 		: base(currentFile, editorContext) => Load();
 
 	public override void Load()
-		=> logger?.Info($"Loading scores from {CurrentFile.FileName}");
+		=> Logger.LogInformation("Loading scores from {FileName}", CurrentFile.FileName);
 
 	public override void Save()
-		=> logger?.Warning("Save is not currently implemented");
+		=> Logger.LogWarning("Save is not currently implemented");
 
-	public override string? SaveAs(SaveParameters saveParameters)
+	public override Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
-		logger?.Warning("SaveAs is not currently implemented");
-		return null;
+		Logger.LogWarning("SaveAs is not currently implemented");
+		return Task.FromResult<string?>(null);
 	}
 }

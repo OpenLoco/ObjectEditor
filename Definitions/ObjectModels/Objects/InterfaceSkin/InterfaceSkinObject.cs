@@ -21,7 +21,7 @@ public class InterfaceSkinObject : ILocoStruct
 	public Colour TopToolbarSecondaryColour { get; set; }
 	public Colour TopToolbarTertiaryColour { get; set; }
 	public Colour TopToolbarQuaternaryColour { get; set; }
-	public Colour PlayerInfoToolbarColour { get; set; }
+	public Colour CompanyInfoToolbarColour { get; set; }
 	public Colour TimeToolbarColour { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

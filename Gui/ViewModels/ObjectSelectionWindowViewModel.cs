@@ -27,7 +27,7 @@ public class ObjectSelectionWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Unit> ConfirmCommand { get; }
 	public ReactiveCommand<Unit, Unit> CancelCommand { get; }
 
-	public ObjectSelectionWindowViewModel()
+	public ObjectSelectionWindowViewModel() : this([])
 	{ }
 
 	public ObjectSelectionWindowViewModel(IEnumerable<ObjectIndexEntry> objects)

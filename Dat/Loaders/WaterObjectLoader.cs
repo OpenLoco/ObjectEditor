@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -31,7 +34,7 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
 			model.CostIndex = br.ReadByte();
-			model.var_03 = br.ReadByte();
+			br.SkipByte(); // pad_03, not part of object definition
 			model.CostFactor = br.ReadInt16();
 			br.SkipImageId(); // ImageId, not part of object definition
 			br.SkipImageId(); // MapPixelImage, not part of object definition
@@ -64,7 +67,7 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.CostIndex);
-			bw.Write(model.var_03);
+			bw.WriteEmptyBytes(1); // pad_03, not part of object definition
 			bw.Write(model.CostFactor);
 			bw.WriteEmptyImageId(); // ImageId, not part of object definition
 			bw.WriteEmptyImageId(); // MapPixelImage, not part of object definition

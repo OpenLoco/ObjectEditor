@@ -47,19 +47,18 @@ public class DockViewModel(DockObject model)
 		set
 		{
 			Model.CostIndex = value;
-			this.RaisePropertyChanged(nameof(BuildCostFactor));
-			this.RaisePropertyChanged(nameof(SellCostFactor));
+			RaisePropertiesChanged(nameof(BuildCostFactor), nameof(SellCostFactor));
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(7, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(7, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
@@ -68,7 +67,7 @@ public class DockViewModel(DockObject model)
 
 	[Category("Building")]
 	[Length(1, DockObjectLoader.Constants.BuildingVariationCount)]
-	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
+	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = [with(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList())];
 
 	[Category("Building")]
 	[Length(1, DockObjectLoader.Constants.BuildingHeightCount)]
@@ -77,11 +76,4 @@ public class DockViewModel(DockObject model)
 	[Category("Building")]
 	[Length(1, DockObjectLoader.Constants.BuildingAnimationCount)]
 	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
-
-	[Category("<unknown>")]
-	public uint8_t var_07
-	{
-		get => Model.var_07;
-		set => Model.var_07 = value;
-	}
 }

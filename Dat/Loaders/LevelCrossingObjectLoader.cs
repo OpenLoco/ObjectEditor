@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -25,11 +28,11 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
-			model.AnimationSpeed = br.ReadByte();
-			model.ClosingFrames = br.ReadByte();
-			model.ClosedFrames = br.ReadByte();
-			model.var_0A = br.ReadByte(); // something like IdleAnimationFrames or something
-			model.pad_0B = br.ReadByte();
+			model.ClosedAnimationFrameInterval = br.ReadByte();
+			model.ClosedAnimationFrameCount = br.ReadByte();
+			model.TransitionAnimationFrameCount = br.ReadByte();
+			model.TransitionAnimationDelayBitmask = br.ReadByte();
+			br.SkipByte(); // 0x0B is padding byte
 			model.DesignedYear = br.ReadUInt16();
 			br.SkipImageId();
 
@@ -63,11 +66,11 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
-			bw.Write(model.AnimationSpeed);
-			bw.Write(model.ClosingFrames);
-			bw.Write(model.ClosedFrames);
-			bw.Write(model.var_0A); // something like IdleAnimationFrames
-			bw.Write(model.pad_0B);
+			bw.Write(model.ClosedAnimationFrameInterval);
+			bw.Write(model.ClosedAnimationFrameCount);
+			bw.Write(model.TransitionAnimationFrameCount);
+			bw.Write(model.TransitionAnimationDelayBitmask);
+			bw.WriteEmptyBytes(1);  // 0x0B is padding byte
 			bw.Write(model.DesignedYear);
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 

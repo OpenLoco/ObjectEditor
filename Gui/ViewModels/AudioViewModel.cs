@@ -1,12 +1,13 @@
-using Common;
-using Common.Logging;
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models.Audio;
+using Microsoft.Extensions.Logging;
 using NAudio.Wave;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.IO;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -24,28 +25,24 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	WaveOutEvent? CurrentWOEvent { get; set; }
 
+	ISoundData? _soundObject;
+
+	readonly CompositeDisposable subscriptions = [];
+	readonly ObservableAsPropertyHelper<string?> duration;
+
 	[Reactive]
 	WaveStream? WaveStream { get; set; }
 
 	[Reactive]
 	public string SoundName { get; init; }
 
-	public string? Duration => $"Duration: {WaveStream?.TotalTime.ToString(@"mm\:ss\.ff")}";
+	public string? Duration => duration.Value;
 
-	[Reactive]
-	public ICommand PlaySoundCommand { get; set; }
-
-	[Reactive]
-	public ICommand PauseSoundCommand { get; set; }
-
-	[Reactive]
-	public ICommand StopSoundCommand { get; set; }
-
-	[Reactive]
-	public ICommand ImportSoundCommand { get; set; }
-
-	[Reactive]
-	public ICommand ExportSoundCommand { get; set; }
+	public ICommand PlaySoundCommand { get; }
+	public ICommand PauseSoundCommand { get; }
+	public ICommand StopSoundCommand { get; }
+	public ICommand ImportSoundCommand { get; }
+	public ICommand ExportSoundCommand { get; }
 
 	public void Dispose()
 	{
@@ -55,16 +52,33 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	bool disposed;
 
+	// Serialises access to CurrentWOEvent so play/pause/stop and device disposal can't race.
+	readonly object playbackLock = new();
+
 	public AudioViewModel(ILogger logger, string soundName)
 	{
-		_ = this.WhenAnyValue(o => o.WaveStream)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(Duration)));
+		duration = this.WhenAnyValue(o => o.WaveStream)
+			.Select(stream => $"Duration: {stream?.TotalTime.ToString(@"mm\:ss\.ff")}")
+			.ToProperty(this, o => o.Duration)
+			.DisposeWith(subscriptions);
 
 		Logger = logger;
 		SoundName = soundName;
 		PlaySoundCommand = ReactiveCommand.Create(PlaySound);
-		PauseSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Pause());
-		StopSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Stop());
+		PauseSoundCommand = ReactiveCommand.Create(() =>
+		{
+			lock (playbackLock)
+			{
+				CurrentWOEvent?.Pause();
+			}
+		});
+		StopSoundCommand = ReactiveCommand.Create(() =>
+		{
+			lock (playbackLock)
+			{
+				CurrentWOEvent?.Stop();
+			}
+		});
 		ImportSoundCommand = ReactiveCommand.Create(ImportSound);
 		ExportSoundCommand = ReactiveCommand.Create(ExportSoundAsync);
 	}
@@ -78,6 +92,18 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		=> WaveStream = new RawSourceWaveStream(
 			new MemoryStream(pcmData),
 			AudioHelpers.SoundEffectFormatToWaveFormat(locoWaveFormat));
+
+	public AudioViewModel(ILogger logger, string soundName, ISoundData soundObject)
+		: this(logger, soundName)
+	{
+		_soundObject = soundObject;
+		if (soundObject.PcmData.Length > 0)
+		{
+			WaveStream = new RawSourceWaveStream(
+				new MemoryStream(soundObject.PcmData),
+				AudioHelpers.SoundEffectFormatToWaveFormat(soundObject.SoundObjectData.PcmHeader));
+		}
+	}
 
 	// in future, this method needs to resample the audio to convert to the specific music or sfx format that loco uses
 	public (SoundEffectWaveFormat Header, byte[] Data)? GetAsDatWav(LocoAudioType format)
@@ -102,7 +128,7 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 		catch (Exception ex)
 		{
-			Logger.Error(ex, "Error while converting audio to Loco format");
+			Logger.LogError(ex, "Error while converting audio to Loco format");
 			return null;
 		}
 	}
@@ -111,7 +137,8 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	public void PlaySound()
 	{
-		if (WaveStream == null)
+		var waveStream = WaveStream;
+		if (waveStream == null)
 		{
 			return;
 		}
@@ -123,50 +150,70 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 			return;
 		}
 
-		if (CurrentWOEvent != null)
+		lock (playbackLock)
 		{
-			if (CurrentWOEvent.PlaybackState == PlaybackState.Playing)
+			if (CurrentWOEvent != null)
 			{
-				return;
-			}
+				if (CurrentWOEvent.PlaybackState == PlaybackState.Playing)
+				{
+					return;
+				}
 
-			if (CurrentWOEvent.PlaybackState == PlaybackState.Paused)
-			{
-				CurrentWOEvent.Play();
-				return;
+				if (CurrentWOEvent.PlaybackState == PlaybackState.Paused)
+				{
+					CurrentWOEvent.Play();
+					return;
+				}
 			}
 		}
 
-		// do it async to a) give user ui control and b) allow multiple sounds to play at once
-		_ = Task.Run(() =>
+		// Build and run the output device on a background thread so the UI stays responsive and the
+		// previous device gets torn down off the UI thread. Completion is driven by the PlaybackStopped
+		// event (no busy Thread.Sleep polling loop), and every device transition is guarded by the lock.
+		_ = Task.Run(async () =>
 		{
-			if (CurrentWOEvent?.PlaybackState == PlaybackState.Stopped)
+			WaveOutEvent output;
+			lock (playbackLock)
 			{
-				Thread.Sleep(100); // give time to wait until previous sound is disposed
+				CurrentWOEvent?.Dispose();
+				CurrentWOEvent = null;
+
+				Logger.LogInformation("{WaveFormat}", waveStream.WaveFormat);
+				waveStream.Position = 0;
+
+				output = new WaveOutEvent();
+				CurrentWOEvent = output;
 			}
 
-			CurrentWOEvent?.Dispose();
+			var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			void OnStopped(object? sender, StoppedEventArgs e) => stopped.TrySetResult();
 
-			using (CurrentWOEvent = new WaveOutEvent())
+			output.PlaybackStopped += OnStopped;
+			try
 			{
-				Logger.Info($"{WaveStream.WaveFormat}");
-				WaveStream.Position = 0;
-				CurrentWOEvent.Init(WaveStream);
-				CurrentWOEvent.Play();
+				output.Init(waveStream);
+				output.Play();
+				await stopped.Task.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Failed to play sound");
+			}
+			finally
+			{
+				output.PlaybackStopped -= OnStopped;
 
-				// need to wait for music to finish
-				while (CurrentWOEvent?.PlaybackState != PlaybackState.Stopped)
+				// Only the thread that still owns the current device disposes it, so a device replaced
+				// by a newer PlaySound call is never disposed twice.
+				lock (playbackLock)
 				{
-					if (CurrentWOEvent == null)
+					if (ReferenceEquals(CurrentWOEvent, output))
 					{
-						break;
+						CurrentWOEvent = null;
+						output.Dispose();
 					}
-
-					Thread.Sleep(100);
 				}
 			}
-
-			CurrentWOEvent = null;
 		});
 	}
 
@@ -179,6 +226,7 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 
 		ImportSoundFromFile(fsi.FileName);
+		SyncToSoundObject();
 	}
 
 	void ImportSoundFromFile(string filename)
@@ -191,7 +239,7 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 			WaveStream?.Dispose();
 			WaveStream = null;
 
-			Logger.Info($"Loading {filename}");
+			Logger.LogInformation("Loading {Filename}", filename);
 			var extension = Path.GetExtension(filename).ToLower();
 
 			if (extension == ".mp3")
@@ -205,15 +253,16 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 			if (WaveStream == null)
 			{
-				Logger.Error($"Unsupported audio file format: {extension}");
+				Logger.LogError("Unsupported audio file format: {Extension}", extension);
 				return;
 			}
 
 			WaveStream.Position = 0;
-			Logger.Info($"Successfully loaded {filename}");
+			Logger.LogInformation("Successfully loaded {Filename}", filename);
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			Logger.LogError(ex, "Failed to load audio file \"{Filename}\".", filename);
 			WaveStream?.Dispose();
 			WaveStream = null;
 		}
@@ -234,23 +283,54 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 	}
 
+	public void SynchronizeToModel()
+		=> SyncToSoundObject();
+
+	public void SyncToSoundObject()
+	{
+		if (_soundObject == null || WaveStream == null)
+		{
+			return;
+		}
+
+		var datWav = GetAsDatWav(LocoAudioType.SoundEffect);
+		if (datWav != null)
+		{
+			_soundObject.SoundObjectData.PcmHeader = datWav.Value.Header;
+			_soundObject.SoundObjectData.Length = (uint32_t)(uint)datWav.Value.Data.Length;
+			_soundObject.PcmData = datWav.Value.Data;
+		}
+	}
+
 	protected virtual void Dispose(bool disposing)
 	{
 		// Check to see if Dispose has already been called.
-		if (!disposed)
+		if (disposed)
 		{
-			// If disposing equals true, dispose all managed
-			// and unmanaged resources.
-			if (disposing)
+			return;
+		}
+
+		// If disposing equals true, dispose all managed and unmanaged resources.
+		if (disposing)
+		{
+			subscriptions.Dispose();
+
+			WaveOutEvent? output;
+			lock (playbackLock)
 			{
-				// Dispose managed resources.
-				CurrentWOEvent?.Stop();
+				output = CurrentWOEvent;
+				CurrentWOEvent = null;
 			}
 
-			CurrentWOEvent = null;
+			// Stop first so any pending PlaybackStopped handler completes, then dispose the device.
+			output?.Stop();
+			output?.Dispose();
 
-			// Note disposing has been done.
-			disposed = true;
+			WaveStream?.Dispose();
+			WaveStream = null;
 		}
+
+		// Note disposing has been done.
+		disposed = true;
 	}
 }

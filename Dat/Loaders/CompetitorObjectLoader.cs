@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -29,13 +32,13 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			br.SkipStringId(); // First name offset, not part of object definition
 			br.SkipStringId(); // Last name offset, not part of object definition
 			model.AvailableNamePrefixes = (NamePrefixFlags)br.ReadUInt32();
-			model.AvailablePlayStyles = (PlaystyleFlags)br.ReadUInt32();
+			model.AvailableNameSuffixes = (NameSuffixFlags)br.ReadUInt32();
 			model.Emotions = (EmotionFlags)br.ReadUInt32();
 			br.SkipImageId(Constants.ImagesLength); // Images, not part of object definition
 			model.Intelligence = br.ReadByte();
 			model.Aggressiveness = br.ReadByte();
 			model.Competitiveness = br.ReadByte();
-			model.var_37 = br.ReadByte(); // unused
+			br.SkipByte(); // pad_37 is unused
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -66,13 +69,13 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			bw.WriteEmptyStringId(); // First ame offset, not part of object definition
 			bw.WriteEmptyStringId(); // Last name offset, not part of object definition
 			bw.Write((uint32_t)model.AvailableNamePrefixes);
-			bw.Write((uint32_t)model.AvailablePlayStyles);
+			bw.Write((uint32_t)model.AvailableNameSuffixes);
 			bw.Write((uint32_t)model.Emotions);
 			bw.WriteEmptyImageId(Constants.ImagesLength); // Images, not part of object definition
 			bw.Write(model.Intelligence);
 			bw.Write(model.Aggressiveness);
 			bw.Write(model.Competitiveness);
-			bw.Write(model.var_37); // unused
+			bw.Write((byte)0); // pad_37 is unused
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

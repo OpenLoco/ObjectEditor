@@ -1,11 +1,11 @@
-using Common.Logging;
+using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 
 namespace Common;
 
@@ -32,7 +32,7 @@ public static class VersionHelpers
 
 	public static void StartAutoUpdater(ILogger logger, SemanticVersion currentVersion, SemanticVersion latestVersion)
 	{
-		logger.Debug("Attempting to kill existing updater processes");
+		logger.LogDebug("Attempting to kill existing updater processes");
 		try
 		{
 			// kill any existing processes of the updater
@@ -45,17 +45,17 @@ public static class VersionHelpers
 				}
 				catch (Exception ex)
 				{
-					logger.Error(ex, "Failed to kill existing ObjectEditorUpdater process.");
+					logger.LogError(ex, "Failed to kill existing ObjectEditorUpdater process.");
 				}
 			}
 
-			var editorExe = PlatformSpecific.EditorPlatformUpdaterName(PlatformSpecific.GetPlatform);
-			// resolve relative to the editor's own folder so this works for a macOS .app bundle too
-			var executableDirectory = Path.GetDirectoryName(Environment.ProcessPath) ?? ".";
-			var editorExePath = Path.Combine(executableDirectory, editorExe);
+var editorExe = PlatformSpecific.EditorPlatformUpdaterName(PlatformSpecific.GetPlatform);
+			// resolve relative to the editor's own folder: inside a macOS .app bundle the working directory
+			// is unrelated to where the binaries live
+			var editorExePath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? ".", editorExe);
 			if (!File.Exists(editorExePath))
 			{
-				logger.Error($"Cannot find the auto-updater executable: {editorExePath}. You'll need to manually download the update.");
+				logger.LogError("Cannot find the auto-updater executable: {EditorExePath}. You'll need to manually download the update.", editorExePath);
 				return;
 			}
 
@@ -74,74 +74,90 @@ public static class VersionHelpers
 				CreateNoWindow = true,
 			};
 
-			logger.Debug($"CurrentProcessId: {Environment.ProcessId}");
-			logger.Debug($"CurrentProcessPath: {Environment.ProcessPath}");
-			logger.Debug($"Attempting to start auto-updater \"{startInfo}\"");
+			logger.LogDebug("CurrentProcessId: {ProcessId}", Environment.ProcessId);
+			logger.LogDebug("CurrentProcessPath: {ProcessPath}", Environment.ProcessPath);
+			logger.LogDebug("Attempting to start auto-updater \"{StartInfo}\"", startInfo);
 			var process = Process.Start(startInfo);
 
 			if (process != null)
 			{
-				logger.Info($"Started auto-updater process (PID {process.Id}) to update from {currentVersion} to {latestVersion}. Editor will now close");
+				logger.LogInformation("Started auto-updater process (PID {Id}) to update from {CurrentVersion} to {LatestVersion}. Editor will now close", process.Id, currentVersion, latestVersion);
 				Environment.Exit(0);
 			}
 			else
 			{
-				logger.Error("Failed to start auto-updater process. You'll need to manually download the update.");
+				logger.LogError("Failed to start auto-updater process. You'll need to manually download the update.");
 			}
 		}
 		catch (Exception ex)
 		{
-			logger.Error($"Failed to start auto-updater: {ex}");
+			logger.LogError("Failed to start auto-updater: {Ex}", ex);
 		}
 	}
 
+	static SemanticVersion? CachedSemanticVersion;
+
 	public static SemanticVersion GetCurrentAppVersion()
 	{
-		// prefer the version baked into the entry assembly by the build (`dotnet publish -p:Version=`), which
-		// removes the need for build.sh to rewrite and commit version.txt on every release
-		var entryAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+		if (CachedSemanticVersion != null)
+		{
+			return CachedSemanticVersion;
+		}
+
+		// prefer the version baked into the entry assembly by the build (`dotnet publish -p:Version=`), so the
+		// reported version cannot drift from the binaries. SourceLink appends the commit hash as build metadata.
+		var entryAssembly = Assembly.GetEntryAssembly();
 		if (entryAssembly != null)
 		{
 			var informationalVersion = entryAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-
-			// SourceLink appends the commit hash as build metadata, eg 5.13.1+abc1234
-			var versionText = informationalVersion?.Split('+')[0];
-			var assemblyVersion = GetVersionFromText(versionText);
-			if (assemblyVersion != UnknownVersion)
+			CachedSemanticVersion = GetVersionFromText(informationalVersion?.Split('+')[0]);
+			if (CachedSemanticVersion != UnknownVersion)
 			{
-				return assemblyVersion;
+				return CachedSemanticVersion;
 			}
 		}
 
-		// fall back to the embedded version.txt, which is what older builds shipped with
-		const string versionFilename = "Gui.version.txt";
-		using var stream = entryAssembly?.GetManifestResourceStream(versionFilename);
-		if (stream == null)
+		// fall back to the embedded version.txt, which is how older and CI builds report their version
+		foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+		{
+			// version.txt is an embedded resource in the Definitions assembly
+			using var stream = assembly.GetManifestResourceStream("Definitions.version.txt")
+				?? assembly.GetManifestResourceStream("Gui.version.txt")
+				?? assembly.GetManifestResourceStream("version.txt");
+			if (stream == null)
+			{
+				continue;
+			}
+
+			using var ms = new MemoryStream();
+			stream.CopyTo(ms);
+			CachedSemanticVersion = GetVersionFromText(Encoding.ASCII.GetString(ms.ToArray()));
+			return CachedSemanticVersion;
+		}
+
+		CachedSemanticVersion = UnknownVersion;
+		return CachedSemanticVersion;
+	}
+
+	// A single, process-wide HttpClient avoids socket exhaustion that comes from
+	// creating a new instance on every call. Kept internal-static deliberately:
+	// there's no DI container in `Common`, so we cannot inject IHttpClientFactory here.
+	static readonly HttpClient sharedHttpClient = new();
+
+	// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
+	public static async Task<SemanticVersion> GetLatestAppVersionAsync(string productName, SemanticVersion? currentVersion = null, CancellationToken cancellationToken = default)
+	{
+		using var request = new HttpRequestMessage(HttpMethod.Get, GithubLatestReleaseAPI);
+		request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, currentVersion?.ToString()));
+
+		using var response = await sharedHttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		if (!response.IsSuccessStatusCode)
 		{
 			return UnknownVersion;
 		}
 
-		using var ms = new MemoryStream();
-		stream.CopyTo(ms);
-		var embeddedVersionText = Encoding.ASCII.GetString(ms.ToArray());
-		return GetVersionFromText(embeddedVersionText);
-	}
-
-	// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
-	public static SemanticVersion GetLatestAppVersion(string productName, SemanticVersion? currentVersion = null)
-	{
-		var client = new HttpClient();
-		client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, currentVersion?.ToString()));
-		var response = client.GetAsync(GithubLatestReleaseAPI).Result;
-		if (response.IsSuccessStatusCode)
-		{
-			var jsonResponse = response.Content.ReadAsStringAsync().Result;
-			var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
-			var versionText = body?.TagName;
-			return GetVersionFromText(versionText);
-		}
-
-		return UnknownVersion;
+		var body = await response.Content.ReadFromJsonAsync<VersionCheckBody>(cancellationToken).ConfigureAwait(false);
+		return GetVersionFromText(body?.TagName);
 	}
 
 	public static readonly SemanticVersion UnknownVersion = new(0, 0, 0, "unknown");

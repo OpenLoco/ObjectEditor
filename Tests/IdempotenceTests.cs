@@ -1,6 +1,5 @@
 using Dat.Converters;
 using Dat.FileParsing;
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -13,7 +12,7 @@ namespace Dat.Tests;
 [TestFixture]
 public class IdempotenceTests
 {
-	static PaletteMap PaletteMap { get; } = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
+	static PaletteMap PaletteMap { get; } = PaletteMapLoader.LoadDefault();
 
 	static string[] VanillaFiles =>
 	[
@@ -69,7 +68,7 @@ public class IdempotenceTests
 			Assert.That(actual, Is.Not.Null);
 			Assert.That(expected, Is.Not.Null);
 
-			Assert.That(JsonSerializer.Serialize((object)actual.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected.Object)), "Object");
+			Assert.That(JsonSerializer.Serialize((object)actual!.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected!.Object)), "Object");
 			Assert.That(JsonSerializer.Serialize(actual.StringTable), Is.EqualTo(JsonSerializer.Serialize(expected.StringTable)), "String Table");
 
 			if (actual.ImageTable != null && expected.ImageTable != null)
@@ -82,8 +81,9 @@ public class IdempotenceTests
 
 					if (ac != ex)
 					{
-						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(First, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img1);
-						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(Second, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img2);
+						// Dump debug BMPs using the palette-index bytes the images would serialize to.
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(First.Width, First.Height, First.Flags, First.ToG1Data(PaletteMap), ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img1);
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(Second.Width, Second.Height, Second.Flags, Second.ToG1Data(PaletteMap), ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img2);
 						img1.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-actual.bmp");
 						img2.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-expected.bmp");
 					}

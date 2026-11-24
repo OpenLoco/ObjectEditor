@@ -1,40 +1,56 @@
 using Definitions.DTO;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
+using ObjectService.Services;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
+/// <summary>
+/// Database-backed scenario routes (<c>/v2/scenarios</c>). Scenario metadata is stored in the
+/// database, while the scenario files themselves live on disk under the Scenarios folder - a
+/// database row may or may not still have a corresponding file.
+/// </summary>
 public class ScenarioRouteHandler : ITableRouteHandler
 {
-	public static string BaseRoute => RoutesV2.Scenarios;
-	public static Delegate ListDelegate => ListAsync;
-	public static Delegate CreateDelegate => CreateAsync;
-	public static Delegate ReadDelegate => ReadAsync;
-	public static Delegate UpdateDelegate => UpdateAsync;
-	public static Delegate DeleteDelegate => DeleteAsync;
-	public static void MapRoutes(IEndpointRouteBuilder endpoints)
-		=> BaseTableRouteHandler.MapRoutes<ScenarioRouteHandler>(endpoints);
+	public string BaseRoute => Routes.Scenarios;
+	public Delegate ListDelegate => ListAsync;
+	public Delegate CreateDelegate => CreateAsync;
+	public Delegate ReadDelegate => ReadAsync;
+	public Delegate UpdateDelegate => UpdateAsync;
+	public Delegate DeleteDelegate => DeleteAsync;
 
-	static async Task<IResult> ListAsync([FromServices] IServiceProvider sp)
-		=> await Task.Run(() =>
-		{
-			var sfm = sp.GetRequiredService<ServerFolderManager>();
-			var scenarioFolder = sfm.ScenariosFolder;
-			var files = Directory.GetFiles(scenarioFolder, "*.SC5", SearchOption.AllDirectories);
-			var count = 0UL;
-			var filenames = files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(scenarioFolder, x)));
-			return Results.Ok(filenames.ToList());
-		});
+	public void MapRoutes(IEndpointRouteBuilder endpoints)
+		=> BaseTableRouteHandler.MapRoutes(this, endpoints, endpoints.ServiceProvider.GetRequiredService<IConfiguration>());
 
-	static async Task<IResult> CreateAsync(DtoScenarioEntry request)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	public void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
+		=> parentRoute.MapGroup(Routes.ResourceRoute).MapGet(Routes.File, GetScenarioFileAsync);
 
-	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId Id)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	async Task<IResult> ListAsync([FromServices] IScenarioService svc, CancellationToken ct)
+		=> Results.Ok(await svc.ListEntriesAsync(ct));
 
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId Id, DtoScenarioEntry request)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	async Task<IResult> GetScenarioFileAsync([FromRoute] UniqueObjectId id, [FromServices] IScenarioService svc, CancellationToken ct)
+	{
+		var path = await svc.GetScenarioFilePathByIdAsync(id, ct);
+		return path != null ? Results.File(path, "application/octet-stream", Path.GetFileName(path)) : Results.NotFound();
+	}
 
-	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId Id)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	Task<IResult> CreateAsync() => Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
+	async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] IScenarioService svc, CancellationToken ct)
+	{
+		var scenario = await svc.GetScenarioAsync(id, ct);
+		return scenario != null ? Results.Ok(scenario) : Results.NotFound();
+	}
+
+	async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoScenarioDescriptor request, [FromServices] IScenarioService svc, CancellationToken ct)
+	{
+		var updated = await svc.UpdateAsync(id, request, ct);
+		return updated != null ? Results.Ok(updated) : Results.NotFound();
+	}
+
+	async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] IScenarioService svc, CancellationToken ct)
+	{
+		var deleted = await svc.DeleteAsync(id, ct);
+		return deleted ? Results.Ok() : Results.NotFound();
+	}
 }

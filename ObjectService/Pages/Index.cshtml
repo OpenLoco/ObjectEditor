@@ -1,0 +1,812 @@
+@page "/loco"
+@model ObjectService.Pages.IndexModel
+@{
+	ViewData["Title"] = "Object Explorer";
+}
+
+@section HeaderContent {
+	<div class="site-header-stat">
+		<span>Total objects</span>
+		<strong>@Model.Results.TotalCount</strong>
+	</div>
+}
+
+@* ── Master tab bar (primary navigation) ── *@
+<nav class="master-tabs" role="tablist" aria-label="Content categories">
+	@for (var g = 0; g < Model.TabGroups.Count; g++)
+	{
+		@if (g > 0)
+		{
+			<span class="master-tab-separator" aria-hidden="true"></span>
+		}
+		@foreach (var cat in Model.TabGroups[g].Items)
+		{
+			var isActive = cat.Key == Model.Category;
+			<a class="master-tab @(isActive ? "master-tab-active" : "")"
+			   asp-page="/Index"
+			   asp-route-category="@cat.Key"
+			   role="tab"
+			   aria-selected="@(isActive ? "true" : "false")">
+			   @cat.Value
+			</a>
+		}
+	}
+</nav>
+
+@if (Model.Category == "objects")
+{
+	@* ── Master-detail layout for Objects ── *@
+	<div class="master-detail-layout">
+		@* ── Second master: object type sidebar ── *@
+		<aside class="object-type-sidebar">
+			<h3 class="sidebar-title">Object Types</h3>
+			<ul class="object-type-list">
+				<li>
+					<a class="object-type-link @(Model.ObjectType == null ? "object-type-link-active" : "")"
+					   asp-page="/Index"
+					   asp-route-category="objects"
+					   asp-route-Search="@Model.Search"
+					   asp-route-ObjectSource="@Model.ObjectSource"
+					   asp-route-CanDownload="@Model.CanDownload">
+					   All Types
+					</a>
+				</li>
+				@foreach (var objectType in Model.ObjectTypes)
+				{
+					var isTypeActive = Model.ObjectType == objectType;
+					var isVehicle = objectType == ObjectType.Vehicle;
+					<li>
+						<a class="object-type-link @(isTypeActive ? "object-type-link-active" : "")"
+						   asp-page="/Index"
+						   asp-route-category="objects"
+						   asp-route-ObjectType="@objectType"
+						   asp-route-ObjectSource="@Model.ObjectSource"
+						   asp-route-CanDownload="@Model.CanDownload"
+						   asp-route-Search="@Model.Search">
+						   @objectType
+						</a>
+						@if (isVehicle && isTypeActive)
+						{
+							<ul class="object-type-sub-list">
+								<li>
+									<a class="object-type-link @(Model.VehicleType == null ? "object-type-link-active" : "")"
+									   asp-page="/Index"
+									   asp-route-category="objects"
+									   asp-route-ObjectType="@ObjectType.Vehicle"
+									   asp-route-ObjectSource="@Model.ObjectSource"
+									   asp-route-CanDownload="@Model.CanDownload"
+									   asp-route-Search="@Model.Search">
+									   All Vehicles
+									</a>
+								</li>
+								@foreach (var vt in Model.VehicleTypes)
+								{
+									var isVtActive = Model.VehicleType == vt;
+									<li>
+										<a class="object-type-link @(isVtActive ? "object-type-link-active" : "")"
+										   asp-page="/Index"
+										   asp-route-category="objects"
+										   asp-route-ObjectType="@ObjectType.Vehicle"
+										   asp-route-VehicleType="@vt"
+										   asp-route-ObjectSource="@Model.ObjectSource"
+										   asp-route-CanDownload="@Model.CanDownload"
+										   asp-route-Search="@Model.Search">
+										   @vt
+										</a>
+									</li>
+								}
+							</ul>
+						}
+					</li>
+				}
+			</ul>
+		</aside>
+
+		@* ── Detail area ── *@
+		<div class="detail-area">
+	<section class="panel filter-panel">
+			<form method="get" class="filter-form">
+				<input type="hidden" name="category" value="objects" />
+				<div class="field field-search">
+					<label asp-for="Search">Search</label>
+					<input asp-for="Search" placeholder="DAT name, internal name, or string-table text" />
+				</div>
+
+				<div class="field">
+					<label asp-for="ObjectSource">Source</label>
+					<select asp-for="ObjectSource">
+						<option value="">All sources</option>
+						@foreach (var objectSource in Model.ObjectSources)
+						{
+							<option value="@objectSource">@objectSource</option>
+						}
+					</select>
+				</div>
+
+				<div class="field">
+					<label asp-for="CanDownload">Download status</label>
+					<select asp-for="CanDownload">
+						<option value="">Any status</option>
+						<option value="true">Downloadable</option>
+						<option value="false">Not downloadable</option>
+					</select>
+				</div>
+
+				<div class="form-actions">
+					<button type="submit" class="button button-primary">Apply filters</button>
+					<a class="button button-secondary" asp-page="/Index" asp-route-category="objects">Reset</a>
+				</div>
+			</form>
+
+			<div class="filter-summary stat-grid">
+				<div class="stat-card">
+					<span>Matching filters</span>
+					<strong>@Model.Results.FilteredCount</strong>
+				</div>
+				<div class="stat-card">
+					<span>Current page</span>
+					<strong>@Model.Results.Page / @Model.Results.TotalPages</strong>
+				</div>
+			</div>
+		</section>
+
+@if (Model.Results.Items.Count == 0)
+{
+	<section class="panel empty-state">
+		<h2>No objects matched the current query.</h2>
+		<p>Try a broader search term or clear one of the filters.</p>
+	</section>
+}
+else
+{
+	<section class="object-grid">
+		@foreach (var item in Model.Results.Items)
+		{
+			<a class="object-card" asp-page="/Objects/Details" asp-route-id="@item.Id">
+				<div class="card-img-wrap">
+					<img class="card-img" src="@item.PreviewImageUrl" loading="lazy" alt="Preview of @item.ResolvedTitle"
+					     onerror="this.style.display='none'" />
+				</div>
+				<div class="card-header">
+					<div>
+						<p class="eyebrow">@item.ObjectType@if (item.VehicleType != null){<text> / @item.VehicleType</text>}</p>
+						<h2>@item.ResolvedTitle</h2>
+						<p class="muted">@(item.Description ?? item.InternalName)</p>
+					</div>
+				</div>
+
+				<div class="card-icons">
+					<span class="card-icon" title="Source: @item.ObjectSource">
+						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="8" cy="4" rx="6" ry="2.5"/><path d="M2 4v3c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V4"/><path d="M2 7v3c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V7"/></svg>
+						<span>@item.ObjectSource</span>
+					</span>
+					<span class="card-icon @(item.CanDownload ? "" : "card-icon-dimmed")" title="@(item.CanDownload ? "Downloadable" : "Not downloadable")">
+						@if (item.CanDownload)
+						{
+							<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v9M4.5 7.5L8 11l3.5-3.5M2.5 14h11"/></svg>
+						}
+						else
+						{
+							<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+						}
+						<span>@(item.CanDownload ? "Downloadable" : "Not downloadable")</span>
+					</span>
+				</div>
+			</a>
+		}
+	</section>
+
+	@if (Model.Results.TotalPages > 1)
+	{
+		<nav class="pagination">
+			@if (Model.Results.HasPreviousPage)
+			{
+				<a class="button button-secondary"
+					   asp-page="/Index"
+					   asp-route-category="objects"
+					   asp-route-Search="@Model.Search"
+					   asp-route-ObjectType="@Model.ObjectType"
+					   asp-route-ObjectSource="@Model.ObjectSource"
+					   asp-route-CanDownload="@Model.CanDownload"
+					   asp-route-VehicleType="@Model.VehicleType"
+					   asp-route-p="@(Model.Results.Page - 1)">Previous</a>
+			}
+			else
+			{
+				<span class="button button-disabled">Previous</span>
+			}
+
+			<span class="pagination-label">Page @Model.Results.Page of @Model.Results.TotalPages</span>
+
+			@if (Model.Results.HasNextPage)
+			{
+				<a class="button button-secondary"
+				   asp-page="/Index"
+				   asp-route-category="objects"
+				   asp-route-Search="@Model.Search"
+				   asp-route-ObjectType="@Model.ObjectType"
+				   asp-route-ObjectSource="@Model.ObjectSource"
+				   asp-route-CanDownload="@Model.CanDownload"
+				   asp-route-VehicleType="@Model.VehicleType"
+				   asp-route-p="@(Model.Results.Page + 1)">Next</a>
+			}
+			else
+			{
+				<span class="button button-disabled">Next</span>
+			}
+		</nav>
+	}
+}
+		</div>
+	</div>
+}
+else if (Model.Category == "scenarios")
+{
+	<section class="panel empty-state">
+		<h2>Scenarios</h2>
+		<p>Scenario browsing is coming soon. Scenarios are available through the <a href="/api">API</a>.</p>
+	</section>
+}
+else if (Model.Category == "music")
+{
+	<section class="panel empty-state">
+		<h2>Music</h2>
+		<p>Music browsing is coming soon.</p>
+	</section>
+}
+else if (Model.Category == "sfx")
+{
+	<section class="panel empty-state">
+		<h2>Sound Effects</h2>
+		<p>Sound effect browsing is coming soon.</p>
+	</section>
+}
+else if (Model.Category == "objectpacks")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Object Packs</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-objectpacks').hidden = !document.getElementById('create-form-objectpacks').hidden">+ New</button>
+			}
+		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-objectpacks" hidden class="form mb-lg">
+				<input type="hidden" name="CrudCategory" value="objectpacks" />
+				<div class="form-group">
+					<label for="newPackName">Name</label>
+					<input id="newPackName" name="CrudName" type="text" placeholder="Pack name" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newPackDesc">Description</label>
+					<textarea id="newPackDesc" name="CrudDescription" placeholder="Pack description" class="form-input"></textarea>
+				</div>
+				<div class="form-actions mt-sm">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-objectpacks').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
+		@if (Model.ObjectPackList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Description</th>
+							<th>Uploaded</th>
+							<th>Objects</th>
+							<th>Authors</th>
+							<th>Tags</th>
+							<th>Licence</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var pack in Model.ObjectPackList)
+						{
+							<tr>
+								<td><a asp-page="/ObjectPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
+								<td>@(pack.Description.Length > 80 ? pack.Description[..80] + "…" : pack.Description)</td>
+								<td>@pack.UploadedDate.ToString("yyyy-MM-dd")</td>
+								<td>@pack.ObjectCount</td>
+								<td>@pack.AuthorCount</td>
+								<td>@pack.TagCount</td>
+								<td>@pack.Licence</td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this pack?')">
+											<input type="hidden" name="CrudId" value="@pack.Id" />
+											<input type="hidden" name="CrudCategory" value="objectpacks" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+									</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No object packs found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "scenarios")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Scenarios</h1>
+		</div>
+		@if (Model.ScenarioList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Description</th>
+							<th>Uploaded</th>
+							<th>Source</th>
+							<th>Authors</th>
+							<th>Tags</th>
+							<th>Licence</th>
+							<th>Packs</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var file in Model.ScenarioList)
+						{
+							<tr>
+								<td><a asp-page="/Scenarios/Details" asp-route-id="@file.Id"><strong>@file.Name</strong></a></td>
+								<td>@(file.Description.Length > 80 ? file.Description[..80] + "…" : file.Description)</td>
+								<td>@file.UploadedDate.ToString("yyyy-MM-dd")</td>
+								<td>@file.ObjectSource</td>
+								<td>@file.AuthorCount</td>
+								<td>@file.TagCount</td>
+								<td>@file.Licence</td>
+								<td>@file.PackCount</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No scenarios found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "scenariopacks")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Scenario Packs</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-scenariopacks').hidden = !document.getElementById('create-form-scenariopacks').hidden">+ New</button>
+			}
+		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-scenariopacks" hidden class="form mb-lg">
+				<input type="hidden" name="CrudCategory" value="scenariopacks" />
+				<div class="form-group">
+					<label for="newScenarioPackName">Name</label>
+					<input id="newScenarioPackName" name="CrudName" type="text" placeholder="Pack name" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newScenarioPackDesc">Description</label>
+					<textarea id="newScenarioPackDesc" name="CrudDescription" placeholder="Pack description" class="form-input"></textarea>
+				</div>
+				<div class="form-actions mt-sm">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-scenariopacks').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
+		@if (Model.ScenarioPackList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Description</th>
+							<th>Uploaded</th>
+							<th>Authors</th>
+							<th>Tags</th>
+							<th>Licence</th>
+							<th>Files</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var pack in Model.ScenarioPackList)
+						{
+							<tr>
+								<td><a asp-page="/ScenarioPacks/Details" asp-route-id="@pack.Id">@pack.Name</a></td>
+								<td>@(pack.Description.Length > 80 ? pack.Description[..80] + "…" : pack.Description)</td>
+								<td>@pack.UploadedDate.ToString("yyyy-MM-dd")</td>
+								<td>@pack.AuthorCount</td>
+								<td>@pack.TagCount</td>
+								<td>@pack.Licence</td>
+								<td>@pack.FileCount</td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this pack?')">
+											<input type="hidden" name="CrudId" value="@pack.Id" />
+											<input type="hidden" name="CrudCategory" value="scenariopacks" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+									</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No scenario packs found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "authors")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Authors</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-authors').hidden = !document.getElementById('create-form-authors').hidden">+ New</button>
+			}
+		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-authors" hidden class="form mb-lg">
+				<input type="hidden" name="CrudCategory" value="authors" />
+				<div class="form-group">
+					<label for="newAuthorName">Name</label>
+					<input id="newAuthorName" name="CrudName" type="text" placeholder="Author name" required class="form-input" />
+				</div>
+				<div class="form-actions mt-sm">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-authors').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
+		@if (Model.AuthorList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var author in Model.AuthorList)
+						{
+							<tr>
+								<td><a asp-page="/Authors/Details" asp-route-id="@author.Id">@author.Name</a></td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-@author.Id');f.hidden=!f.hidden">Edit</button>
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this author?')">
+											<input type="hidden" name="CrudId" value="@author.Id" />
+											<input type="hidden" name="CrudCategory" value="authors" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+										<form method="post" asp-page-handler="Edit" id="edit-@author.Id" hidden class="inline-edit-form">
+											<input type="hidden" name="CrudId" value="@author.Id" />
+											<input type="hidden" name="CrudCategory" value="authors" />
+											<input type="text" name="CrudName" value="@author.Name" required class="form-input w-150" />
+											<button type="submit" class="button button-primary button-small">Save</button>
+											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-@author.Id').hidden=true">Cancel</button>
+										</form>
+									</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No authors found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "tags")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Tags</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-tags').hidden = !document.getElementById('create-form-tags').hidden">+ New</button>
+			}
+		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-tags" hidden class="form mb-lg">
+				<input type="hidden" name="CrudCategory" value="tags" />
+				<div class="form-group">
+					<label for="newTagName">Name</label>
+					<input id="newTagName" name="CrudName" type="text" placeholder="Tag name" required class="form-input" />
+				</div>
+				<div class="form-actions mt-sm">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-tags').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
+		@if (Model.TagList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var tag in Model.TagList)
+						{
+							<tr>
+								<td><a asp-page="/Tags/Details" asp-route-id="@tag.Id">@tag.Name</a></td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-t-@tag.Id');f.hidden=!f.hidden">Edit</button>
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this tag?')">
+											<input type="hidden" name="CrudId" value="@tag.Id" />
+											<input type="hidden" name="CrudCategory" value="tags" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+										<form method="post" asp-page-handler="Edit" id="edit-t-@tag.Id" hidden class="inline-edit-form">
+											<input type="hidden" name="CrudId" value="@tag.Id" />
+											<input type="hidden" name="CrudCategory" value="tags" />
+											<input type="text" name="CrudName" value="@tag.Name" required class="form-input w-150" />
+											<button type="submit" class="button button-primary button-small">Save</button>
+											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-t-@tag.Id').hidden=true">Cancel</button>
+										</form>
+									</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No tags found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "licences")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Licences</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-licences').hidden = !document.getElementById('create-form-licences').hidden">+ New</button>
+			}
+		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-licences" hidden class="form mb-lg">
+				<input type="hidden" name="CrudCategory" value="licences" />
+				<div class="form-group">
+					<label for="newLicenceName">Name</label>
+					<input id="newLicenceName" name="CrudName" type="text" placeholder="Licence name" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newLicenceText">Text</label>
+					<textarea id="newLicenceText" name="CrudText" placeholder="Licence text" class="form-input"></textarea>
+				</div>
+				<div class="form-actions mt-sm">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-licences').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
+		@if (Model.LicenceList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Text</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var licence in Model.LicenceList)
+						{
+							<tr>
+								<td><a asp-page="/Licences/Details" asp-route-id="@licence.Id">@licence.Name</a></td>
+								<td>@(licence.Text.Length > 120 ? licence.Text[..120] + "…" : licence.Text)</td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-l-@licence.Id');f.hidden=!f.hidden">Edit</button>
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this licence?')">
+											<input type="hidden" name="CrudId" value="@licence.Id" />
+											<input type="hidden" name="CrudCategory" value="licences" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+										<form method="post" asp-page-handler="Edit" id="edit-l-@licence.Id" hidden class="inline-edit-form-wrap">
+											<input type="hidden" name="CrudId" value="@licence.Id" />
+											<input type="hidden" name="CrudCategory" value="licences" />
+											<input type="text" name="CrudName" value="@licence.Name" required class="form-input w-150" />
+											<input type="text" name="CrudText" value="@licence.Text" class="form-input w-200" />
+											<button type="submit" class="button button-primary button-small">Save</button>
+											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-l-@licence.Id').hidden=true">Cancel</button>
+										</form>
+									</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No licences found.</p>
+		}
+	</section>
+}
+else if (Model.Category == "objectsmissing")
+{
+	<section class="panel">
+		<div class="admin-page-header">
+			<h1>Missing Objects</h1>
+			@if (Model.IsAdmin)
+			{
+				<button type="button" class="button button-primary button-small" onclick="document.getElementById('create-form-objectsmissing').hidden = !document.getElementById('create-form-objectsmissing').hidden">+ New</button>
+			}
+		</div>
+		@if (Model.IsAdmin)
+		{
+			<form method="post" asp-page-handler="Create" id="create-form-objectsmissing" hidden class="form mb-lg">
+				<input type="hidden" name="CrudCategory" value="objectsmissing" />
+				<div class="form-group">
+					<label for="newMissingDatName">Dat Name</label>
+					<input id="newMissingDatName" name="CrudName" type="text" placeholder="Dat file name" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newMissingDatChecksum">Dat Checksum</label>
+					<input id="newMissingDatChecksum" name="CrudChecksum" type="number" placeholder="Checksum" required class="form-input" />
+				</div>
+				<div class="form-group">
+					<label for="newMissingObjectType">Object Type</label>
+					<select id="newMissingObjectType" name="CrudObjectType" required class="form-input">
+						@foreach (var ot in Model.ObjectTypes)
+						{
+							<option value="@((int)ot)">@ot</option>
+						}
+					</select>
+				</div>
+				<div class="form-actions mt-sm">
+					<button type="submit" class="button button-primary button-small">Create</button>
+					<button type="button" class="button button-secondary button-small" onclick="document.getElementById('create-form-objectsmissing').hidden = true">Cancel</button>
+				</div>
+			</form>
+		}
+		@if (!string.IsNullOrEmpty(Model.SuccessMessage) || !string.IsNullOrEmpty(Model.ErrorMessage))
+		{
+			@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+			{<div class="alert alert-success">@Model.SuccessMessage</div>}
+			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+			{<div class="alert alert-error">@Model.ErrorMessage</div>}
+		}
+		@if (Model.ObjectsMissingList.Count > 0)
+		{
+			<div class="table-container">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Dat Name</th>
+							<th>Dat Checksum</th>
+							<th>Object Type</th>
+							@if (Model.IsAdmin) { <th class="actions-column">Actions</th> }
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var missing in Model.ObjectsMissingList)
+						{
+							<tr>
+								<td>@missing.DatName</td>
+								<td>@missing.DatChecksum</td>
+								<td>@missing.ObjectType</td>
+								@if (Model.IsAdmin)
+								{
+									<td class="actions-column">
+										<button type="button" class="button button-small button-secondary" onclick="var f=document.getElementById('edit-m-@missing.Id');f.hidden=!f.hidden">Edit</button>
+										<form method="post" asp-page-handler="Delete" class="inline-form" onsubmit="return confirm('Delete this missing object entry?')">
+											<input type="hidden" name="CrudId" value="@missing.Id" />
+											<input type="hidden" name="CrudCategory" value="objectsmissing" />
+											<button type="submit" class="button button-small button-danger">Delete</button>
+										</form>
+										<form method="post" asp-page-handler="Edit" id="edit-m-@missing.Id" hidden class="inline-edit-form-wrap">
+											<input type="hidden" name="CrudId" value="@missing.Id" />
+											<input type="hidden" name="CrudCategory" value="objectsmissing" />
+											<input type="text" name="CrudName" value="@missing.DatName" required class="form-input w-120" />
+											<input type="number" name="CrudChecksum" value="@missing.DatChecksum" required class="form-input w-100" />
+											<select name="CrudObjectType" required class="form-input w-130">
+												@foreach (var ot in Model.ObjectTypes)
+												{
+													<option value="@((int)ot)" selected="@(ot == missing.ObjectType)">@ot</option>
+												}
+											</select>
+											<button type="submit" class="button button-primary button-small">Save</button>
+											<button type="button" class="button button-secondary button-small" onclick="document.getElementById('edit-m-@missing.Id').hidden=true">Cancel</button>
+										</form>
+									</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+		else
+		{
+			<p class="empty-state">No missing objects found.</p>
+		}
+	</section>
+}

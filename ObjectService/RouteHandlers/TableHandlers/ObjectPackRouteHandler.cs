@@ -1,52 +1,95 @@
-using Definitions.Database;
 using Definitions.DTO;
-using Definitions.DTO.Mappers;
-using Definitions.SourceData;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ObjectService.Services;
+using System.Security.Claims;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class ObjectPackRouteHandler : ITableRouteHandler
 {
-	public static string BaseRoute => RoutesV2.ObjectPacks;
-	public static Delegate ListDelegate => ListAsync;
-	public static Delegate CreateDelegate => CreateAsync;
-	public static Delegate ReadDelegate => ReadAsync;
-	public static Delegate UpdateDelegate => UpdateAsync;
-	public static Delegate DeleteDelegate => DeleteAsync;
+	public string BaseRoute => Routes.ObjectPacks;
+	public Delegate ListDelegate => ListAsync;
+	public Delegate CreateDelegate => CreateAsync;
+	public Delegate ReadDelegate => ReadAsync;
+	public Delegate UpdateDelegate => UpdateAsync;
+	public Delegate DeleteDelegate => DeleteAsync;
+	public void MapRoutes(IEndpointRouteBuilder e) => BaseTableRouteHandler.MapRoutes(this, e, e.ServiceProvider.GetRequiredService<IConfiguration>());
+	public void MapAdditionalRoutes(IEndpointRouteBuilder p)
+	{
+		var resourceRoute = p.MapGroup(Routes.ResourceRoute);
+		_ = resourceRoute.MapGet(Routes.File, GetPackFileAsync);
+		_ = resourceRoute.MapGet(Routes.Descriptor, GetDescriptorAsync);
+	}
 
-	public static void MapRoutes(IEndpointRouteBuilder endpoints)
-		=> BaseTableRouteHandler.MapRoutes<ObjectPackRouteHandler>(endpoints);
+	async Task<IResult> ListAsync([FromServices] IObjectPackService svc, CancellationToken ct) => Results.Ok(await svc.ListEntriesAsync(ct));
+	async Task<IResult> ReadAsync(UniqueObjectId id, [FromServices] IObjectPackService svc, CancellationToken ct)
+	{
+		var pack = await svc.GetPackAsync(id, ct);
+		return pack != null ? Results.Ok(pack) : Results.NotFound();
+	}
+	async Task<IResult> GetDescriptorAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectPackService svc, CancellationToken ct)
+	{
+		var descriptor = await svc.GetDescriptorAsync(id, ct);
+		return descriptor != null ? Results.Ok(descriptor) : Results.NotFound();
+	}
 
-	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
-	{ }
+	async Task<IResult> GetPackFileAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectPackService svc, CancellationToken ct)
+	{
+		var (stream, name) = await svc.GetPackFileAsync(id, ct);
+		return stream != null ? Results.File(stream, "application/zip", name) : Results.NotFound();
+	}
 
-	public static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db)
-		=> Results.Ok(
-			(await db.ObjectPacks
-				.Include(l => l.Licence)
-				.ToListAsync())
-			.Select(x => x.ToDtoEntry())
-			.OrderBy(x => x.Name));
+	async Task<IResult> CreateAsync(
+	[FromBody] DtoItemPackDescriptor<DtoObjectEntry> request,
+	HttpContext httpContext,
+	[FromServices] IObjectPackService svc,
+	CancellationToken ct)
+	{
+		if (string.IsNullOrWhiteSpace(request.Name))
+		{
+			return Results.Problem("Name required", statusCode: StatusCodes.Status400BadRequest);
+		}
 
-	public static async Task<IResult> CreateAsync([FromBody] DtoItemPackDescriptor<DtoObjectEntry> request, [FromServices] LocoDbContext db)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		if (string.IsNullOrEmpty(userIdClaim) || !ulong.TryParse(userIdClaim, out var userId))
+		{
+			return Results.Unauthorized();
+		}
 
-	public static async Task<IResult> ReadAsync(UniqueObjectId id, [FromServices] LocoDbContext db)
-		=> Results.Ok(
-			(await db.ObjectPacks
-				.Where(x => x.Id == id)
-				.Include(l => l.Licence)
-				.Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags))
-				.ToListAsync())
-			.Select(x => x.ToDtoDescriptor())
-			.OrderBy(x => x.Name));
+		try
+		{
+			var created = await svc.CreatePackAsync(request, userId, ct);
+			return Results.Created($"{Routes.Prefix}{BaseRoute}/{created.Id}", created);
+		}
+		catch (DbUpdateException ex) when (DbExceptionHelpers.IsUniqueConstraintViolation(ex))
+		{
+			return Results.Problem("A pack with the same name already exists.", statusCode: StatusCodes.Status409Conflict);
+		}
+	}
 
-	public static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoItemPackDescriptor<DtoObjectEntry> request, [FromServices] LocoDbContext db)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectPackDescriptor request, [FromServices] IObjectPackService svc, CancellationToken ct)
+	{
+		if (string.IsNullOrWhiteSpace(request.Name))
+		{
+			return Results.Problem("Name required", statusCode: StatusCodes.Status400BadRequest);
+		}
 
-	public static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db)
-		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		try
+		{
+			var updated = await svc.UpdateAsync(id, request, ct);
+			return updated != null ? Results.Ok(updated) : Results.NotFound();
+		}
+		catch (DbUpdateException ex) when (DbExceptionHelpers.IsUniqueConstraintViolation(ex))
+		{
+			return Results.Problem("A pack with the same name already exists.", statusCode: StatusCodes.Status409Conflict);
+		}
+	}
+
+	async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] IObjectPackService svc, CancellationToken ct)
+	{
+		var deleted = await svc.DeleteAsync(id, ct);
+		return deleted ? Results.Ok() : Results.NotFound();
+	}
 }

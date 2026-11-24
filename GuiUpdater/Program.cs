@@ -28,7 +28,9 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 {
 	var programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 	var loggingFile = Path.Combine(programDataPath, LoggingFileName);
-	_ = Directory.CreateDirectory(programDataPath);
+_ = Directory.CreateDirectory(programDataPath);
+	// FileMode.Create truncates the log; File.OpenWrite would leave stale trailing text from a
+	// previous, longer run appended after the new (shorter) contents.
 	using var logStream = new StreamWriter(File.Create(loggingFile));
 	Console.SetOut(logStream);
 	Console.SetError(logStream);
@@ -55,39 +57,28 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 		Console.WriteLine("Current version is empty");
 	}
 
-	// current version
-	if (SemanticVersion.TryParse(currentVersionString ?? string.Empty, out var currentVersion) && currentVersion != VersionHelpers.UnknownVersion)
-	{
-		Console.WriteLine($"Current version: {currentVersion}");
-	}
-	else
-	{
-		Console.WriteLine("Unable to parse current version - will attempt to download the latest version");
-		currentVersion ??= VersionHelpers.UnknownVersion;
-	}
-
-	// latest version
-	SemanticVersion? latestVersion = null;
-	try
-	{
-		Console.WriteLine("Checking for the latest version...");
-		latestVersion = VersionHelpers.GetLatestAppVersion(VersionHelpers.ObjectEditorName);
-		Console.WriteLine($"Latest version available: {latestVersion}");
-	}
-	catch (Exception ex)
-	{
-		Console.Error.WriteLine($"An error occurred while checking for the latest version: {ex.Message}");
-		return;
-	}
+// latest version
+	var latestVersion = await GetLatestVersionAsync(cancellationToken);
 
 	if (latestVersion == null)
 	{
-		Console.Error.WriteLine("Unable to determine the latest version");
+		Console.Error.WriteLine("Unable to determine the latest version. Cannot automatically update.");
 		return;
 	}
 
+	// current version
+	if (currentVersionString == null || !SemanticVersion.TryParse(currentVersionString, out var currentVersion) || currentVersion == null || currentVersion == VersionHelpers.UnknownVersion)
+	{
+		Console.WriteLine("Unable to parse current version - will attempt to download the latest version");
+		currentVersion = null;
+	}
+	else
+	{
+		Console.WriteLine($"Current version: {currentVersion}");
+	}
+
 	// compare versions
-	if (latestVersion <= currentVersion)
+	if (currentVersion != null && latestVersion <= currentVersion)
 	{
 		Console.WriteLine("Current version is the latest version - no update needed");
 		return;
@@ -250,5 +241,21 @@ static void RestoreExecutablePermissions(string installRoot, OSPlatform platform
 			File.SetUnixFileMode(path, executableMode);
 			Console.WriteLine($"Restored executable permissions on \"{path}\"");
 		}
+	}
+}
+
+static async Task<SemanticVersion?> GetLatestVersionAsync(CancellationToken cancellationToken)
+{
+	try
+	{
+		Console.WriteLine("Checking for the latest version...");
+		var latestVersion = await VersionHelpers.GetLatestAppVersionAsync(VersionHelpers.ObjectEditorName, cancellationToken: cancellationToken);
+		Console.WriteLine($"Latest version available: {latestVersion}");
+		return latestVersion;
+	}
+	catch (Exception ex)
+	{
+		Console.Error.WriteLine($"An error occurred while checking for the latest version: {ex.Message}");
+		return null;
 	}
 }

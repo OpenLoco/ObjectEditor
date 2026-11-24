@@ -1,12 +1,9 @@
 using Common;
 using Definitions.ObjectModels.Objects.Cargo;
-using Definitions.ObjectModels.Objects.TownNames;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
-using DynamicData.Binding;
 using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
-using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -16,49 +13,40 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 
 namespace Gui.ViewModels.Loco.Objects.Vehicle;
-
-public class VehicleComponentsViewModel : ReactiveObject
-{
-
-}
 
 public class VehicleViewModel : BaseViewModel<VehicleObject>
 {
 	private readonly VehicleObject model;
+	readonly CompositeDisposable subscriptions = [];
+
+	TrackOrRoadReferenceViewModel? roadOrTrackType;
+	TrackExtraReferenceViewModel? rackRail;
 
 	public VehicleViewModel(VehicleObject model) : base(model)
 	{
 		this.model = model;
-		CompatibleVehicles = new(model.CompatibleVehicles);
-		RequiredTrackExtras = new(model.RequiredTrackExtras);
-		CarComponents = new(model.CarComponents);
-		BodySprites = new(model.BodySprites);
-		BogieSprites = new(model.BogieSprites);
-		Animation = new(model.ParticleEmitters);
+		CompatibleVehicles = new(model.CompatibleVehicles, h => new VehicleReferenceViewModel(h), list => model.CompatibleVehicles = [.. list]);
+		RequiredTrackExtras = new(model.RequiredTrackExtras, h => new TrackExtraReferenceViewModel(h), list => model.RequiredTrackExtras = [.. list]);
+		CarComponents = [with(model.CarComponents)];
+		BodySprites = [with(model.BodySprites)];
+		BogieSprites = [with(model.BogieSprites)];
+		ParticleEmitters = [with(model.ParticleEmitters)];
 		CompatibleCargo1 = new(model.CompatibleCargoCategories[0], model.MaxCargo[0]);
 		CompatibleCargo2 = new(model.CompatibleCargoCategories[1], model.MaxCargo[1]);
-		CargoTypeSpriteOffsets = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))]);
-		StartSounds = new(model.StartSounds);
-		var_135 = new(model.var_135);
-		RoadOrTrackType = model.RoadOrTrackType;
-		RackRail = model.RackRail;
+		CargoTypeSpriteOffsets = [with([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))])];
+		RoadOrTrackType = model.RoadOrTrackType is { } roadOrTrackTypeModel ? new(roadOrTrackTypeModel) : null;
+		RackRail = model.RackRail is { } rackRailModel ? new(rackRailModel) : null;
 
 		SimpleMotorSound = model.SimpleMotorSound ?? new SimpleMotorSound();
 		FrictionSound = model.FrictionSound ?? new FrictionSound();
 		GearboxMotorSound = model.GearboxMotorSound ?? new GearboxMotorSound();
-		Sound = model.Sound;
-
-		#region Road/Track Type Binding
-
-		//_ = this.WhenAnyValue(x => x.Mode, x => x.Flags)
-		//	.Subscribe((_) => this.RaisePropertyChanged(nameof(AnyRoadOrTrackType)));
-
-		//_ = this.WhenAnyValue(x => x.AnyRoadOrTrackType)
-		//	.Subscribe((_) => this.RaisePropertyChanged(nameof(RoadOrTrackType)));
-
-		#endregion
+		StartSounds = new(model.StartSounds, h => new SoundReferenceViewModel(h), list => model.StartSounds = [.. list]);
+		DrivingSound = model.DrivingSound is { } drivingSoundModel ? new(drivingSoundModel) : null;
+		CrossingSounds = new(model.CrossingSounds, h => new SoundReferenceViewModel(h), list => model.CrossingSounds = [.. list]);
 
 		#region Sound Properties Binding
 		_ = this.WhenAnyValue(x => x.DrivingSoundType)
@@ -67,24 +55,22 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 				this.RaisePropertyChanged(nameof(SimpleMotorSound));
 				this.RaisePropertyChanged(nameof(FrictionSound));
 				this.RaisePropertyChanged(nameof(GearboxMotorSound));
-			});
+			})
+			.DisposeWith(subscriptions);
 
-		_ = this.WhenAnyValue(x => x.Sound)
-			.Subscribe((_) => model.Sound = Sound);
+		_ = this.WhenAnyValue(x => x.DrivingSound)
+			.Subscribe((_) => model.DrivingSound = DrivingSound?.Model)
+			.DisposeWith(subscriptions);
 
 		_ = this.WhenAnyValue(x => x.SimpleMotorSound)
-			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
+			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound)
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(x => x.FrictionSound)
-			.Subscribe((_) => model.FrictionSound = FrictionSound);
+			.Subscribe((_) => model.FrictionSound = FrictionSound)
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(x => x.GearboxMotorSound)
-			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound);
-
-		_ = this.WhenPropertyChanged(x => x.SimpleMotorSound)
-			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
-		_ = this.WhenPropertyChanged(x => x.FrictionSound)
-			.Subscribe((_) => model.FrictionSound = FrictionSound);
-		_ = this.WhenPropertyChanged(x => x.GearboxMotorSound)
-			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound);
+			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound)
+			.DisposeWith(subscriptions);
 
 		#endregion
 
@@ -92,9 +78,11 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 		// Bind MaxCargo changes back to model
 		_ = this.WhenAnyValue(x => x.CompatibleCargo1.MaxCargo)
-			.Subscribe(value => model.MaxCargo[0] = value);
+			.Subscribe(value => model.MaxCargo[0] = value)
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(x => x.CompatibleCargo2.MaxCargo)
-			.Subscribe(value => model.MaxCargo[1] = value);
+			.Subscribe(value => model.MaxCargo[1] = value)
+			.DisposeWith(subscriptions);
 
 		CompatibleCargo1.CargoCategories.CollectionChanged += OnCompatibleCargo1Changed;
 		CompatibleCargo2.CargoCategories.CollectionChanged += OnCompatibleCargo2Changed;
@@ -183,7 +171,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		set => model.RackSpeed = value;
 	}
 
-	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None, VehicleObjectFlags.RackRail, VehicleObjectFlags.AnyRoadType)]
+	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None, VehicleObjectFlags.RackRail, VehicleObjectFlags.AnyRoadType, VehicleObjectFlags.unk_10)]
 	public VehicleObjectFlags Flags
 	{
 		get => model.Flags;
@@ -195,8 +183,6 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[ConditionTarget]
-	//bool IsTrackTypeSettable
-	//	=> !model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road);
 	public bool AnyRoadOrTrackType
 	{
 		get => model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType);
@@ -206,7 +192,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 			if (RoadOrTrackType == null && model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType))
 			{
-				RoadOrTrackType = new ObjectModelHeader() { Name = "<obj>", ObjectSource = ObjectSource.Custom, ObjectType = ObjectType.Road };
+				RoadOrTrackType = new TrackOrRoadReferenceViewModel { ObjectType = ObjectType.Road };
 			}
 
 			this.RaisePropertyChanged(nameof(RoadOrTrackType));
@@ -214,10 +200,14 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(AnyRoadOrTrackType), false)]
-	public ObjectModelHeader? RoadOrTrackType
+	public TrackOrRoadReferenceViewModel? RoadOrTrackType
 	{
-		get => model.RoadOrTrackType;
-		set => model.RoadOrTrackType = value;
+		get => roadOrTrackType;
+		set
+		{
+			roadOrTrackType = value;
+			model.RoadOrTrackType = value?.Model;
+		}
 	}
 
 	[ConditionTarget]
@@ -230,7 +220,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 			if (RackRail == null && model.Flags.HasFlag(VehicleObjectFlags.RackRail))
 			{
-				RackRail = new ObjectModelHeader() { Name = "<obj>", ObjectSource = ObjectSource.Custom, ObjectType = ObjectType.TrackExtra };
+				RackRail = new TrackExtraReferenceViewModel();
 			}
 
 			this.RaisePropertyChanged(nameof(RackRail));
@@ -239,10 +229,14 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(HasRackRail), true)]
-	public ObjectModelHeader? RackRail
+	public TrackExtraReferenceViewModel? RackRail
 	{
-		get => model.RackRail;
-		set => model.RackRail = value;
+		get => rackRail;
+		set
+		{
+			rackRail = value;
+			model.RackRail = value?.Model;
+		}
 	}
 
 	[Range(0, 4)]
@@ -253,10 +247,10 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[Length(0, 8)]
-	public BindingList<ObjectModelHeader> CompatibleVehicles { get; init; }
+	public ObjectReferenceList<VehicleReferenceViewModel> CompatibleVehicles { get; init; }
 
 	[Length(0, 4)]
-	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; }
+	public ObjectReferenceList<TrackExtraReferenceViewModel> RequiredTrackExtras { get; init; }
 
 	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")]
 	public uint8_t ShipWakeSpacing
@@ -278,7 +272,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[Category("Cost")]
-	[Range(1, int16_t.MaxValue), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Range(1, int16_t.MaxValue), InflatableCurrency(6, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t CostFactor
 	{
 		get => model.CostFactor;
@@ -298,7 +292,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[Category("Cost")]
-	[Range(0, int16_t.MaxValue), InflatableCurrency(nameof(RunCostIndex), nameof(DesignedYear))]
+	[Range(0, int16_t.MaxValue), InflatableCurrency(10, nameof(RunCostIndex), nameof(DesignedYear))]
 	public int16_t RunCostFactor
 	{
 		get => model.RunCostFactor;
@@ -324,7 +318,8 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	public BindingList<BogieSprite> BogieSprites { get; init; }
 
 	[Category("Sprites")]
-	public BindingList<EmitterAnimation> Animation { get; init; }
+	[Length(0, 2)]
+	public BindingList<EmitterAnimation> ParticleEmitters { get; init; }
 
 	[Category("Cargo")]
 	public CompatibleCargoViewModel CompatibleCargo1 { get; init; }
@@ -358,7 +353,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	[Category("Sound")]
 	[Reactive]
 	[PropertyVisibilityCondition(nameof(IsDrivingSoundTypeSet), true)]
-	public ObjectModelHeader? Sound { get; set; }
+	public SoundReferenceViewModel? DrivingSound { get; set; }
 
 	[Category("Sound")]
 	[PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.Friction)]
@@ -374,11 +369,14 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	public GearboxMotorSound GearboxMotorSound { get; set; }
 
 	[Category("Sound")]
-	[Description("The sound the vehicle makes when starting or crossing a rail crossing. Essentially it's \"horn\"")]
-	public BindingList<ObjectModelHeader> StartSounds { get; init; }
+	[Description("The sounds the vehicle can make when starting. Essentially it's \"horn\"")]
+	[Length(0, 2)]
+	public ObjectReferenceList<SoundReferenceViewModel> StartSounds { get; init; }
 
-	[Category("<unknown>")]
-	public BindingList<uint8_t> var_135 { get; init; }
+	[Category("Sound")]
+	[Description("The sounds the vehicle can make when crossing a rail crossing. Essentially it's \"whistle\"")]
+	[Length(0, 1)]
+	public ObjectReferenceList<SoundReferenceViewModel> CrossingSounds { get; init; }
 
 	void OnCompatibleCargo1Changed(object? sender, NotifyCollectionChangedEventArgs e)
 	{
@@ -567,11 +565,49 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		Model.NumSimultaneousCargoTypes += (byte)(CompatibleCargo1.CargoCategories.Count > 0 ? 1 : 0);
 		Model.NumSimultaneousCargoTypes += (byte)(CompatibleCargo2.CargoCategories.Count > 0 ? 1 : 0);
 	}
+
+	public override void SynchronizeToModel()
+	{
+		CompatibleVehicles.Synchronize();
+		RequiredTrackExtras.Synchronize();
+		StartSounds.Synchronize();
+		CrossingSounds.Synchronize();
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			CompatibleCargo1.CargoCategories.CollectionChanged -= OnCompatibleCargo1Changed;
+			CompatibleCargo2.CargoCategories.CollectionChanged -= OnCompatibleCargo2Changed;
+
+			foreach (var item in CompatibleCargo1.CargoCategories)
+			{
+				item.PropertyChanged -= OnCargoCategoryPropertyChanged;
+			}
+
+			foreach (var item in CompatibleCargo2.CargoCategories)
+			{
+				item.PropertyChanged -= OnCargoCategoryPropertyChanged;
+			}
+
+			CargoTypeSpriteOffsets.CollectionChanged -= OnCargoTypeSpriteOffsetsChanged;
+
+			foreach (var item in CargoTypeSpriteOffsets)
+			{
+				item.PropertyChanged -= OnCargoTypeSpriteOffsetPropertyChanged;
+			}
+
+			subscriptions.Dispose();
+		}
+
+		base.Dispose(disposing);
+	}
 }
 
 // todo: use this in CargoObject
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CargoCategoryViewModel : ReactiveUI.ReactiveObject
+public class CargoCategoryViewModel : ReactiveObject
 {
 	public CargoCategory Category
 	{
@@ -610,7 +646,7 @@ public class CargoCategoryViewModel : ReactiveUI.ReactiveObject
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CargoTypeSpriteOffsetViewModel : ReactiveUI.ReactiveObject
+public class CargoTypeSpriteOffsetViewModel : ReactiveObject
 {
 	public CargoTypeSpriteOffsetViewModel(CargoCategory cargoCategory, uint8_t offset)
 	{
@@ -650,7 +686,7 @@ public class CargoTypeSpriteOffsetViewModel : ReactiveUI.ReactiveObject
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CompatibleCargoViewModel : ReactiveUI.ReactiveObject
+public class CompatibleCargoViewModel : ReactiveObject
 {
 	public byte MaxCargo
 	{
@@ -670,7 +706,7 @@ public class CompatibleCargoViewModel : ReactiveUI.ReactiveObject
 	public CompatibleCargoViewModel(IEnumerable<CargoCategory> compatibleCargoCategories, uint8_t maxCargo)
 	{
 		MaxCargo = maxCargo;
-		CargoCategories = new(compatibleCargoCategories.Select(x => new CargoCategoryViewModel(x)));
+		CargoCategories = [with(compatibleCargoCategories.Select(x => new CargoCategoryViewModel(x)))];
 	}
 
 	public CompatibleCargoViewModel()

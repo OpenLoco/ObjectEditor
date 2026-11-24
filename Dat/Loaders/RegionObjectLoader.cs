@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -33,16 +36,15 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
 			br.SkipImageId(); // Image offset, not part of object definition
-			model.VehiclesDriveOnThe = br.ReadByte() == 0 ? DrivingSide.Left : DrivingSide.Right;
-			model.pad_07 = br.ReadByte();
+			model.VehicleDrivingSide = (DatDrivingSide)br.ReadUInt16() == DatDrivingSide.Left ? DrivingSide.Left : DrivingSide.Right;
 			var numCargoInfluenceObjects = br.ReadByte();
 			for (var i = 0; i < Constants.MaxCargoInfluenceObjects; ++i)
 			{
 				model.CargoInfluenceTownFilter.Add((CargoInfluenceTownFilterType)br.ReadByte()); // Cargo influence town filter
 			}
 
-			br.SkipByte(Constants.MaxCargoInfluenceObjects * StructSizes.CargoInfluenceTownFilterType); // Cargo influence town filter
-			model.pad_11 = br.ReadByte();
+			br.SkipBytes(Constants.MaxCargoInfluenceObjects * StructSizes.CargoInfluenceTownFilterType); // Cargo influence town filter
+			br.SkipByte(); // 0x11 is a padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -73,8 +75,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
-			bw.Write(model.VehiclesDriveOnThe == DrivingSide.Left ? (uint8_t)0 : (uint8_t)1);
-			bw.Write(model.pad_07);
+			bw.Write(model.VehicleDrivingSide == DrivingSide.Left ? (uint16_t)DatDrivingSide.Left : (uint16_t)DatDrivingSide.Right);
 			bw.Write((uint8_t)model.CargoInfluenceObjects.Count);
 			bw.WriteEmptyObjectId(Constants.MaxCargoInfluenceObjects);
 			for (var i = 0; i < Constants.MaxCargoInfluenceObjects; ++i)
@@ -82,7 +83,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 				bw.Write((uint8_t)model.CargoInfluenceTownFilter[i]); // Cargo influence town filter
 			}
 
-			bw.Write(model.pad_11); // pad
+			bw.Write((byte)0); // 0x11 is a padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -98,6 +99,13 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			// image table
 			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
+	}
+
+	[Flags]
+	internal enum DatDrivingSide : uint16_t
+	{
+		Left,
+		Right
 	}
 
 	internal enum DatCargoInfluenceTownFilterType : uint8_t

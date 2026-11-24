@@ -1,10 +1,13 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
-using Common;
-using Common.Json;
-using Common.Logging;
+using Core.Graphics;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.Dithering;
+using Definitions.ObjectModels.Types;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -19,6 +22,8 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Gui.Views;
+using Gui.Models;
 
 namespace Gui.ViewModels.Graphics;
 
@@ -28,7 +33,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		=> "Image Table";
 
 	public string ImageCount
-		=> $"Image count = {GroupedImageViewModels.Sum(x => x.Images.Count)}";
+		=> imageCount.Value;
 
 	// used in the axaml to bind the combobox to the list of swatches
 	public static ColourSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatch>();
@@ -42,36 +47,31 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	[Reactive]
 	public ColourRemapSwatchViewModel SelectedSecondarySwatch { get; set; }
 
-	[Reactive]
-	public ICommand ImportImagesCommand { get; set; }
+	public ICommand ImportImagesCommand { get; }
 
-	[Reactive]
-	public ICommand ExportImagesCommand { get; set; }
+	public ICommand ImportJsonOffsetsCommand { get; }
 
-	[Reactive]
-	public ICommand ReplaceImageCommand { get; set; }
-	[Reactive]
-	public ICommand CropImageCommand { get; set; }
-	[Reactive]
-	public ICommand DeleteImageCommand { get; set; }
-	[Reactive]
-	public ICommand InsertImageAtCommand { get; set; }
-	[Reactive]
-	public ICommand AppendImageCommand { get; set; }
+	public ICommand ExportImagesCommand { get; }
 
-	[Reactive]
-	public ICommand CropAllImagesCommand { get; set; }
+	public ICommand ReloadImageTableGroupingCommand { get; }
 
-	[Reactive]
-	public ICommand ZeroOffsetAllImagesCommand { get; set; }
+	public ICommand ReplaceImageCommand { get; }
+	public ICommand ExportImageCommand { get; }
+	public ICommand DitherImageCommand { get; }
+	public ICommand DitherAllImagesCommand { get; }
+	public ICommand CropImageCommand { get; }
+	public ICommand DeleteImageCommand { get; }
+	public ICommand InsertImageAtCommand { get; }
+	public ICommand AppendImageCommand { get; }
 
-	[Reactive]
-	public ICommand TranslateXOffsetAllImagesCommand { get; set; }
-	[Reactive]
-	public ICommand TranslateYOffsetAllImagesCommand { get; set; }
+	public ICommand CropAllImagesCommand { get; }
 
-	[Reactive]
-	public ICommand CenterOffsetAllImagesCommand { get; set; }
+	public ICommand ZeroOffsetAllImagesCommand { get; }
+
+	public ICommand TranslateXOffsetAllImagesCommand { get; }
+	public ICommand TranslateYOffsetAllImagesCommand { get; }
+
+	public ICommand CenterOffsetAllImagesCommand { get; }
 
 	[Reactive]
 	public SelectionModel<ImageViewModel> SelectionModel { get; set; }
@@ -83,7 +83,8 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	public int AnimationSpeed { get; set; } = 40;
 	readonly DispatcherTimer animationTimer;
 	int currentFrameIndex;
-	readonly CompositeDisposable subscriptions = new();
+	readonly CompositeDisposable subscriptions = [];
+	readonly ObservableAsPropertyHelper<string> imageCount;
 	bool disposed;
 
 	public readonly ILogger Logger;
@@ -94,22 +95,31 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	[Reactive]
 	public ObservableCollection<ImageViewModel> LayeredImages { get; set; } = [];
 
+	readonly ObjectType? objectType;
+	readonly ILocoStruct? objectModel;
+	readonly string? groupingConfigFilePath;
+	readonly EditorSettings? editorSettings;
+
 	ImageTable Model { get; init; }
 
-	public ImageTableViewModel(ImageTable imageTable, ILogger logger)
+	public ImageTableViewModel(ImageTable imageTable, ILogger logger, ObjectType? objectType = null, ILocoStruct? objectModel = null, string? groupingConfigFilePath = null, EditorSettings? editorSettings = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 
 		Model = imageTable;
 		Logger = logger;
+		this.objectType = objectType;
+		this.objectModel = objectModel;
+		this.groupingConfigFilePath = groupingConfigFilePath;
+		this.editorSettings = editorSettings;
 		RecreateViewModelGroupsFromImageTable(Model);
 
 		// swatches/palettes
 		ColourSwatches = [.. ColourSwatchesArr.Select(x => new ColourRemapSwatchViewModel()
 		{
 			Swatch = x,
-			Colour = Model.PaletteMap.GetRemapSwatchFromName(x)?[0].Color.ToAvaloniaColor() ?? Avalonia.Media.Colors.Red,
-			GradientColours = [.. Model.PaletteMap.GetRemapSwatchFromName(x)?.Select(x => x.Color.ToAvaloniaColor()) ?? [Avalonia.Media.Colors.DarkRed]],
+			Colour = PaletteMapLoader.Current.GetRemapSwatchFromName(x)?[0].Color.ToAvaloniaColor() ?? Avalonia.Media.Colors.Red,
+			GradientColours = [.. PaletteMapLoader.Current.GetRemapSwatchFromName(x)?.Select(x => x.Color.ToAvaloniaColor()) ?? [Avalonia.Media.Colors.DarkRed]],
 		})];
 
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
@@ -125,18 +135,23 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			.Where(_ => animationTimer != null)
 			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed))
 			.DisposeWith(subscriptions);
-		_ = this.WhenAnyValue(o => o.GroupedImageViewModels).Skip(1)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageCount)))
+		imageCount = this.WhenAnyValue(o => o.GroupedImageViewModels)
+			.Select(groups => $"Image count = {groups.Sum(x => x.Images.Count)}")
+			.ToProperty(this, o => o.ImageCount)
 			.DisposeWith(subscriptions);
 
-		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
-		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImages);
-		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImage);
+		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImagesAsync);
+		ImportJsonOffsetsCommand = ReactiveCommand.CreateFromTask(ImportJsonOffsetsAsync);
+		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImagesAsync);
+		ReplaceImageCommand = ReactiveCommand.CreateFromTask<ImageViewModel>(ReplaceImageAsync);
+		ExportImageCommand = ReactiveCommand.CreateFromTask<ImageViewModel>(ExportImageAsync);
 		CropImageCommand = ReactiveCommand.Create(CropImage);
-		DeleteImageCommand = ReactiveCommand.CreateFromTask(DeleteImage);
-		InsertImageAtCommand = ReactiveCommand.CreateFromTask<bool>(InsertImageAt);
-		AppendImageCommand = ReactiveCommand.CreateFromTask<string>(AppendImage);
+		DeleteImageCommand = ReactiveCommand.CreateFromTask(DeleteImageAsync);
+		InsertImageAtCommand = ReactiveCommand.CreateFromTask<bool>(InsertImageAtAsync);
+		AppendImageCommand = ReactiveCommand.CreateFromTask<string>(AppendImageAsync);
 		CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
+		DitherImageCommand = ReactiveCommand.CreateFromTask<ImageViewModel>(DitherImageAsync);
+		DitherAllImagesCommand = ReactiveCommand.CreateFromTask(DitherAllImagesAsync);
 
 		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
 		{
@@ -155,6 +170,9 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 				ivm.YOffset = (short)(-ivm.Height / 2);
 			}
 		});
+
+		var canReloadGrouping = objectType.HasValue && !string.IsNullOrEmpty(groupingConfigFilePath);
+		ReloadImageTableGroupingCommand = ReactiveCommand.CreateFromTask(ReloadImageTableGroupingAsync, Observable.Return(canReloadGrouping));
 
 		TranslateXOffsetAllImagesCommand = ReactiveCommand.Create<string>(amount =>
 		{
@@ -200,7 +218,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		GroupedImageViewModels.Clear();
 		foreach (var group in imageTable.Groups)
 		{
-			var givm = new GroupedImageViewModel(group.Name, group.GraphicsElements.Select(ge => new ImageViewModel(ge, Model.PaletteMap)));
+			var givm = new GroupedImageViewModel(group.Name, group.GraphicsElements.Select(ge => new ImageViewModel(ge, PaletteMapLoader.Current)));
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
 		}
@@ -227,10 +245,14 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		currentFrameIndex = (currentFrameIndex + 1) % SelectionModel.SelectedItems.Count;
 	}
 
-	void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+	void SelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
 	{
+		if (sender is not SelectionModel<ImageViewModel> sm)
+		{
+			return;
+		}
+
 		// need to unselect the current selection
-		var sm = (SelectionModel<ImageViewModel>)sender;
 		if (SelectionModel != null && SelectionModel != sm)
 		{
 			SelectionModel.SelectionChanged -= SelectionChanged;
@@ -253,7 +275,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		SelectionModel.Clear();
 	}
 
-	public async Task ImportImages()
+	public async Task ImportImagesAsync()
 	{
 		animationTimer.Stop();
 
@@ -266,13 +288,35 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			await ImportImages(dirPath);
+
+			// Show dithering popup if needed
+			var ditheringMethod = await ShowDitheringPopupAsync();
+			await ImportImagesAsync(dirPath, ditheringMethod);
 		}
 
 		animationTimer.Start();
 	}
 
-	public async Task ExportImages(bool prependGroupAndImageNameInFilename)
+	public async Task ImportJsonOffsetsAsync()
+	{
+		animationTimer.Stop();
+
+		var files = await PlatformSpecific.OpenFilePicker(PlatformSpecific.JsonFileTypes);
+		using (var file = files.FirstOrDefault())
+		{
+			if (file == null)
+			{
+				return;
+			}
+
+			var dirPath = file.Path.LocalPath;
+			await ImportSpritesJsonAsync(dirPath);
+		}
+
+		animationTimer.Start();
+	}
+
+	public async Task ExportImagesAsync(bool prependGroupAndImageNameInFilename)
 	{
 		var folders = await PlatformSpecific.OpenFolderPicker();
 		var dir = folders.FirstOrDefault();
@@ -285,8 +329,13 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		await ExportImages(dirPath, prependGroupAndImageNameInFilename);
 	}
 
-	public async Task ReplaceImage()
+	public async Task ReplaceImageAsync(ImageViewModel image)
 	{
+		if (image == null)
+		{
+			return;
+		}
+
 		var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.PngFileTypes);
 		if (openFile == null)
 		{
@@ -299,10 +348,100 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			return;
 		}
 
-		_ = SelectedImage?.UnderlyingImage = Image.Load<Rgba32>(filename);
+		// Show dithering popup if needed
+		var ditheringMethod = await ShowDitheringPopupAsync();
+
+		// Operate on the image that was right-clicked (passed as the command parameter), not the
+		// animation-timer-driven SelectedImage. Load the image first so the preview/width/height update,
+		// then apply the chosen dithering method so the palette data and dithered preview reflect it.
+		image.UnderlyingImage = CreateReplacement(image, ditheringMethod, filename);
+		image.DitheringMethod = ditheringMethod;
 	}
 
-	public async Task DeleteImage()
+	/// <summary>Builds a replacement <see cref="GraphicsElement"/> for the target image from a PNG file. A
+	/// palette-format target is converted straight to an indexed frame (optionally dithered) so company
+	/// colours are preserved and its source of truth stays an <c>IndexedImageFrame</c>; a <c>Bgr24</c> target
+	/// keeps an RGBA source.</summary>
+	static GraphicsElement CreateReplacement(ImageViewModel image, DitheringMethod? ditheringMethod, string filename)
+	{
+		var flags = image.Flags;
+		var xOffset = image.XOffset;
+		var yOffset = image.YOffset;
+		var zoomOffset = image.ZoomOffset;
+		var name = image.Name;
+		var index = image.ImageTableIndex;
+
+		var img = Image.Load<Rgba32>(filename);
+		if (flags.HasFlag(GraphicsElementFlags.IsBgr24))
+		{
+			return GraphicsElement.FromRgba(flags, img, xOffset, yOffset, zoomOffset, name, index); // element owns img
+		}
+
+		var dither = ditheringMethod.HasValue && ditheringMethod.Value != DitheringMethod.None ? ditheringMethod.Value : (DitheringMethod?)null;
+		var frame = dither.HasValue
+			? PaletteMapLoader.Current.ConvertRgba32ImageToIndexedImageDithering(img, flags, dither.Value)
+			: PaletteMapLoader.Current.ConvertRgba32ImageToIndexedImage(img, flags);
+		img.Dispose();
+
+		return GraphicsElement.FromIndexed(flags, frame, xOffset, yOffset, zoomOffset, name, index);
+	}
+
+	public async Task ExportImageAsync(ImageViewModel image)
+	{
+		if (image == null)
+		{
+			return;
+		}
+
+		var suggestedFileName = ImageTableIo.BuildSingleImageFileName(image.ImageTableIndex, image.Name);
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.PngFileTypes, suggestedFileName);
+		if (saveFile?.Path == null)
+		{
+			return; // user cancelled
+		}
+
+		try
+		{
+			await image.SaveAsPngAsync(saveFile.Path.LocalPath);
+			Logger.LogInformation("Exported image {ImageTableIndex} to {Filename}", image.ImageTableIndex, saveFile.Path.LocalPath);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to export image {ImageTableIndex} to {Filename}", image.ImageTableIndex, saveFile.Path.LocalPath);
+		}
+	}
+
+	public async Task DitherImageAsync(ImageViewModel image)
+	{
+		if (image == null)
+		{
+			return;
+		}
+
+		var ditheringMethod = await ShowDitheringPopupAsync();
+		if (ditheringMethod == null)
+		{
+			return; // user cancelled - leave the image's existing dithering (if any) untouched
+		}
+
+		image.DitheringMethod = ditheringMethod;
+	}
+
+	public async Task DitherAllImagesAsync()
+	{
+		var ditheringMethod = await ShowDitheringPopupAsync();
+		if (ditheringMethod == null)
+		{
+			return; // user cancelled
+		}
+
+		foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
+		{
+			ivm.DitheringMethod = ditheringMethod;
+		}
+	}
+
+	public async Task DeleteImageAsync()
 	{
 		if (SelectedImage == null)
 		{
@@ -316,25 +455,24 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		await Task.CompletedTask;
 	}
 
-	private async Task AppendImage(string groupName)
+	private async Task AppendImageAsync(string groupName)
 	{
 		var group = Model.Groups.FirstOrDefault(x => x.Name == groupName);
 
 		if (group == null)
 		{
-			Logger.Error($"Couldn't find group named {groupName}");
+			Logger.LogError("Couldn't find group named {GroupName}", groupName);
 			return;
 		}
 
-		// this doesn't work
-		// because the groups don't store which indices they own, then
+		// this doesn't work, because the groups don't store which indices they own, then
 		// if a group is ever empty we can't ever add something into it with the correct index
 		group.GraphicsElements.Add(ImageTableHelpers.GetErrorGraphicsElement(Model.Groups.Sum(x => x.GraphicsElements.Count)));
 		RecreateViewModelGroupsFromImageTable(Model);
 		await Task.CompletedTask;
 	}
 
-	private async Task InsertImageAt(bool insertBefore)
+	private async Task InsertImageAtAsync(bool insertBefore)
 	{
 		if (SelectedImage == null)
 		{
@@ -349,11 +487,58 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	}
 
 	// model stuff
+	Task ReloadImageTableGroupingAsync()
+	{
+		if (!objectType.HasValue || objectModel == null)
+		{
+			Logger.LogWarning("Cannot reload image table grouping because object context is unavailable.");
+			return Task.CompletedTask;
+		}
+
+		if (string.IsNullOrEmpty(groupingConfigFilePath))
+		{
+			Logger.LogWarning("Cannot reload image table grouping because the grouping configuration file path is not configured.");
+			return Task.CompletedTask;
+		}
+
+		if (File.Exists(groupingConfigFilePath))
+		{
+			Logger.LogInformation("Reloading image table grouping from {ConfigFilePath}", groupingConfigFilePath);
+			var json = File.ReadAllText(groupingConfigFilePath);
+			var groupConfigurations = ImageTableGroupLoader.LoadGroupConfigurationJson(Logger, json);
+			if (groupConfigurations != null)
+			{
+				ImageTableGrouper.GroupConfigurations = groupConfigurations;
+			}
+		}
+		else
+		{
+			Logger.LogWarning("Cannot reload image table grouping because the grouping configuration file does not exist at {ConfigFilePath}", groupingConfigFilePath);
+			return Task.CompletedTask;
+		}
+
+		var imageList = Model.GraphicsElements.OrderBy(x => x.ImageTableIndex).ToList();
+
+		try
+		{
+			List<ImageTableGroup> groups = [.. ImageTableGrouper.CreateGroupsForExistingImages(objectModel, objectType.Value, imageList)];
+			Model.Groups = groups;
+			RecreateViewModelGroupsFromImageTable(Model);
+			Logger.LogInformation("Reloaded image table grouping from {ConfigFilePath}", groupingConfigFilePath);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to reload image table grouping from {ConfigFilePath}", groupingConfigFilePath);
+		}
+
+		return Task.CompletedTask;
+	}
+
 	public void RecolourImages(ColourSwatch primary, ColourSwatch secondary)
 	{
 		foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
 		{
-			ivm.RecolourImage(primary, secondary, Model.PaletteMap);
+			ivm.RecolourImage(primary, secondary, PaletteMapLoader.Current);
 		}
 	}
 
@@ -374,170 +559,74 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		return result.Length == 0 ? "0" : result;
 	}
 
-	async Task ImportImages(string directory)
+	async Task<DitheringMethod?> ShowDitheringPopupAsync()
 	{
-		if (string.IsNullOrEmpty(directory))
+		// If the user has set a default dithering method, use it without showing the popup
+		if (editorSettings != null && editorSettings.DefaultDitheringMethod != DitheringMethod.None)
 		{
-			Logger.Error($"Directory is invalid: \"{directory}\"");
-			return;
+			return editorSettings.DefaultDitheringMethod;
 		}
 
-		if (!Directory.Exists(directory))
+		if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime app || app.MainWindow == null)
 		{
-			Logger.Error($"Directory does not exist: \"{directory}\"");
-			return;
+			return null;
 		}
 
-		Logger.Info($"Importing images from {directory}");
+		var vm = new DitheringSelectionWindowViewModel(null);
+		var dialog = new DitheringSelectionWindow { DataContext = vm };
+		var result = await dialog.ShowDialog<DitheringSelectionWindowViewModel?>(app.MainWindow);
 
+		if (result != null && result.Confirmed)
+		{
+			if (result.SetAsDefault && editorSettings != null)
+			{
+				editorSettings.DefaultDitheringMethod = result.SelectedMethod;
+				editorSettings.Save(ObjectEditorContext.SettingsFilePathName, Logger);
+			}
+
+			return result.SelectedMethod;
+		}
+
+		return null; // user cancelled, use no dithering
+	}
+
+	async Task ImportSpritesJsonAsync(string filename)
+	{
+		_ = await ImageTableIo.ApplyOffsetsAsync(Model, filename, Logger);
+		RecreateViewModelGroupsFromImageTable(Model);
+	}
+
+	async Task ImportImagesAsync(string directory, DitheringMethod? ditheringMethod = null)
+	{
+		// Step 1: Clear selection model
 		ClearSelectionModel();
 
 		try
 		{
-			ICollection<GraphicsElementJson> offsets;
-
-			// check for offsets file
-			var offsetsFile = Path.Combine(directory, "sprites.json");
-			if (File.Exists(offsetsFile))
+			// Step 2+3: Load sprites.json and all the PNG files it references
+			var importedImages = await ImageTableIo.LoadImagesAsync(directory, PaletteMapLoader.Current, Logger, ditheringMethod);
+			if (importedImages == null)
 			{
-				offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile) ?? []; // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
-				ArgumentNullException.ThrowIfNull(offsets);
-				Logger.Debug($"Found sprites.json file with {offsets.Count} images");
-			}
-			else
-			{
-				var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
-				var sanitised = files.Select(TrimZeroes).ToList();
-
-				offsets = [.. GroupedImageViewModels.SelectMany(x => x.Images)
-					.Select((x, i) => new GraphicsElementJson(sanitised[i], x.XOffset, x.YOffset, x.Name))
-					.Fill(files.Length, GraphicsElementJson.Zero)];
-
-				Logger.Debug($"Didn't find sprites.json file, using existing GraphicsElement offsets with {offsets.Count} images");
+				return;
 			}
 
-			var all = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
+			// Step 4: Clear the existing model image table
+			Model.Groups.Clear();
 
-			// load files
-			var importedImages = new List<GraphicsElement>();
-			foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
-			{
-				var is1Pixel = string.IsNullOrEmpty(offset.Path);
-				var img = is1Pixel ? ImageTableHelpers.OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
-				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
-				var graphicsElement = GraphicsElementFromImage(newOffset, img, Model.PaletteMap, i);
-				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
-					? DefaultImageTableNameProvider.GetImageName(i)
-					: graphicsElement.Name;
+			// Step 5: Set the new image table as a single flat group from sprites.json and loaded PNGs
+			Model.Groups.Add(new ImageTableGroup("<temp>", importedImages));
 
-				importedImages.Add(graphicsElement);
-			}
-
-			foreach (var group in Model.Groups)
-			{
-				for (var i = 0; i < group.GraphicsElements.Count; i++)
-				{
-					var ge = group.GraphicsElements[i];
-					if (ge.ImageTableIndex < 0 || ge.ImageTableIndex >= importedImages.Count)
-					{
-						Logger.Error($"Image[{ge.ImageTableIndex}] is out of range; only {importedImages.Count} were loaded. This graphics element will be set to empty.");
-						group.GraphicsElements[i] = ImageTableHelpers.GetErrorGraphicsElement(ge.ImageTableIndex);
-					}
-					else
-					{
-						group.GraphicsElements[i] = importedImages[ge.ImageTableIndex];
-					}
-				}
-			}
-
-			// if there are any extras, add them to a new group
-			var totalExistingElements = Model.Groups.Sum(x => x.GraphicsElements.Count);
-			if (importedImages.Count > totalExistingElements)
-			{
-				var newGroup = new ImageTableGroup("<uncategorised-imported>", importedImages[totalExistingElements..]);
-				Model.Groups.Add(newGroup);
-			}
-
-			RecreateViewModelGroupsFromImageTable(Model);
+			// Step 6: Recreate the viewmodel groups
+			await ReloadImageTableGroupingAsync();
 		}
 		catch (Exception ex)
 		{
-			Logger.Error(ex);
+			Logger.LogError(ex, "An error occurred while importing images from {Directory}", directory);
 		}
-	}
-
-	static GraphicsElement GraphicsElementFromImage(GraphicsElementJson ele, Image<Rgba32> img, PaletteMap paletteMap, int index)
-	{
-		var flags = ele.Flags ?? GraphicsElementFlags.None;
-		var ge = new GraphicsElement()
-		{
-			Width = (int16_t)img.Width,
-			Height = (int16_t)img.Height,
-			XOffset = ele.XOffset,
-			YOffset = ele.YOffset,
-			Flags = flags,
-			ZoomOffset = ele.ZoomOffset ?? 0,
-			ImageData = paletteMap.ConvertRgba32ImageToG1Data(img, flags),
-			Name = ele.Name ?? string.Empty,
-			Image = img,
-			ImageTableIndex = index,
-		};
-
-		ge.Image = paletteMap.TryConvertG1ToRgba32Bitmap(ge, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var convertedImage)
-			? convertedImage
-			: ImageTableHelpers.ErrorImage;
-
-		return ge;
 	}
 
 	async Task ExportImages(string directory, bool prependGroupAndImageNameInFilename)
-	{
-		if (string.IsNullOrEmpty(directory))
-		{
-			Logger.Error($"Directory is invalid: \"{directory}\"");
-			return;
-		}
-
-		if (!Directory.Exists(directory))
-		{
-			Logger.Error($"Directory does not exist: \"{directory}\"");
-			return;
-		}
-
-		Logger.Info($"Exporting images to {directory}");
-
-		var offsets = new List<GraphicsElementJson>();
-
-		var invalidChars = Path.GetInvalidFileNameChars();
-
-		foreach (var item in GroupedImageViewModels
-			.SelectMany(group => group.Images, (group, image) => new { group.GroupName, Image = image })
-			.OrderBy(x => x.Image.ImageTableIndex))
-		{
-			var image = item.Image;
-
-			var fileName = $"{image.ImageTableIndex}.png";
-			if (prependGroupAndImageNameInFilename)
-			{
-				var imageName = new string([.. item.Image.Name.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
-				var groupName = new string([.. item.GroupName.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
-
-				if (!string.IsNullOrEmpty(groupName) && !string.IsNullOrEmpty(imageName))
-				{
-					fileName = $"{groupName}_{imageName}.png";
-				}
-			}
-
-			var path = Path.Combine(directory, fileName);
-			await image.UnderlyingImage.SaveAsPngAsync(path);
-
-			offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement(Model.PaletteMap)));
-		}
-
-		var offsetsFile = Path.Combine(directory, "sprites.json");
-		Logger.Info($"Saving sprite offsets to {offsetsFile}");
-		await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
-	}
+		=> _ = await ImageTableIo.ExportAsync(Model, directory, prependGroupAndImageNameInFilename, PaletteMapLoader.Current, Logger);
 
 	void DisposeGroupedViewModels()
 	{
@@ -546,13 +635,13 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			group.SelectionModel.SelectionChanged -= SelectionChanged;
 			foreach (var image in group.Images)
 			{
-				(image as IDisposable)?.Dispose();
+				image.Dispose();
 			}
 		}
 
 		foreach (var image in LayeredImages)
 		{
-			(image as IDisposable)?.Dispose();
+			image.Dispose();
 		}
 
 		LayeredImages.Clear();

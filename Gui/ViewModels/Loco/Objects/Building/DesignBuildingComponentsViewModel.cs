@@ -1,7 +1,6 @@
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Common;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
@@ -11,7 +10,7 @@ namespace Gui.ViewModels.Loco.Objects.Building;
 
 public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 {
-	public Image<Rgba32> CreateDummyImage(int width, int height)
+	public static Image<Rgba32> CreateDummyImage(int width, int height)
 	{
 		var image = new Image<Rgba32>(width, height);
 
@@ -20,23 +19,28 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 		{
 			_ = ctx.BackgroundColor(Color.White);
 
-			// Draw a red rectangle
+			// Draw a red rectangle border
 			var border = 1;
-			_ = ctx.Fill(Color.Red, new RectangleF(border, border, width - (2 * border), height - (2 * border)));
-
-			// Draw a blue circle
-			//ctx.Fill(Color.Blue, new EllipsePolygon(400, 300, 100));
-
-			// Draw text
-			// You'll need to load a font for this
-			// Example: Font font = SystemFonts.CreateFont("Arial", 24);
-			// ctx.DrawText("Hello, ImageSharp!", font, Color.Black, new PointF(50, 450));
+			var red = Color.Red.ToPixel<Rgba32>();
+			for (var y = border; y < height - border; y++)
+			{
+				for (var x = border; x < width - border; x++)
+				{
+					image[x, y] = red;
+				}
+			}
 		});
 
-		// Save the image to a file
-		//image.Save("myGeneratedImage.png");
-
 		return image;
+	}
+
+	// The design placeholder images are palette-format (Flags.None), so their source of truth is an
+	// IndexedImageFrame - convert the dummy RGBA into palette indices at creation.
+	static GraphicsElement CreateDummyElement(int width, int height, string name)
+	{
+		using var dummy = CreateDummyImage(width, height);
+		var frame = PaletteMapLoader.Current.ConvertRgba32ImageToIndexedImage(dummy, GraphicsElementFlags.None);
+		return GraphicsElement.FromIndexed(GraphicsElementFlags.None, frame, 0, 0, 0, name, 0);
 	}
 
 	public DesignBuildingComponentsViewModel()
@@ -50,19 +54,19 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 				new (
 					"Layer 0",
 					[
-						new GraphicsElement() { Name = "Layer 0 - South", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 0 - West ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 0 - North", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 0 - East ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
+						CreateDummyElement(width, height, "Layer 0 - South"),
+						CreateDummyElement(width, height, "Layer 0 - West "),
+						CreateDummyElement(width, height, "Layer 0 - North"),
+						CreateDummyElement(width, height, "Layer 0 - East "),
 					]
 				),
 				new (
 					"Layer 1",
 					[
-						new GraphicsElement() { Name = "Layer 1 - South", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 1 - West ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 1 - North", Width = width, Height = height, Image = CreateDummyImage(width, height) },
-						new GraphicsElement() { Name = "Layer 1 - East ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
+						CreateDummyElement(width, height, "Layer 1 - South"),
+						CreateDummyElement(width, height, "Layer 1 - West "),
+						CreateDummyElement(width, height, "Layer 1 - North"),
+						CreateDummyElement(width, height, "Layer 1 - East "),
 					]
 				)
 			]

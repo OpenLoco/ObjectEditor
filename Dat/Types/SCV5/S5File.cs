@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -6,82 +9,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
-public static class ObjectManager
-{
-	public static readonly S5Header FillHeader = new(uint.MaxValue, "ÿÿÿÿÿÿÿÿ", uint.MaxValue);
-
-	public static List<S5Header> GetStructuredHeaders(List<S5Header> allHeaders)
-	{
-		var structuredList = new List<S5Header>(S5File.RequiredObjectsCount);
-		var grouped = allHeaders.GroupBy(x => x.ObjectType).ToDictionary(x => x.Key, x => x.Select(y => y).ToList());
-
-		for (var i = 0; i < Limits.kMaxObjectTypes; ++i)
-		{
-			var ot = (DatObjectType)i;
-			var count = GetMaxObjectCount(ot);
-
-			for (var hdr = 0; hdr < count; ++hdr)
-			{
-				if (grouped.TryGetValue(ot, out var hdrs))
-				{
-					var item = hdr < hdrs.Count ? hdrs[hdr] : FillHeader;
-					structuredList.Add(item);
-				}
-				else
-				{
-					structuredList.Add(FillHeader);
-				}
-			}
-		}
-
-		if (structuredList.Count != S5File.RequiredObjectsCount)
-		{
-			throw new ArgumentOutOfRangeException(nameof(allHeaders), $"The constructed list didn't have exactly {S5File.RequiredObjectsCount} objects, so it is invalid.");
-		}
-
-		return structuredList;
-	}
-
-	public static int GetMaxObjectCount(DatObjectType objectType)
-		=> objectType switch
-		{
-			DatObjectType.InterfaceSkin => 1,
-			DatObjectType.Sound => 128,
-			DatObjectType.Currency => 1,
-			DatObjectType.Steam => 32,
-			DatObjectType.CliffEdge => 8,
-			DatObjectType.Water => 1,
-			DatObjectType.Land => 32,
-			DatObjectType.TownNames => 1,
-			DatObjectType.Cargo => 32,
-			DatObjectType.Wall => 32,
-			DatObjectType.TrackSignal => 16,
-			DatObjectType.LevelCrossing => 4,
-			DatObjectType.StreetLight => 1,
-			DatObjectType.Tunnel => 16,
-			DatObjectType.Bridge => 8,
-			DatObjectType.TrackStation => 16,
-			DatObjectType.TrackExtra => 8,
-			DatObjectType.Track => 8,
-			DatObjectType.RoadStation => 16,
-			DatObjectType.RoadExtra => 4,
-			DatObjectType.Road => 8,
-			DatObjectType.Airport => 8,
-			DatObjectType.Dock => 8,
-			DatObjectType.Vehicle => 224,
-			DatObjectType.Tree => 64,
-			DatObjectType.Snow => 1,
-			DatObjectType.Climate => 1,
-			DatObjectType.HillShapes => 1,
-			DatObjectType.Building => 128,
-			DatObjectType.Scaffolding => 1,
-			DatObjectType.Industry => 16,
-			DatObjectType.Region => 1,
-			DatObjectType.Competitor => 32,
-			DatObjectType.ScenarioText => 1,
-			_ => throw new NotImplementedException()
-		};
-}
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public sealed record S5PackedObject(
+	S5Header Header,
+	SawyerEncoding Encoding,
+	byte[] Data,
+	byte[]? RawChunk = null);
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(StructLength)]
@@ -92,7 +25,7 @@ public record S5File(
 	[property: LocoStructOffset(0x10952), LocoArrayLength(S5File.RequiredObjectsCount), Browsable(false)] List<S5Header> RequiredObjects,
 	IGameState? GameState,
 	[property: LocoStructOffset(0x4B4546)] List<TileElement>? TileElements,
-	List<(S5Header, byte[])> PackedObjects,
+	List<S5PackedObject> PackedObjects,
 	uint32_t Checksum
 	)
 	: ILocoStruct
@@ -109,18 +42,22 @@ public record S5File(
 
 	public static (int Width, int Height) GetMapSize(SaveDetails saveDetails, ScenarioOptions scenarioOptions)
 	{
+		var (x, y) = (0, 0);
 		if (saveDetails != null)
 		{
-			return (saveDetails.MapSizeX, saveDetails.MapSizeY);
+			(x, y) = (saveDetails.MapSizeX, saveDetails.MapSizeY);
 		}
 		else if (scenarioOptions != null)
 		{
-			return (scenarioOptions.MapSizeX, scenarioOptions.MapSizeY);
+			(x, y) = (scenarioOptions.MapSizeX, scenarioOptions.MapSizeY);
 		}
-		else
+
+		if (x == 0 || y == 0)
 		{
-			return (Limits.kMapColumnsVanilla, Limits.kMapRowsVanilla);
+			(x, y) = (Limits.kMapColumnsVanilla, Limits.kMapRowsVanilla);
 		}
+
+		return (x, y);
 	}
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -142,12 +79,10 @@ public record S5File(
 		}
 
 		// packed
-		ReadOnlySpan<byte> packed = [];
+		byte[] packed = [];
 		if (Header.NumPackedObjects != 0)
 		{
-			// todo: add data here
-			// todo: copy ObjectManager::writePackedObjects
-			//packed = WritePackedObjects();
+			packed = WritePackedObjects();
 		}
 
 		// required
@@ -168,7 +103,15 @@ public record S5File(
 		}
 		else
 		{
-			if (GameState is GameStateSave gsv)
+			if (GameState is GameStateSave1 gs1)
+			{
+				gameState = [.. SawyerStreamWriter.WriteChunk(gs1, SawyerEncoding.RunLengthSingle)];
+			}
+			else if (GameState is GameStateSave2 gs2)
+			{
+				gameState = [.. SawyerStreamWriter.WriteChunk(gs2, SawyerEncoding.RunLengthSingle)];
+			}
+			else if (GameState is GeneralStateSave gsv)
 			{
 				gameState = [.. SawyerStreamWriter.WriteChunk(gsv, SawyerEncoding.RunLengthSingle)];
 			}
@@ -179,7 +122,10 @@ public record S5File(
 			throw new NotImplementedException();
 		}
 
-		tiles = SawyerStreamWriter.WriteChunkCore(OriginalTileElementData, SawyerEncoding.RunLengthMulti);
+		var tileData = TileElements is { Count: > 0 }
+			? SerializeTileElements(TileElements)
+			: OriginalTileElementData;
+		tiles = SawyerStreamWriter.WriteChunkCore(tileData, SawyerEncoding.RunLengthMulti);
 
 		byte[] data = [.. hdr, .. save, .. scenario, .. packed, .. required, .. gameState, .. tiles];
 		var checksum = data.Sum(x => x);
@@ -204,14 +150,23 @@ public record S5File(
 		}
 
 		// packed objects
-		List<(S5Header, byte[])> packedObjects = [];
+		List<S5PackedObject> packedObjects = [];
 		for (var i = 0; i < header.NumPackedObjects; ++i)
 		{
 			var obj = S5Header.Read(data[..S5Header.StructLength]);
 			data = data[S5Header.StructLength..];
 
-			var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
-			packedObjects.Add((obj, chunkData.ToArray()));
+			var objectHeader = ObjectHeader.Read(data[..ObjectHeader.StructLength]);
+			data = data[ObjectHeader.StructLength..];
+
+			var encodedData = data[..(int)objectHeader.DataLength];
+			data = data[(int)objectHeader.DataLength..];
+
+			var decodedData = SawyerStreamReader.Decode(objectHeader.Encoding, encodedData);
+			var rawChunk = new byte[ObjectHeader.StructLength + encodedData.Length];
+			objectHeader.Write().CopyTo(rawChunk);
+			encodedData.CopyTo(rawChunk.AsSpan(ObjectHeader.StructLength));
+			packedObjects.Add(new S5PackedObject(obj, objectHeader.Encoding, decodedData, rawChunk));
 		}
 
 		// read required objects
@@ -241,10 +196,7 @@ public record S5File(
 			var gameStateA = SawyerStreamReader.ReadChunk<GameStateScenarioA>(ref data);
 			var gameStateB = SawyerStreamReader.ReadChunk<GameStateScenarioB>(ref data);
 			var gameStateC = SawyerStreamReader.ReadChunk<GameStateScenarioC>(ref data);
-			var newFlags = gameStateA.FixFlags | S5FixFlags.FixFlag1;
-			gameStateA = gameStateA with { FixFlags = newFlags };
 			gameState = new GameStateScenario(gameStateA, gameStateB, gameStateC);
-			FixState();
 
 			if (gameStateA.GameStateFlags.HasFlag(GameStateFlags.TileManagerLoaded))
 			{
@@ -254,8 +206,18 @@ public record S5File(
 		}
 		else
 		{
-			gameState = SawyerStreamReader.ReadChunk<GameStateSave>(ref data);
-			FixState();
+			var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
+			var fixFlags = (S5FixFlags)BitConverter.ToUInt16(chunkData[0x434..(0x434 + 2)]);
+			if (!fixFlags.HasFlag(S5FixFlags.FixFlag0) && !fixFlags.HasFlag(S5FixFlags.FixFlag1))
+			{
+				var gs2 = ByteReader.ReadLocoStruct<GameStateSave2>(chunkData);
+				gameState = gs2;
+			}
+			else
+			{
+				var gs1 = ByteReader.ReadLocoStruct<GameStateSave1>(chunkData);
+				gameState = gs1;
+			}
 
 			tileElementData = SawyerStreamReader.ReadChunkCore(ref data).ToArray();
 			(tileElements, tileElementMap) = ParseTileElements(tileElementData, mapSize.Width, mapSize.Height);
@@ -267,8 +229,20 @@ public record S5File(
 		return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameState, tileElements, packedObjects, checksum) { TileElementMap = tileElementMap, OriginalTileElementData = tileElementData };
 	}
 
-	static void FixState()
-	{ }
+	byte[] WritePackedObjects()
+	{
+		var bytes = new List<byte>();
+		foreach (var packedObject in PackedObjects)
+		{
+			bytes.AddRange(packedObject.Header.Write().ToArray());
+			bytes.AddRange(packedObject.RawChunk ?? SawyerStreamWriter.WriteChunkCore(packedObject.Data, packedObject.Encoding));
+		}
+
+		return [.. bytes];
+	}
+
+	static byte[] SerializeTileElements(IEnumerable<TileElement> tileElements)
+		=> tileElements.SelectMany(x => x.Write()).ToArray();
 
 	static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData, int mapWidth, int mapHeight)
 	{
@@ -311,8 +285,4 @@ public record S5File(
 
 		return (tileElements, tileElementMap);
 	}
-
-	//public ReadOnlySpan<byte> Write()
-	//{
-	//}
 }

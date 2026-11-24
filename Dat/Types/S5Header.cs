@@ -1,13 +1,16 @@
 using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
+using Definitions.ObjectModels;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(StructLength)]
 public class S5Header
+	: ILocoStruct
 {
 	// this is necessary because Flags must be get-set to enable setters for SourceGame and ObjectType
 	public S5Header(uint32_t flags, string name, uint32_t checksum)
@@ -78,5 +81,8 @@ public class S5Header
 
 	public bool IsVanilla()
 		=> OriginalObjectFiles.GetFileSource(Name, Checksum, ObjectSource).Convert() != DatObjectSource.Custom;
+
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 
 }

@@ -14,14 +14,13 @@ public class TrackObject : ILocoStruct
 	public int16_t SellCostFactor { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public ObjectModelHeader Tunnel { get; set; }
+	public ObjectModelHeader Tunnel { get; set; } = null!;
 	public Speed16 MaxCurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public uint8_t var_06 { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];
-	public uint8_t pad_35 { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
@@ -55,9 +54,9 @@ public class TrackObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(TunnelCostFactor)} must be positive.", [nameof(TunnelCostFactor)]);
 		}
 
-		if (TrackPieces.HasFlag(TrackTraitFlags.Diagonal | TrackTraitFlags.LargeCurve) && TrackPieces.HasFlag(TrackTraitFlags.OneSided | TrackTraitFlags.VerySmallCurve))
+		if ((TrackPieces.HasFlag(TrackTraitFlags.Diagonal) || TrackPieces.HasFlag(TrackTraitFlags.LargeCurve)) && (TrackPieces.HasFlag(TrackTraitFlags.OneSided) || TrackPieces.HasFlag(TrackTraitFlags.VerySmallCurve)))
 		{
-			yield return new ValidationResult($"{nameof(TrackPieces)} cannot include both {TrackTraitFlags.Diagonal} or {TrackTraitFlags.LargeCurve} and {TrackTraitFlags.OneSided} or {TrackTraitFlags.VerySmallCurve}.", [nameof(TrackPieces)]);
+			yield return new ValidationResult($"{nameof(TrackPieces)} cannot include {TrackTraitFlags.Diagonal} or {TrackTraitFlags.LargeCurve} if it also includes {TrackTraitFlags.OneSided} or {TrackTraitFlags.VerySmallCurve}.", [nameof(TrackPieces)]);
 		}
 
 		if (Bridges.Count > 7)

@@ -1,0 +1,83 @@
+@page "/account/manage"
+@model ObjectService.Pages.Account.ManageModel
+@{
+	ViewData["Title"] = "My Account";
+}
+
+<section class="panel">
+	<h1>My Account</h1>
+
+	@if (Model.AccountDeleted)
+	{
+		<div class="success-message">
+			<p>Your account has been deleted. Thank you for using OpenLoco Object Service.</p>
+			<a class="button button-primary" asp-page="/Index">Return to explorer</a>
+		</div>
+	}
+	else
+	{
+		<dl class="meta-grid">
+			<div>
+				<dt>Username</dt>
+				<dd>@Model.Username</dd>
+			</div>
+			<div>
+				<dt>Email</dt>
+				<dd>@Model.Email</dd>
+			</div>
+			<div>
+				<dt>Objects owned</dt>
+				<dd>@Model.OwnedObjects.Count</dd>
+			</div>
+		</dl>
+	}
+</section>
+
+@if (!Model.AccountDeleted && Model.OwnedObjects.Count > 0)
+{
+	<section class="panel">
+		<h2>Your Objects</h2>
+		<div class="table-wrap">
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Source</th>
+						<th>Uploaded</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var obj in Model.OwnedObjects)
+					{
+						<tr>
+							<td>@obj.DisplayName</td>
+							<td>@obj.ObjectType</td>
+							<td>@obj.ObjectSource</td>
+							<td>@obj.UploadedDate.ToString("yyyy-MM-dd")</td>
+							<td><a class="button button-secondary" asp-page="/Objects/Details" asp-route-id="@obj.Id">View</a></td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</section>
+}
+
+@if (!Model.AccountDeleted)
+{
+	<section class="panel panel-danger">
+		<h2>Delete Account</h2>
+		<p class="muted">This action cannot be undone. All your uploaded objects will remain but will no longer be associated with your account.</p>
+		<form method="post" asp-page-handler="DeleteAccount" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.')">
+			<button type="submit" class="button button-danger">Delete my account</button>
+		</form>
+	</section>
+
+	<section class="panel">
+		<form method="post" asp-page-handler="Logout">
+			<button type="submit" class="button button-secondary">Log out</button>
+		</form>
+	</section>
+}

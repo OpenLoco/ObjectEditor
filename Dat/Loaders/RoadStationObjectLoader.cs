@@ -1,3 +1,6 @@
+// DAT/S5 binary parsing — nullable analysis cannot reason about offset-based field population.
+#pragma warning disable CS8618, CS8602, CS8604, CS8601, CS8625, CS8629
+
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
@@ -51,7 +54,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
 			br.SkipObjectId(); // CargoTypeId, not part of object definition
-			model.pad_2D = br.ReadByte(); // pad 0x2D
+			br.SkipByte(); // 0x2D is a padding byte
 			br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
 
 			// sanity check
@@ -110,7 +113,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
 			bw.WriteEmptyObjectId(); // CargoTypeId, not part of object definition
-			bw.Write(model.pad_2D); // pad 0x2D
+			bw.WriteEmptyBytes(1); // 0x2D is a padding byte
 			bw.WriteEmptyPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
 
 			// sanity check

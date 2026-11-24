@@ -189,8 +189,10 @@ editor and the updater for every supported platform and writes the release artif
   an Apple Developer ID certificate, which is applied outside this script.
 - Archives are named after the runtime identifier above; the in-editor auto-updater downloads the
   matching file, so these names are part of the update contract (covered by `VersioningTests`).
-- `tag.sh <version>` tags the current commit and pushes the tag. Pushing a `x.y.z` tag runs the
-  `Build and package` workflow, which tests, builds all artifacts and attaches them to a draft
+- `tag.sh <version>` publishes the current commit (pushing it and setting upstream if needed), then tags
+  and pushes the tag. It refuses to run if the tree is dirty, the tag already exists locally or on the
+  remote, or the branch has diverged from the remote. Pushing a `x.y.z` or `x.y.z-prerelease` tag runs
+  the `Build and package` workflow, which tests, builds all artifacts and attaches them to a draft
   GitHub release. No commit is needed to bump the version.
 - Release builds can also be triggered manually from the *Actions* tab, with an optional version
   override.

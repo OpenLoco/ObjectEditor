@@ -3,8 +3,8 @@ using NuGet.Versioning;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Common;
 
@@ -19,15 +19,15 @@ public static class VersionHelpers
 	public static Process? OpenDownloadPage()
 		=> Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true });
 
-	// win: object-editor-5.3.5-win-x64.zip
-	// osx: object-editor-5.3.5-osx-x64.tar
-	// linux: object-editor-5.3.5-linux-x64.tar
+	// win:   object-editor-5.3.5-win-x64.zip
+	// osx:   object-editor-5.3.5-osx-arm64.zip (or -osx-x64.zip)
+	// linux: object-editor-5.3.5-linux-x64.tar.gz
 
-	static string DownloadFilename(SemanticVersion latestVersion, OSPlatform platform)
-		=> $"object-editor-{latestVersion}-{PlatformSpecific.EditorPlatformZipName(platform)}";
+	static string DownloadFilename(SemanticVersion latestVersion, OSPlatform platform, Architecture architecture)
+		=> $"object-editor-{latestVersion}-{PlatformSpecific.EditorPlatformZipName(platform, architecture)}";
 
-	public static string UrlForDownload(SemanticVersion latestVersion, OSPlatform platform)
-		=> $"{GithubLatestReleaseDownloadPage}/download/{latestVersion}/{DownloadFilename(latestVersion, platform)}";
+	public static string UrlForDownload(SemanticVersion latestVersion, OSPlatform platform, Architecture? architecture = null)
+		=> $"{GithubLatestReleaseDownloadPage}/download/{latestVersion}/{DownloadFilename(latestVersion, platform, architecture ?? RuntimeInformation.ProcessArchitecture)}";
 
 	public static void StartAutoUpdater(ILogger logger, SemanticVersion currentVersion, SemanticVersion latestVersion)
 	{
@@ -48,17 +48,17 @@ public static class VersionHelpers
 				}
 			}
 
-			// The updater binary has no .exe suffix on Unix-like platforms.
-			var editorExe = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-				? $"{ObjectEditorUpdaterName}.exe"
-				: ObjectEditorUpdaterName;
-			if (!File.Exists(editorExe))
+var editorExe = PlatformSpecific.EditorPlatformUpdaterName(PlatformSpecific.GetPlatform);
+			// resolve relative to the editor's own folder: inside a macOS .app bundle the working directory
+			// is unrelated to where the binaries live
+			var editorExePath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? ".", editorExe);
+			if (!File.Exists(editorExePath))
 			{
-				logger.LogError("Cannot find the auto-updater executable: {EditorExe}. You'll need to manually download the update.", editorExe);
+				logger.LogError("Cannot find the auto-updater executable: {EditorExePath}. You'll need to manually download the update.", editorExePath);
 				return;
 			}
 
-			var startInfo = new ProcessStartInfo(editorExe,
+			var startInfo = new ProcessStartInfo(editorExePath,
 			[
 				"--pid",
 				$"{Environment.ProcessId}",
@@ -103,24 +103,17 @@ public static class VersionHelpers
 			return CachedSemanticVersion;
 		}
 
-		foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-		{
-			// version.txt is an embedded resource in the Definitions assembly
-			using var stream = assembly.GetManifestResourceStream("Definitions.version.txt") ?? assembly.GetManifestResourceStream("version.txt");
-			if (stream == null)
-			{
-				continue;
-			}
+			// The version is baked into every assembly at build time by MinVer (from the git tag), so the running
+			// binary can never disagree with what it reports. SourceLink appends the commit hash as build metadata,
+			// which is not part of the version.
+			// Read from the assembly that defines this type rather than the entry assembly: it is always this
+			// product's assembly, even when the app is hosted by another process (eg a test runner or designer).
+			var informationalVersion = typeof(VersionHelpers).Assembly
+				.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+				.InformationalVersion;
 
-			using var ms = new MemoryStream();
-			stream.CopyTo(ms);
-			CachedSemanticVersion = GetVersionFromText(Encoding.ASCII.GetString(ms.ToArray()));
-			return CachedSemanticVersion;
-		}
-
-		CachedSemanticVersion = UnknownVersion;
+			CachedSemanticVersion = GetVersionFromText(informationalVersion?.Split('+')[0]);
 		return CachedSemanticVersion;
-
 	}
 
 	// A single, process-wide HttpClient avoids socket exhaustion that comes from

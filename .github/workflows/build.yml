@@ -1,0 +1,95 @@
+name: Build and package
+
+on:
+  push:
+    branches: [ "master" ]
+    # matches both release tags (5.14.0) and pre-release tags (5.14.0-beta.1)
+    tags: [ "[0-9]+.[0-9]+.[0-9]+*" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Optional version override, eg 5.14.0. Leave empty to use the version derived from git tags."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # MinVer derives the version from tags, so the full history and tags are needed here too; without
+          # them every build would report 0.0.0-alpha.0
+          fetch-depth: 0
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Test
+        run: dotnet test Tests/Tests.csproj -c Release --no-restore
+
+  # build.sh cross-publishes every runtime, so a single host is enough. macOS is used because packaging the
+  # macOS bundles correctly needs ditto and codesign.
+  package:
+    needs: test
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # MinVer needs the full history and tags to derive the version
+          fetch-depth: 0
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # The version comes from the git tag via MinVer, so no version file is read or written.
+      - name: Build
+        shell: bash
+        env:
+          VERSION_OVERRIDE: ${{ inputs.version }}
+        run: ./build.sh ${VERSION_OVERRIDE:+"$VERSION_OVERRIDE"}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: object-editor
+          path: |
+            artifacts/*.zip
+            artifacts/*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

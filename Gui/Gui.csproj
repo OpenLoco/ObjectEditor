@@ -11,12 +11,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
-    <AssemblyVersion>$(Version)</AssemblyVersion>
-    <FileVersion>$(Version)</FileVersion>
     <AssemblyName>ObjectEditor</AssemblyName>
     <Product>$(AssemblyName) $(Version)</Product>
-    <!-- This is a dummy version that is replaced with the real version either at runtime or at package build time -->
-    <Version>1.2.3</Version>
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <ApplicationIcon>Assets\loco_icon.ico</ApplicationIcon>
@@ -30,6 +26,12 @@
   <ItemGroup>
     <Content Include="Assets\loco_icon.ico" />
   </ItemGroup>
+
+    <!-- The .icns is only used by build.sh when assembling the macOS .app bundle, so keep it out of the assembly -->
+    <ItemGroup>
+      <AvaloniaResource Remove="Assets\loco_icon.icns" />
+      <None Include="Assets\loco_icon.icns" />
+    </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Dat\Types\GlobalUsings.cs" Link="GlobalUsings.cs" />
@@ -51,11 +53,11 @@
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
     <PackageReference Include="NAudio" Version="2.3.0" />
-    <PackageReference Include="NuGet.Versioning" Version="7.9.0" />
+    <PackageReference Include="NuGet.Versioning" Version="8.0.0" />
     <PackageReference Include="PanAndZoom" Version="12.0.0.1" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
     <PackageReference Include="ReactiveUI.Validation" Version="7.1.0" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="3.1.0" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="3.1.3" />
   </ItemGroup>
 
   <ItemGroup>

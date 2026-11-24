@@ -143,10 +143,10 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 			return;
 		}
 
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 		{
-			// unfortunately NAudio is not cross-platform! this code just crashes on Linux
-			// so there isn't anything to do here until a cross-platform audio lib is used
+			// unfortunately NAudio's WaveOutEvent is Windows-only (winmm), so this code crashes on Linux and
+			// macOS. there isn't anything to do here until a cross-platform audio lib is used
 			return;
 		}
 

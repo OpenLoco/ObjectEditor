@@ -40,4 +40,16 @@
   <ItemGroup>
     <Compile Remove="**\obj\**\*.cs;**/obj/**/*.cs;**\bin\**\*.cs;**/bin/**/*.cs;**\artifacts\**\*.cs;**/artifacts/**/*.cs" />
   </ItemGroup>
+
+    <!--
+      Versioning is driven entirely by git tags (standard practice for .NET SDK projects).
+      Tag a commit with a SemVer 2 version (eg 5.14.0) and that is the version; otherwise MinVer
+      derives the next pre-release version from the nearest tag and the number of commits since
+      it (eg 5.14.1-alpha.0.7). This sets AssemblyVersion, FileVersion, InformationalVersion,
+      Version and PackageVersion for every project, so there is no separate version file to keep
+      in sync.
+    -->
+    <ItemGroup>
+      <PackageReference Include="MinVer" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
 </Project>

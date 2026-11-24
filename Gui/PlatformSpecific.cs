@@ -36,18 +36,22 @@ public static class PlatformSpecific
 
 		// Platform-specific command construction
 		string command;
+		string arguments;
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 		{
 			command = "explorer.exe"; // Windows File Explorer
+			arguments = filename == null ? directory : $"/select, \"{Path.Combine(directory, filename)}\"";
 		}
 		else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 		{
 			command = "open"; // macOS Finder
+			arguments = filename == null ? $"\"{directory}\"" : $"-R \"{Path.Combine(directory, filename)}\"";
 		}
 		else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 		{
 			// Note: This assumes the user's desktop environment has a standard file manager
 			command = "xdg-open";
+			arguments = $"\"{directory}\"";
 		}
 		else
 		{
@@ -59,7 +63,7 @@ public static class PlatformSpecific
 		var processStartInfo = new ProcessStartInfo
 		{
 			FileName = command,
-			Arguments = filename == null ? directory : $"/select, \"{Path.Combine(directory, filename)}\"",
+			Arguments = arguments,
 			UseShellExecute = true // Use the shell for proper handling on each OS
 		};
 
